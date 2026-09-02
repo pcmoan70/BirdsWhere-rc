@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <!-- Content-Security-Policy: the primary XSS defence-in-depth. script-src is
+       locked to same-origin + the two trusted CDNs (Google Identity, EmailJS) and
+       'wasm-unsafe-eval' for ONNX Runtime Web — so an injected inline/remote script
+       cannot run even if an escaping bug slips through. connect-src/img-src stay
+       broad (https:) because users can add arbitrary source endpoints and the map
+       pulls many tile/API hosts; style-src allows inline styles (the app sets many
+       element style="" attributes). object-src/base-uri lock down tag-injection. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://accounts.google.com https://apis.google.com https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' https:; font-src 'self'; worker-src 'self' blob:; child-src 'self' blob: https://accounts.google.com; frame-src https://accounts.google.com https://content.googleapis.com; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <title>BirdsWhere</title>
+  <meta name="description" content="Interactive, in-browser explorer of species distribution, migration and live observations. Distribution maps, migration estimates and observation sorting are based on the BirdNET Geomodel, run on your device." />
+
+  <!-- Leaflet (map) — vendored locally for offline use -->
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
+  <!-- MapLibre GL (vector labels overlay) -->
+  <link rel="stylesheet" href="vendor/maplibre/maplibre-gl.css" />
+
+  <link rel="stylesheet" href="app.css" />
+
+  <!-- PWA: installable + offline -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0b1f2a" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="icon" href="icon-192.png" sizes="192x192" type="image/png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+</head>
+<body>
+  <!-- Boot splash: static HTML + a compositor-driven CSS pulse, so it shows from
+       the very first paint and KEEPS pulsing even while the main thread is busy
+       booting a large dataset. app.js removes it when the app is ready. -->
+  <div id="boot-splash" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12M6 22h12M8 2v4l4 6 4-6V2M8 22v-4l4-6 4 6v4"/></svg>
+    <span>Loading…</span>
+  </div>
+  <header id="site-header"><!-- controls (settings, mode, checklist) are moved here by app.js --></header>
+
+  <!-- app.js renders the whole interactive app into this mount point -->
+  <div id="demo-root"></div>
+
+  <!-- i18n strings + persisted state + analysis views (load before app.js) -->
+  <script src="i18n/strings.js"></script>
+  <script src="app-data.js"></script>
+  <script src="whats-new.js"></script>
+  <script src="state.js"></script>
+  <!-- IndexedDB store for bulky per-list data (trips/detections), lifts the localStorage cap -->
+  <script src="idb.js"></script>
+  <script src="gdrive-sync.js"></script>
+  <script src="analysis.js"></script>
+  <!-- source/dataset configuration (consumed by app.js + geo/fetch) -->
+  <script src="sources.js"></script>
+  <!-- country/geo (reverse-geocode + border gating) -->
+  <script src="geo.js"></script>
+  <!-- data layer: HTTP fetch adapters → record normalisation → aggregation -->
+  <script src="fetch.js"></script>
+  <script src="normalize.js"></script>
+  <script src="aggregate.js"></script>
+  <!-- feature modules split out of app.js (wired by app.js via Module.init) -->
+  <script src="rarity.js"></script>
+  <script src="offline-maps.js"></script>
+  <script src="points-lists.js"></script>
+  <script src="site-overlays.js"></script>
+  <script src="share-links.js"></script>
+  <script src="field-checklist.js"></script>
+
+  <!-- Google Identity Services — for optional "sync via Google Drive" (loaded
+       from Google; harmless to skip when offline, sync just stays disabled). -->
+  <script async src="https://accounts.google.com/gsi/client"></script>
+
+  <!-- EmailJS — sends the feedback form to the project address without exposing
+       it (recipient lives in the EmailJS template). Network-only; skipped offline.
+       Version PINNED + SRI-hashed so a rolled/compromised CDN build can't run. -->
+  <script async src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/dist/email.min.js"
+          integrity="sha384-SALc35EccAf6RzGw4iNsyj7kTPr33K7RoGzYu+7heZhT8s0GZouafRiCg1qy44AS"
+          crossorigin="anonymous"></script>
+
+  <!-- Leaflet (vendored locally for offline use) -->
+  <script src="vendor/leaflet/leaflet.js"></script>
+
+  <!-- H3 hexagonal grid (Uber h3-js, vendored) for the map overlays -->
+  <script src="vendor/h3-js.js"></script>
+
+  <!-- MapLibre GL + Leaflet bridge (vendored) — the vector place-name labels overlay.
+       Tiles come from OpenFreeMap at runtime (online-only enhancement). -->
+  <script src="vendor/maplibre/maplibre-gl.js"></script>
+  <script src="vendor/maplibre/leaflet-maplibre-gl.js"></script>
+
+  <!-- Main app (loads ONNX Runtime Web inside inference-worker.js) -->
+  <script src="app.js"></script>
+
+  <!-- Register the service worker for offline support (external file so the CSP
+       script-src needs no 'unsafe-inline'). -->
+  <script src="sw-register.js"></script>
+</body>
+</html>

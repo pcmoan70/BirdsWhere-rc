@@ -1,0 +1,29 @@
+# Publishes the app/ folder to GitHub Pages. Runs when the `deploy` branch is
+# pushed (i.e. `git push origin main:deploy` / `git push rc main:deploy`), so the
+# deploy commands are unchanged — only the served source moved from /docs to app/.
+name: Deploy app to Pages
+on:
+  push:
+    branches: [deploy]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: app
+      - id: deployment
+        uses: actions/deploy-pages@v4
