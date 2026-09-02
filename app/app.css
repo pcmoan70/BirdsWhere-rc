@@ -3749,8 +3749,9 @@ path.rc-pulse-dot { animation: rc-pulse-fade 1.1s ease-in-out infinite alternate
 .leaflet-bar a.anim-btn,
 .leaflet-bar a.h3-detail-btn,
 .leaflet-bar a.nearby-btn,
+.leaflet-bar a.area-update-btn,
 .leaflet-bar a.country-btn { display: flex; align-items: center; justify-content: center; }
-.geo-locate-btn svg, .fs-toggle-btn svg, .place-search-btn svg, .anim-btn svg, .h3-detail-btn svg, .nearby-btn svg, .country-btn svg { display: block; }
+.geo-locate-btn svg, .fs-toggle-btn svg, .place-search-btn svg, .anim-btn svg, .h3-detail-btn svg, .nearby-btn svg, .area-update-btn svg, .country-btn svg { display: block; }
 /* Red × (clear all plotted observations), right of the map, shown only when there are points. */
 .leaflet-bar a.clearpts-btn { display: flex; align-items: center; justify-content: center; color: var(--danger, #c0392b); }
 .leaflet-bar a.clearpts-btn:hover { color: #fff; background: var(--danger, #c0392b); }
