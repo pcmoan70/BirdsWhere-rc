@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1573";
+var VERSION = "v1574";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• Fix: “Best sites” dots that had stopped appearing on the map (a stale cached data index after the recent best-sites update) now load correctly — this version refreshes the best-sites data.",
   "• Update button (✓, right side of the map): one tap refreshes every area you’ve already fetched right up to today’s latest observations — it re-fetches each area from a couple of days before its last fetch, so nothing is missed. Hold the button for its two settings: how many days to overlap the previous fetch (default 2) and whether to update only the areas currently in view.",
   "• New Region filter (Filters → Region): every species carries a geographic “belonging” fingerprint from the AI model (13 flyway/continent regions). “Far migrants” shows species that don’t belong to YOUR region — it follows your location (GPS/pin, else the map centre), so a European sees Nearctic/Siberian vagrants while an American sees European ones. “From a region” lists species typical of a chosen realm.",
   "• Sort by distance from you: the legend’s sort toggle has a 📍 Distance option, and the lists sort by their Dist column / “By distance”. While location tracking is on these re-order live as you move — the legend/“close by” every ~50 m, the lists every ~100 m (tuned for driving).",
   "• Locate crosshair: tap = find me once (the red crosshair clears as soon as you pan away); hold = automatic updating — the button pulses blue, the map stays centred on your live position (your zoom is kept), and the legend + any distance-sorted list re-sort as you move.",
-  "• The records list (tap a spot) has a new “By distance” sort — observations are ordered nearest-first from your position / the map centre, with each record’s distance shown.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
@@ -44,7 +44,7 @@ var SHELL_CACHE = RC_TAG + "shell-" + VERSION;   // app code + small assets
 // every deploy. Individual data files refresh automatically when their hash in
 // files.json changes (see install); bumping DATA_REV is only the manual
 // nuke-and-refetch-everything override.
-var DATA_REV = "d2";
+var DATA_REV = "d3";
 var DATA_CACHE = RC_TAG + "data-" + DATA_REV;    // model / labels / taxonomy / vendor libs
 // version-INDEPENDENT shared pool: map tiles AND the app's computed range-data
 // blob live here together, under one byte budget + one LRU. The app writes its
