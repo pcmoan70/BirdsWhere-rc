@@ -16644,7 +16644,7 @@
     });
 
     document.getElementById("csv-download-btn").addEventListener("click", function () {
-      if (lastCsvData) downloadCsv(lastCsvData.filename, lastCsvData.content);
+      if (lastCsvData) downloadCsv(lastCsvData.filename, lastCsvData.getContent ? lastCsvData.getContent() : lastCsvData.content);
     });
 
     // A species name (.sp-link, in any list/table) → the ONE unified species
@@ -19027,15 +19027,23 @@
     var heading = t("panel.spTitle");
     var meta = (document.getElementById("sp-coords").textContent || "").trim();
     var n2 = !!d.name2Head, cmp = !!d.cmpHead;
+    // "Seen" column: the detection count from the latest fetch (blank when not seen),
+    // read live from the table's sightings aggregate at export time.
+    var seenAgg = null;
+    if (d.showSeen) { var _tb = document.getElementById("sp-tbody"); seenAgg = (_tb && _tb._sightingsAgg) || {}; }
+    var seen = !!seenAgg;
     var thead = "<tr><th>#</th><th>" + esc(t("th.species")) + "</th>" +
       (n2 ? "<th>" + esc(d.name2Head) + "</th>" : "") +
       "<th>" + esc(t("th.sci")) + "</th><th class='num'>" + esc(t("th.prob")) + "</th>" +
-      (cmp ? "<th class='num'>" + esc(d.cmpHead) + "</th>" : "") + "</tr>";
+      (cmp ? "<th class='num'>" + esc(d.cmpHead) + "</th>" : "") +
+      (seen ? "<th class='num'>" + esc(t("chk.seen")) + "</th>" : "") + "</tr>";
     var body = d.rows.map(function (r, i) {
+      var sc = seen ? ((seenAgg[r.key] && seenAgg[r.key].count) || 0) : 0;
       return "<tr><td>" + (i + 1) + "</td><td>" + esc(r.name) + "</td>" +
         (n2 ? "<td>" + esc(r.name2) + "</td>" : "") +
         "<td class='sci'>" + esc(r.sci) + "</td><td class='num'>" + esc(r.prob) + "</td>" +
-        (cmp ? "<td class='num'>" + esc(r.cmp) + "</td>" : "") + "</tr>";
+        (cmp ? "<td class='num'>" + esc(r.cmp) + "</td>" : "") +
+        (seen ? "<td class='num'>" + (sc ? "✓ " + sc : "") + "</td>" : "") + "</tr>";
     }).join("");
     var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + esc(heading) + "</title><style>" +
       "body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#16302b;margin:32px;}" +
@@ -20081,22 +20089,30 @@
       renderSpControls();   // filter bar + layout dropdown + (records view if not the table)
       setStatus(t("status.spResult", { n: results.length, p: (pmin * 100).toFixed(0), lat: lat.toFixed(2), lon: lon.toFixed(2) }));
 
-      // Build CSV for species list (includes 2nd-name + comparison columns when active)
-      var header = "rank,species_code,common_name";
-      if (secondLang) header += ",common_name_" + secondLang;
-      header += ",scientific_name,probability";
-      if (hasCompare) header += "," + (kind === "ratio" ? "fraction_of_" : kind === "focus" ? "annual_top_" : "delta_vs_") + cmp.refLabel.replace(/[",\s]+/g, "_");
-      var csvLines = [header];
-      results.forEach(function (r, idx) {
-        var line = (idx + 1) + ',"' + r.label.key + '","' + speciesName(r.label).replace(/"/g, '""') + '"';
-        if (secondLang) line += ',"' + secondName(r.label).replace(/"/g, '""') + '"';
-        line += ',"' + r.label.sci.replace(/"/g, '""') + '",' + r.prob.toFixed(6);
-        if (hasCompare) line += "," + r.cmpVal.toFixed(6);
-        csvLines.push(line);
-      });
+      // Build CSV for species list (includes 2nd-name + comparison columns when active,
+      // plus a "seen_count" column filled from the latest fetch). Rebuilt at DOWNLOAD
+      // time so the seen counts reflect the sightings that arrived after this render.
+      var buildSpeciesCsv = function () {
+        var tb = document.getElementById("sp-tbody"), agg = (tb && tb._sightingsAgg) || null;
+        var header = "rank,species_code,common_name";
+        if (secondLang) header += ",common_name_" + secondLang;
+        header += ",scientific_name,probability";
+        if (hasCompare) header += "," + (kind === "ratio" ? "fraction_of_" : kind === "focus" ? "annual_top_" : "delta_vs_") + cmp.refLabel.replace(/[",\s]+/g, "_");
+        header += ",seen_count";
+        var csvLines = [header];
+        results.forEach(function (r, idx) {
+          var line = (idx + 1) + ',"' + r.label.key + '","' + speciesName(r.label).replace(/"/g, '""') + '"';
+          if (secondLang) line += ',"' + secondName(r.label).replace(/"/g, '""') + '"';
+          line += ',"' + r.label.sci.replace(/"/g, '""') + '",' + r.prob.toFixed(6);
+          if (hasCompare) line += "," + r.cmpVal.toFixed(6);
+          line += "," + ((agg && agg[r.label.key] && agg[r.label.key].count) || 0);
+          csvLines.push(line);
+        });
+        return csvLines.join("\n");
+      };
       lastCsvData = {
         filename: "Geomodel_species_list_" + lat.toFixed(2) + "_" + lon.toFixed(2) + "_week" + week + ".csv",
-        content: csvLines.join("\n")
+        getContent: buildSpeciesCsv
       };
       // Snapshot the displayed rows/columns for the printable PDF export.
       // Augment rows with detection counts + age: recent (last 30 d) for a point,
@@ -20145,14 +20161,15 @@
       lastSpeciesPdf = {
         name2Head: secondLang ? window.GeoI18N.langByCode(secondLang).name : "",
         cmpHead: document.getElementById("sp-delta-head").textContent || "",
+        showSeen: true,   // recent/point list → add a "Seen" (latest-fetch count) column, filled live at export
         rows: results.map(function (r) {
           var cmpText = "";
           if (hasCompare) {
             cmpText = kind === "ratio" ? Math.round(r.cmpVal * 100) + "%"
-              : kind === "focus" ? (r.cmpVal * 100).toFixed(0) + "%"
+              : kind === "focus" ? String(Math.round(r.cmpVal))   // focus value is already 0–100 (matches focusCell)
               : (r.cmpVal >= 0 ? "+" : "") + (r.cmpVal * 100).toFixed(1) + "%";
           }
-          return { name: speciesName(r.label), name2: secondLang ? secondName(r.label) : "", sci: r.label.sci, prob: (r.prob * 100).toFixed(1) + "%", cmp: cmpText };
+          return { key: r.label.key, name: speciesName(r.label), name2: secondLang ? secondName(r.label) : "", sci: r.label.sci, prob: (r.prob * 100).toFixed(1) + "%", cmp: cmpText };
         }),
       };
       showCsvBtn();
