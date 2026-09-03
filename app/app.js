@@ -4602,6 +4602,7 @@
     try { var rcz = (typeof rarityCfg === "function") ? rarityCfg() : null; if (rcz && rcz.enabled !== false && rcz.showMap !== false) rarRows = rarityNearRows(null) || []; } catch (e) {}
     var extras = mergedExtras(result.extras, rarRows), agg = mergedSightingsAgg(result.agg, rarRows);
     tbody._sightingsAgg = agg;
+    tbody._fetchAgg = (result && result.agg) || {};   // THIS point's fetch only (no detPlot union / rarity) — the PDF/CSV "Seen" column reads this
     if (currentSpView) currentSpView._result = result;   // latest data for plotAllSightings (partial or final)
     updateSpMapBtn();
     var now = Date.now();
@@ -18724,12 +18725,12 @@
         return { probs: agg, refLabel: t("compare.max"), kind: "ratio" };
       }
       if (mode === "annualtop") {
-        // Per-species "Annual Top" (focus) value at the current week (0–100).
-        var scratch = new Float32Array(48);
+        // "Annual Top" = current week's probability as a % of the species' annual PEAK
+        // (current ÷ max × 100); NaN → rendered as "-" when the annual peak is 0.
         for (s = 0; s < nSpecies; s++) {
-          var mxt = 0;
-          for (wk = 0; wk < 48; wk++) { v = cell[wk + 1] ? cell[wk + 1][s] : 0; scratch[wk] = v; if (v > mxt) mxt = v; }
-          agg[s] = window.GeoAnalysis.focusSeries(scratch, mxt)[wkIdx];
+          var mxt = 0, curt = cell[week] ? cell[week][s] : 0;
+          for (wk = 1; wk <= 48; wk++) { v = cell[wk] ? cell[wk][s] : 0; if (v > mxt) mxt = v; }
+          agg[s] = mxt > 0 ? Math.min(100, (curt / mxt) * 100) : NaN;
         }
         return { probs: agg, refLabel: t("compare.annualtop"), kind: "focus" };
       }
@@ -18765,16 +18766,18 @@
 
   // Cell for the "Annual Top" comparison: focus value 0–100, tinted red→green.
   function focusCell(v) {
+    if (Number.isNaN(v)) return '<td class="ratio-cell">-</td>';
     var n = Math.max(0, Math.min(100, v));
-    return '<td class="ratio-cell" style="background:' + probHueColor(n / 100) + '">' + Math.round(n) + "</td>";
+    return '<td class="ratio-cell" style="background:' + probHueColor(n / 100) + '">' + Math.round(n) + "%</td>";
   }
 
   // Species List comparison cell as a probability-style bar (used when every
   // value in the column is positive). pct scaled by kind: focus is already
   // 0–100; ratio/delta are fractions → ×100.
   function cmpBarCell(kind, v) {
+    if (Number.isNaN(v)) return '<td class="cmp-bar-cell"><span class="cmp-num">-</span></td>';   // Annual Top with 0 annual peak
     var pct = Math.max(0, Math.min(100, kind === "focus" ? v : v * 100));
-    var label = kind === "focus" ? String(Math.round(v))
+    var label = kind === "focus" ? Math.round(v) + "%"
       : Math.round(v * 100) + "%";
     return '<td class="cmp-bar-cell"><span class="cmp-num">' + label + '</span><div class="cmp-bar" style="width:' + Math.round(pct) + '%;background:' + probHueColor(pct / 100) + '"></div></td>';
   }
@@ -19030,7 +19033,7 @@
     // "Seen" column: the detection count from THIS point's latest fetch only
     // (result.agg) — not the accumulated map dots / rarity alerts in the on-screen union.
     var seenAgg = null;
-    if (d.showSeen) { seenAgg = (currentSpView && currentSpView._result && currentSpView._result.agg) || {}; }
+    if (d.showSeen) { var _tb = document.getElementById("sp-tbody"); seenAgg = (_tb && _tb._fetchAgg) || {}; }
     var seen = !!seenAgg;
     var thead = "<tr><th>#</th><th>" + esc(t("th.species")) + "</th>" +
       (n2 ? "<th>" + esc(d.name2Head) + "</th>" : "") +
@@ -20017,7 +20020,7 @@
       // When every comparison value is positive, show it as a probability-style
       // bar; otherwise (e.g. week-over-week change) show the value with
       // negatives in red.
-      var cmpAllPositive = hasCompare && results.every(function (r) { return r.cmpVal >= 0; });
+      var cmpAllPositive = hasCompare && results.every(function (r) { return Number.isNaN(r.cmpVal) || r.cmpVal >= 0; });
       // Probability palette is min-max stretched across the visible list (like
       // the analysis heatmap) so the strongest species reads green, weakest red.
       var pHi = results.length ? results[0].prob : 1;            // sorted desc → max first
@@ -20044,7 +20047,7 @@
         var name2Cell = '<td class="name2">' + (secondLang ? escapeHtml(secondName(r.label)) : "") + '</td>';
         var dKey = escapeHtml(r.label.key);
         var pct = Math.round(r.prob * 100);
-        var sortAttrs = ' data-name="' + escapeHtml(speciesName(r.label).toLowerCase()) + '" data-prob="' + r.prob + '"' + (hasCompare ? ' data-cmp="' + r.cmpVal + '"' : "");
+        var sortAttrs = ' data-name="' + escapeHtml(speciesName(r.label).toLowerCase()) + '" data-prob="' + r.prob + '"' + (hasCompare ? ' data-cmp="' + (Number.isNaN(r.cmpVal) ? -1 : r.cmpVal) + '"' : "");
         return '<tr' + sortAttrs + '>' +
                '<td>' + spListDot(r.label.key) + nameLinkHtml(r.label, true) + '</td>' + name2Cell +
                '<td class="sci"><span class="sci-link" data-key="' + dKey + '" title="' + escapeHtml(t("sci.familyTip")) + '">' +
@@ -20093,9 +20096,9 @@
       // plus a "seen_count" column filled from the latest fetch). Rebuilt at DOWNLOAD
       // time so the seen counts reflect the sightings that arrived after this render.
       var buildSpeciesCsv = function () {
-        // Seen = ONLY this point's own fetch (result.agg) — NOT the accumulated map
-        // dots (detPlot) or rarity alerts that the on-screen union also folds in.
-        var agg = (currentSpView && currentSpView._result && currentSpView._result.agg) || null;
+        // Seen = ONLY this point's own fetch (tbody._fetchAgg = result.agg) — NOT the
+        // accumulated map dots (detPlot) or rarity alerts the on-screen union folds in.
+        var tb = document.getElementById("sp-tbody"), agg = (tb && tb._fetchAgg) || null;
         var header = "rank,species_code,common_name";
         if (secondLang) header += ",common_name_" + secondLang;
         header += ",scientific_name,probability";
@@ -20106,7 +20109,7 @@
           var line = (idx + 1) + ',"' + r.label.key + '","' + speciesName(r.label).replace(/"/g, '""') + '"';
           if (secondLang) line += ',"' + secondName(r.label).replace(/"/g, '""') + '"';
           line += ',"' + r.label.sci.replace(/"/g, '""') + '",' + r.prob.toFixed(6);
-          if (hasCompare) line += "," + r.cmpVal.toFixed(6);
+          if (hasCompare) line += "," + (Number.isNaN(r.cmpVal) ? "" : r.cmpVal.toFixed(6));
           line += "," + ((agg && agg[r.label.key] && agg[r.label.key].count) || 0);
           csvLines.push(line);
         });
@@ -20168,7 +20171,7 @@
           var cmpText = "";
           if (hasCompare) {
             cmpText = kind === "ratio" ? Math.round(r.cmpVal * 100) + "%"
-              : kind === "focus" ? String(Math.round(r.cmpVal))   // focus value is already 0–100 (matches focusCell)
+              : kind === "focus" ? (Number.isNaN(r.cmpVal) ? "-" : Math.round(r.cmpVal) + "%")   // Annual Top: current÷peak %, "-" when peak 0
               : (r.cmpVal >= 0 ? "+" : "") + (r.cmpVal * 100).toFixed(1) + "%";
           }
           return { key: r.label.key, name: speciesName(r.label), name2: secondLang ? secondName(r.label) : "", sci: r.label.sci, prob: (r.prob * 100).toFixed(1) + "%", cmp: cmpText };
