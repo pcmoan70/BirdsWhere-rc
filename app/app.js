@@ -19027,10 +19027,10 @@
     var heading = t("panel.spTitle");
     var meta = (document.getElementById("sp-coords").textContent || "").trim();
     var n2 = !!d.name2Head, cmp = !!d.cmpHead;
-    // "Seen" column: the detection count from the latest fetch (blank when not seen),
-    // read live from the table's sightings aggregate at export time.
+    // "Seen" column: the detection count from THIS point's latest fetch only
+    // (result.agg) — not the accumulated map dots / rarity alerts in the on-screen union.
     var seenAgg = null;
-    if (d.showSeen) { var _tb = document.getElementById("sp-tbody"); seenAgg = (_tb && _tb._sightingsAgg) || {}; }
+    if (d.showSeen) { seenAgg = (currentSpView && currentSpView._result && currentSpView._result.agg) || {}; }
     var seen = !!seenAgg;
     var thead = "<tr><th>#</th><th>" + esc(t("th.species")) + "</th>" +
       (n2 ? "<th>" + esc(d.name2Head) + "</th>" : "") +
@@ -20093,7 +20093,9 @@
       // plus a "seen_count" column filled from the latest fetch). Rebuilt at DOWNLOAD
       // time so the seen counts reflect the sightings that arrived after this render.
       var buildSpeciesCsv = function () {
-        var tb = document.getElementById("sp-tbody"), agg = (tb && tb._sightingsAgg) || null;
+        // Seen = ONLY this point's own fetch (result.agg) — NOT the accumulated map
+        // dots (detPlot) or rarity alerts that the on-screen union also folds in.
+        var agg = (currentSpView && currentSpView._result && currentSpView._result.agg) || null;
         var header = "rank,species_code,common_name";
         if (secondLang) header += ",common_name_" + secondLang;
         header += ",scientific_name,probability";
