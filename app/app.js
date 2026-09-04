@@ -17258,7 +17258,8 @@
         if (!r || !isFinite(+r.lat) || !isFinite(+r.lon)) continue;
         if (!detRowPasses(r)) continue;                    // date window + observer + source + New + dedup
         var cell = window.h3.latLngToCell(Math.max(-89.9, Math.min(89.9, +r.lat)), wrapLon(+r.lon), res);
-        var c = cells[cell] || (cells[cell] = { sp: Object.create(null), ob: Object.create(null), tot: 0, nSp: 0, nOb: 0 });
+        var c = cells[cell] || (cells[cell] = { sp: Object.create(null), ob: Object.create(null), tot: 0, nSp: 0, nOb: 0, sLa: 0, sLo: 0, n: 0 });
+        c.sLa += (+r.lat); c.sLo += (+r.lon); c.n++;   // running centroid so the blob sits ON the actual dots, not the H3 cell's geometric centre
         if (!c.sp[sk]) { c.sp[sk] = 1; c.nSp++; }
         var cnt = +r.count; c.tot += (isFinite(cnt) && cnt > 0) ? cnt : 1;   // no count -> presence counts as 1
         var obs = detObsSplit(r.observer);
@@ -17354,7 +17355,8 @@
       var val = hotMode === "observers" ? c.nOb : hotMode === "counts" ? c.tot : c.nSp;
       var idx = Math.log1p(val) / lmax;
       if (!(idx > 0.02)) continue;
-      var ll = window.h3.cellToLatLng(ids[i]), pt = map.latLngToContainerPoint([ll[0], ll[1]]);
+      var ll = c.n ? [c.sLa / c.n, c.sLo / c.n] : window.h3.cellToLatLng(ids[i]);   // centroid of the cell's dots → blob sits ON the dots, not the hex centre
+      var pt = map.latLngToContainerPoint([ll[0], ll[1]]);
       if (pt.x < -radius || pt.y < -radius || pt.x > size.x + radius || pt.y > size.y + radius) continue;
       var g = ac.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, radius);
       g.addColorStop(0, "rgba(0,0,0," + Math.min(1, idx).toFixed(3) + ")");
