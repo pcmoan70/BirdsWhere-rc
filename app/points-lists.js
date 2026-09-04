@@ -123,7 +123,7 @@ window.AppPoints = (function () {
         '<button type="button" id="ce-color-auto" class="mp-color-reset" title="' + esc(t("points.colorAuto")) + '" aria-label="' + esc(t("points.colorAuto")) + '">↺</button></span>' +
       '<label class="kml-row kml-check"><input type="checkbox" id="ce-note-html"' + (allHtml ? " checked" : "") + " />" + esc(t("points.noteHtml")) + "</label>" +
       '<p class="cu-hint">' + esc(t("points.editListHint")) + "</p>" +
-      '<div class="kml-actions"><button type="button" id="ce-save" class="demo-btn">' + esc(t("points.save")) + "</button></div>" +
+      '<div class="kml-actions"><button type="button" id="ce-save" class="btn">' + esc(t("points.save")) + "</button></div>" +
       "</div>";
     document.body.appendChild(ov);
     function close() { if (ov.parentNode) ov.parentNode.removeChild(ov); }
@@ -511,7 +511,7 @@ window.AppPoints = (function () {
       '<label class="kml-row">' + escapeHtml(t("kml.tagFrom")) + sel("kml-tag", opts([{ v: "", l: t("kml.fNone") }]), defTag) + "</label>" +
       '<label class="kml-row">' + escapeHtml(t("kml.noteFrom")) + sel("kml-note", opts([{ v: "", l: t("kml.fNone") }]), defNote) + "</label>" +
       '<label class="kml-row kml-check"><input type="checkbox" id="kml-note-html"' + (defHtml ? " checked" : "") + " />" + escapeHtml(t("points.noteHtml")) + "</label>" +
-      '<div class="kml-actions"><button type="button" id="kml-do" class="demo-btn">' + escapeHtml(t("kml.import")) + "</button></div>" +
+      '<div class="kml-actions"><button type="button" id="kml-do" class="btn">' + escapeHtml(t("kml.import")) + "</button></div>" +
       "</div>";
     var ov = document.createElement("div");
     ov.id = "kml-import-modal"; ov.className = "kml-modal";
@@ -640,7 +640,7 @@ window.AppPoints = (function () {
       var ttl = document.createElement("div"); ttl.className = "route-pop-name";
       ttl.textContent = (i + 1) + ". " + (p.name || t("route.stop", { n: i + 1 }));
       pop.appendChild(ttl);
-      if (fromBasket) pop.appendChild(makePopupBtn("🗑 " + t("route.remove"), "demo-btn-light", function () { getMap().closePopup(); removeFromRoute(i); }));
+      if (fromBasket) pop.appendChild(makePopupBtn("🗑 " + t("route.remove"), "btn-light", function () { getMap().closePopup(); removeFromRoute(i); }));
       m.bindPopup(pop, { className: "route-pop-popup" });
       routeLayer.addLayer(m);
     });

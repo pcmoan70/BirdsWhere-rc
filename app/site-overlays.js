@@ -1012,7 +1012,7 @@ window.AppSites = (function () {
         var irow = document.createElement("div"); irow.className = "hs-pop-icons";
         function ib(icon, title, fn) {
           var b = document.createElement("button");
-          b.type = "button"; b.className = "demo-btn-light ico-btn hs-ico-btn";
+          b.type = "button"; b.className = "btn-light ico-btn hs-ico-btn";
           b.title = title; b.setAttribute("aria-label", title);
           b.innerHTML = ico(icon); b.addEventListener("click", fn);
           return b;
@@ -1299,14 +1299,14 @@ window.AppSites = (function () {
           }).then(fillAvg).catch(function () {});
         }
         pop.appendChild(hd);
-        pop.appendChild(makePopupBtn("eBird ↗", "demo-btn-light", function () { m.closePopup(); openExternal("https://ebird.org/hotspot/" + h.locId); }));
+        pop.appendChild(makePopupBtn("eBird ↗", "btn-light", function () { m.closePopup(); openExternal("https://ebird.org/hotspot/" + h.locId); }));
         // The hotspot's full species list on eBird (public page, no login needed).
-        pop.appendChild(makePopupBtn(t("hs.spList") + " ↗", "demo-btn-light", function () { m.closePopup(); openExternal("https://ebird.org/hotspot/" + encodeURIComponent(h.locId) + "/bird-list"); }));
+        pop.appendChild(makePopupBtn(t("hs.spList") + " ↗", "btn-light", function () { m.closePopup(); openExternal("https://ebird.org/hotspot/" + encodeURIComponent(h.locId) + "/bird-list"); }));
         // The app's standard icon pair: navigate in Google Maps + add to route.
         var irow = document.createElement("div"); irow.className = "hs-pop-icons";
         function hsIco(icon, title, fn) {
           var b = document.createElement("button");
-          b.type = "button"; b.className = "demo-btn-light ico-btn hs-ico-btn";
+          b.type = "button"; b.className = "btn-light ico-btn hs-ico-btn";
           b.title = title; b.setAttribute("aria-label", title);
           b.innerHTML = ico(icon);
           b.addEventListener("click", fn);

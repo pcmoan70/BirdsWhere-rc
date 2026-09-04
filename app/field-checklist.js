@@ -1086,7 +1086,7 @@ window.AppField = (function () {
     return '<div class="rv-group" data-grp="' + esc(grp) + '">' +
       '<div class="rv-group-head">' +
         '<h3>' + esc(t("review.group") + " " + grp.toUpperCase()) + " · " + entries.length + "</h3>" +
-        '<button type="button" class="demo-btn rv-dl ico-btn" data-grp="' + esc(grp) + '">' + ico("download") + '<span class="ico-label" data-i18n="review.dlEbird">' + esc(tLabel("review.dlEbird")) + "</span></button>" +
+        '<button type="button" class="btn rv-dl ico-btn" data-grp="' + esc(grp) + '">' + ico("download") + '<span class="ico-label" data-i18n="review.dlEbird">' + esc(tLabel("review.dlEbird")) + "</span></button>" +
       "</div>" +
       '<div class="rv-meta">' +
         '<label>' + esc(t("review.protocol")) + ' <select class="rv-m" data-grp="' + esc(grp) + '" data-f="protocol">' + protoOpts + "</select></label>" +

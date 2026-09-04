@@ -1,5 +1,5 @@
 /**
- * BirdNET Geomodel – Interactive Web Demo
+ * BirdsWhere – Interactive in-browser species distribution & observations explorer (BirdNET Geomodel)
  *
  * Runs the ONNX FP16 model entirely client-side via ONNX Runtime Web.
  * Four modes:
@@ -331,9 +331,9 @@
   // t() with any leading emoji/symbol stripped — for icon buttons rendered
   // dynamically (outside the init-time .ico-label i18n pass).
   function tLabel(key) { return t(key).replace(/^[^\p{L}\p{N}]+/u, ""); }
-  // A demo-button with a leading icon + an i18n label span.
+  // A styled button (.btn) with a leading icon + an i18n label span.
   function icoBtn(id, name, key, fallback, extra) {
-    return '<button type="button" id="' + id + '" class="demo-btn ico-btn"' + (extra || "") + ">" +
+    return '<button type="button" id="' + id + '" class="btn ico-btn"' + (extra || "") + ">" +
       ico(name) + '<span class="ico-label" data-i18n="' + key + '">' + fallback + "</span></button>";
   }
 
@@ -348,7 +348,7 @@
   // it uses the full screen height (overrides the CSS aspect-ratio sizing). The
   // top is read live, so it adapts to the controls bar wrapping or mode changes.
   function fitMapHeight() {
-    var el = document.getElementById("demo-map");
+    var el = document.getElementById("app-map");
     if (!el || el.offsetParent === null) return;   // not visible yet
     var top = el.getBoundingClientRect().top;
     el.style.aspectRatio = "auto";
@@ -514,15 +514,15 @@
       var btns = document.createElement("div");
       btns.className = "ui-modal-btns";
       var cancel = document.createElement("button");
-      cancel.type = "button"; cancel.className = "demo-btn demo-btn-light"; cancel.textContent = t("btn.cancel");
+      cancel.type = "button"; cancel.className = "btn btn-light"; cancel.textContent = t("btn.cancel");
       var ok = document.createElement("button");
-      ok.type = "button"; ok.className = "demo-btn"; ok.textContent = opts.okLabel || t("popup.ok");
+      ok.type = "button"; ok.className = "btn"; ok.textContent = opts.okLabel || t("popup.ok");
       if (colorInput) btns.appendChild(colorInput);   // swatch at the LEFT of the action row (popup opens below it, clear of the buttons)
       // Optional extra action (e.g. "Manage data sources…"): a left-aligned button
       // that dismisses the dialog and runs its handler.
       if (opts.action && opts.action.label) {
         var act = document.createElement("button");
-        act.type = "button"; act.className = "demo-btn demo-btn-light ui-modal-action"; act.textContent = opts.action.label;
+        act.type = "button"; act.className = "btn btn-light ui-modal-action"; act.textContent = opts.action.label;
         act.addEventListener("click", function () { close(result(false)); try { if (opts.action.handler) opts.action.handler(); } catch (e) {} });
         btns.appendChild(act);
       }
@@ -778,14 +778,14 @@
       var m = createModal({ escClose: true });
       m.box.innerHTML = '<div class="ui-modal-msg">' + escapeHtml(t("nudge.ebird")) + "</div>" +
         '<div class="ui-modal-btns">' +
-          '<a class="demo-btn demo-btn-light" href="https://ebird.org/api/keygen" target="_blank" rel="noopener">' + escapeHtml(t("nudge.ebirdGet")) + " \u2197</a>" +
-          '<button type="button" class="demo-btn" id="nudge-ok">OK</button></div>';
+          '<a class="btn btn-light" href="https://ebird.org/api/keygen" target="_blank" rel="noopener">' + escapeHtml(t("nudge.ebirdGet")) + " \u2197</a>" +
+          '<button type="button" class="btn" id="nudge-ok">OK</button></div>';
       m.box.querySelector("#nudge-ok").addEventListener("click", m.close);
     } catch (e) {}
   }
   function setStatus(msg, isErr) {
     if (isErr) appErrLog(msg);
-    var el = document.getElementById("demo-status");
+    var el = document.getElementById("app-status");
     if (el) el.textContent = msg;
     renderStatusDots();   // keep the in-flight-fetch dots after a text update
     if (msg) armStatusClear();
@@ -796,7 +796,7 @@
   // empty↔non-empty EDGE so frequent updates don't thrash the layout.
   var statusWasEmpty = true;
   function syncStatusLayout() {
-    var el = document.getElementById("demo-status");
+    var el = document.getElementById("app-status");
     var empty = !el || el.childNodes.length === 0;
     if (empty === statusWasEmpty) return;
     statusWasEmpty = empty;
@@ -815,7 +815,7 @@
       if (done) return;
       done = true;
       window.removeEventListener("click", run);
-      var el = document.getElementById("demo-status");
+      var el = document.getElementById("app-status");
       if (el) el.textContent = "";
       renderStatusDots();
       syncStatusLayout();
@@ -836,7 +836,7 @@
     var armed = false;
     statusClearFn = function (ev) {
       if (!armed) return;
-      var el = document.getElementById("demo-status");
+      var el = document.getElementById("app-status");
       // Interacting WITH the status itself (e.g. the red error link) must not
       // clear it out from under the click.
       if (el && ev && ev.target && el.contains(ev.target)) return;
@@ -882,7 +882,7 @@
   // blinking fetch fraction — never user input).
   function setStatusHtml(html) {
     if (/status-err/.test(html)) appErrLog(String(html).replace(/<[^>]*>/g, " "));   // fetch failures → the error log
-    var el = document.getElementById("demo-status");
+    var el = document.getElementById("app-status");
     if (el) el.innerHTML = html;
     renderStatusDots();
     if (html) armStatusClear();
@@ -894,7 +894,7 @@
   // Re-appended after every status-text update so it survives textContent/innerHTML resets.
   var mapFetchPending = 0;
   function renderStatusDots() {
-    var el = document.getElementById("demo-status"); if (!el) return;
+    var el = document.getElementById("app-status"); if (!el) return;
     var span = document.getElementById("status-dots");
     // Everything still to be downloaded: queued/in-flight observation fetches
     // and outstanding map tiles. (Overlay point loads indicate via the BLINKING
@@ -1130,7 +1130,7 @@
   // A red crosshair fixed at the middle of the map. Pan the map so a dot sits
   // under it and that dot's info pops up. This is the crosshair's "read" state.
   function ensureReticleEl() {
-    var wrap = document.getElementById("demo-map-wrap"); if (!wrap) return null;
+    var wrap = document.getElementById("map-wrap"); if (!wrap) return null;
     var el = document.getElementById("map-reticle");
     if (!el) {
       el = document.createElement("div"); el.id = "map-reticle";
@@ -2769,8 +2769,8 @@
         '<input id="nle-url" type="url" value="' + escapeHtml(orig ? orig.url : "https://") + '"></label>' +
       '<div class="nle-err" id="nle-err" style="display:none"></div>' +
       '<div class="nle-actions">' +
-        '<button type="button" id="nle-save" class="demo-btn">' + escapeHtml(t("popup.ok")) + '</button>' +
-        '<button type="button" id="nle-cancel" class="demo-btn demo-btn-light">' + escapeHtml(t("btn.close")) + '</button>' +
+        '<button type="button" id="nle-save" class="btn">' + escapeHtml(t("popup.ok")) + '</button>' +
+        '<button type="button" id="nle-cancel" class="btn btn-light">' + escapeHtml(t("btn.close")) + '</button>' +
       '</div>';
     box.querySelector("#nle-cancel").addEventListener("click", close);
     box.querySelector("#nle-save").addEventListener("click", function () {
@@ -3493,7 +3493,7 @@
     if (id === "laji") {
       h += '<div class="src-detail-field laji-token-req"><label>' + escapeHtml(t("sources.lajiEmail")) + '</label>' +
         '<div class="laji-req-row"><input type="email" class="laji-email" autocomplete="email" spellcheck="false" placeholder="you@example.com" />' +
-        '<button type="button" class="demo-btn laji-req-btn">' + escapeHtml(t("sources.lajiSend")) + '</button></div>' +
+        '<button type="button" class="btn laji-req-btn">' + escapeHtml(t("sources.lajiSend")) + '</button></div>' +
         '<p class="cu-hint">' + escapeHtml(t("sources.lajiHint")) + '</p>' +
         '<p class="cu-hint laji-req-msg"></p></div>';
     }
@@ -3508,7 +3508,7 @@
         '<div class="radius-row"><input type="range" class="src-bw-conf" min="0" max="95" step="5" value="' + Math.round(bwMinConf() * 100) + '" /></div>' +
         '<p class="cu-hint">' + escapeHtml(t("sources.bwHint")) + '</p></div>';
     }
-    if (info.removable) h += '<div class="cu-actions"><button type="button" class="demo-btn demo-btn-light src-del-detail">' + escapeHtml(t("sources.remove")) + "</button></div>";
+    if (info.removable) h += '<div class="cu-actions"><button type="button" class="btn btn-light src-del-detail">' + escapeHtml(t("sources.remove")) + "</button></div>";
     h += "</div>";
     el.innerHTML = h;
     var onCb = el.querySelector(".src-on"); if (onCb) onCb.addEventListener("change", function () { setSourceOff(id, !this.checked); });
@@ -3658,7 +3658,7 @@
         '<label>Lon<input type="number" step="any" id="lp-lon" value="' + esc(isFinite(+p.lon) ? +p.lon : "") + '" /></label></div>' +
       '<label class="kml-row kml-row-col">' + esc(t("points.note")) + '<textarea id="lp-note" rows="3">' + esc(p.note || "") + "</textarea></label>" +
       '<label class="kml-row kml-check"><input type="checkbox" id="lp-note-html"' + (p.noteHtml ? " checked" : "") + " />" + esc(t("points.noteHtml")) + "</label>" +
-      '<div class="kml-actions"><button type="button" id="lp-save" class="demo-btn">' + esc(t("points.save")) + "</button></div>" +
+      '<div class="kml-actions"><button type="button" id="lp-save" class="btn">' + esc(t("points.save")) + "</button></div>" +
       "</div>";
     document.body.appendChild(ov);
     wireMpColorRow();
@@ -3943,7 +3943,7 @@
   // Wire any red .status-err text just written into the status strip so tapping it
   // (or Enter/Space when focused) opens the fetch-failure explanation.
   function wireStatusFetchErrs(failed, timedOut, info, trunc) {
-    var el = document.getElementById("demo-status"); if (!el) return;
+    var el = document.getElementById("app-status"); if (!el) return;
     Array.prototype.forEach.call(el.querySelectorAll(".status-err"), function (s) {
       s.addEventListener("click", function (ev) { ev.stopPropagation(); showFetchErrors(failed, timedOut, info, trunc); });
       s.addEventListener("keydown", function (ev) { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); showFetchErrors(failed, timedOut, info, trunc); } });
@@ -5596,7 +5596,7 @@
   }
 
   async function init() {
-    var root = document.getElementById("demo-root");
+    var root = document.getElementById("app-root");
     if (!root) return;
 
     // Hand the aggregation module live access to the model data + family index
@@ -5639,9 +5639,9 @@
 
 
     root.innerHTML =
-      '<div id="demo-loading"><div class="spinner"></div><span data-i18n="app.loading">Loading\u2026</span></div>' +
-      '<div id="demo-app" style="display:none">' +
-        '<div id="demo-controls">' +
+      '<div id="app-loading"><div class="spinner"></div><span data-i18n="app.loading">Loading\u2026</span></div>' +
+      '<div id="app-main" style="display:none">' +
+        '<div id="app-controls">' +
           '<div class="ctrl-group" id="mode-wrap">' +
             '<label for="mode-select" data-i18n="ctrl.mode">Mode</label>' +
             '<select id="mode-select">' +
@@ -5662,7 +5662,7 @@
             '<div id="hist-range-body">' +
               '<label data-i18n="hist.range">Date range</label>' +
               '<div class="hist-range-row"><input type="date" id="hist-from" /><span>–</span><input type="date" id="hist-to" />' +
-                '<button type="button" id="hist-fetch" class="demo-btn" data-i18n="hist.fetch" disabled>Fetch</button></div>' +
+                '<button type="button" id="hist-fetch" class="btn" data-i18n="hist.fetch" disabled>Fetch</button></div>' +
               '<label class="hist-allareas" data-i18n-title="hist.allAreasHint"><input type="checkbox" id="hist-all-areas" /> <span data-i18n="hist.allAreas">All fetched areas</span></label>' +
               '<details class="hist-months-dd">' +
                 '<summary class="hist-months-sum"><span data-i18n="hist.months">Months</span><span class="hist-months-sel" id="hist-months-sel"></span></summary>' +
@@ -5680,7 +5680,7 @@
             '</div>' +
           '</div>' +
           '<div class="ctrl-group ctrl-group-btn" id="play-btn-wrap">' +
-            '<button id="play-btn" class="demo-btn" data-i18n="btn.play">\u25b6 Play migration</button>' +
+            '<button id="play-btn" class="btn" data-i18n="btn.play">\u25b6 Play migration</button>' +
           '</div>' +
           '<div class="ctrl-group" id="hidden-wrap" style="display:none">' +
             '<label data-i18n="ctrl.hidden">Hidden species</label>' +
@@ -5878,7 +5878,7 @@
               '</div>' +
               '<div class="ctrl-group ctrl-inline">' +
                 '<label class="ctrl-check"><input type="checkbox" id="rarity-sound-toggle" checked> <span data-i18n="rarity.sound">Alarm sound</span></label>' +
-                '<button type="button" id="rarity-sound-test" class="demo-btn demo-btn-light" data-i18n="rarity.soundTest">Test</button>' +
+                '<button type="button" id="rarity-sound-test" class="btn btn-light" data-i18n="rarity.soundTest">Test</button>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="rarity-notif-toggle"> <span data-i18n="rarity.sysNotif">System notifications</span></label>' +
@@ -5904,7 +5904,7 @@
                 '<div class="kml-btn-row">' +
                   icoBtn("points-export", "download", "btn.export", "Export") +
                   icoBtn("points-kml-import", "upload", "btn.import", "Import") +
-                  '<button type="button" id="points-fmt-toggle" class="demo-btn demo-btn-light kml-fmt-toggle" data-i18n-title="btn.fmtToggle" title="Export format">KML</button>' +
+                  '<button type="button" id="points-fmt-toggle" class="btn btn-light kml-fmt-toggle" data-i18n-title="btn.fmtToggle" title="Export format">KML</button>' +
                 "</div>" +
                 '<input type="file" id="points-kml-file" style="display:none" />' +
               '</div>' +
@@ -5926,7 +5926,7 @@
                 '<div class="sync-row" id="gdrive-row">' +
                   icoBtn("gd-connect", "cloud", "gdrive.connect", "Connect Google Drive") +
                   icoBtn("gd-sync", "refresh", "gdrive.syncNow", "Sync now", ' style="display:none"') +
-                  '<button type="button" id="gd-disconnect" class="demo-btn" data-i18n="gdrive.disconnect" style="display:none">Disconnect</button>' +
+                  '<button type="button" id="gd-disconnect" class="btn" data-i18n="gdrive.disconnect" style="display:none">Disconnect</button>' +
                 '</div>' +
                 '<input type="text" id="gd-clientid" autocomplete="off" spellcheck="false" data-i18n-ph="gdrive.clientIdPh" placeholder="Google OAuth client ID" style="display:none" />' +
                 '<div id="gd-status" class="cu-hint"></div>' +
@@ -5943,7 +5943,7 @@
               '<div class="ctrl-group">' +
                 '<label data-i18n="ctrl.storage">Storage</label>' +
                 '<p class="cu-hint" id="storage-usage"></p>' +
-                '<button type="button" id="errlog-open" class="demo-btn demo-btn-light" data-i18n="errlog.title">Error log</button>' +
+                '<button type="button" id="errlog-open" class="btn btn-light" data-i18n="errlog.title">Error log</button>' +
               '</div>' +
               '<div class="ctrl-group" id="install-wrap" hidden>' +
                 '<label data-i18n="install.label">Offline mode</label>' +
@@ -5992,7 +5992,7 @@
             '</div>' +
           '</div>' +
         '</div>' +
-        '<div id="demo-status"></div>' +
+        '<div id="app-status"></div>' +
         // Historic-fetch progress bar — ABOVE the map (historic is map-first, so
         // the bar must not sit in the hidden species panel). Same ids as always;
         // renderSpeciesList's hist branch drives it.
@@ -6001,17 +6001,17 @@
           '<div id="range-species" style="display:none"></div>' +
           '<div id="play-progress" style="display:none"><div class="pp-fill"></div><div class="pp-marker"></div><div class="pp-months"></div></div>' +
         '</div>' +
-        '<div id="demo-map-wrap">' +
-          '<div id="demo-map"></div>' +
+        '<div id="map-wrap">' +
+          '<div id="app-map"></div>' +
           // Per-day observation histogram — a slim scrollable strip DOCKED UNDER the
           // map (fitMapHeight subtracts its height), with a date axis along the bottom.
           '<div id="histo-strip" style="display:none"><button type="button" class="hs-clear" style="display:none">✕</button><button type="button" class="hs-toggle"></button><div class="hs-scroll"><div class="hs-bars"></div><div class="hs-axis"></div></div></div>' +
-          '<div id="demo-computing" style="display:none">' +
+          '<div id="computing-overlay" style="display:none">' +
             '<div class="spinner"></div>' +
             '<div id="computing-text">Computing\u2026</div>' +
             '<div id="computing-progress-wrap"><div id="computing-progress-bar"></div></div>' +
           '</div>' +
-          '<div id="demo-legend"></div>' +
+          '<div id="app-legend"></div>' +
           '<div id="nearby-page" style="display:none">' +
             '<div class="nb-bar">' +
               '<h3 id="nb-title" data-i18n="nearby.title">Close by</h3>' +
@@ -6022,7 +6022,7 @@
           '</div>' +
         '</div>' +
         '<div id="csv-btn-wrap" style="display:none">' +
-          '<button id="csv-download-btn" class="demo-btn ico-btn" title="Download CSV">' + ico("download") + '<span class="ico-label" data-i18n="btn.csv">CSV</span></button>' +
+          '<button id="csv-download-btn" class="btn ico-btn" title="Download CSV">' + ico("download") + '<span class="ico-label" data-i18n="btn.csv">CSV</span></button>' +
         '</div>' +
         '<div id="species-panel">' +
           '<div class="sp-page-bar">' +
@@ -6047,8 +6047,8 @@
             '<tbody id="sp-tbody"></tbody>' +
           '</table>' +
           '<div class="sp-actions sp-actions-dl">' +
-            '<button id="sp-checklist-btn" class="demo-btn ico-btn">' + ico("check") + '<span class="ico-label" data-i18n="btn.checklist">Checklist</span></button>' +
-            '<button id="sp-pdf-btn" class="demo-btn demo-btn-light ico-btn" title="Download PDF">' + ico("download") + "<span>PDF</span></button>" +
+            '<button id="sp-checklist-btn" class="btn ico-btn">' + ico("check") + '<span class="ico-label" data-i18n="btn.checklist">Checklist</span></button>' +
+            '<button id="sp-pdf-btn" class="btn btn-light ico-btn" title="Download PDF">' + ico("download") + "<span>PDF</span></button>" +
           '</div>' +
         '</div>' +
         '<div id="field-page" style="display:none">' +
@@ -6060,7 +6060,7 @@
             '<span class="field-seen" id="field-seen"></span>' +
             '<span class="field-actions">' +
               '<span class="fp-dl-wrap">' +
-                '<button id="field-dl-btn" class="demo-btn" data-i18n-title="btn.actions" title="Actions">⋮</button>' +
+                '<button id="field-dl-btn" class="btn" data-i18n-title="btn.actions" title="Actions">⋮</button>' +
                 '<div id="field-dl-menu" class="fp-dl-menu" style="display:none">' +
                   '<button id="field-pdf" class="fp-dl-item ico-btn">' + ico("download") + "<span>PDF</span></button>" +
                   '<button id="field-csv" class="fp-dl-item ico-btn">' + ico("download") + '<span class="ico-label" data-i18n="btn.csv">CSV</span></button>' +
@@ -6110,7 +6110,7 @@
             '<button id="entry-back" class="fp-back" title="Back">‹</button>' +
             '<span id="entry-title" class="field-place"></span>' +
             '<span class="field-actions">' +
-              '<button id="entry-merge" class="demo-btn" data-i18n="chk.merge">Merge</button>' +
+              '<button id="entry-merge" class="btn" data-i18n="chk.merge">Merge</button>' +
             '</span>' +
           '</div>' +
           '<div id="entry-list"></div>' +
@@ -6120,7 +6120,7 @@
             '<button id="review-back" class="fp-back" title="Back">‹</button>' +
             '<span id="review-title" class="field-place" data-i18n="review.title">Review &amp; upload</span>' +
             '<span class="field-actions">' +
-              '<button id="review-new" class="demo-btn" data-i18n="review.newGroup">+ Checklist</button>' +
+              '<button id="review-new" class="btn" data-i18n="review.newGroup">+ Checklist</button>' +
             '</span>' +
           '</div>' +
           '<div id="review-list"></div>' +
@@ -6171,9 +6171,9 @@
           '<p class="perf-desc" data-i18n="popup.desc">See where birds live, migrate, and are being seen right now — live observations from eBird, GBIF, iNaturalist and national databases, plus range and timing estimates worked out on your device. Everything runs in your browser.</p>' +
           '<p class="perf-privacy" data-i18n="popup.privacy">Private by design: there is no account and no server of ours. Your searches, saved lists and settings stay on this device — nothing is sent anywhere except the direct requests to the observation sources you query.</p>' +
           '<p class="perf-feedback"><span data-i18n="popup.feedback"></span> <button type="button" class="feedback-open ico-btn">' + ico("mail") + '<span class="ico-label" data-i18n="feedback.send">Message</span></button></p>' +
-          '<div class="install-row"><button type="button" id="install-info" class="demo-btn demo-btn-light ico-btn" hidden>' + ico("install") + '<span class="ico-label" data-i18n="install.app">Offline mode</span></button><div class="install-steps cu-hint" hidden></div></div>' +
+          '<div class="install-row"><button type="button" id="install-info" class="btn btn-light ico-btn" hidden>' + ico("install") + '<span class="ico-label" data-i18n="install.app">Offline mode</span></button><div class="install-steps cu-hint" hidden></div></div>' +
           '<div class="perf-version" id="perf-version" style="display:none"></div>' +
-          '<button id="perf-modal-ok" class="demo-btn" data-i18n="popup.ok">OK</button>' +
+          '<button id="perf-modal-ok" class="btn" data-i18n="popup.ok">OK</button>' +
         '</div></div>' +
         '<div id="feedback-modal" style="display:none"><div id="feedback-box">' +
           '<button type="button" id="feedback-close" aria-label="Close">×</button>' +
@@ -6182,8 +6182,8 @@
           '<input type="email" id="feedback-email" autocomplete="email" data-i18n-ph="feedback.emailPh" placeholder="Your email (optional, for a reply)" />' +
           '<div id="feedback-status" class="cu-hint"></div>' +
           '<div class="feedback-actions">' +
-            '<button type="button" id="feedback-cancel" class="demo-btn demo-btn-light" data-i18n="feedback.cancel">Cancel</button>' +
-            '<button type="button" id="feedback-send" class="demo-btn" data-i18n="feedback.sendBtn">Send</button>' +
+            '<button type="button" id="feedback-cancel" class="btn btn-light" data-i18n="feedback.cancel">Cancel</button>' +
+            '<button type="button" id="feedback-send" class="btn" data-i18n="feedback.sendBtn">Send</button>' +
           '</div>' +
         '</div></div>' +
         '<div id="gbif-modal" style="display:none"><div id="gbif-box">' +
@@ -6194,7 +6194,7 @@
             '<input type="text" id="gbif-add-cc" autocomplete="off" spellcheck="false" maxlength="2" data-i18n-ph="gbif.addCcPh" placeholder="CC" class="gbif-add-cc" />' +
             '<input type="text" id="gbif-add" autocomplete="off" spellcheck="false" data-i18n-ph="gbif.addPh" placeholder="Dataset key or gbif.org/dataset/… URL" />' +
             '<input type="text" id="gbif-add-url" autocomplete="off" spellcheck="false" data-i18n-ph="gbif.addUrlPh" placeholder="Homepage URL (optional)" />' +
-            '<button type="button" id="gbif-add-btn" class="demo-btn" data-i18n="gbif.add">Add</button>' +
+            '<button type="button" id="gbif-add-btn" class="btn" data-i18n="gbif.add">Add</button>' +
           '</div>' +
           '<div id="gbif-table"></div>' +
         '</div></div>' +
@@ -6204,8 +6204,8 @@
           '<p class="cu-hint" data-i18n="ctrl.customurlsHint">Open extra sites for a country in the map popups. Country code = ISO-3166 (e.g. NO, GB).</p>' +
           '<div id="custom-urls-list"></div>' +
           '<div class="cu-actions">' +
-            '<button type="button" id="custom-urls-add" class="demo-btn" data-i18n="ctrl.customurlsAdd">+ Add</button>' +
-            '<button type="button" id="custom-urls-reset" class="demo-btn demo-btn-light" data-i18n="ctrl.customurlsReset">Reset</button>' +
+            '<button type="button" id="custom-urls-add" class="btn" data-i18n="ctrl.customurlsAdd">+ Add</button>' +
+            '<button type="button" id="custom-urls-reset" class="btn btn-light" data-i18n="ctrl.customurlsReset">Reset</button>' +
           '</div>' +
         '</div></div>' +
         '<div id="detlist-modal" style="display:none"><div id="detlist-box">' +
@@ -6253,7 +6253,7 @@
           '<h3 id="blogs-title" data-i18n="blogs.title">Birding blogs</h3>' +
           '<p class="cu-hint" data-i18n="blogs.hint">Top birding blogs & resources for this country. Open any, add your own, or remove ones you don\'t want — your changes sync.</p>' +
           '<div id="blogs-list"></div>' +
-          '<div class="cu-actions"><button type="button" id="blogs-add" class="demo-btn demo-btn-light" data-i18n="blogs.add">+ Add blog</button></div>' +
+          '<div class="cu-actions"><button type="button" id="blogs-add" class="btn btn-light" data-i18n="blogs.add">+ Add blog</button></div>' +
         '</div></div>' +
         '<div id="sources-modal" style="display:none"><div id="sources-box">' +
           '<button type="button" id="sources-close" aria-label="Close">×</button>' +
@@ -6261,7 +6261,7 @@
           '<p class="cu-hint" id="sources-hint" data-i18n-html="sources.hint2">Tap a source to enable it and edit its details.</p>' +
           '<div id="sources-table"></div>' +
           '<div class="cu-actions" id="sources-actions">' +
-            '<button type="button" id="sources-reset" class="demo-btn demo-btn-light" data-i18n="sources.reset">Reset to defaults</button>' +
+            '<button type="button" id="sources-reset" class="btn btn-light" data-i18n="sources.reset">Reset to defaults</button>' +
           '</div>' +
         '</div></div>' +
         '<div id="blocked-modal" style="display:none"><div id="blocked-box">' +
@@ -6277,8 +6277,8 @@
           '<label class="ctrl-check lists-edges-row"><input type="checkbox" id="list-edges-toggle"> <span data-i18n="lists.edgesToggle">Show the year/life-list edges on map markers</span></label>' +
           '<div id="lists-list"></div>' +
           '<div class="lists-managers">' +
-            '<button type="button" id="lists-species-btn" class="demo-btn demo-btn-light" data-i18n="lists.speciesLists">Species lists…</button>' +
-            '<button type="button" id="lists-observer-btn" class="demo-btn demo-btn-light" data-i18n="lists.observerLists">Observer lists…</button>' +
+            '<button type="button" id="lists-species-btn" class="btn btn-light" data-i18n="lists.speciesLists">Species lists…</button>' +
+            '<button type="button" id="lists-observer-btn" class="btn btn-light" data-i18n="lists.observerLists">Observer lists…</button>' +
           '</div>' +
         '</div></div>' +
       '</div>';
@@ -6293,8 +6293,8 @@
       // Mark not-yet-downloaded name packs (italics) in the language selects.
       probeLangPacks().then(function () { populateLangSelect(); populateSecondLangSelect(); });
       buildLabelClass();
-      document.getElementById("demo-loading").style.display = "none";
-      document.getElementById("demo-app").style.display = "block";
+      document.getElementById("app-loading").style.display = "none";
+      document.getElementById("app-main").style.display = "block";
       // The header banner holds the bird (settings) icon, the Mode dropdown and
       // the Checklist dropdown.
       var hdr = document.getElementById("site-header");
@@ -6530,8 +6530,8 @@
       if (window.GDriveSync) window.GDriveSync.init();
       hideBootSplash();   // boot complete — drop the static splash from index.html
     } catch (e) {
-      document.getElementById("demo-loading").style.display = "";   // may have been hidden before the failure
-      document.getElementById("demo-loading").innerHTML =
+      document.getElementById("app-loading").style.display = "";   // may have been hidden before the failure
+      document.getElementById("app-loading").innerHTML =
         '<span style="color:red">' + t("app.failed", { msg: e.message }) + '</span>';
       console.error(e);
       hideBootSplash();   // the splash must not cover the error message
@@ -7066,7 +7066,7 @@
     // Constrain to a single world copy so panning can't yield out-of-range
     // longitudes (e.g. a click returning lon = 635) and the range overlay
     // always projects onto the visible map.
-    map = L.map("demo-map", {
+    map = L.map("app-map", {
       center: center, zoom: zoom,
       zoomControl: false,   // added manually below, bottom-right (with search + crosshair)
       // Keep min/max zoom on the H3 grid ladder (H3_ZOOM_PHASE + k·H3_ZOOM_STEP) so
@@ -7322,13 +7322,13 @@
     // Place (location-name) search — a map-pointer button below the crosshairs
     // that expands into a search box. The panel itself lives in the map wrapper
     // (above the map) so it's never clipped/stacked behind the tiles.
-    var psPanel = L.DomUtil.create("div", "place-search-panel", document.getElementById("demo-map-wrap"));
+    var psPanel = L.DomUtil.create("div", "place-search-panel", document.getElementById("map-wrap"));
     psPanel.style.display = "none";
     psPanel.innerHTML = '<input id="place-search" type="text" autocomplete="off" data-i18n-ph="ph.place" placeholder="' + escapeHtml(t("ph.place")) + '" />' +
       '<div id="place-results"></div>';
     function togglePlaceSearch() {
       var btn = document.querySelector(".place-search-btn");
-      var wrap = document.getElementById("demo-map-wrap");
+      var wrap = document.getElementById("map-wrap");
       if (!btn || !wrap) return;
       if (psPanel.style.display === "none") {
         closeOtherPopups();   // the search box replaces whatever transient popup is up
@@ -10119,8 +10119,8 @@
       '<div class="drm-title">' + escapeHtml(t("hist.range")) + "</div>" +
       '<div class="drm-row"><input type="date" class="drm-from" value="' + escapeHtml(from0) + '" />' +
         '<span class="drm-dash">–</span><input type="date" class="drm-to" value="' + escapeHtml(to0) + '" /></div>' +
-      '<div class="drm-btns"><button type="button" class="drm-cancel demo-btn demo-btn-light">' + escapeHtml(t("btn.cancel")) + "</button>" +
-        '<button type="button" class="drm-apply demo-btn">' + escapeHtml(t("date.apply")) + "</button></div>";
+      '<div class="drm-btns"><button type="button" class="drm-cancel btn btn-light">' + escapeHtml(t("btn.cancel")) + "</button>" +
+        '<button type="button" class="drm-apply btn">' + escapeHtml(t("date.apply")) + "</button></div>";
     m.box.querySelector(".drm-cancel").addEventListener("click", m.close);
     m.box.querySelector(".drm-apply").addEventListener("click", function () {
       var f = (m.box.querySelector(".drm-from").value || "").trim();
@@ -11764,7 +11764,7 @@
           (lists.length ? '<select class="obs-ed-pick">' + lists.map(function (Lx, i) {
             return '<option value="' + i + '"' + (i === selLi ? " selected" : "") + ">" + esc(Lx.name) + "</option>";
           }).join("") + "</select>" : "") +
-          '<button type="button" class="obs-ed-new demo-btn demo-btn-light">＋ ' + esc(t("obs.newList")) + "</button>" +
+          '<button type="button" class="obs-ed-new btn btn-light">＋ ' + esc(t("obs.newList")) + "</button>" +
         "</div>";
       if (L) {
         html += '<div class="obs-ed-list">' +
@@ -12200,7 +12200,7 @@
   // shown. Tapping a tile opens that species' row in the list.
   function showRarityTicker(items) {
     closeRarityTicker();
-    var host = document.getElementById("demo-map-wrap"); if (!host) return;
+    var host = document.getElementById("map-wrap"); if (!host) return;
     var mapH = host.clientHeight || 400;
     var fit = Math.max(1, Math.floor((mapH - 24) / 59));   // tile ≈ 53 px + 6 px gap
     if (items.length > fit) items = items.slice(0, fit);   // keep the RAREST when space is short
@@ -13094,7 +13094,7 @@
   }
   function allFiltersBodyHtml() {
     var head = '<div class="aff-head"><b class="aff-title">' + escapeHtml(t("filters.title")) + "</b>" +
-      ((detHasFilter() || speciesFilterActive()) ? '<button type="button" class="aff-clear-all demo-btn demo-btn-light">' + escapeHtml(t("det.clearFilters")) + "</button>" : "") +
+      ((detHasFilter() || speciesFilterActive()) ? '<button type="button" class="aff-clear-all btn btn-light">' + escapeHtml(t("det.clearFilters")) + "</button>" : "") +
       '<button type="button" class="aff-close" aria-label="close">×</button></div>';
 
     // Species selection (currently-isolated species names). The Hidden toggle is its own
@@ -13620,9 +13620,9 @@
       '<textarea id="mp-note" aria-label="' + esc(t("points.note")) + '" placeholder="' + esc(t("points.note")) + '" rows="2">' + esc(p.note || "") + "</textarea>" +
       listSel +
       '<div class="mp-actions">' +
-        '<button type="button" id="mp-save" class="demo-btn">' + esc(t("points.save")) + '</button>' +
-        '<button type="button" id="mp-route" class="demo-btn demo-btn-light ico-btn" title="' + esc(t("route.add")) + '">' + ico("navplus") + '<span class="ico-label">' + esc(tLabel("route.addShort")) + '</span></button>' +
-        (isEdit ? '<button type="button" id="mp-del" class="demo-btn demo-btn-light">' + esc(t("btn.delete")) + '</button>' : "") +
+        '<button type="button" id="mp-save" class="btn">' + esc(t("points.save")) + '</button>' +
+        '<button type="button" id="mp-route" class="btn btn-light ico-btn" title="' + esc(t("route.add")) + '">' + ico("navplus") + '<span class="ico-label">' + esc(tLabel("route.addShort")) + '</span></button>' +
+        (isEdit ? '<button type="button" id="mp-del" class="btn btn-light">' + esc(t("btn.delete")) + '</button>' : "") +
       '</div>' +
     '</div>';
   }
@@ -13905,13 +13905,13 @@
       }).catch(function () { ovlSec.innerHTML = '<div class="mc-ovl-none">' + escapeHtml(t("ovl.none")) + "</div>"; });
     }
     wrap.appendChild(makePopupBtn(t("points.add"), "", function () { map.closePopup(); openPointEditor({ lat: lat, lon: lon, name: "", tags: [], note: "" }); }, "dots"));
-    wrap.appendChild(makePopupBtn(t("loc.save"), "demo-btn-light mc-btn-save", function () { map.closePopup(); registerLocationPrompt(lat, lon); }, "pin"));
-    wrap.appendChild(makePopupBtn(t("share.link"), "demo-btn-light", function () { map.closePopup(); offerShareUrl(pointShareUrl(lat, lon)); }, "share"));
-    wrap.appendChild(makePopupBtn(t("nav.here"), "demo-btn-light", function () { map.closePopup(); navigatePoints([{ lat: lat, lon: lon }]); }, "nav"));
+    wrap.appendChild(makePopupBtn(t("loc.save"), "btn-light mc-btn-save", function () { map.closePopup(); registerLocationPrompt(lat, lon); }, "pin"));
+    wrap.appendChild(makePopupBtn(t("share.link"), "btn-light", function () { map.closePopup(); offerShareUrl(pointShareUrl(lat, lon)); }, "share"));
+    wrap.appendChild(makePopupBtn(t("nav.here"), "btn-light", function () { map.closePopup(); navigatePoints([{ lat: lat, lon: lon }]); }, "nav"));
     // Offline maps moved here from a dedicated map button: download the current
     // view's tiles, or open the saved-areas manager.
-    wrap.appendChild(makePopupBtn(t("ctrl.downloadView"), "demo-btn-light", function () { map.closePopup(); openAreaDialog(map.getBounds()); }, "download"));
-    wrap.appendChild(makePopupBtn(t("offline.maps"), "demo-btn-light", function () { map.closePopup(); openOfflineManager(); }, "folder"));
+    wrap.appendChild(makePopupBtn(t("ctrl.downloadView"), "btn-light", function () { map.closePopup(); openAreaDialog(map.getBounds()); }, "download"));
+    wrap.appendChild(makePopupBtn(t("offline.maps"), "btn-light", function () { map.closePopup(); openOfflineManager(); }, "folder"));
     L.popup({ className: "choose-popup", closeButton: true, autoClose: true, autoPan: true, offset: [0, -2] })
       .setLatLng([lat, lon]).setContent(wrap).openOn(map);
     enableMenuKeys(wrap, function () { map.closePopup(); });   // PC: ↑/↓ + Enter through the actions
@@ -14000,10 +14000,10 @@
       // (import a shared file) is always available.
       '<div class="mp-head mp-head-actions">' +
         (Object.keys(detPlot).length ?
-          '<button type="button" id="mp-share-det" class="demo-btn demo-btn-light" title="' + escapeHtml(t("share.detHover")) + '" data-i18n="share.shareBtn">' + escapeHtml(t("share.shareBtn")) + "</button>" +
-          '<button type="button" id="mp-save-det" class="demo-btn" data-i18n="points.save">' + escapeHtml(t("points.save")) + "</button>"
+          '<button type="button" id="mp-share-det" class="btn btn-light" title="' + escapeHtml(t("share.detHover")) + '" data-i18n="share.shareBtn">' + escapeHtml(t("share.shareBtn")) + "</button>" +
+          '<button type="button" id="mp-save-det" class="btn" data-i18n="points.save">' + escapeHtml(t("points.save")) + "</button>"
           : "") +
-        '<button type="button" id="mp-import-share" class="demo-btn demo-btn-light" title="' + escapeHtml(tLabel("share.importFile")) + '" data-i18n="points.loadFile">' + escapeHtml(t("points.loadFile")) + "</button>" +
+        '<button type="button" id="mp-import-share" class="btn btn-light" title="' + escapeHtml(tLabel("share.importFile")) + '" data-i18n="points.loadFile">' + escapeHtml(t("points.loadFile")) + "</button>" +
         '<input type="file" id="share-file-input" accept=".share,.mcshare,.txt,text/plain" style="display:none" />' +
       "</div>" +
       collSection +
@@ -14993,12 +14993,12 @@
     if (h3CtrlEl) { h3CtrlEl.style.display = isMap ? "" : "none"; updateH3DetailButtons(); }
     // In Range the linked species name above the map is the only label we need,
     // so hide the status line (its "(step°) [cached]" detail just took space).
-    document.getElementById("demo-status").style.display = isRange ? "none" : "";
+    document.getElementById("app-status").style.display = isRange ? "none" : "";
     updateRangeSpecies();   // clickable species name + week above the map (range only)
     relocateCsvButton();
     // In Species distribution the bar holds only the search box, so drop the
     // card chrome and sit it tight under the header.
-    document.getElementById("demo-controls").classList.toggle("controls-bare", isRange);
+    document.getElementById("app-controls").classList.toggle("controls-bare", isRange);
     updateControlsBarVisibility();
     fitMapHeight();         // controls/mode changes shift the map's top edge
   }
@@ -15007,7 +15007,7 @@
   // Species List mode, where its controls live in the header) so it doesn't sit
   // as an empty card between the header and the map.
   function updateControlsBarVisibility() {
-    var bar = document.getElementById("demo-controls");
+    var bar = document.getElementById("app-controls");
     if (!bar) return;
     bar.style.display = "";   // show so children's visibility can be measured
     var anyVisible = Array.prototype.some.call(bar.children, function (ch) { return ch.offsetParent !== null; });
@@ -15160,7 +15160,7 @@
     } else {
       // Below the map (the map-controls bar was removed when its controls
       // moved into Settings).
-      var anchor = document.getElementById("demo-map-wrap");
+      var anchor = document.getElementById("map-wrap");
       if (anchor && wrap.previousElementSibling !== anchor) {
         anchor.parentNode.insertBefore(wrap, anchor.nextSibling);
       }
@@ -15914,7 +15914,7 @@
           '<div class="so-sec">' + escapeHtml(t("sync.include")) + "</div>" +
           catRow("settings", "sync.catSettings") + catRow("lists", "sync.catLists") + catRow("trips", "sync.catTrips") + catRow("checklists", "sync.catChecklists") + catRow("fetched", "sync.catFetched") +
           '<p class="cu-hint">' + escapeHtml(t("sync.mergeNote")) + "</p>" +
-          '<div class="so-actions"><button type="button" class="demo-btn demo-btn-light so-cancel">' + escapeHtml(t("btn.cancel")) + '</button><button type="button" class="demo-btn so-go">' + escapeHtml(t("gdrive.syncNow")) + "</button></div>" +
+          '<div class="so-actions"><button type="button" class="btn btn-light so-cancel">' + escapeHtml(t("btn.cancel")) + '</button><button type="button" class="btn so-go">' + escapeHtml(t("gdrive.syncNow")) + "</button></div>" +
           "</div>";
         document.body.appendChild(ov);
         var close = function () { if (ov.parentNode) ov.parentNode.removeChild(ov); };
@@ -16479,8 +16479,8 @@
         m.box.innerHTML = '<div class="ui-modal-msg">' + escapeHtml(t("errlog.title")) + "</div>" +
           '<div class="errlog-list">' + (rows || '<div class="errlog-empty">' + escapeHtml(t("errlog.empty")) + "</div>") + "</div>" +
           '<div class="ui-modal-btns">' +
-            '<button type="button" class="demo-btn demo-btn-light" id="errlog-clear"' + (log.length ? "" : " disabled") + ">" + escapeHtml(t("btn.clear")) + "</button>" +
-            '<button type="button" class="demo-btn" id="errlog-close">OK</button></div>';
+            '<button type="button" class="btn btn-light" id="errlog-clear"' + (log.length ? "" : " disabled") + ">" + escapeHtml(t("btn.clear")) + "</button>" +
+            '<button type="button" class="btn" id="errlog-close">OK</button></div>';
         m.box.querySelector("#errlog-clear").addEventListener("click", function () { window.GeoState.save({ errorLog: [] }); render(); });
         m.box.querySelector("#errlog-close").addEventListener("click", m.close);
       }
@@ -18142,7 +18142,7 @@
   function makePopupBtn(label, cls, fn, icon) {
     var b = document.createElement("button");
     b.type = "button";
-    b.className = "demo-btn " + (cls || "") + (icon ? " ico-btn" : "");
+    b.className = "btn " + (cls || "") + (icon ? " ico-btn" : "");
     if (icon) { b.innerHTML = ico(icon) + '<span class="ico-label"></span>'; b.querySelector(".ico-label").textContent = label; }
     else b.textContent = label;
     b.addEventListener("click", fn);
@@ -18171,8 +18171,8 @@
         '<input type="text" class="ui-modal-input" id="loc-name" value="' + escapeHtml(suggest) + '" />' +
         '<label class="loc-radius-row">' + escapeHtml(t("loc.radius")) +
           ' <input type="number" id="loc-radius" min="1" max="200" step="1" value="' + recentRadiusKm() + '" /> km</label>' +
-        '<div class="ui-modal-btns"><button type="button" class="demo-btn demo-btn-light" id="loc-cancel">' + escapeHtml(t("btn.cancel")) + "</button>" +
-          '<button type="button" class="demo-btn" id="loc-ok">' + escapeHtml(t("popup.ok")) + "</button></div>";
+        '<div class="ui-modal-btns"><button type="button" class="btn btn-light" id="loc-cancel">' + escapeHtml(t("btn.cancel")) + "</button>" +
+          '<button type="button" class="btn" id="loc-ok">' + escapeHtml(t("popup.ok")) + "</button></div>";
       box.querySelector("#loc-cancel").addEventListener("click", close);
       box.querySelector("#loc-ok").addEventListener("click", function () {
         var name = (box.querySelector("#loc-name").value || "").trim();
@@ -18243,7 +18243,7 @@
   }
   // Pop up the stored-locations list anchored to the crosshair control.
   function showStoredLocations(anchorEl) {
-    var wrap = document.getElementById("demo-map-wrap"); if (!wrap || !anchorEl) return;
+    var wrap = document.getElementById("map-wrap"); if (!wrap || !anchorEl) return;
     storedLocAnchor = anchorEl;   // remembered so the panel can re-render itself (e.g. when "Fetch on open" toggles)
     var panel = document.getElementById("stored-loc-panel");
     if (!panel) {
@@ -18610,16 +18610,16 @@
     wrap.className = "map-choose";
     // The popup's own labels drop the leading pictogram (the mode dropdown keeps it).
     function noIcon(x) { return String(x).replace(/^[^\w\u00C0-\u024F]+/, ""); }
-    wrap.appendChild(makePopupBtn(noIcon(t("mode.list")), "demo-btn-green", function () { mk.closePopup(); renderSpeciesList(lat, lon); }));
+    wrap.appendChild(makePopupBtn(noIcon(t("mode.list")), "btn-green", function () { mk.closePopup(); renderSpeciesList(lat, lon); }));
     // Historic + Migration moved out of the Mode dropdown: they start HERE, at the
     // clicked point. Historic rides the mode switch (the placed marker carries in);
     // Migration switches mode and runs the analysis for this exact spot.
-    wrap.appendChild(makePopupBtn(noIcon(t("mode.historic")), "demo-btn-green", function () {
+    wrap.appendChild(makePopupBtn(noIcon(t("mode.historic")), "btn-green", function () {
       mk.closePopup();
       var sel = document.getElementById("mode-select");
       if (sel && sel.value !== "historic") { sel.value = "historic"; sel.dispatchEvent(new Event("change", { bubbles: true })); }
     }));
-    if (groupHasModel()) wrap.appendChild(makePopupBtn(noIcon(t("mode.barchart")), "demo-btn-green", function () {
+    if (groupHasModel()) wrap.appendChild(makePopupBtn(noIcon(t("mode.barchart")), "btn-green", function () {
       mk.closePopup();
       var sel = document.getElementById("mode-select");
       if (sel && sel.value !== "barchart") { sel.value = "barchart"; sel.dispatchEvent(new Event("change", { bubbles: true })); }
@@ -18634,14 +18634,14 @@
     var moreSub = document.createElement("div");
     moreSub.className = "choose-sub"; moreSub.style.display = "none";
     var moreLbl = t("popup.more");
-    var moreBtn = makePopupBtn(moreLbl + "\u2026", "demo-btn-light", function () {
+    var moreBtn = makePopupBtn(moreLbl + "\u2026", "btn-light", function () {
       var show = moreSub.style.display === "none";
       moreSub.style.display = show ? "" : "none";
       this.textContent = show ? (moreLbl + " \u25be") : (moreLbl + "\u2026");
       var p = mk.getPopup(); if (p && p.isOpen()) p.update();
     });
     wrap.appendChild(moreBtn); wrap.appendChild(moreSub);
-    moreSub.appendChild(makePopupBtn(t("link.birdingplaces") + " ↗", "demo-btn-light", function () {
+    moreSub.appendChild(makePopupBtn(t("link.birdingplaces") + " ↗", "btn-light", function () {
       mk.closePopup(); openExternal(birdingPlacesUrl(lat, lon));
     }));
     // Country resources for the clicked point — the national databases, then Blogs
@@ -18657,7 +18657,7 @@
       // popup entry (not inside "More"), Europe only. Inserted before the More toggle.
       if (continentFor(cc) === "EU") {
         wrap.insertBefore(
-          makePopupBtn(t("link.aloft") + " ↗", "demo-btn-green", function () {
+          makePopupBtn(t("link.aloft") + " ↗", "btn-green", function () {
             mk.closePopup(); openExternal("https://pcmoan70.github.io/BirdsWhere-aloft/");   // the Migration Aloft radar is its own repo/site now
           }),
           moreBtn
@@ -18665,20 +18665,20 @@
         var _pp = mk.getPopup(); if (_pp && _pp.isOpen()) _pp.update();
       }
       natServicesFor(cc).forEach(function (s) {
-        moreSub.appendChild(makePopupBtn(s.label + " ↗", "demo-btn-light", function () { mk.closePopup(); openExternal(s.url); }));
+        moreSub.appendChild(makePopupBtn(s.label + " ↗", "btn-light", function () { mk.closePopup(); openExternal(s.url); }));
       });
       if (cc) {
-        moreSub.appendChild(makePopupBtn(t("blogs.title") + " ▸", "demo-btn-light", function () { mk.closePopup(); openBlogs(cc, cname); }));
-        moreSub.appendChild(makePopupBtn(t("link.birdlife") + " ↗", "demo-btn-light", function () { mk.closePopup(); openExternal(birdLifeCountryUrl(cc, cname)); }));
+        moreSub.appendChild(makePopupBtn(t("blogs.title") + " ▸", "btn-light", function () { mk.closePopup(); openBlogs(cc, cname); }));
+        moreSub.appendChild(makePopupBtn(t("link.birdlife") + " ↗", "btn-light", function () { mk.closePopup(); openExternal(birdLifeCountryUrl(cc, cname)); }));
       }
       var wide = continentServices(cc), wlabel = categoryLabel(continentFor(cc));
       if (wide.length) {
         var wSub = document.createElement("div");
         wSub.className = "choose-sub"; wSub.style.display = "none";
         wide.forEach(function (s) {
-          wSub.appendChild(makePopupBtn(s.label + " ↗", "demo-btn-light", function () { mk.closePopup(); openExternal(s.url); }));
+          wSub.appendChild(makePopupBtn(s.label + " ↗", "btn-light", function () { mk.closePopup(); openExternal(s.url); }));
         });
-        var wBtn = makePopupBtn(wlabel + " ▸", "demo-btn-light", function () {
+        var wBtn = makePopupBtn(wlabel + " ▸", "btn-light", function () {
           var show = wSub.style.display === "none";
           wSub.style.display = show ? "" : "none";
           this.textContent = wlabel + (show ? " ▾" : " ▸");
@@ -19706,7 +19706,7 @@
         return '<div class="sp-spf-item"><span>' + escapeHtml(nm) + '</span><button type="button" class="sp-spf-del" data-key="' + escapeHtml(k) + '" aria-label="' + escapeHtml(t("obs.removeFilter")) + '">×</button></div>';
       }).join("") + "</div>";
     }
-    if (speciesFilterActive()) html += '<button type="button" class="sp-spf-clear demo-btn demo-btn-light">' + escapeHtml(t("menu.removeAllSp")) + "</button>";
+    if (speciesFilterActive()) html += '<button type="button" class="sp-spf-clear btn btn-light">' + escapeHtml(t("menu.removeAllSp")) + "</button>";
     // Species lists as a TICKABLE dropdown (multi-select union): tick a saved list or a
     // premade group to add its species to the filter; untick to remove. Editing/deleting
     // saved lists lives in the manager (✎), not inline here.
@@ -19741,7 +19741,7 @@
     // collapsed dropdown. In the header panel it stays collapsed unless the user opened it.
     html += '<details class="sp-lists-dd"' + ((force || spListsDdOpen) ? " open" : "") + '><summary>' + escapeHtml(t("sp.pickLists")) + "</summary>" +
       '<div class="sp-lists-menu">' + (rows || '<div class="sp-list-empty">' + escapeHtml(t("sp.noLists")) + "</div>") + "</div></details>";
-    if (sel.length) html += '<button type="button" class="sp-splist-save demo-btn demo-btn-light">' + escapeHtml(t("sp.saveAsList")) + "</button>";
+    if (sel.length) html += '<button type="button" class="sp-splist-save btn btn-light">' + escapeHtml(t("sp.saveAsList")) + "</button>";
     return html;
   }
   // Wire the species-lists picker (shared by the header panel + the all-filters pane).
@@ -19785,7 +19785,7 @@
         '<button type="button" class="sp-cnt-metric" title="' + escapeHtml(t("th.total") + " / " + t("sort.obs")) + '">' + escapeHtml(metricLbl) + "</button>" +
         '<span class="sp-bound-op">≤</span>' +
         '<input type="number" min="0" step="1" class="sp-cnt-max" value="' + (spCountMax == null ? "" : spCountMax) + '" aria-label="max" />' +
-        (totalFilterActive() ? '<button type="button" class="sp-bound-clear demo-btn demo-btn-light">' + escapeHtml(t("det.clearFilters")) + "</button>" : "") +
+        (totalFilterActive() ? '<button type="button" class="sp-bound-clear btn btn-light">' + escapeHtml(t("det.clearFilters")) + "</button>" : "") +
       "</div></div>";
   }
   function spProbPanelHtml() {
@@ -20183,7 +20183,7 @@
 
   // ---- Computing overlay ---------------------------------------------------
   function showComputingOverlay(show, name) {
-    var el = document.getElementById("demo-computing");
+    var el = document.getElementById("computing-overlay");
     if (!el) return;
     el.style.display = show ? "flex" : "none";
     if (show) {
@@ -20194,7 +20194,7 @@
 
   // ---- Legend ---------------------------------------------------------------
   function updateLegend() {
-    var el = document.getElementById("demo-legend");
+    var el = document.getElementById("app-legend");
     if (!el) return;
     if ((currentMode !== "range" && currentMode !== "richness") || !cachedRender) { el.style.display = "none"; return; }
 

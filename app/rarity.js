@@ -687,8 +687,8 @@ window.AppRarity = (function () {
             rows + "</tbody></table></div>"
           : '<div class="rarity-empty">' + escapeHtml(t("rarity.bellEmpty")).replace(/🔔/g, ico("bell")) + "</div>") +
         '<div class="ui-modal-btns">' +
-          (rows ? '<button type="button" class="demo-btn demo-btn-light" id="rarity-clear">' + escapeHtml(t("rarity.clear")) + "</button>" : "") +
-          '<button type="button" class="demo-btn" id="rarity-close">' + escapeHtml(t("popup.ok")) + "</button></div>";
+          (rows ? '<button type="button" class="btn btn-light" id="rarity-clear">' + escapeHtml(t("rarity.clear")) + "</button>" : "") +
+          '<button type="button" class="btn" id="rarity-close">' + escapeHtml(t("popup.ok")) + "</button></div>";
       m.box.querySelector("#rarity-close").addEventListener("click", m.close);
       var oo = m.box.querySelector("#rarity-onoff");
       if (oo) oo.addEventListener("change", function () {

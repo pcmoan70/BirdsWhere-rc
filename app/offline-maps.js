@@ -275,8 +275,8 @@ window.AppOffline = (function () {
       '<div class="area-dl-est" id="area-est"></div>' +
       '<input class="ui-modal-input" id="area-name" type="text" placeholder="' + escapeHtml(t("offline.namePh")) + '">' +
       '<div class="area-dl-prog" id="area-prog" style="display:none"></div>' +
-      '<div class="ui-modal-btns"><button type="button" class="demo-btn demo-btn-light" id="area-cancel">' + escapeHtml(t("btn.cancel")) + '</button>' +
-        '<button type="button" class="demo-btn" id="area-go">' + escapeHtml(t("offline.download")) + "</button></div>";
+      '<div class="ui-modal-btns"><button type="button" class="btn btn-light" id="area-cancel">' + escapeHtml(t("btn.cancel")) + '</button>' +
+        '<button type="button" class="btn" id="area-go">' + escapeHtml(t("offline.download")) + "</button></div>";
     var est = box.querySelector("#area-est");
     function refreshEstimate() {
       est.textContent = t("offline.estimate", { n: tiles.toLocaleString(), mb: (tiles * OFFLINE_TILE_BYTES / 1048576).toFixed(tiles * OFFLINE_TILE_BYTES < 10485760 ? 1 : 0) });
@@ -457,9 +457,9 @@ window.AppOffline = (function () {
     box.innerHTML = '<div class="ui-modal-msg">' + escapeHtml(t("offline.coverPrompt")) + "</div>" +
       '<div class="offline-pick">' + areas.map(function (a) {
         var bm = a.basemap && a.basemap !== curBase ? " (" + escapeHtml(t("basemap." + a.basemap) || a.basemap) + ")" : "";
-        return '<button type="button" class="demo-btn offline-pick-btn" data-id="' + escapeHtml(a.id) + '">' + escapeHtml(a.name) + bm + "</button>";
+        return '<button type="button" class="btn offline-pick-btn" data-id="' + escapeHtml(a.id) + '">' + escapeHtml(a.name) + bm + "</button>";
       }).join("") + "</div>" +
-      '<div class="ui-modal-btns"><button type="button" class="demo-btn demo-btn-light" id="offc-cancel">' + escapeHtml(t("btn.cancel")) + "</button></div>";
+      '<div class="ui-modal-btns"><button type="button" class="btn btn-light" id="offc-cancel">' + escapeHtml(t("btn.cancel")) + "</button></div>";
     box.querySelector("#offc-cancel").addEventListener("click", close);
     box.querySelectorAll(".offline-pick-btn").forEach(function (b) {
       b.addEventListener("click", function () {
