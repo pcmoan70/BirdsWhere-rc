@@ -3927,9 +3927,22 @@
     });
     return lines;
   }
+  // Open Settings and highlight the Fetch-timeout field — the "increase timeout"
+  // action shown when a source was cut off by the fetch timeout.
+  function openSettingsToTimeout() {
+    closeDropdowns();
+    var p = document.getElementById("settings-panel"); if (p) p.style.display = "block";
+    var inp = document.getElementById("fetch-timeout");
+    if (inp) setTimeout(function () {
+      try { inp.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) {}
+      try { inp.focus({ preventScroll: true }); } catch (e2) { try { inp.focus(); } catch (e3) {} }
+      inp.classList.add("setting-flash");
+      setTimeout(function () { inp.classList.remove("setting-flash"); }, 1800);
+    }, 40);
+  }
   // Open a dialog listing each source that failed / timed out and why. Called when
-  // the red fetch-failure text in the status strip is tapped. If a source failed only
-  // for a missing free API key, add a shortcut to the "Manage data sources…" window.
+  // the red fetch-failure text in the status strip is tapped. A missing-key failure adds a
+  // "Manage data sources…" shortcut; a timeout adds an "Increase timeout" shortcut instead.
   function showFetchErrors(failed, timedOut, info, trunc) {
     var lines = fetchIssueLines(failed, timedOut, info, trunc);
     if (!lines.length) return;
@@ -3937,6 +3950,9 @@
     if (splitFailed(failed).needKey.length) {
       msg += "\n\n" + t("fetch.errKeyHint");
       action = { label: t("sources.manage"), handler: openSourcesManager };
+    } else if ((timedOut || []).length) {
+      msg += "\n\n" + t("fetch.timeoutHint");
+      action = { label: t("fetch.raiseTimeout"), handler: openSettingsToTimeout };
     }
     modalAlert(msg, lines, action);
   }
@@ -4520,7 +4536,12 @@
     if (ld) {
       ld.innerHTML = html; ld.style.display = "";
       Array.prototype.forEach.call(ld.querySelectorAll(".src-fail"), function (s) {
-        s.addEventListener("click", function () { var e = this.getAttribute("data-err"); if (e) modalAlert(e); });
+        s.addEventListener("click", function () {
+          var e = this.getAttribute("data-err"); if (!e) return;
+          // A timed-out source → lead the user to raise the Fetch timeout; others show the plain reason.
+          if (this.classList.contains("src-timeout")) modalAlert(e + "\n\n" + t("fetch.timeoutHint"), null, { label: t("fetch.raiseTimeout"), handler: openSettingsToTimeout });
+          else modalAlert(e);
+        });
       });
     }
   }

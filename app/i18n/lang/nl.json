@@ -221,6 +221,8 @@
   "sources.bwHint": "Een soort telt op een dag alleen als „hier” met ten minste zoveel BirdNET-waarnemingen op of boven de betrouwbaarheidsdrempel. Hoger = minder valse akoestische identificaties.",
   "fetch.errTitle": "Sommige gegevensbronnen mislukten:",
   "fetch.errKeyHint": "Tip: sommige hebben een gratis API-sleutel nodig. Registreer er een in “Gegevensbronnen beheren…” voor actuelere gegevens.",
+  "fetch.timeoutHint": "Deze bron was nog aan het laden toen de time-out voor ophalen werd bereikt, dus slechts een deel van de gegevens is bewaard. Verhoog de ophaal-time-out in Instellingen om trage bronnen meer tijd te geven.",
+  "fetch.raiseTimeout": "⏱ Time-out verhogen",
   "fetch.errUnknown": "onbekende fout",
   "nav.empty": "Geen punten met coördinaten om naar te navigeren.",
   "nav.opened": "Google Maps geopend met {n} stop(s).",

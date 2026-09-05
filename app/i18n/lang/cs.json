@@ -221,6 +221,8 @@
   "sources.bwHint": "Druh se v daný den počítá jako „zde“ jen při alespoň tolika záznamech BirdNET na prahu spolehlivosti nebo nad ním. Více = méně falešných zvukových identifikací.",
   "fetch.errTitle": "Některé zdroje dat selhaly:",
   "fetch.errKeyHint": "Tip: některé vyžadují bezplatný klíč API. Zaregistrujte jej v „Spravovat zdroje dat…“ pro aktuálnější data.",
+  "fetch.timeoutHint": "Tento zdroj se ještě načítal, když dosáhl časového limitu načítání, takže se uchovala jen část dat. Zvyšte časový limit načítání v Nastavení, aby pomalé zdroje měly více času.",
+  "fetch.raiseTimeout": "⏱ Zvýšit časový limit",
   "fetch.errUnknown": "neznámá chyba",
   "nav.empty": "Žádné body se souřadnicemi pro navigaci.",
   "nav.opened": "Otevřeny Mapy Google s {n} zastávkami.",

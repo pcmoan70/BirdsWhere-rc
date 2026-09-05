@@ -168,6 +168,8 @@
   "fetch.needKey": "⚠ {sources}: API-nyckel saknas — lägg till en gratis nyckel i Inställningar → Datakällor.",
   "fetch.errTitle": "Vissa datakällor misslyckades:",
   "fetch.errKeyHint": "Tips: några av dessa kräver en gratis API-nyckel. Registrera en i ”Hantera datakällor…” för mer aktuella data.",
+  "fetch.timeoutHint": "Den här källan laddade fortfarande när hämtningens tidsgräns nåddes, så bara en del av dess data behölls. Öka hämtningstidsgränsen i Inställningar för att ge långsamma källor mer tid.",
+  "fetch.raiseTimeout": "⏱ Öka tidsgräns",
   "fetch.errUnknown": "okänt fel",
   "status.loadingDet": "Hämtar fynd…",
   "ctrl.exportPoints": "Kartpunkter",

@@ -221,6 +221,8 @@
   "sources.bwHint": "Una especie cuenta como «aquí» un día solo con al menos esta cantidad de detecciones de BirdNET en el umbral de confianza o por encima. Mayor = menos identificaciones acústicas falsas.",
   "fetch.errTitle": "Algunas fuentes de datos fallaron:",
   "fetch.errKeyHint": "Consejo: algunas requieren una clave de API gratuita. Regístrala en «Gestionar fuentes de datos…» para obtener datos más actualizados.",
+  "fetch.timeoutHint": "Esta fuente aún cargaba cuando alcanzó el límite de tiempo de descarga, así que solo se conservó parte de sus datos. Aumenta el tiempo de espera de descarga en Ajustes para dar más tiempo a las fuentes lentas.",
+  "fetch.raiseTimeout": "⏱ Aumentar tiempo de espera",
   "fetch.errUnknown": "error desconocido",
   "nav.empty": "No hay puntos con coordenadas a los que navegar.",
   "nav.opened": "Google Maps abierto con {n} parada(s).",

@@ -221,6 +221,8 @@
   "sources.bwHint": "Laji lasketaan päivänä ”täällä” olevaksi vain, jos BirdNET-havaintoja on vähintään näin monta luotettavuusrajalla tai sen yli. Suurempi = vähemmän vääriä äänitunnistuksia.",
   "fetch.errTitle": "Jotkin tietolähteet epäonnistuivat:",
   "fetch.errKeyHint": "Vinkki: jotkin näistä vaativat ilmaisen API-avaimen. Rekisteröi se kohdassa ”Hallinnoi tietolähteitä…” saadaksesi ajantasaisempia tietoja.",
+  "fetch.timeoutHint": "Tämä lähde latautui vielä, kun haun aikakatkaisu täyttyi, joten vain osa sen tiedoista säilytettiin. Kasvata haun aikakatkaisua asetuksissa antaaksesi hitaille lähteille enemmän aikaa.",
+  "fetch.raiseTimeout": "⏱ Kasvata aikakatkaisua",
   "fetch.errUnknown": "tuntematon virhe",
   "nav.empty": "Ei navigoitavia pisteitä, joilla on koordinaatit.",
   "nav.opened": "Avattiin Google Maps {n} pysähdyksellä.",

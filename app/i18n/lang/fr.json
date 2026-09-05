@@ -221,6 +221,8 @@
   "sources.bwHint": "Une espèce est considérée « ici » un jour donné uniquement avec au moins ce nombre de détections BirdNET au niveau ou au-dessus du seuil de confiance. Plus élevé = moins de fausses identifications acoustiques.",
   "fetch.errTitle": "Certaines sources de données ont échoué :",
   "fetch.errKeyHint": "Astuce : certaines nécessitent une clé API gratuite. Enregistrez-en une dans « Gérer les sources de données… » pour des données plus à jour.",
+  "fetch.timeoutHint": "Cette source chargeait encore lorsqu'elle a atteint la limite de délai de récupération ; seule une partie de ses données a été conservée. Augmentez le délai de récupération dans les Réglages pour laisser plus de temps aux sources lentes.",
+  "fetch.raiseTimeout": "⏱ Augmenter le délai",
   "fetch.errUnknown": "erreur inconnue",
   "nav.empty": "Aucun point avec coordonnées vers lequel naviguer.",
   "nav.opened": "Google Maps ouvert avec {n} arrêt(s).",

@@ -221,6 +221,8 @@
   "sources.bwHint": "Eine Art gilt an einem Tag nur als „hier“, wenn mindestens so viele BirdNET-Funde die Konfidenzschwelle erreichen. Höher = weniger falsche akustische Bestimmungen.",
   "fetch.errTitle": "Einige Datenquellen sind fehlgeschlagen:",
   "fetch.errKeyHint": "Tipp: Einige davon benötigen einen kostenlosen API-Schlüssel. Registriere einen unter „Datenquellen verwalten…“ für aktuellere Daten.",
+  "fetch.timeoutHint": "Diese Quelle lud noch, als das Zeitlimit für den Abruf erreicht wurde – nur ein Teil ihrer Daten wurde behalten. Erhöhe das Abruf-Zeitlimit in den Einstellungen, damit langsame Quellen mehr Zeit haben.",
+  "fetch.raiseTimeout": "⏱ Zeitlimit erhöhen",
   "fetch.errUnknown": "unbekannter Fehler",
   "nav.empty": "Keine Punkte mit Koordinaten zum Navigieren.",
   "nav.opened": "Google Maps mit {n} Stopp(s) geöffnet.",

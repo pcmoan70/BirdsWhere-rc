@@ -221,6 +221,8 @@
   "sources.bwHint": "Rūšis tą dieną laikoma „čia“ tik esant bent tiek BirdNET aptikimų ties patikimumo riba ar virš jos. Daugiau = mažiau klaidingų garso atpažinimų.",
   "fetch.errTitle": "Kai kurie duomenų šaltiniai nepavyko:",
   "fetch.errKeyHint": "Patarimas: kai kurioms reikia nemokamo API rakto. Užregistruokite jį skiltyje „Tvarkyti duomenų šaltinius…“, kad gautumėte naujesnius duomenis.",
+  "fetch.timeoutHint": "Šis šaltinis dar buvo įkeliamas, kai pasiekė gavimo laiko limitą, todėl išsaugota tik dalis duomenų. Padidinkite gavimo laiko limitą Nustatymuose, kad lėtiems šaltiniams būtų daugiau laiko.",
+  "fetch.raiseTimeout": "⏱ Padidinti laiko limitą",
   "fetch.errUnknown": "nežinoma klaida",
   "nav.empty": "Nėra taškų su koordinatėmis, į kuriuos būtų galima nukreipti.",
   "nav.opened": "Atidaryti Google Maps su {n} sustojimu(-ais).",

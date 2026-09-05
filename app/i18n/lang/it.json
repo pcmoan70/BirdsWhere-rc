@@ -221,6 +221,8 @@
   "sources.bwHint": "Una specie conta come «qui» in un giorno solo con almeno questo numero di rilevazioni BirdNET pari o superiori alla soglia di affidabilità. Più alto = meno falsi riconoscimenti acustici.",
   "fetch.errTitle": "Alcune fonti di dati non disponibili:",
   "fetch.errKeyHint": "Suggerimento: alcune richiedono una chiave API gratuita. Registrane una in «Gestisci fonti dati…» per dati più aggiornati.",
+  "fetch.timeoutHint": "Questa fonte stava ancora caricando quando ha raggiunto il limite di timeout del recupero, quindi ne è stata mantenuta solo una parte. Aumenta il timeout di recupero nelle Impostazioni per dare più tempo alle fonti lente.",
+  "fetch.raiseTimeout": "⏱ Aumenta il timeout",
   "fetch.errUnknown": "errore sconosciuto",
   "nav.empty": "Nessun punto con coordinate verso cui navigare.",
   "nav.opened": "Google Maps aperto con {n} tappa/e.",

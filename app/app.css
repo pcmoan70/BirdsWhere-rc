@@ -3817,6 +3817,10 @@ path.rc-pulse-dot { animation: rc-pulse-fade 1.1s ease-in-out infinite alternate
 @keyframes hold-fired-flash { 0% { filter: brightness(1.7); } 100% { filter: brightness(1); } }
 .hold-fired { animation: hold-fired-flash 0.22s ease-out; }
 @media (prefers-reduced-motion: reduce) { .hold-fired { animation: none; } }
+/* Brief highlight on a setting field jumped-to from a hint (e.g. "Increase timeout" → Fetch timeout). */
+.setting-flash { animation: setting-flash 1.8s ease-out; border-radius: 4px; }
+@keyframes setting-flash { 0%, 25% { box-shadow: 0 0 0 3px var(--brand, #2e8b74); } 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
+@media (prefers-reduced-motion: reduce) { .setting-flash { animation: none; } }
 .leaflet-bar a.geo-locate-btn.cross-read { background: #e53935; color: #fff; }
 /* One-shot locate in flight: blue, blinking until the fix (or error) lands. */
 .leaflet-bar a.geo-locate-btn.cross-locating { background: #1976d2; color: #fff; animation: cross-blink 0.9s ease-in-out infinite; }

@@ -221,6 +221,8 @@
   "sources.bwHint": "Gatunek liczy się jako „tutaj” w danym dniu tylko przy co najmniej tylu wykryciach BirdNET na progu pewności lub powyżej. Wyżej = mniej fałszywych identyfikacji dźwiękowych.",
   "fetch.errTitle": "Niektóre źródła danych zawiodły:",
   "fetch.errKeyHint": "Wskazówka: niektóre wymagają bezpłatnego klucza API. Zarejestruj go w „Zarządzaj źródłami danych…”, aby uzyskać bardziej aktualne dane.",
+  "fetch.timeoutHint": "To źródło wciąż się ładowało, gdy osiągnęło limit czasu pobierania, więc zachowano tylko część danych. Zwiększ limit czasu pobierania w Ustawieniach, aby dać wolnym źródłom więcej czasu.",
+  "fetch.raiseTimeout": "⏱ Zwiększ limit czasu",
   "fetch.errUnknown": "nieznany błąd",
   "nav.empty": "Brak punktów ze współrzędnymi do nawigacji.",
   "nav.opened": "Otwarto Mapy Google z {n} przystankami.",

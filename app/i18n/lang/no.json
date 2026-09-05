@@ -221,6 +221,8 @@
   "sources.bwHint": "En art regnes som «her» en dag bare med minst så mange BirdNET-funn på eller over sikkerhetsterskelen. Høyere = færre falske lyd-ID-er.",
   "fetch.errTitle": "Noen datakilder feilet:",
   "fetch.errKeyHint": "Tips: noen av disse krever en gratis API-nøkkel. Registrer en i «Administrer datakilder…» for mer oppdaterte data.",
+  "fetch.timeoutHint": "Denne kilden lastet fortsatt da tidsgrensen for henting ble nådd, så bare en del av dataene ble beholdt. Øk hentetidsgrensen i Innstillinger for å gi trege kilder mer tid.",
+  "fetch.raiseTimeout": "⏱ Øk tidsgrense",
   "fetch.errUnknown": "ukjent feil",
   "nav.empty": "Ingen punkter med koordinater å navigere til.",
   "nav.opened": "Åpnet Google Maps med {n} stopp.",

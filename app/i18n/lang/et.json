@@ -221,6 +221,8 @@
   "sources.bwHint": "Liik loetakse päeval „siin“ olevaks ainult vähemalt nii mitme BirdNETi tuvastusega usaldusläve juures või üle selle. Kõrgem = vähem valesid helituvastusi.",
   "fetch.errTitle": "Mõned andmeallikad ebaõnnestusid:",
   "fetch.errKeyHint": "Nõuanne: mõned vajavad tasuta API-võtit. Registreeri see menüüs „Halda andmeallikaid…“ värskemate andmete saamiseks.",
+  "fetch.timeoutHint": "See allikas laadis veel, kui saabus toomise ajapiirang, seega säilitati vaid osa andmetest. Suurenda toomise ajapiirangut seadetes, et anda aeglastele allikatele rohkem aega.",
+  "fetch.raiseTimeout": "⏱ Suurenda ajapiirangut",
   "fetch.errUnknown": "tundmatu viga",
   "nav.empty": "Pole koordinaatidega punkte, kuhu navigeerida.",
   "nav.opened": "Google Maps avati {n} peatusega.",

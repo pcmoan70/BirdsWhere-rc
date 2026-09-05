@@ -174,6 +174,8 @@ window.GeoI18N = (function () {
         "fetch.needKey": "⚠ {sources}: API key missing — add a free key in Settings → Data sources.",
         "fetch.errTitle": "Some data sources failed:",
         "fetch.errKeyHint": "Tip: some of these need a free API key. Register one in “Manage data sources…” for more up-to-date data.",
+        "fetch.timeoutHint": "This source was still loading when it hit the fetch-timeout limit, so only part of its data was kept. Raise the Fetch timeout in Settings to give slow sources more time to finish.",
+        "fetch.raiseTimeout": "⏱ Increase timeout",
         "fetch.errUnknown": "unknown error",
         "fetch.clickErr": "Click to see why this source failed",
         "status.loadingDet": "Loading detections…",
