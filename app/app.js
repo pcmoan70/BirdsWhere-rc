@@ -350,6 +350,12 @@
   function fitMapHeight() {
     var el = document.getElementById("app-map");
     if (!el || el.offsetParent === null) return;   // not visible yet
+    // The map view fills the viewport and must never page-scroll. A transient overflow —
+    // e.g. the histogram strip expanding before the map is re-sized — can scroll the page,
+    // which pushes the map (and its top-corner controls) up UNDER the fixed header and, read
+    // here as a smaller getBoundingClientRect().top, mis-sizes it. Reset the scroll first so
+    // `top` is the true offset below the header. (List view is a fixed overlay — leave it.)
+    if (!onListView() && (window.scrollY || document.documentElement.scrollTop || 0)) window.scrollTo(0, 0);
     var top = el.getBoundingClientRect().top;
     el.style.aspectRatio = "auto";
     el.style.maxHeight = "none";
