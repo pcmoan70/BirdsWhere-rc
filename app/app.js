@@ -8573,13 +8573,13 @@
   // The range cache lives in localStorage, which browsers hard-cap at ~5 MB, so
   // it takes a small carved-out slice; the tiles get the rest. Both evict
   // least-recently-used first, so the total never exceeds the chosen size.
-  // Caching is UNLIMITED (the size-cap setting was removed): the service worker never
-  // trims the tile pool. Instead the app WARNS when device storage gets close to full
-  // (see renderStorageUsage / #storage-warn), and everything is clearable via the
-  // "Clear cached data" buttons. The computed H3 range cache keeps its small localStorage slice.
-  function mapCacheMB() { return -1; }   // -1 = Unlimited
-  function h3BudgetMB() { return 5; }    // range-cache slice (localStorage ~5 MB cap)
-  function tileCacheMB() { return -1; }  // map tiles: unlimited (never trimmed)
+  // Fixed 2 GB map cache (the user-facing size selector was removed). The service
+  // worker LRU-prunes the map-pool to the tile budget when it's exceeded. The app
+  // ALSO warns when device storage gets close to full (renderStorageUsage /
+  // #storage-warn), and everything is clearable via the "Clear cached data" buttons.
+  function mapCacheMB() { return 2000; }                          // 2 GB total map cache
+  function h3BudgetMB() { return 5; }                             // computed range-cache slice (localStorage ~5 MB cap)
+  function tileCacheMB() { return mapCacheMB() - h3BudgetMB(); }  // the rest → map tiles; SW LRU-prunes the pool to this
   function sendTileCap() {
     try {
       if (navigator.serviceWorker && navigator.serviceWorker.controller)
@@ -15709,8 +15709,8 @@
       crEl.addEventListener("change", function () { window.GeoState.save({ countryRes: +this.value || 4 }); });
     }
 
-    // (The "Map cache" size selector was removed — caching is unlimited; storage
-    // pressure is surfaced via renderStorageUsage's warning instead.)
+    // (The "Map cache" size selector was removed — the cap is a fixed 2 GB, LRU-pruned
+    // by the SW; storage pressure is also surfaced via renderStorageUsage's warning.)
     // Push the tile-cache cap to the SW once it's controlling (and whenever it changes).
     if (navigator.serviceWorker) {
       try { navigator.serviceWorker.ready.then(sendTileCap).catch(function () {}); navigator.serviceWorker.addEventListener("controllerchange", sendTileCap); } catch (e) {}
