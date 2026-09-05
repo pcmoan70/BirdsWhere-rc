@@ -142,7 +142,7 @@ window.AppSources = (function () {
   function saveDirectSources(list) { window.GeoState.save({ directSources: list }); onConfigChange(); }
   // On/off toggles. A source/dataset is ON unless its id/key is in the "off" map,
   // so existing setups (and freshly added ones) default to enabled.
-  function sourcesOff() { return window.GeoState.get("srcOff", {}) || {}; }
+  function sourcesOff() { return window.GeoState.get("srcOff", { birdweather: 1 }) || { birdweather: 1 }; }   // BirdWeather (acoustic AI IDs) is OFF by default; enabling it removes it from the map
   function isSourceOff(id) { return !!sourcesOff()[id]; }
   function setSourceOff(id, off) {
     var m = sourcesOff(); if (off) m[id] = 1; else delete m[id];

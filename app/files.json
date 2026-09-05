@@ -1,5 +1,5 @@
 {
- "_version": "v1581",
+ "_version": "v1582",
  "./": "a3e2dc2b934a2647",
  "index.html": "a3e2dc2b934a2647",
  "sw-register.js": "f6dba3a3f498d30a",
@@ -15,7 +15,7 @@
  "state.js": "9f6a374e690bd537",
  "idb.js": "7bd910a6a6a97e44",
  "gdrive-sync.js": "6777e12c3d46fded",
- "sources.js": "ed199a0829165dc5",
+ "sources.js": "652b11e626b144a0",
  "geo.js": "8dca0686150ebe00",
  "fetch.js": "aaa3241de09e18f3",
  "normalize.js": "315e1cb9329cf426",
