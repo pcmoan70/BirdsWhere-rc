@@ -5750,6 +5750,7 @@
                   '<button type="button" class="hs-cycle" id="hotspot-cycle" data-hs="off" data-i18n="ctrl.hsOff">Off</button>' +
                   '<label class="ctrl-check hs-dots"><input type="checkbox" id="showdots-toggle" checked> <span data-i18n="ctrl.showDots">Show dots</span></label>' +
                 '</div>' +
+                '<p class="cu-hint" data-i18n="ctrl.hotspotHint">Shades the map by how much activity each area has — tap to cycle Off → species per area → distinct observers → total counts. A smooth, zoom-steady heat cloud; use “Show dots” to see the heatmap alone, the dots alone, or both.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label for="group-select" data-i18n="ctrl.group">Species group</label>' +
@@ -5770,10 +5771,12 @@
                   '<div id="group-picker-panel" class="group-quick-panel" style="display:none" role="listbox"></div>' +
                 '</div>' +
                 '<p class="cu-hint" id="group-nomodel-hint" style="display:none" data-i18n="group.noModelHint">No habitat model for this group — observation search only (no range, richness or migration).</p>' +
+                '<p class="cu-hint" data-i18n="ctrl.groupHint">Limit the whole app — lists, Range, Richness and observation search — to one group: birds, mammals, amphibians, insects, plants or fungi.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label for="recent-radius" data-i18n="ctrl.recentradius">Sightings radius</label>' +
                 '<div class="radius-row"><input type="range" id="recent-radius" min="0" max="18" step="1" /><span id="recent-radius-val" class="radius-val"></span></div>' +
+                '<p class="cu-hint" data-i18n="ctrl.recentradiusHint">How far around a clicked point or stored location each source is searched for recent observations.</p>' +
               '</div>' +
               '<div class="ctrl-group" id="maptype-wrap">' +
                 '<label for="maptype-select" data-i18n="ctrl.basemap">Map type</label>' +
@@ -5786,6 +5789,7 @@
                   '<option value="esritopo" data-i18n="basemap.esritopo">Esri Topo</option>' +
                   '<option value="satellite" data-i18n="basemap.satellite">Satellite</option>' +
                 '</select>' +
+                '<p class="cu-hint" data-i18n="ctrl.basemapHint">The background map style behind the data — Light, Dark, Streets, Topographic or Satellite.</p>' +
                 '<div id="exp-mapkeys-wrap" style="display:none">' +
                   '<input type="text" id="carto-key-input" autocomplete="off" spellcheck="false" data-i18n-ph="ph.cartoKey" placeholder="CARTO API key (for Voyager)" />' +
                   '<p class="cu-hint" data-i18n="ctrl.cartoKeyHint">Experimental. The Voyager map is served by CARTO, which now needs a personal API key (free account at carto.com). Paste it here to enable Voyager; without a key it is hidden from the list and the other maps are used.</p>' +
@@ -5800,6 +5804,7 @@
                   '<option value="on" data-i18n="labels.on">On</option>' +
                   '<option value="more" data-i18n="labels.more">More</option>' +
                 '</select>' +
+                '<p class="cu-hint" data-i18n="ctrl.maplabelsHint">Extra place-name density for the Light, Dark and Satellite maps: Off keeps the map’s own names, On adds a clean label layer, More pulls in the next zoom’s denser names.</p>' +
               '</div>' +
               '<div class="ctrl-group" id="barchart-threshold-wrap" style="display:none">' +
                 '<label data-i18n="ctrl.bcthreshold">Probability range</label>' +
@@ -5809,10 +5814,12 @@
                   '<input type="range" id="prob-max" min="0" max="100" step="1" value="100" />' +
                 '</div>' +
                 '<div id="prob-range-vals"><span id="prob-min-val">0%</span> – <span id="prob-max-val">100%</span></div>' +
+                '<p class="cu-hint" data-i18n="ctrl.bcthresholdHint">Lower and upper model-probability bounds — species (and plotted observations) outside this range are hidden from the list and the map.</p>' +
               '</div>' +
               '<div class="ctrl-group" id="week-select-wrap">' +
                 '<label for="week-select" data-i18n="ctrl.week">Week</label>' +
                 '<select id="week-select"></select>' +
+                '<p class="cu-hint" data-i18n="ctrl.weekHint">The week of the year the model is evaluated for (48 weeks, four per month) — used by Range, Richness and the species-list probabilities.</p>' +
               '</div>' +
               '<div class="ctrl-group" id="compare-wrap" style="display:none">' +
                 '<label for="compare-select" data-i18n="ctrl.compare">Compare to</label>' +
@@ -5824,6 +5831,7 @@
                   '<option value="annualmax" data-i18n="compare.max">Annual max</option>' +
                   '<option value="annualtop" selected data-i18n="compare.annualtop">Annual Top</option>' +
                 '</select>' +
+                '<p class="cu-hint" data-i18n="ctrl.compareHint">Adds a column to the species list comparing the current week with another week or the annual mean/peak, so you can see what’s arriving or at its best now.</p>' +
               '</div>' +
               '<div class="settings-section" data-i18n="settings.secFetch">Fetching &amp; detections</div>' +
               '<div class="ctrl-group">' +
@@ -5865,6 +5873,7 @@
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="histo-zero-toggle" checked> <span data-i18n="ctrl.histoZero">Show zero-observation days in bar chart</span></label>' +
+                '<p class="cu-hint" data-i18n="ctrl.histoZeroHint">In the per-day observations bar chart, mark days with no observations as faint stubs (so gaps show) instead of skipping them.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="dot-cluster-toggle"> <span data-i18n="ctrl.dotCluster">Cluster crowded dots</span></label>' +
@@ -5882,14 +5891,17 @@
               '<div class="ctrl-group" id="sources-wrap">' +
                 '<label data-i18n="sources.label">Data sources</label>' +
                 icoBtn("sources-open", "sources", "sources.manage", "Manage data sources…") +
+                '<p class="cu-hint" data-i18n="sources.labelHint">Turn each observation source on or off and enter its API key. GBIF and iNaturalist need no key; eBird and the regional databases each take a free key.</p>' +
               '</div>' +
               '<div class="ctrl-group" id="gbif-ds-wrap">' +
                 '<label data-i18n="ctrl.gbifDatasets">GBIF datasets (fetched separately)</label>' +
                 icoBtn("gbif-ds-open", "datasets", "gbif.manage", "Manage datasets…") +
+                '<p class="cu-hint" data-i18n="ctrl.gbifDatasetsHint">Extra GBIF publisher datasets queried alongside the main GBIF search — toggle each on or off.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label data-i18n="ctrl.customurls">National databases</label>' +
                 icoBtn("natdb-open", "globe", "natdb.manage", "Manage national databases…") +
+                '<p class="cu-hint" data-i18n="ctrl.customurlsSettingsHint">Manage the national and regional bird-site links shown in a clicked point’s popup — add, edit, hide or delete per country, or reset the defaults.</p>' +
               '</div>' +
               '<div class="settings-section" data-i18n="settings.secRarity">Rarity alerts</div>' +
               '<div class="ctrl-group">' +
@@ -5902,8 +5914,10 @@
                 '<label class="ctrl-check"><input type="checkbox" id="rarity-sound-toggle" checked> <span data-i18n="rarity.sound">Alarm sound</span></label>' +
                 '<button type="button" id="rarity-sound-test" class="btn btn-light" data-i18n="rarity.soundTest">Test</button>' +
               '</div>' +
+              '<p class="cu-hint" data-i18n="rarity.soundHint">Play a short chime when a new eBird rarity alert arrives while the app is open.</p>' +
               '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="rarity-notif-toggle"> <span data-i18n="rarity.sysNotif">System notifications</span></label>' +
+                '<p class="cu-hint" data-i18n="rarity.sysNotifHint">Also raise a system notification for each new rarity alert — needs the browser’s notification permission.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="rarity-country-toggle"> <span data-i18n="rarity.countryWide">Whole-country alerts</span></label>' +
@@ -5929,14 +5943,17 @@
                   '<button type="button" id="points-fmt-toggle" class="btn btn-light kml-fmt-toggle" data-i18n-title="btn.fmtToggle" title="Export format">KML</button>' +
                 "</div>" +
                 '<input type="file" id="points-kml-file" style="display:none" />' +
+                '<p class="cu-hint" data-i18n="ctrl.exportPointsHint">Export the map points you’ve placed as a KML or GeoJSON file, or import points from one.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label data-i18n="lists.title">Administer lists</label>' +
                 icoBtn("lists-open", "list", "lists.manage", "Administer lists…") +
+                '<p class="cu-hint" data-i18n="lists.titleHint">Open the managers for your saved species lists and observer lists — rename, edit members or delete.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label data-i18n="blocked.title">Blocked species</label>' +
                 icoBtn("blocked-open", "block", "blocked.manage", "Manage blocked species…") +
+                '<p class="cu-hint" data-i18n="blocked.titleHint">Species you’ve hidden from the lists — review them here and unblock any you want back.</p>' +
               '</div>' +
               '<div class="ctrl-group" id="sync-wrap">' +
                 '<label data-i18n="ctrl.syncData">Share between devices</label>' +
@@ -5988,9 +6005,11 @@
               '<div class="ctrl-group" id="secondlang-wrap">' +
                 '<label for="secondlang-select" data-i18n="ctrl.secondlang">2nd name</label>' +
                 '<select id="secondlang-select"></select>' +
+                '<p class="cu-hint" data-i18n="ctrl.secondlangHint">Show a second common-name column in the lists, in another language, next to the primary name.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="show-sci-toggle" checked> <span data-i18n="ctrl.showsci">Scientific names</span></label>' +
+                '<p class="cu-hint" data-i18n="ctrl.showsciHint">Show the scientific-name column in the species lists.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="experimental-toggle"> <span data-i18n="ctrl.experimental">Experimental features</span></label>' +
