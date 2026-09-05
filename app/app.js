@@ -5790,11 +5790,13 @@
                   '<option value="satellite" data-i18n="basemap.satellite">Satellite</option>' +
                 '</select>' +
                 '<p class="cu-hint" data-i18n="ctrl.basemapHint">The background map style behind the data — Light, Dark, Streets, Topographic or Satellite.</p>' +
-                '<div id="exp-mapkeys-wrap" style="display:none">' +
+                '<div id="carto-key-wrap" style="display:none">' +
                   '<input type="text" id="carto-key-input" autocomplete="off" spellcheck="false" data-i18n-ph="ph.cartoKey" placeholder="CARTO API key (for Voyager)" />' +
-                  '<p class="cu-hint" data-i18n="ctrl.cartoKeyHint">Experimental. The Voyager map is served by CARTO, which now needs a personal API key (free account at carto.com). Paste it here to enable Voyager; without a key it is hidden from the list and the other maps are used.</p>' +
+                  '<p class="cu-hint" data-i18n="ctrl.cartoKeyHint">The Voyager map (CARTO) needs a free personal API key from carto.com — paste it here to use Voyager. Until then a plain Streets map is shown.</p>' +
+                '</div>' +
+                '<div id="maptiler-key-wrap" style="display:none">' +
                   '<input type="text" id="maptiler-key-input" autocomplete="off" spellcheck="false" data-i18n-ph="ph.maptilerKey" placeholder="MapTiler API key (for MapTiler Outdoor)" />' +
-                  '<p class="cu-hint" data-i18n="ctrl.maptilerKeyHint">Experimental. MapTiler Outdoor (trails + terrain) needs a personal MapTiler API key (free account at maptiler.com). Paste it here to enable it; without a key it is hidden from the list.</p>' +
+                  '<p class="cu-hint" data-i18n="ctrl.maptilerKeyHint">MapTiler Outdoor (trails + terrain) needs a free personal MapTiler API key from maptiler.com — paste it here to use it. Until then a plain Streets map is shown.</p>' +
                 '</div>' +
               '</div>' +
               '<div class="ctrl-group" id="maplabels-wrap">' +
@@ -6858,6 +6860,7 @@
   function refreshLangUI() {
     if (!langUiReady) { pendingLangUI = true; return; }
     applyI18n();
+    try { updateBasemapOptions(); } catch (e) {}   // re-append the 🔑 to key-maps after applyI18n reset the option text
     populateWeekSelect();   // re-label weeks in the new language
     populateSecondLangSelect();   // re-localize the "(none)" option
     refreshHiddenUI();      // re-localize hidden-species chip names
@@ -7617,28 +7620,33 @@
   }
   // Show the Voyager option only when a CARTO key is present; if it's the current
   // basemap and the key goes away, drop to streets.
-  function cartoAvailable() { return experimentalOn() && !!cartoKey(); }
-  function maptilerAvailable() { return experimentalOn() && !!maptilerKey(); }
+  function cartoAvailable() { return !!cartoKey(); }        // Voyager (CARTO) usable once a key is set
+  function maptilerAvailable() { return !!maptilerKey(); }  // MapTiler usable once a key is set
   function basemapGated(which) { return which === "voyager" ? !cartoAvailable() : which === "maptiler" ? !maptilerAvailable() : false; }
+  function mapNeedsKey(which) { return which === "voyager" ? "carto" : which === "maptiler" ? "maptiler" : null; }   // for the 🔑 + the key field
+  // Show the API-key field ONLY for the currently-selected key-requiring map.
+  function updateMapKeyInputs(which) {
+    var cw = document.getElementById("carto-key-wrap"), mw = document.getElementById("maptiler-key-wrap");
+    if (cw) cw.style.display = (which === "voyager") ? "" : "none";
+    if (mw) mw.style.display = (which === "maptiler") ? "" : "none";
+  }
   function updateBasemapOptions() {
     var sel = document.getElementById("maptype-select"); if (!sel) return;
-    [["voyager", cartoAvailable()], ["maptiler", maptilerAvailable()]].forEach(function (pair) {
-      var opt = sel.querySelector('option[value="' + pair[0] + '"]');
-      if (opt) { opt.hidden = !pair[1]; opt.disabled = !pair[1]; }
+    // ALL maps are always listed; the key-requiring ones get a 🔑 after the name.
+    ["voyager", "maptiler"].forEach(function (v) {
+      var opt = sel.querySelector('option[value="' + v + '"]');
+      if (opt) { opt.hidden = false; opt.disabled = false; opt.textContent = t("basemap." + v) + " 🔑"; }
     });
-    var wrap = document.getElementById("exp-mapkeys-wrap");
-    if (wrap) wrap.style.display = experimentalOn() ? "" : "none";   // the key fields are experimental-only
-    var cur = window.GeoState.get("basemap", "voyager");
-    if (basemapGated(cur)) setBasemap("streets");
+    updateMapKeyInputs(sel.value || window.GeoState.get("basemap", "voyager"));
   }
   function setBasemap(which) {
     if (!BASEMAPS[which]) which = "streets";   // migrate a removed/unknown choice (e.g. the old Light/Dark)
-    if (basemapGated(which)) which = "streets";   // Voyager (CARTO) / MapTiler are experimental + need a key
-    var cfg = BASEMAPS[which];
+    var render = basemapGated(which) ? "streets" : which;   // key-map with no key yet → show a working Streets map, but KEEP `which` as the choice
+    var cfg = BASEMAPS[render];
     if (baseLayer) map.removeLayer(baseLayer);
     // subdomains must not be undefined — Leaflet reads .length even when the
     // URL has no {s} placeholder (e.g. the Esri satellite layer).
-    baseLayer = L.tileLayer(baseUrlFor(which), { attribution: cfg.attribution, maxZoom: MAX_ZOOM, maxNativeZoom: cfg.maxNativeZoom || MAX_ZOOM, subdomains: cfg.subdomains || "abc", noWrap: true });
+    baseLayer = L.tileLayer(baseUrlFor(render), { attribution: cfg.attribution, maxZoom: MAX_ZOOM, maxNativeZoom: cfg.maxNativeZoom || MAX_ZOOM, subdomains: cfg.subdomains || "abc", noWrap: true });
     baseLayer._origMaxNative = cfg.maxNativeZoom || MAX_ZOOM;   // restore target when online / leaving an area
     // Tile fetches failing (even when navigator reports "online" — captive portal /
     // dead connection) → treat like offline so the zoom cap upscales cached tiles
@@ -7648,10 +7656,11 @@
     baseLayer.addTo(map);
     baseLayer.bringToBack();
     refreshOfflineZoomCap();   // if offline inside a shallow download, upscale instead of fetching missing tiles
-    document.body.setAttribute("data-basemap", which);
+    document.body.setAttribute("data-basemap", render);   // label styling follows the RENDERED map
     var sel = document.getElementById("maptype-select");
-    if (sel) sel.value = which;
+    if (sel) sel.value = which;   // keep the user's CHOICE visible in the dropdown (even a key-map without a key yet)
     window.GeoState.save({ basemap: which });
+    updateMapKeyInputs(which);   // reveal the key field for a chosen key-map
     applyLabelsOverlay();   // re-pick label style (dark/light) for the new basemap
   }
   // ---- Extra place-name labels overlay --------------------------------------
@@ -7680,7 +7689,7 @@
     var b = document.getElementById("sp-checklist-btn");
     if (b) b.style.display = "";   // always visible (was experimental-gated in v868)
     if (typeof syncExperimentalOverlays === "function") syncExperimentalOverlays();   // Birding spots + GBIF are experimental-only
-    try { updateBasemapOptions(); } catch (e) {}   // Voyager (CARTO) + its key field are experimental-only
+    try { updateBasemapOptions(); } catch (e) {}   // refresh basemap options (harmless; maps are no longer experimental)
   }
   // A labels-ONLY MapLibre GL style (OpenMapTiles vector tiles via OpenFreeMap, no
   // key). Rendered client-side, so place names appear/disappear smoothly by zoom and
