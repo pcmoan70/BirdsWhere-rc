@@ -4047,7 +4047,7 @@
   // General "download — last N days" window for a normal fetch: overrides every
   // source's own default window. 0 = each source keeps its own (GBIF/iNat ~90,
   // eBird 30, BirdWeather 7) — the pre-existing behaviour, so 0 changes nothing.
-  function downloadDays() { var v = +window.GeoState.get("downloadDays", 0); return isFinite(v) && v > 0 ? v : 0; }
+  function downloadDays() { var v = +window.GeoState.get("downloadDays", 30); return isFinite(v) && v > 0 ? v : 0; }   // default 30 days (0 = each source's own default)
   // Bump when the aggregation/matching logic changes so results cached by the
   // previous code are ignored and the next fetch re-aggregates.
   var SIGHT_CACHE_VER = 7;   // bumped: Sweden Artportalen "Corvus corone" (kråka) → Corvus cornix
@@ -15660,7 +15660,7 @@
         if (slp && slp.style.display === "block" && storedLocAnchor) showStoredLocations(storedLocAnchor);
       });
     }
-    wireNumSetting("download-days", downloadDays, 0, 92, 0, function (v) { window.GeoState.save({ downloadDays: v }); refreshRecentModeLabel(); }, null);
+    wireNumSetting("download-days", downloadDays, 0, 92, 30, function (v) { window.GeoState.save({ downloadDays: v }); refreshRecentModeLabel(); }, null);
     wireNumSetting("fetchonopen-days", fetchOnOpenDays, 1, 92, 30, function (v) { window.GeoState.save({ fetchOnOpenDays: v }); }, null);
 
     // Historic-observations date range (defaults: last 5 years), persisted.
