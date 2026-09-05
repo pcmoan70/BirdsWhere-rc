@@ -1,9 +1,9 @@
 {
- "_version": "v1580",
+ "_version": "v1581",
  "./": "a3e2dc2b934a2647",
  "index.html": "a3e2dc2b934a2647",
  "sw-register.js": "f6dba3a3f498d30a",
- "app.js": "3b84a86a1e60aef9",
+ "app.js": "f6709a724dbdaef7",
  "rarity.js": "8bbf342e100c19cf",
  "offline-maps.js": "897a5fc45021d9f9",
  "points-lists.js": "2c129e5e2bea811c",

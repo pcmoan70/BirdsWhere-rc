@@ -3059,7 +3059,7 @@
   // Per-source fetch timeout (seconds). A source still running after this is
   // aborted; whatever it had already paged is kept and its label turns red.
   // 0 = no timeout. Default 30 s.
-  function fetchTimeoutSec() { var n = +window.GeoState.get("fetchTimeoutSec", 30); return (n >= 0 && n <= 600) ? n : 30; }
+  function fetchTimeoutSec() { var n = +window.GeoState.get("fetchTimeoutSec", 120); return (n >= 0 && n <= 600) ? n : 120; }   // default 120 s (0 = no timeout)
   function setFetchTimeoutSec(n) { window.GeoState.save({ fetchTimeoutSec: Math.max(0, Math.min(600, +n || 0)) }); allSightingsCache = {}; }
   // Human label for a radius in km — sub-kilometre shown in metres ("500 m").
   function radiusLabel(km) { var r = (km == null) ? recentRadiusKm() : km; return r < 1 ? Math.round(r * 1000) + " m" : r + " km"; }
@@ -15643,7 +15643,7 @@
         if (document.getElementById("detlist-modal") && document.getElementById("detlist-modal").style.display === "flex" && typeof renderDetListModal === "function") renderDetListModal();
       });
     }
-    wireNumSetting("fetch-timeout", fetchTimeoutSec, 0, 600, 0, setFetchTimeoutSec, null);
+    wireNumSetting("fetch-timeout", fetchTimeoutSec, 0, 600, 120, setFetchTimeoutSec, null);
     wireNumSetting("sight-ttl", sightTtlMin, 0, 10080, 0, function (v) { window.GeoState.save({ sightTtlMin: v }); }, null);
     var fooEl = document.getElementById("fetchonopen-toggle");
     var fooDaysWrap = document.getElementById("fetchonopen-days-wrap");
