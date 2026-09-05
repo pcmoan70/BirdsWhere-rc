@@ -183,6 +183,23 @@ window.AppOffline = (function () {
       renderOfflineFrames();
     });
   }
+  // Delete EVERY downloaded offline area (pinned caches + records + on-map frames) —
+  // used by the Settings "Clear cached data → Offline areas" button.
+  function clearAllOfflineAreas() {
+    var areas = getOfflineAreas();
+    return Promise.all(areas.map(function (a) { return caches.delete("pinned-" + a.id).catch(function () {}); }))
+      .then(function () { saveOfflineAreas([]); renderOfflineAreas(); renderOfflineFrames(); });
+  }
+  // Count of downloaded offline areas + approx bytes (pinned tiles, ~22 KB each).
+  function offlineAreaStats() {
+    var areas = getOfflineAreas();
+    return Promise.all(areas.map(function (a) {
+      return caches.open("pinned-" + a.id).then(function (c) { return c.keys(); }).then(function (k) { return k.length; }).catch(function () { return 0; });
+    })).then(function (counts) {
+      var tiles = counts.reduce(function (s, n) { return s + n; }, 0);
+      return { n: areas.length, bytes: tiles * 22000 };
+    });
+  }
   // A tile layer for an arbitrary basemap (not necessarily the live one), used to
   // rebuild the exact tile URLs when re-downloading a purged area.
   function offlineLayerFor(basemap, labelsModeOverride) {
@@ -477,6 +494,8 @@ window.AppOffline = (function () {
     openOfflineManager: openOfflineManager,
     openAreaDialog: openAreaDialog,
     renderOfflineAreas: renderOfflineAreas,
+    clearAllAreas: clearAllOfflineAreas,
+    areaStats: offlineAreaStats,
     offlineLayers: offlineLayers,
     scheduleOfflineCheck: scheduleOfflineCheck,
     refreshOfflineZoomCap: refreshOfflineZoomCap,

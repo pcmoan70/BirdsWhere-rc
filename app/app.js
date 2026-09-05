@@ -4544,6 +4544,7 @@
         });
       });
     }
+    try { checkStoragePressure(); } catch (e) {}   // a fetch grew the caches → warn if device storage is nearly full
   }
   function hideSourceCounts() { var ld = document.getElementById("sp-loading"); if (ld) ld.style.display = "none"; }
   // The header List⇄Map switch is a pure VIEW toggle (since v820) — switching to the
@@ -5955,15 +5956,9 @@
               '</div>' +
               '<div class="settings-section" data-i18n="settings.secStorage">Storage &amp; offline</div>' +
               '<div class="ctrl-group">' +
-                '<label for="map-cache" data-i18n="ctrl.mapcache">Cache</label>' +
-                '<select id="map-cache">' +
-                  '<option value="0" data-i18n="opt.off">Off</option><option value="25">25 MB</option><option value="100">100 MB</option><option value="250">250 MB</option><option value="500">500 MB</option><option value="1000">1 GB</option><option value="-1" data-i18n="opt.unlimited">Unlimited</option>' +
-                '</select>' +
-                '<p class="cu-hint" data-i18n="ctrl.mapcachehint">One shared cache for the data the app fetches as you use it: map tiles, computed range data and overlay responses (least-recently-used dropped first when the size is reached), plus eBird hotspots, birding spots and species names — small, kept without limit. Downloaded offline areas are stored separately and never counted here.</p>' +
-              '</div>' +
-              '<div class="ctrl-group">' +
                 '<label data-i18n="ctrl.storage">Storage</label>' +
                 '<p class="cu-hint" id="storage-usage"></p>' +
+                '<p class="cu-hint storage-warn" id="storage-warn" style="display:none"></p>' +
                 '<button type="button" id="errlog-open" class="btn btn-light" data-i18n="errlog.title">Error log</button>' +
               '</div>' +
               '<div class="ctrl-group" id="install-wrap" hidden>' +
@@ -5982,6 +5977,7 @@
                   '<button type="button" class="clear-cache-btn" data-clear="birds"><span class="clear-lbl" data-i18n="clear.birds">Birding spots</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="best"><span class="clear-lbl" data-i18n="clear.best">Best sites</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="names"><span class="clear-lbl" data-i18n="clear.names">Species names (iNat)</span><span class="clear-cnt"></span></button>' +
+                  '<button type="button" class="clear-cache-btn" data-clear="offline"><span class="clear-lbl" data-i18n="clear.offline">Offline areas</span><span class="clear-cnt"></span></button>' +
                 '</div>' +
               '</div>' +
               '<div class="settings-section" data-i18n="settings.secDisplay">Display &amp; language</div>' +
@@ -5995,13 +5991,6 @@
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="show-sci-toggle" checked> <span data-i18n="ctrl.showsci">Scientific names</span></label>' +
-              '</div>' +
-              '<div class="ctrl-group">' +
-                '<label for="hold-delay" data-i18n="ctrl.holdDelay">Long-press delay</label>' +
-                '<select id="hold-delay">' +
-                  '<option value="400">0.4 s</option><option value="600">0.6 s</option><option value="800">0.8 s</option><option value="1000">1.0 s</option>' +
-                '</select>' +
-                '<p class="cu-hint" data-i18n="ctrl.holdDelayHint">How long a press must be held before hold actions fire (map long-press, species menu, overlay ⚙, header buttons…). Longer = fewer accidental popups on touch screens.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="experimental-toggle"> <span data-i18n="ctrl.experimental">Experimental features</span></label>' +
@@ -8332,7 +8321,7 @@
   // name, locate/search/offline header buttons, overlay ⚙ rows, funnel, points
   // panel, rarity bell…). User-adjustable in Settings ("Long-press delay") —
   // longer = fewer accidental popups on finicky touch screens.
-  function holdDelay() { var n = +window.GeoState.get("holdDelayMs", 600); return (n >= 300 && n <= 1500) ? n : 600; }
+  function holdDelay() { return 600; }   // constant 0.6 s long-press delay (setting removed)
   // Standing UX rule: the instant a press-and-hold crosses the threshold on ANY
   // active element, give a "click sensation" so the long-press feels acknowledged
   // (like a native long-press) — before its menu/action even appears. Haptic buzz
@@ -8584,16 +8573,13 @@
   // The range cache lives in localStorage, which browsers hard-cap at ~5 MB, so
   // it takes a small carved-out slice; the tiles get the rest. Both evict
   // least-recently-used first, so the total never exceeds the chosen size.
-  var MAP_CACHE_STEPS = [0, 25, 100, 250, 500, 1000, -1];   // -1 = Unlimited (never trimmed); 0 = Off (no caching)
-  function mapCacheMB() {
-    var saved = window.GeoState.get("mapCacheMB", null);
-    if (saved != null && MAP_CACHE_STEPS.indexOf(+saved) >= 0) return +saved;
-    var old = +window.GeoState.get("tileCacheMB", 100) || 0;   // migrate from the old separate tile setting
-    if (old <= 0) return 0;
-    return [25, 100, 250, 500].reduce(function (a, b) { return Math.abs(b - old) < Math.abs(a - old) ? b : a; }, 25);
-  }
-  function h3BudgetMB() { var mb = mapCacheMB(); return mb < 0 ? 5 : Math.min(5, mb); }   // small slice of the shared pool (Unlimited still caps it at 5 MB)
-  function tileCacheMB() { var mb = mapCacheMB(); return mb < 0 ? -1 : Math.max(0, mb - h3BudgetMB()); }   // the rest goes to map tiles; -1 = unlimited
+  // Caching is UNLIMITED (the size-cap setting was removed): the service worker never
+  // trims the tile pool. Instead the app WARNS when device storage gets close to full
+  // (see renderStorageUsage / #storage-warn), and everything is clearable via the
+  // "Clear cached data" buttons. The computed H3 range cache keeps its small localStorage slice.
+  function mapCacheMB() { return -1; }   // -1 = Unlimited
+  function h3BudgetMB() { return 5; }    // range-cache slice (localStorage ~5 MB cap)
+  function tileCacheMB() { return -1; }  // map tiles: unlimited (never trimmed)
   function sendTileCap() {
     try {
       if (navigator.serviceWorker && navigator.serviceWorker.controller)
@@ -8618,14 +8604,41 @@
     var el = document.getElementById("storage-usage"); if (!el) return;
     var app = fmtBytes(localStorageBytes());
     el.textContent = t("ctrl.storageLine", { app: app, used: "…", quota: "…" });
+    var warn = document.getElementById("storage-warn");
     if (navigator.storage && navigator.storage.estimate) {
       navigator.storage.estimate().then(function (est) {
         var e2 = document.getElementById("storage-usage"); if (!e2) return;
         e2.textContent = t("ctrl.storageLine", { app: app, used: fmtBytes(est.usage || 0), quota: fmtBytes(est.quota || 0) });
-      }).catch(function () { el.textContent = t("ctrl.storageLine", { app: app, used: "—", quota: "—" }); });
+        // Caching is unlimited, so warn when the device's storage quota is getting full —
+        // the "Clear cached data" buttons below are how the user frees space.
+        if (warn) {
+          var q = +est.quota || 0, u = +est.usage || 0, pct = q > 0 ? u / q : 0;
+          if (pct >= 0.80) {
+            warn.style.display = "";
+            warn.textContent = t("storage.warnFull", { pct: Math.round(pct * 100) });
+            warn.classList.toggle("storage-warn-crit", pct >= 0.92);
+          } else warn.style.display = "none";
+        }
+      }).catch(function () { el.textContent = t("ctrl.storageLine", { app: app, used: "—", quota: "—" }); if (warn) warn.style.display = "none"; });
     } else {
       el.textContent = t("ctrl.storageLine", { app: app, used: "—", quota: "—" });   // no StorageManager
+      if (warn) warn.style.display = "none";
     }
+  }
+  // Proactive storage-pressure check: after a cache-growing operation (a fetch,
+  // an offline download) warn via the status strip when the device storage is
+  // nearly full so the user can clear caches in Settings. Throttled to once/minute.
+  var _storageWarnedAt = 0;
+  function checkStoragePressure() {
+    if (!(navigator.storage && navigator.storage.estimate)) return;
+    navigator.storage.estimate().then(function (est) {
+      var q = +est.quota || 0, u = +est.usage || 0; if (!q) return;
+      var pct = u / q;
+      if (pct >= 0.90 && Date.now() - _storageWarnedAt > 60000) {
+        _storageWarnedAt = Date.now();
+        setStatus(t("storage.warnStatus", { pct: Math.round(pct * 100) }), true);
+      }
+    }).catch(function () {});
   }
   // All rows that WOULD be drawn (visible species, passing the recency filter).
   function eachDrawableRow(fn) {
@@ -15341,6 +15354,7 @@
         try { updateDetLegend(); } catch (e) {}
         try { if (typeof refreshCurrentView === "function") refreshCurrentView(); } catch (e) {}
       }
+      else if (what === "offline") p = (window.AppOffline && AppOffline.clearAllAreas) ? AppOffline.clearAllAreas() : Promise.resolve();   // all downloaded offline map areas (pinned caches + frames)
       else p = Promise.resolve();
       var restore = btn ? btn.innerHTML : "";   // keep the label + count markup to restore after the ✓
       if (btn) btn.disabled = true;
@@ -15370,6 +15384,7 @@
       }
       var hs = loadHotspotStore();
       setCnt("hotspots", Object.keys(hs).length, jsonBytes(hs));
+      if (window.AppOffline && AppOffline.areaStats) AppOffline.areaStats().then(function (s) { setCnt("offline", s.n, s.bytes, true); }).catch(function () {});
       // Species-Range cache: the in-memory Map IS the working set (hydrated from
       // its pool blob at boot) — count its (species,week) tags, size via the same
       // rounded serialization used to persist it.
@@ -15541,14 +15556,6 @@
 
     // Hotspot min/max + birding-spot max moved OUT of Settings — they live in the
     // overlay rows' ⚙ popup (showZoomMenu) only.
-    var hdEl = document.getElementById("hold-delay");
-    if (hdEl) {
-      hdEl.value = String(holdDelay());
-      hdEl.addEventListener("change", function () {
-        window.GeoState.save({ holdDelayMs: +this.value || 600 });   // every hold gesture reads holdDelay() at press time
-      });
-    }
-
     // Numeric Settings inputs: seed from a getter, then on change clamp to an
     // integer in [min,max], write it back into the field, persist via save(v),
     // and run an optional after() (re-render). One implementation for all of them.
@@ -15702,16 +15709,8 @@
       crEl.addEventListener("change", function () { window.GeoState.save({ countryRes: +this.value || 4 }); });
     }
 
-    var mcEl = document.getElementById("map-cache");
-    if (mcEl) {
-      mcEl.value = String(mapCacheMB());
-      mcEl.addEventListener("change", function () {
-        window.GeoState.save({ mapCacheMB: +this.value || 0 });
-        h3CacheMB = h3BudgetMB();   // re-split the shared budget…
-        sendTileCap();              // …tiles get the rest (service worker re-trims)
-        saveH3Cache();              // re-fit the range cache to its new slice (or clear at Off)
-      });
-    }
+    // (The "Map cache" size selector was removed — caching is unlimited; storage
+    // pressure is surfaced via renderStorageUsage's warning instead.)
     // Push the tile-cache cap to the SW once it's controlling (and whenever it changes).
     if (navigator.serviceWorker) {
       try { navigator.serviceWorker.ready.then(sendTileCap).catch(function () {}); navigator.serviceWorker.addEventListener("controllerchange", sendTileCap); } catch (e) {}
