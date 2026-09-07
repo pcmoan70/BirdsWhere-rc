@@ -1803,7 +1803,7 @@
         '<td class="prob-cell sp-ytop" data-key="' + escapeHtml(d.key || "") + '"></td>' : "") +
       (opts.date ? '<td class="sp-d-date">' + dateCell + "</td>" : "") +
       (opts.loc ? '<td class="sp-d-loc">' + (placeAccurate(d)
-        ? '<span class="sp-loc-click" role="button" title="' + escapeHtml(d.place) + '">' + escapeHtml(d.place) + "</span>"
+        ? '<span class="sp-loc-click" role="button" data-loc="' + escapeHtml(String(d.place).trim()) + '" title="' + escapeHtml(d.place) + '">' + escapeHtml(d.place) + "</span>"
         : rgeoSpanHtml(d.lat, d.lon, "sp-loc-click", "", ' role="button"', String(d.place || "").trim(), d.posFuzzM)) + "</td>" : "") +   // lat/lon-only or generic place → map-derived name
       (opts.dist !== false ? '<td class="num">' + km + "</td>" : "") +
       '<td class="num">' + cnt + "</td>" +
@@ -1868,7 +1868,7 @@
           var gLoc = null;
           for (var gli = 0; gli < g.items.length; gli++) { var git = g.items[gli]; if (git && isFinite(+git.lat) && isFinite(+git.lon)) { gLoc = git; break; } }
           locSpan = gLoc
-            ? ' · <span class="dl-loc sp-loc-click" role="button" data-lat="' + (+gLoc.lat) + '" data-lon="' + (+gLoc.lon) + '">' + escapeHtml(g.loc) + "</span>"
+            ? ' · <span class="dl-loc sp-loc-click" role="button" data-lat="' + (+gLoc.lat) + '" data-lon="' + (+gLoc.lon) + '" data-loc="' + escapeHtml(g.loc) + '">' + escapeHtml(g.loc) + "</span>"
             : ' <span class="dl-loc">· ' + escapeHtml(g.loc) + "</span>";
         } else if (g.items[0] && isFinite(+g.items[0].lat) && isFinite(+g.items[0].lon)) {
           // No (accurate) source place → the group is one spot (grouped by its
@@ -2017,7 +2017,7 @@
         e.preventDefault(); e.stopPropagation();
         hideLocHoverMap();
         var c = locClickCoords(this);
-        showLocPointMenu(c.lat, c.lon, this.textContent, e.clientX, e.clientY);
+        showLocPointMenu(c.lat, c.lon, this.textContent, e.clientX, e.clientY, null, { locName: this.getAttribute("data-loc") || "" });
       });
       // Hovering a place name previews it on a small map without leaving the list.
       s.addEventListener("mouseenter", function (e) {
@@ -8231,11 +8231,55 @@
     for (var i = 0; i < detObsNames.length; i++) if (obs.indexOf(detObsNames[i]) >= 0) return true;   // substring match
     return false;
   }
+  // Location filter (📍): null = all locations; else a Set of selected accurate
+  // place names ("" = the "no location" bucket). A per-RECORD filter, like the
+  // observer one. A record's "location" is its accurate place name (generic
+  // country/admin names and lat/lon-only rows go in the "(no location)" bucket);
+  // matched EXACTLY (a place is a single string, not a concatenation of names).
+  var detLocFilter = null;              // Set of selected place names (incl "") or null = all
+  var detLocNames = [];                 // selected non-empty place names
+  var detLocAllowNone = false;          // is "(no location)" selected
+  function detLocKey(r) { return placeAccurate(r) ? String(r.place || "").trim() : ""; }
+  function setDetLocFilter(set) {
+    // null = all locations; empty Set = "None" (a base to then tick a few); a Set
+    // holding only "" is the "(no location)" bucket.
+    detLocFilter = set || null; detLocNames = []; detLocAllowNone = false;
+    if (detLocFilter) detLocFilter.forEach(function (n) { if (n) detLocNames.push(n); else detLocAllowNone = true; });
+  }
+  function detLocPasses(r) {
+    if (!detLocFilter) return true;
+    var loc = detLocKey(r);
+    if (!loc) return detLocAllowNone;   // no accurate place → "(no location)" bucket
+    return detLocFilter.has(loc);
+  }
+  // Heal a remembered location filter whose selected names aren't among the
+  // currently-plotted locations (else the map silently blanks). Explicit "None"
+  // (empty Set) is left alone. Mirrors reconcileObsFilter.
+  function reconcileLocFilter() {
+    if (!detLocFilter || !detLocFilter.size) return false;
+    if (!Object.keys(detPlot).length) return false;
+    var lo = detAllLocations(), present = detLocAllowNone && lo.hasNone;
+    for (var i = 0; !present && i < detLocNames.length; i++) if (lo.names.indexOf(detLocNames[i]) >= 0) present = true;
+    if (present) return false;
+    setDetLocFilter(null); saveLegendState(); return true;
+  }
+  // Distinct accurate place names among the plotted rows (+ a "(no location)" flag)
+  // — what the location checklist offers.
+  function detAllLocations() {
+    var set = Object.create(null), hasNone = false;
+    Object.keys(detPlot).forEach(function (k) {
+      (detPlot[k].rows || []).forEach(function (r) {
+        var loc = detLocKey(r);
+        if (loc) set[loc] = 1; else hasNone = true;
+      });
+    });
+    return { names: Object.keys(set).sort(function (a, b) { return a.localeCompare(b); }), hasNone: hasNone };
+  }
   // The combined per-row visibility test shared by every list/count/map path: date window +
-  // observer filter (incl. dedup-hidden) + data-source filter + "New" filter. Centralised so the
-  // four sub-filters can't silently drift apart between the list-total, obs-count, map and
-  // restrict-to-view call sites.
-  function detRowPasses(r) { return detDatePasses(r.date) && detObsPasses(r) && detPassesSrc(r) && detPassesNew(r); }
+  // observer filter (incl. dedup-hidden) + location filter + data-source filter + "New" filter.
+  // Centralised so the sub-filters can't silently drift apart between the list-total, obs-count,
+  // map and restrict-to-view call sites.
+  function detRowPasses(r) { return detDatePasses(r.date) && detObsPasses(r) && detLocPasses(r) && detPassesSrc(r) && detPassesNew(r); }
   // A species is an "alert" when its detPlot entry carries injected rarity rows
   // (syncAlertDetections flags the entry `alert`).
   function isAlertSpecies(k) { return !!(detPlot[k] && detPlot[k].alert); }
@@ -10123,6 +10167,18 @@
       });
       el.appendChild(box);
     }
+    // Filter the map/lists to this location (only when the caller supplies an
+    // accurate place name that the location filter can match on).
+    var locName = info && info.locName ? String(info.locName).trim() : "";
+    if (locName) {
+      var inLocFilter = !!detLocFilter && detLocFilter.has(locName);
+      el.appendChild(drmBtn(inLocFilter ? tLabel("loc.removeFilter") : tLabel("loc.filterOnly"), function () {
+        closeDetRowMenu();
+        if (inLocFilter) { var next = new Set(detLocFilter); next["delete"](locName); setDetLocFilter(next.size ? next : null); }
+        else setDetLocFilter(new Set([locName]));
+        saveLegendState(); detFiltersRefresh();
+      }, "funnel"));
+    }
     // "Find on map" is pointless when the menu was opened FROM a marker on the map
     // (the birding spots) — callers set info.noFind there.
     if (!(info && info.noFind)) el.appendChild(drmBtn(t("locmenu.find"), function () { focusPointOnMap(lat, lon); }, "pin"));
@@ -10821,6 +10877,7 @@
     clearSpider();
     ensureDedup();
     reconcileObsFilter();   // drop a stale observer filter that no longer matches any plotted observer
+    reconcileLocFilter();   // …and likewise a stale location filter
     if (typeof scheduleHotspot === "function") scheduleHotspot();   // refresh the hotspot heatmap when the plotted set changes
 
     if (detFocusKey && !detPlot[detFocusKey]) detFocusKey = null;   // focused species gone → don't mute everything
@@ -11269,7 +11326,7 @@
   // recency days / date range.) Drives the black × (clear all) in both the legend
   // and the detections-list filter bar.
   function detHasFilter() {
-    return detSelectionActive() || detExclusionActive() || detDaySelActive() || detStarFilter || detRareFilter || detYearFilter || detLifeFilter || detAlertFilter || (detLegendRows !== "all") || detNewFilter || !!detObsFilter || !!detSrcFilter || (detRecencyDays() !== 0) || !!detDateRange() || detMonths().length > 0 || countFilterActive() || probFilterActive() || (detRegionMode !== "off");
+    return detSelectionActive() || detExclusionActive() || detDaySelActive() || detStarFilter || detRareFilter || detYearFilter || detLifeFilter || detAlertFilter || (detLegendRows !== "all") || detNewFilter || !!detObsFilter || !!detLocFilter || !!detSrcFilter || (detRecencyDays() !== 0) || !!detDateRange() || detMonths().length > 0 || countFilterActive() || probFilterActive() || (detRegionMode !== "off");
   }
   // Reset every legend filter at once (the black ×): the species selection, the
   // ★/◉/🟡 mode filter, the observer filter, and the recency (days) window → All.
@@ -11279,6 +11336,7 @@
     detStarFilter = 0; detRareFilter = 0; detYearFilter = 0; detLifeFilter = 0; detAlertFilter = 0; detNewFilter = false; detTodayFilter = false;
     detObsPanelOpen = false; detDaysPanelOpen = false; detModePanelOpen = false;
     setDetObsFilter(null);                                                   // observer → all
+    setDetLocFilter(null);                                                   // location → all
     detSrcFilter = null;                                                     // source → all
     detRegionMode = "off";                                                    // region filter → off
     speciesAgeFilterDays = 0;
@@ -11458,7 +11516,7 @@
   // Persist the legend's UI state — collapsed, the starred-only filter, and the
   // row selection — so the map legend comes back the way the user left it.
   function saveLegendState() {
-    window.GeoState.save({ mapLegend: { mini: detLegendMini, starFilter: detStarFilter, rareFilter: detRareFilter, yearFilter: detYearFilter, lifeFilter: detLifeFilter, alertFilter: detAlertFilter, selected: Object.keys(detSelected), excluded: Object.keys(detExcluded), selBase: { sel: Object.keys(detSelBase.sel), exc: Object.keys(detSelBase.exc) }, obsFilter: detObsFilter ? Array.from(detObsFilter) : null, srcFilter: detSrcFilter ? Array.from(detSrcFilter) : null, deleted: deletedSpecies, countMin: spCountMin, countMax: spCountMax, countMetric: spCountMetric, ageDays: speciesAgeFilterDays, newFilter: detNewFilter, newSince: detNewSince, todayFilter: detTodayFilter, daySel: Object.keys(detDaySel), rows: detLegendRows, sort: detLegendSort, regionMode: detRegionMode, regionPick: detRegionPick } });
+    window.GeoState.save({ mapLegend: { mini: detLegendMini, starFilter: detStarFilter, rareFilter: detRareFilter, yearFilter: detYearFilter, lifeFilter: detLifeFilter, alertFilter: detAlertFilter, selected: Object.keys(detSelected), excluded: Object.keys(detExcluded), selBase: { sel: Object.keys(detSelBase.sel), exc: Object.keys(detSelBase.exc) }, obsFilter: detObsFilter ? Array.from(detObsFilter) : null, locFilter: detLocFilter ? Array.from(detLocFilter) : null, srcFilter: detSrcFilter ? Array.from(detSrcFilter) : null, deleted: deletedSpecies, countMin: spCountMin, countMax: spCountMax, countMetric: spCountMetric, ageDays: speciesAgeFilterDays, newFilter: detNewFilter, newSince: detNewSince, todayFilter: detTodayFilter, daySel: Object.keys(detDaySel), rows: detLegendRows, sort: detLegendSort, regionMode: detRegionMode, regionPick: detRegionPick } });
   }
   function loadDetections() {
     // Self-heal a store left over-quota by an older build: cap the stored
@@ -11494,6 +11552,7 @@
     detLifeFilter = stSaved(ls.lifeFilter, -1);
     detAlertFilter = stSaved(ls.alertFilter, 0);
     setDetObsFilter(Array.isArray(ls.obsFilter) ? new Set(ls.obsFilter) : null);
+    setDetLocFilter(Array.isArray(ls.locFilter) ? new Set(ls.locFilter) : null);
     detSrcFilter = (Array.isArray(ls.srcFilter) && ls.srcFilter.length) ? new Set(ls.srcFilter) : null;
     // Heal a stale source filter (none of its sources plotted) so it can't blank the map.
     if (detSrcFilter && Object.keys(detPlot).length) {
@@ -12140,6 +12199,70 @@
     if (!set || set.size !== arr.length) return false;
     for (var i = 0; i < arr.length; i++) if (!set.has(arr[i])) return false;
     return true;
+  }
+  // ---- Location filter UI (mirrors the observer checklist, sans saved lists) ----
+  // Label for the location section summary: All / None / Custom.
+  function locFilterLabel() {
+    if (!detLocFilter) return t("det.allLoc");
+    if (detLocFilter.size === 0) return t("det.locNone");
+    return t("det.locCustom");
+  }
+  // The 📍 checklist: one ticked row per plotted location (+ a "(no location)" row);
+  // ticking restricts the map/list to the selected locations. The name is its own
+  // click target that opens the location filter menu (Show only / Add / Remove).
+  function detLocPanelHtml() {
+    var lo = detAllLocations();
+    if (!lo.names.length && !lo.hasNone) return "";
+    function row(key, label) {
+      var on = !detLocFilter || detLocFilter.has(key);
+      var span = key
+        ? '<span class="det-loc-name det-loc-addable" data-loc="' + escapeHtml(key) + '" title="' + escapeHtml(t("loc.filterHint")) + '">' + escapeHtml(label) + "</span>"
+        : '<span class="det-loc-name">' + escapeHtml(label) + "</span>";
+      return '<div class="det-obs-row"><input type="checkbox" class="det-loc-cb" data-loc="' + escapeHtml(key) + '"' + (on ? " checked" : "") + ' aria-label="' + escapeHtml(label) + '">' + span + "</div>";
+    }
+    var rows = lo.names.map(function (o) { return row(o, o); });
+    if (lo.hasNone) rows.push(row("", t("det.noLocation")));
+    var allOn = !detLocFilter;
+    var allTog = '<label class="det-obs-alltoggle" title="' + escapeHtml(t("det.locToggleAll")) + '"><input type="checkbox" class="det-loc-allcb"' + (allOn ? " checked" : "") + '> ' + escapeHtml(t("det.allLoc")) + "</label>";
+    return '<div class="det-obs-panel">' +
+      '<div class="det-obs-head"><span class="det-obs-scope">' + escapeHtml(locFilterLabel()) + "</span>" + allTog + "</div>" +
+      '<div class="det-loc-list">' + rows.join("") + "</div></div>";
+  }
+  // Clicking a location name → its filter chooser: Show only / Add / Remove / Show all.
+  function locationActionMenu(name, anchor) {
+    name = String(name || "").trim();
+    if (!name) return;
+    var r = anchor.getBoundingClientRect ? anchor.getBoundingClientRect() : anchor;
+    var menu = openAnchoredMenu("obs-addmenu");
+    var inFilter = !!detLocFilter && detLocFilter.has(name);
+    menu.innerHTML = '<div class="obs-addmenu-head">' + escapeHtml(name) + "</div>" +
+      (inFilter ? '<button type="button" class="obs-addmenu-item loc-act-unfilter">' + escapeHtml(t("loc.removeFilter")) + "</button>"
+                : '<button type="button" class="obs-addmenu-item loc-act-filter">' + escapeHtml(t("loc.filterOnly")) + "</button>" +
+                  (detLocFilter ? '<button type="button" class="obs-addmenu-item loc-act-addfilter">' + escapeHtml(t("loc.addToFilter")) + "</button>" : "")) +
+      (detLocFilter ? '<button type="button" class="obs-addmenu-item loc-act-all">' + escapeHtml(t("loc.removeAll")) + "</button>" : "");
+    positionAnchoredMenu(menu, r.left, r.bottom + 2);
+    var unBtn = menu.querySelector(".loc-act-unfilter");
+    if (unBtn) unBtn.addEventListener("click", function (e) {
+      e.stopPropagation(); closeAnchoredMenu();
+      var next = new Set(detLocFilter); next["delete"](name);
+      setDetLocFilter(next.size ? next : null);
+      saveLegendState(); detFiltersRefresh();
+    });
+    var onlyBtn = menu.querySelector(".loc-act-filter");
+    if (onlyBtn) onlyBtn.addEventListener("click", function (e) {
+      e.stopPropagation(); closeAnchoredMenu();
+      setDetLocFilter(new Set([name]));
+      saveLegendState(); detFiltersRefresh();
+    });
+    var addBtn = menu.querySelector(".loc-act-addfilter");
+    if (addBtn) addBtn.addEventListener("click", function (e) {
+      e.stopPropagation(); closeAnchoredMenu();
+      var next = new Set(detLocFilter); next.add(name);
+      setDetLocFilter(next);
+      saveLegendState(); detFiltersRefresh();
+    });
+    var allBtn = menu.querySelector(".loc-act-all");
+    if (allBtn) allBtn.addEventListener("click", function (e) { e.stopPropagation(); closeAnchoredMenu(); setDetLocFilter(null); saveLegendState(); detFiltersRefresh(); });
   }
   // Deduped SPECIMENS of a species passing the active date/observer/source filters,
   // optionally restricted to the current map view (legendViewBounds). The counts match
@@ -13089,6 +13212,22 @@
         nm.addEventListener("mouseleave", function () { clearTimeout(detHoverTimer); unfocusDetObs(); });
       }
     });
+    // Location checklist: All/None master toggle + per-location checkboxes + name→menu.
+    var allLocCb = el.querySelector(".det-loc-allcb");
+    if (allLocCb) allLocCb.addEventListener("change", function (e) { e.stopPropagation(); setDetLocFilter(this.checked ? null : new Set()); saveLegendState(); refresh(); });
+    el.querySelectorAll(".det-loc-cb").forEach(function (cb) {
+      cb.addEventListener("change", function (e) {
+        e.stopPropagation();
+        var lst0 = el.querySelector(".det-loc-list"), st = lst0 ? lst0.scrollTop : 0;   // keep the checklist scrolled where it was
+        var boxes = el.querySelectorAll(".det-loc-cb"), checked = [], allOn = true;
+        Array.prototype.forEach.call(boxes, function (b) { if (b.checked) checked.push(b.getAttribute("data-loc")); else allOn = false; });
+        setDetLocFilter(allOn ? null : new Set(checked)); saveLegendState(); refresh();
+        var lst1 = document.querySelector("#detlist-filters-wrap .det-loc-list") || document.querySelector("#sp-filters-wrap .det-loc-list"); if (lst1) lst1.scrollTop = st;   // el was replaced by refresh()
+      });
+    });
+    el.querySelectorAll(".det-loc-name.det-loc-addable").forEach(function (nm) {
+      nm.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); locationActionMenu(this.getAttribute("data-loc"), this); });
+    });
     // Tickable observer-lists dropdown: tick a list → apply its observers (union).
     var obsDd = el.querySelector(".det-obslists-dd");
     if (obsDd) obsDd.addEventListener("toggle", function () { obsListsDdOpen = obsDd.open; });
@@ -13218,6 +13357,10 @@
       : detMonths().length ? detMonths().map(histMonthShort).join(" ") : t("filters.allTime");
     var secDate = affSection("date", t("det.recency"), dateActive, dateSum, detDaysPanelHtml());
 
+    // Location — a checklist of the plotted places (mirrors the observer panel)
+    var locBody = detLocPanelHtml();
+    var secLoc = locBody ? affSection("loc", t("filters.locations"), !!detLocFilter, locFilterLabel(), locBody) : "";
+
     // Observer — reuse the observer panel
     var secObs = affSection("obs", t("obs.people"), !!detObsFilter, obsFilterLabel(), detObsPanelHtml());
 
@@ -13245,7 +13388,7 @@
     var secRegion = affSection("region", t("region.title"), detRegionMode !== "off", regSum, affRegionHtml());
 
     // Order: "Show last" (date) at the top; Probability sits right under Status; the standalone Hidden checkbox at the very bottom.
-    return head + '<div class="aff-body">' + secDate + secSort + secSel + secLists + secMode + secProb + secNew + secCnt + secName + secObs + secSrc + secRegion + hiddenRow + "</div>";
+    return head + '<div class="aff-body">' + secDate + secSort + secSel + secLists + secMode + secProb + secNew + secCnt + secName + secLoc + secObs + secSrc + secRegion + hiddenRow + "</div>";
   }
   function affRegionHtml() {
     var opts = DET_REGIONS.map(function (n, i) { return '<option value="' + i + '"' + (i === detRegionPick ? " selected" : "") + ">" + escapeHtml(regionName(i)) + "</option>"; }).join("");
@@ -13306,6 +13449,7 @@
             window.GeoState.save({ probMin: 0, probMax: 100 }); rerenderPointList(); renderAllFiltersPane(); break;
           case "name": spNameQuery = ""; detMapSearch = ""; detFiltersRefresh(); break;
           case "date": clearDateFilters(); break;
+          case "loc": setDetLocFilter(null); saveLegendState(); detFiltersRefresh(); break;
           case "obs": setDetObsFilter(null); detFiltersRefresh(); break;
           case "src": setDetSrcFilter(null); break;
         }
@@ -13398,6 +13542,8 @@
     var scrollPos = oldBody ? oldBody.scrollTop : 0;
     var oldObs = allFiltersPane.box.querySelector(".det-obs-list");
     var obsPos = oldObs ? oldObs.scrollTop : 0;
+    var oldLoc = allFiltersPane.box.querySelector(".det-loc-list");
+    var locPos = oldLoc ? oldLoc.scrollTop : 0;
     var oldMenu = allFiltersPane.box.querySelector(".sp-lists-menu");
     var menuPos = oldMenu ? oldMenu.scrollTop : 0;
     allFiltersPane.box.innerHTML = allFiltersBodyHtml();
@@ -13406,6 +13552,8 @@
     if (newBody && scrollPos) newBody.scrollTop = scrollPos;
     var newObs = allFiltersPane.box.querySelector(".det-obs-list");
     if (newObs && obsPos) newObs.scrollTop = obsPos;
+    var newLoc = allFiltersPane.box.querySelector(".det-loc-list");
+    if (newLoc && locPos) newLoc.scrollTop = locPos;
     var newMenu = allFiltersPane.box.querySelector(".sp-lists-menu");
     if (newMenu && menuPos) newMenu.scrollTop = menuPos;
   }
