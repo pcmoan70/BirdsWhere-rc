@@ -2532,11 +2532,6 @@
   function xenoCantoUrl(sci) {
     return "https://xeno-canto.org/explore?query=" + encodeURIComponent(sciBinomial(sci));
   }
-  // iNaturalist taxon page (photos for EVERY group — mammals, plants, fungi, …), by
-  // scientific name. The one photo link that works beyond birds.
-  function inatPhotosUrl(sci) {
-    return "https://www.inaturalist.org/taxa/search?q=" + encodeURIComponent(sciBinomial(sci));
-  }
   // iNaturalist's NAME SERVER — the same API that fills in the app's missing names
   // (taxa/autocomplete above), asked here for everything it holds: the accepted
   // scientific name and the common name per language. That is the check for "this
@@ -2633,22 +2628,6 @@
   }
   // NBN Atlas (UK) species search by scientific name.
   function nbnUrl(sci) { return "https://species.nbnatlas.org/search?q=" + encodeURIComponent(String(sci || "").trim()); }
-  // EuroBirdPortal — animated week-by-week European distribution maps. It addresses
-  // a species by a 6-letter code = first 3 of genus + first 3 of species, uppercased
-  // (e.g. Jynx torquilla → JYNTOR), so we can deep-link straight to the species map.
-  // EBP only covers ~105 species; an uncovered code just shows the empty viewer. A
-  // species without a usable binomial falls back to the general viewer.
-  var EBP_URL = "https://eurobirdportal.org/ebp/en/";
-  function ebpCode(sci) {
-    var p = String(sci || "").trim().split(/\s+/);
-    if (p.length < 2) return "";
-    var g = p[0].replace(/[^a-z]/gi, ""), s = p[1].replace(/[^a-z]/gi, "");
-    return (g.length >= 3 && s.length >= 3) ? (g.slice(0, 3) + s.slice(0, 3)).toUpperCase() : "";
-  }
-  function ebpUrl(sci) {
-    var code = ebpCode(sci);
-    return code ? "https://eurobirdportal.org/embedded/ebp/en/" + code + "/traces/2000" : EBP_URL;
-  }
   // National & regional bird sites, the single source of truth for the map
   // popups' country links. A flat [{cc, url, label}] list (cc = ISO-3166 alpha-2;
   // the pseudo-code "EU" is the Europe & Worldwide category). Curated from
@@ -6052,7 +6031,7 @@
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="experimental-toggle"> <span data-i18n="ctrl.experimental">Experimental features</span></label>' +
-                '<p class="cu-hint" data-i18n="ctrl.experimentalHint">Off (default). On: unlocks less-polished extras — currently the NBN Atlas and EuroBirdPortal links in the species menu; more may appear here over time.</p>' +
+                '<p class="cu-hint" data-i18n="ctrl.experimentalHint">Off (default). On: unlocks less-polished extras — currently the NBN Atlas link in the species menu; more may appear here over time.</p>' +
               '</div>' +
               '<div class="app-qr"><img src="qr-app.svg" alt="" width="140" height="140" /><span class="app-qr-cap" data-i18n="settings.qrShare">Scan to open / share this app</span></div>' +
               '<div class="settings-section" data-i18n="settings.secWhatsNew">What’s new</div>' +
@@ -9932,10 +9911,6 @@
       el.appendChild(moreBtn);
       if (lbl) el.appendChild(drmBtn(t("menu.distmap"), function () { closeDetRowMenu(); showDistMap(name, sci, key); }));
       el.appendChild(drmBtn(t("menu.wiki"), function () { closeDetRowMenu(); openWikipedia(sci); }));
-      if (isBird && experimentalOn()) el.appendChild(drmBtn(expMark(t("menu.birdlife")), function () { closeDetRowMenu(); openBirdLife((lbl && lbl.common) || name, sci); }));   // BirdLife DataZone → Experimental
-      // iNaturalist — photos for EVERY group (the one that works beyond birds), and a
-      // name lookup for when the name in the list looks wrong.
-      el.appendChild(drmBtn(t("menu.inat"), function () { closeDetRowMenu(); openExternal(inatPhotosUrl(sci)); }));
       if (isBird) el.appendChild(drmBtn(t("menu.macaulay"), function () { closeDetRowMenu(); openExternal(macaulayUrl(key, sci, d && d.date)); }));   // birds only now
       if (isMammal) el.appendChild(drmBtn(t("menu.adw"), function () { closeDetRowMenu(); openExternal(adwUrl(sci)); }));
       if (isPlant) el.appendChild(drmBtn(t("menu.powo"), function () { closeDetRowMenu(); openExternal(powoUrl(sci)); }));
@@ -9948,8 +9923,6 @@
         var glo = hasLoc ? +d.lon : (marker ? marker.getLatLng().lng : map.getCenter().lng);
         if (gla >= 49 && gla <= 61.2 && glo >= -11.5 && glo <= 2)
           el.appendChild(drmBtn(expMark(t("menu.nbn")), function () { closeDetRowMenu(); openExternal(nbnUrl(sci)); }));
-        if (isBird && gla >= 34 && gla <= 72 && glo >= -25 && glo <= 45)
-          el.appendChild(drmBtn(expMark(t("menu.ebp")), function () { closeDetRowMenu(); openExternal(ebpUrl(sci)); }));
       }
     }
     // 3) Lists & actions — your data (any keyed species).
