@@ -8252,6 +8252,20 @@
     if (!loc) return detLocAllowNone;   // no accurate place → "(no location)" bucket
     return detLocFilter.has(loc);
   }
+  // Ticking the location checklist applies on a 1 s debounce: the filter STATE
+  // updates at once (so the checklist stays consistent) but the heavy map/legend/list
+  // rebuild waits until you've stopped toggling — the funnels pulse meanwhile.
+  var detLocApplyTimer = null, detLocBusy = false;
+  function detLocBusySet(on) { if (on === detLocBusy) return; detLocBusy = on; setFunnelBusy(on); }
+  function scheduleLocApply(set) {
+    setDetLocFilter(set);                 // state now; the visible refresh is deferred
+    clearTimeout(detLocApplyTimer);
+    detLocBusySet(true);
+    detLocApplyTimer = setTimeout(function () {
+      detLocBusySet(false);
+      saveLegendState(); detFiltersRefresh();
+    }, 1000);
+  }
   // Heal a remembered location filter whose selected names aren't among the
   // currently-plotted locations (else the map silently blanks). Explicit "None"
   // (empty Set) is left alone. Mirrors reconcileObsFilter.
@@ -8823,6 +8837,7 @@
       (e.rows || []).forEach(function (r) {
         if (!detDatePasses(r.date)) return;
         if (!detObsPasses(r)) return;          // observer filter (legend 👤)
+        if (!detLocPasses(r)) return;          // location filter (📍)
         if (!detPassesSrc(r)) return;          // data-source filter (click a source in the list)
         if (!detPassesNew(r)) return;          // "New" filter (only detections fetched after the baseline)
         if (center) {
@@ -10598,6 +10613,7 @@
       if (!detDatePasses(r.date)) return;
       if (allowed && !allowed.has(r)) return;   // global cap: only the newest N are drawn
       if (!detObsPasses(r)) return;             // observer filter (legend 👤)
+      if (!detLocPasses(r)) return;             // location filter (📍)
       if (!detPassesSrc(r)) return;             // data-source filter
       if (!detPassesNew(r)) return;             // "New" filter
       var lk = (+r.lat).toFixed(4) + "," + (+r.lon).toFixed(4);
@@ -13213,16 +13229,15 @@
       }
     });
     // Location checklist: All/None master toggle + per-location checkboxes + name→menu.
+    // Applied on a 1 s debounce (scheduleLocApply) so ticking several places rebuilds once.
     var allLocCb = el.querySelector(".det-loc-allcb");
-    if (allLocCb) allLocCb.addEventListener("change", function (e) { e.stopPropagation(); setDetLocFilter(this.checked ? null : new Set()); saveLegendState(); refresh(); });
+    if (allLocCb) allLocCb.addEventListener("change", function (e) { e.stopPropagation(); scheduleLocApply(this.checked ? null : new Set()); });
     el.querySelectorAll(".det-loc-cb").forEach(function (cb) {
       cb.addEventListener("change", function (e) {
         e.stopPropagation();
-        var lst0 = el.querySelector(".det-loc-list"), st = lst0 ? lst0.scrollTop : 0;   // keep the checklist scrolled where it was
         var boxes = el.querySelectorAll(".det-loc-cb"), checked = [], allOn = true;
         Array.prototype.forEach.call(boxes, function (b) { if (b.checked) checked.push(b.getAttribute("data-loc")); else allOn = false; });
-        setDetLocFilter(allOn ? null : new Set(checked)); saveLegendState(); refresh();
-        var lst1 = document.querySelector("#detlist-filters-wrap .det-loc-list") || document.querySelector("#sp-filters-wrap .det-loc-list"); if (lst1) lst1.scrollTop = st;   // el was replaced by refresh()
+        scheduleLocApply(allOn ? null : new Set(checked));   // pane isn't rebuilt mid-debounce, so the ticks hold; scroll is restored by renderAllFiltersPane on apply
       });
     });
     el.querySelectorAll(".det-loc-name.det-loc-addable").forEach(function (nm) {
