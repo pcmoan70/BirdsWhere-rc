@@ -693,6 +693,14 @@ input:focus-visible {
 .sp-page-bar { display: flex; align-items: center; gap: 10px; }
 .sp-page-bar h3 { margin: 0; }
 #sp-back, #bc-back { display: none; }   /* hidden in the inline (range-mode) card */
+/* Species-list header: the [<] back button sits to the LEFT of a column that
+   stacks the reverse-geocoded place names (one per line) above the coord/summary. */
+#species-panel .sp-page-bar { align-items: flex-start; }
+#species-panel.as-page #sp-back { margin-top: 2px; flex: 0 0 auto; }
+.sp-head-lines { display: flex; flex-direction: column; min-width: 0; }
+#species-panel .sp-place-line { display: block; line-height: 1.3; }
+#species-panel .sp-place-line:first-child { font-weight: 600; }
+#species-panel .sp-meta-line { display: block; margin-top: 2px; }
 
 /* Species List & Migration open as a full-screen page, not an under-map card */
 #species-panel.as-page,

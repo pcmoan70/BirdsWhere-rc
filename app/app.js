@@ -6064,9 +6064,11 @@
         '<div id="species-panel">' +
           '<div class="sp-page-bar">' +
             '<button id="sp-back" class="fp-back" title="Back to map">' + ico("back") + '</button>' +
-            '<h3 id="sp-title"></h3>' +
+            '<div class="sp-head-lines">' +
+              '<h3 id="sp-title"></h3>' +
+              '<div class="sp-coords" id="sp-coords"></div>' +
+            '</div>' +
           '</div>' +
-          '<div class="sp-coords" id="sp-coords"></div>' +
           '<div id="sp-controls" style="display:none">' +
             '<select id="sp-layout" class="detlist-sort-sel" aria-label="Layout"></select>' +
             '<button id="sp-filter-btn" class="sp-filter-btn ico-btn" type="button" aria-label="Filters" title="Filters">' + ico("funnel") + '</button>' +
@@ -11054,7 +11056,7 @@
     // (or none) show no place name — and no generic "species here" title.
     var spTitle = document.getElementById("sp-title");
     if (spTitle) { var an1 = fetchedAreaNames(); spTitle.textContent = an1.length === 1 ? an1[0] : ""; }
-    var coords = document.getElementById("sp-coords"); if (coords) coords.textContent = "";
+    var coords = document.getElementById("sp-coords"); if (coords) { coords.textContent = ""; delete coords.dataset.flat; delete coords.dataset.placeKey; }
     var rows = collectVisibleDetections(null, false);   // honour the species selection / applied list
     // Restrict to what's inside the current map view — same as the per-point list (restrictListToView),
     // so entering list mode shows only what's on screen, not every plotted detection everywhere.
@@ -19008,14 +19010,29 @@
   // Set a coords/summary line, prefixed with the resolved place name. The base
   // summary shows immediately; the place name is prepended once resolved (and
   // re-applied on later renders at the same location via the cache).
-  function setCoordsWithPlace(el, lat, lon, baseSummary) {
+  // `asList` (species-list header): render the reverse-geocoded place hierarchy
+  // ("Indre Østfold, Østfold, Norway") as a stacked vertical list, one place per
+  // line, with the coordinate/summary as the final line. Otherwise it stays a
+  // single comma+· line (the location-analysis header). `dataset.flat` keeps the
+  // one-line form for the PDF header.
+  function setCoordsWithPlace(el, lat, lon, baseSummary, asList) {
     if (!el) return;
     var k = placeKey(lat, lon);
     el.dataset.base = baseSummary;
     el.dataset.placeKey = k;
-    var apply = function (name) { el.textContent = (name ? name + " · " : "") + el.dataset.base; };
+    var apply = function (name) {
+      el.dataset.flat = (name ? name + " · " : "") + el.dataset.base;
+      if (asList) {
+        var parts = name ? name.split(",").map(function (s) { return s.trim(); })
+          .filter(function (p) { return p && !/^\d[\d\s-]*$/.test(p); }) : [];   // drop bare postcodes
+        el.innerHTML = parts.map(function (p) { return '<span class="sp-place-line">' + escapeHtml(p) + "</span>"; }).join("") +
+          '<span class="sp-meta-line">' + escapeHtml(el.dataset.base) + "</span>";
+      } else {
+        el.textContent = el.dataset.flat;
+      }
+    };
     if (placeCache[k] !== undefined) { apply(placeCache[k]); return; }
-    el.textContent = baseSummary;
+    apply("");   // show the coordinate/summary line while the place name resolves
     reverseGeocode(lat, lon).then(function (name) {
       placeCache[k] = name || "";
       if (el.dataset.placeKey === k) apply(placeCache[k]);
@@ -19247,7 +19264,8 @@
     if (!lastSpeciesPdf || !lastSpeciesPdf.rows.length) { setStatus(t("status.selectSpecies")); return; }
     var d = lastSpeciesPdf, esc = escapeHtml;
     var heading = t("panel.spTitle");
-    var meta = (document.getElementById("sp-coords").textContent || "").trim();
+    var spCoordsEl = document.getElementById("sp-coords");
+    var meta = ((spCoordsEl.dataset.flat || spCoordsEl.textContent) || "").trim();
     var n2 = !!d.name2Head, cmp = !!d.cmpHead;
     // "Seen" column: the detection count from THIS point's latest fetch only
     // (result.agg) — not the accumulated map dots / rarity alerts in the on-screen union.
@@ -19521,9 +19539,12 @@
         else if (lastSppError) mergeHint = " · " + t("merge.netErr");
         if (mergeHint) setStatus(mergeHint.replace(/^ \xb7 /, ""));
       }
-      document.getElementById("sp-coords").textContent = (spp
+      var cSummary = (spp
         ? t("sp.countrySummaryMerged", { country: info.name || info.cc, n: cells.length, week: week, ns: results.length - nList, nl: nList, p: (pmin * 100).toFixed(0) })
         : t("sp.countrySummary", { country: info.name || info.cc, n: cells.length, week: week, ns: results.length, p: (pmin * 100).toFixed(0) })) + mergeHint;
+      var cCoordsEl = document.getElementById("sp-coords");
+      cCoordsEl.textContent = cSummary;   // country view: a single summary line (no per-point place list)
+      cCoordsEl.dataset.flat = cSummary; delete cCoordsEl.dataset.placeKey;
       var cProbs = results.filter(function (r) { return r.inModel; }).map(function (r) { return r.prob; });
       var cLo = cProbs.length ? Math.min.apply(null, cProbs) : 0;
       var cHi = cProbs.length ? Math.max.apply(null, cProbs) : 1;
@@ -20260,7 +20281,8 @@
         t("sp.summary", { lat: lat.toFixed(4), lon: lon.toFixed(4), week: weekMonthLabel(week), n: results.length, p: (pmin * 100).toFixed(0) }) +
         " · " + t("sp.radius", { km: recentRadiusKm() }) +
         (hist ? " · " + t("hist.range") + " " + fmtDate(hist.from) + " – " + fmtDate(hist.to) +
-          (hist.months && hist.months.length ? " · " + t("hist.months") + " " + hist.months.slice().sort(function (a, b) { return a - b; }).map(histMonthShort).join(", ") : "") : ""));
+          (hist.months && hist.months.length ? " · " + t("hist.months") + " " + hist.months.slice().sort(function (a, b) { return a - b; }).map(histMonthShort).join(", ") : "") : ""),
+        true);   // asList: place names stacked as a vertical list
       document.getElementById("sp-tbody").innerHTML = results.map(function (r) {
         var cmpCell = !hasCompare ? "<td></td>" : cmpAllPositive ? cmpBarCell(kind, r.cmpVal) : deltaCell(r.cmpVal);
         var name2Cell = '<td class="name2">' + (secondLang ? escapeHtml(secondName(r.label)) : "") + '</td>';
