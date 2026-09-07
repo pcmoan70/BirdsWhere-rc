@@ -19085,7 +19085,6 @@
   }
   // Radius (km) a fetched square was fetched at — encoded in its id ("lat,lon:rkm").
   function areaRkm(id) { var v = parseFloat(String(id).split(":")[1]); return isFinite(v) ? v : recentRadiusKm(); }
-  var isDesktopUi = function () { try { return !!(window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches); } catch (e) { return false; } };
   // Model species count above the probability floor at a square's centre for the
   // current week (matches the per-point "N species above p%"). Synchronous when the
   // point's prediction cell is already cached; otherwise it fires the inference and
@@ -19133,20 +19132,22 @@
       if (!(label in agg)) { agg[label] = { ids: [], obs: 0, clat: a.clat, clon: a.clon, rkm: areaRkm(a.id) }; order.push(label); }
       agg[label].ids.push(a.id); agg[label].obs += counts[a.id] || 0;
     });
-    // On desktop each square shows the full detail (coords · week · N species above p% · radius);
-    // on touch/narrow it stays compact (place · N obs). The species count is per-centre inference.
-    var desktop = isDesktopUi() && groupHasModel();
+    // Each square: place · N species · N obs · lat°, lon° (3 dp) · radius. The species
+    // count is the model's species-above-floor at the square's centre for the current
+    // week (per-centre inference, fills in async); omitted for no-model groups.
     var week = +document.getElementById("week-select").value;
     var pmin = +document.getElementById("prob-min").value / 100, pmax = +document.getElementById("prob-max").value / 100;
     var flatParts = [];
     var html = order.map(function (l) {
-      var g = agg[l], detail = "";
-      if (desktop) {
+      var g = agg[l], parts = [l];
+      if (groupHasModel()) {
         var sc = areaSpeciesCount(g.clat, g.clon, week, pmin, pmax, reRender);
-        detail = " · " + t("sp.summary", { lat: g.clat.toFixed(4), lon: g.clon.toFixed(4), week: weekMonthLabel(week), n: (sc === undefined ? "…" : sc), p: (pmin * 100).toFixed(0) }) +
-          " · " + t("sp.radius", { km: g.rkm });
+        parts.push(t("sp.spN", { n: (sc === undefined ? "…" : sc) }));
       }
-      var txt = l + detail + " · " + t("sp.obsN", { n: g.obs });
+      parts.push(t("sp.obsN", { n: g.obs }));
+      parts.push(g.clat.toFixed(3) + "°, " + g.clon.toFixed(3) + "°");
+      parts.push(t("sp.radius", { km: g.rkm }));
+      var txt = parts.join(" · ");
       flatParts.push(txt);
       return '<span class="sp-area-line">' +
                '<span class="sp-area-txt" title="' + escapeHtml(txt) + '">' + escapeHtml(txt) + "</span>" +

@@ -1441,6 +1441,7 @@ window.GeoI18N = (function () {
         "sp.summary": "{lat}°, {lon}° · {week} · {n} species above {p}%",
         "sp.radius": "{km} km neighbourhood",
         "sp.obsN": "{n} obs",
+        "sp.spN": "{n} species",
         "area.removeObs": "Remove all observations for this location",
         "sp.extraHint": "Not in the prediction model — observed by GBIF/eBird/iNaturalist",
         "bc.summary": "{lat}°, {lon}° · {n} species above {p}% avg · normalized to {max}%",
