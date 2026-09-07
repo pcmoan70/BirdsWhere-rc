@@ -11052,11 +11052,17 @@
     var tbl = document.getElementById("species-list-table"); if (tbl) tbl.style.display = "none";
     var ctrls = document.getElementById("sp-controls"); if (ctrls) ctrls.style.display = "none";   // no per-point controls without a point
     var fw = document.getElementById("sp-filters-wrap"); if (fw) fw.innerHTML = "";
-    // Header: the fetched area's place name ONLY when a single area was fetched; several areas
-    // (or none) show no place name — and no generic "species here" title.
+    // Header: list EVERY fetched square, one line each (was: only the single/last
+    // area's name). No generic "species here" title.
     var spTitle = document.getElementById("sp-title");
-    if (spTitle) { var an1 = fetchedAreaNames(); spTitle.textContent = an1.length === 1 ? an1[0] : ""; }
-    var coords = document.getElementById("sp-coords"); if (coords) { coords.textContent = ""; delete coords.dataset.flat; delete coords.dataset.placeKey; }
+    if (spTitle) spTitle.textContent = "";
+    var coords = document.getElementById("sp-coords");
+    if (coords) {
+      var an1 = fetchedAreaNames();
+      coords.innerHTML = an1.map(function (n) { return '<span class="sp-area-line">' + escapeHtml(n) + "</span>"; }).join("");
+      coords.dataset.flat = an1.join(" · ");   // one-line form for the PDF header
+      delete coords.dataset.placeKey;
+    }
     var rows = collectVisibleDetections(null, false);   // honour the species selection / applied list
     // Restrict to what's inside the current map view — same as the per-point list (restrictListToView),
     // so entering list mode shows only what's on screen, not every plotted detection everywhere.
@@ -19010,27 +19016,14 @@
   // Set a coords/summary line, prefixed with the resolved place name. The base
   // summary shows immediately; the place name is prepended once resolved (and
   // re-applied on later renders at the same location via the cache).
-  // `asList` (species-list header): render the reverse-geocoded place hierarchy
-  // ("Indre Østfold, Østfold, Norway") as a stacked vertical list, one place per
-  // line, with the coordinate/summary as the final line. Otherwise it stays a
-  // single comma+· line (the location-analysis header). `dataset.flat` keeps the
-  // one-line form for the PDF header.
-  function setCoordsWithPlace(el, lat, lon, baseSummary, asList) {
+  // The location description stays on ONE line ("place · coords · week · N species
+  // · radius"). `dataset.flat` mirrors the text (used by the PDF export header).
+  function setCoordsWithPlace(el, lat, lon, baseSummary) {
     if (!el) return;
     var k = placeKey(lat, lon);
     el.dataset.base = baseSummary;
     el.dataset.placeKey = k;
-    var apply = function (name) {
-      el.dataset.flat = (name ? name + " · " : "") + el.dataset.base;
-      if (asList) {
-        var parts = name ? name.split(",").map(function (s) { return s.trim(); })
-          .filter(function (p) { return p && !/^\d[\d\s-]*$/.test(p); }) : [];   // drop bare postcodes
-        el.innerHTML = parts.map(function (p) { return '<span class="sp-place-line">' + escapeHtml(p) + "</span>"; }).join("") +
-          '<span class="sp-meta-line">' + escapeHtml(el.dataset.base) + "</span>";
-      } else {
-        el.textContent = el.dataset.flat;
-      }
-    };
+    var apply = function (name) { el.dataset.flat = (name ? name + " · " : "") + el.dataset.base; el.textContent = el.dataset.flat; };
     if (placeCache[k] !== undefined) { apply(placeCache[k]); return; }
     apply("");   // show the coordinate/summary line while the place name resolves
     reverseGeocode(lat, lon).then(function (name) {
@@ -20281,8 +20274,7 @@
         t("sp.summary", { lat: lat.toFixed(4), lon: lon.toFixed(4), week: weekMonthLabel(week), n: results.length, p: (pmin * 100).toFixed(0) }) +
         " · " + t("sp.radius", { km: recentRadiusKm() }) +
         (hist ? " · " + t("hist.range") + " " + fmtDate(hist.from) + " – " + fmtDate(hist.to) +
-          (hist.months && hist.months.length ? " · " + t("hist.months") + " " + hist.months.slice().sort(function (a, b) { return a - b; }).map(histMonthShort).join(", ") : "") : ""),
-        true);   // asList: place names stacked as a vertical list
+          (hist.months && hist.months.length ? " · " + t("hist.months") + " " + hist.months.slice().sort(function (a, b) { return a - b; }).map(histMonthShort).join(", ") : "") : ""));
       document.getElementById("sp-tbody").innerHTML = results.map(function (r) {
         var cmpCell = !hasCompare ? "<td></td>" : cmpAllPositive ? cmpBarCell(kind, r.cmpVal) : deltaCell(r.cmpVal);
         var name2Cell = '<td class="name2">' + (secondLang ? escapeHtml(secondName(r.label)) : "") + '</td>';
