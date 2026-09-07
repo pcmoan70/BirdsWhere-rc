@@ -19083,6 +19083,29 @@
     if (!sp || sp.style.display === "none") return;
     renderSpCoordsAreas(lastSpCoords.el, lastSpCoords.lat, lastSpCoords.lon, lastSpCoords.summary);
   }
+  // Radius (km) a fetched square was fetched at — encoded in its id ("lat,lon:rkm").
+  function areaRkm(id) { var v = parseFloat(String(id).split(":")[1]); return isFinite(v) ? v : recentRadiusKm(); }
+  var isDesktopUi = function () { try { return !!(window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches); } catch (e) { return false; } };
+  // Model species count above the probability floor at a square's centre for the
+  // current week (matches the per-point "N species above p%"). Synchronous when the
+  // point's prediction cell is already cached; otherwise it fires the inference and
+  // returns undefined ("…"), calling onReady to re-render once it lands.
+  var areaSpPending = Object.create(null);
+  function areaSpeciesCount(clat, clon, week, pmin, pmax, onReady) {
+    var cell = predCell(clat, clon);
+    if (cell[week]) {
+      var out = cell[week], n = 0;
+      for (var i = 0; i < out.length; i++) if (out[i] >= pmin && out[i] <= pmax && inGroup(i)) n++;
+      return n;
+    }
+    var pk = predSnap(clat) + "," + predSnap(clon) + "," + week;
+    if (!areaSpPending[pk]) {
+      areaSpPending[pk] = 1;
+      predictWeek(clat, clon, week).then(function () { delete areaSpPending[pk]; if (onReady) onReady(); },
+                                         function () { delete areaSpPending[pk]; });
+    }
+    return undefined;
+  }
   function renderSpCoordsAreas(el, lat, lon, summary) {
     if (!el) return;
     lastSpCoords = { el: el, lat: lat, lon: lon, summary: summary };
@@ -19097,26 +19120,56 @@
     }
     raw.sort(function (x, y) { return (y.clat - x.clat) || (x.clon - y.clon); });   // N→S, W→E — deterministic
     var counts = obsCountByArea();
-    // Aggregate by label (same place resolved from two squares → one line, counts summed).
+    // Aggregate by label (same place resolved from two squares → one line): merge ids + sum obs.
     var order = [], agg = Object.create(null);
+    var reRender = function () { if (el.isConnected) renderSpCoordsAreas(el, lat, lon, summary); };
     raw.forEach(function (a) {
       var key = placeKey(a.clat, a.clon), cached = placeCache[key];
       var label = a.name || (cached ? cached : "");
       if (!a.name && cached === undefined) {   // resolve this square's name once, then re-render
-        reverseGeocode(a.clat, a.clon).then(function (n) {
-          placeCache[key] = n || "";
-          if (el.isConnected) renderSpCoordsAreas(el, lat, lon, summary);
-        });
+        reverseGeocode(a.clat, a.clon).then(function (n) { placeCache[key] = n || ""; reRender(); });
       }
       if (!label) label = a.clat.toFixed(4) + "°, " + a.clon.toFixed(4) + "°";
-      if (!(label in agg)) { agg[label] = 0; order.push(label); }
-      agg[label] += counts[a.id] || 0;
+      if (!(label in agg)) { agg[label] = { ids: [], obs: 0, clat: a.clat, clon: a.clon, rkm: areaRkm(a.id) }; order.push(label); }
+      agg[label].ids.push(a.id); agg[label].obs += counts[a.id] || 0;
     });
-    var lineTxt = function (l) { return l + " · " + t("sp.obsN", { n: agg[l] }); };
-    el.innerHTML = order.map(function (l) { var s = lineTxt(l); return '<span class="sp-area-line" title="' + escapeHtml(s) + '">' + escapeHtml(s) + "</span>"; }).join("") +
-      (summary ? '<span class="sp-area-line sp-area-meta">' + escapeHtml(summary) + "</span>" : "");
-    el.dataset.flat = order.map(lineTxt).join(" · ") + (summary ? " · " + summary : "");
+    // On desktop each square shows the full detail (coords · week · N species above p% · radius);
+    // on touch/narrow it stays compact (place · N obs). The species count is per-centre inference.
+    var desktop = isDesktopUi() && groupHasModel();
+    var week = +document.getElementById("week-select").value;
+    var pmin = +document.getElementById("prob-min").value / 100, pmax = +document.getElementById("prob-max").value / 100;
+    var flatParts = [];
+    var html = order.map(function (l) {
+      var g = agg[l], detail = "";
+      if (desktop) {
+        var sc = areaSpeciesCount(g.clat, g.clon, week, pmin, pmax, reRender);
+        detail = " · " + t("sp.summary", { lat: g.clat.toFixed(4), lon: g.clon.toFixed(4), week: weekMonthLabel(week), n: (sc === undefined ? "…" : sc), p: (pmin * 100).toFixed(0) }) +
+          " · " + t("sp.radius", { km: g.rkm });
+      }
+      var txt = l + detail + " · " + t("sp.obsN", { n: g.obs });
+      flatParts.push(txt);
+      return '<span class="sp-area-line">' +
+               '<span class="sp-area-txt" title="' + escapeHtml(txt) + '">' + escapeHtml(txt) + "</span>" +
+               '<button type="button" class="sp-area-del" data-ids="' + escapeHtml(g.ids.join("|")) + '" title="' + escapeHtml(t("area.removeObs")) + '" aria-label="' + escapeHtml(t("area.removeObs")) + '">×</button>' +
+             "</span>";
+    }).join("");
+    el.innerHTML = html;
+    el.dataset.flat = flatParts.join(" · ");
     delete el.dataset.placeKey;
+    // Delegated once on the container so it survives the innerHTML re-renders (name /
+    // species-count resolving). Red × → remove all observations for that location,
+    // overlap-safe (same deleteFetchedArea the map's per-area × uses).
+    if (!el._areaDelWired) {
+      el._areaDelWired = true;
+      el.addEventListener("click", function (e) {
+        var btn = e.target && e.target.closest ? e.target.closest(".sp-area-del") : null;
+        if (!btn || !el.contains(btn)) return;
+        e.stopPropagation(); e.preventDefault();
+        (btn.getAttribute("data-ids") || "").split("|").filter(Boolean).forEach(function (id) { deleteFetchedArea(id); });
+        refreshSpCoords();
+        if (typeof refreshOpenList === "function") refreshOpenList();
+      });
+    }
   }
 
   // A detailed, specific place name (the actual locality — building/park/road/

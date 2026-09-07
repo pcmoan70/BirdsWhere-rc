@@ -699,8 +699,11 @@ input:focus-visible {
 #species-panel .sp-page-bar { align-items: flex-start; }
 #species-panel.as-page #sp-back { margin-top: 2px; flex: 0 0 auto; }
 .sp-head-lines { display: flex; flex-direction: column; min-width: 0; }
-#species-panel .sp-area-line { display: block; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#species-panel .sp-area-meta { white-space: normal; overflow: visible; margin-top: 2px; opacity: 0.85; }
+#species-panel .sp-area-line { display: flex; align-items: baseline; gap: 6px; line-height: 1.35; }
+#species-panel .sp-area-txt { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+/* Red × to remove all observations for a location (overlap-safe, like the map's per-area delete). */
+#species-panel .sp-area-del { flex: 0 0 auto; border: none; background: none; cursor: pointer; color: #c0392b; font-size: 1.15em; line-height: 1; padding: 0 3px; opacity: 0.75; }
+#species-panel .sp-area-del:hover { opacity: 1; }
 
 /* Species List & Migration open as a full-screen page, not an under-map card */
 #species-panel.as-page,
