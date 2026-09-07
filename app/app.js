@@ -5781,14 +5781,6 @@
               '<button type="button" id="settings-update" class="settings-update" style="display:none"></button>' +
               '<div id="settings-update-notes" class="cu-hint" style="display:none"></div>' +
               '<div class="settings-section" data-i18n="settings.secView">View</div>' +
-              '<div class="ctrl-group" id="hotspot-wrap">' +
-                '<label data-i18n="ctrl.hotspot">Density heatmap</label>' +
-                '<div class="hs-row">' +
-                  '<button type="button" class="hs-cycle" id="hotspot-cycle" data-hs="off" data-i18n="ctrl.hsOff">Off</button>' +
-                  '<label class="ctrl-check hs-dots"><input type="checkbox" id="showdots-toggle" checked> <span data-i18n="ctrl.showDots">Show dots</span></label>' +
-                '</div>' +
-                '<p class="cu-hint" data-i18n="ctrl.hotspotHint">Shades the map by how much activity each area has — tap to cycle Off → species per area → distinct observers → total counts. A smooth, zoom-steady heat cloud; use “Show dots” to see the heatmap alone, the dots alone, or both.</p>' +
-              '</div>' +
               '<div class="ctrl-group">' +
                 '<label for="group-select" data-i18n="ctrl.group">Species group</label>' +
                 '<select id="group-select" style="display:none">' +
@@ -5835,6 +5827,14 @@
                   '<input type="text" id="maptiler-key-input" autocomplete="off" spellcheck="false" data-i18n-ph="ph.maptilerKey" placeholder="MapTiler API key (for MapTiler Outdoor)" />' +
                   '<p class="cu-hint" data-i18n="ctrl.maptilerKeyHint">MapTiler Outdoor (trails + terrain) needs a free personal MapTiler API key from maptiler.com — paste it here to use it. Until then a plain Streets map is shown.</p>' +
                 '</div>' +
+              '</div>' +
+              '<div class="ctrl-group" id="hotspot-wrap">' +
+                '<label data-i18n="ctrl.hotspot">Density heatmap</label>' +
+                '<div class="hs-row">' +
+                  '<button type="button" class="hs-cycle" id="hotspot-cycle" data-hs="off" data-i18n="ctrl.hsOff">Off</button>' +
+                  '<label class="ctrl-check hs-dots"><input type="checkbox" id="showdots-toggle" checked> <span data-i18n="ctrl.showDots">Show dots</span></label>' +
+                '</div>' +
+                '<p class="cu-hint" data-i18n="ctrl.hotspotHint">Shades the map by how much activity each area has — tap to cycle Off → species per area → distinct observers → total counts. A smooth, zoom-steady heat cloud; use “Show dots” to see the heatmap alone, the dots alone, or both.</p>' +
               '</div>' +
               '<div class="ctrl-group" id="maplabels-wrap">' +
                 '<label for="maplabels-select" data-i18n="ctrl.maplabels">Place labels</label>' +
