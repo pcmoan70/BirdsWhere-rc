@@ -1440,6 +1440,7 @@ window.GeoI18N = (function () {
         "status.error": "Error: {msg}",
         "sp.summary": "{lat}°, {lon}° · {week} · {n} species above {p}%",
         "sp.radius": "{km} km neighbourhood",
+        "sp.obsN": "{n} obs",
         "sp.extraHint": "Not in the prediction model — observed by GBIF/eBird/iNaturalist",
         "bc.summary": "{lat}°, {lon}° · {n} species above {p}% avg · normalized to {max}%",
         "bc.avg": "{p}% avg",

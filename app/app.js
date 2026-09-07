@@ -855,6 +855,31 @@
     document.addEventListener("keydown", statusClearFn, true);
     setTimeout(function () { armed = true; }, 400);
   }
+  // The persistent species-page "Loaded: eBird (n), GBIF (k)…" line: keep it visible
+  // straight after a fetch, then hide it on the FIRST interaction (the per-area obs
+  // counts in the header carry the totals afterwards). A press ON the line itself
+  // (a clickable error chip) doesn't dismiss it. Short arm delay so the fetch's own
+  // click doesn't wipe it instantly.
+  var spLoadingClearFn = null;
+  function armSpLoadingClear() {
+    if (spLoadingClearFn) {
+      document.removeEventListener("pointerdown", spLoadingClearFn, true);
+      document.removeEventListener("keydown", spLoadingClearFn, true);
+    }
+    var armed = false;
+    spLoadingClearFn = function (ev) {
+      if (!armed) return;
+      var ld = document.getElementById("sp-loading");
+      if (ld && ev && ev.target && ld.contains(ev.target)) return;   // interacting WITH the line (error chip) keeps it
+      document.removeEventListener("pointerdown", spLoadingClearFn, true);
+      document.removeEventListener("keydown", spLoadingClearFn, true);
+      spLoadingClearFn = null;
+      if (ld) ld.style.display = "none";
+    };
+    document.addEventListener("pointerdown", spLoadingClearFn, true);
+    document.addEventListener("keydown", spLoadingClearFn, true);
+    setTimeout(function () { armed = true; }, 400);
+  }
   // Overlay data-load indicator in the status text above the map (Overpass overlays).
   function overlayLoadStatus(name) { setStatus(t("layer.loading", { name: name })); overlayBusy(name, true); }
   function overlayLoadedStatus(name, n) { setStatus(n < 0 ? t("layer.loadFail", { name: name }) : t("layer.loaded", { name: name, n: n })); overlayBusy(name, false); }
@@ -3284,7 +3309,8 @@
       var n = a && a.name ? String(a.name).trim() : "";
       if (n && !seen[n]) { seen[n] = 1; out.push(n); }
     });
-    return out;
+    // Sorted by name so the listing is stable — independent of fetch order/time.
+    return out.sort(function (a, b) { return a.localeCompare(b); });
   }
   function clearFetchedAreas() {
     if (fetchedAreasLayer) fetchedAreasLayer.clearLayers();
@@ -4284,10 +4310,11 @@
       if (ex.rows && ex.rows.length && inGrp(ex.cls)) entries.push({ key: "x:" + k, name: ex.name || ex.sci, rows: ex.rows, cls: ex.cls || "" });
     });
     if (!entries.length) return;
-    if (isFinite(+currentSpView.lat) && isFinite(+currentSpView.lon)) currentFetchAreaId = rememberFetchedArea(+currentSpView.lat, +currentSpView.lon, currentSpView.name || currentSpView.locName);
+    if (isFinite(+currentSpView.lat) && isFinite(+currentSpView.lon)) currentFetchAreaId = rememberFetchedArea(+currentSpView.lat, +currentSpView.lon, recentRadiusKm(), currentSpView.name || currentSpView.locName);
     entries.forEach(function (e) { plotDetections(e.key, e.name, e.rows, false, true, e.cls); });   // defer=true → rebuild once below
     currentFetchAreaId = null;
     rebuildDetLayers(); updateDetLegend();
+    refreshSpCoords();   // the just-fetched square + its obs count now show in the header
   }
   function plotHistoricRecs(recsM, grp) {
     if (!recsM || !recsM.length || typeof plotDetections !== "function") return;
@@ -4509,6 +4536,8 @@
     var cur = obsCurrent(); if (!cur.length) return;   // nothing queried this batch — leave the line as-is
     var parts = cur.map(function (it) { return escapeHtml(it.name) + " (" + it.count + ")"; });
     obsLine(t("sp.loaded", { n: parts.join(", ") }));
+    armSpLoadingClear();   // the persistent line dismisses on the first interaction
+    refreshSpCoords();     // per-area obs counts in the header reflect the finished fetch
   }
   // The species-page loading line, set straight from a fetch's per-source counts
   // (works for a cached fetch too, where obsTrack never ran). Persistent.
@@ -4549,7 +4578,9 @@
           else modalAlert(e);
         });
       });
+      armSpLoadingClear();   // the persistent line dismisses on the first interaction
     }
+    refreshSpCoords();   // per-area obs counts in the header reflect this fetch
     try { checkStoragePressure(); } catch (e) {}   // a fetch grew the caches → warn if device storage is nearly full
   }
   function hideSourceCounts() { var ld = document.getElementById("sp-loading"); if (ld) ld.style.display = "none"; }
@@ -11052,17 +11083,11 @@
     var tbl = document.getElementById("species-list-table"); if (tbl) tbl.style.display = "none";
     var ctrls = document.getElementById("sp-controls"); if (ctrls) ctrls.style.display = "none";   // no per-point controls without a point
     var fw = document.getElementById("sp-filters-wrap"); if (fw) fw.innerHTML = "";
-    // Header: list EVERY fetched square, one line each (was: only the single/last
-    // area's name). No generic "species here" title.
+    // Header: list EVERY fetched square, one line each, ordered by geography (not by
+    // fetch time). No generic "species here" title.
     var spTitle = document.getElementById("sp-title");
     if (spTitle) spTitle.textContent = "";
-    var coords = document.getElementById("sp-coords");
-    if (coords) {
-      var an1 = fetchedAreaNames();
-      coords.innerHTML = an1.map(function (n) { return '<span class="sp-area-line">' + escapeHtml(n) + "</span>"; }).join("");
-      coords.dataset.flat = an1.join(" · ");   // one-line form for the PDF header
-      delete coords.dataset.placeKey;
-    }
+    renderSpCoordsAreas(document.getElementById("sp-coords"), NaN, NaN, "");
     var rows = collectVisibleDetections(null, false);   // honour the species selection / applied list
     // Restrict to what's inside the current map view — same as the per-point list (restrictListToView),
     // so entering list mode shows only what's on screen, not every plotted detection everywhere.
@@ -19031,6 +19056,68 @@
       if (el.dataset.placeKey === k) apply(placeCache[k]);
     });
   }
+  // Species-list header: list EVERY fetched square, one line each, ordered by
+  // geography (north→south, west→east) so the listing is independent of the
+  // order/time the data was fetched — then the clicked point's own coord/week/
+  // species-count summary as the last line. Each square shows its place name
+  // (from the area, else reverse-geocoded from its centre, else its coordinates).
+  // With no fetched areas it falls back to the single clicked-point line.
+  // Observations fetched per fetched-area id (a row can belong to several areas —
+  // it counts once for each owner).
+  function obsCountByArea() {
+    var counts = Object.create(null);
+    Object.keys(detPlot).forEach(function (k) {
+      (detPlot[k].rows || []).forEach(function (r) {
+        var as = r && r._areas; if (!as) return;
+        for (var i = 0; i < as.length; i++) counts[as[i]] = (counts[as[i]] || 0) + 1;
+      });
+    });
+    return counts;
+  }
+  // Remember the last species-list header args so the header can be re-rendered
+  // when the fetch finishes adding its square / its observation counts settle.
+  var lastSpCoords = null;
+  function refreshSpCoords() {
+    if (!lastSpCoords) return;
+    var sp = document.getElementById("species-panel");
+    if (!sp || sp.style.display === "none") return;
+    renderSpCoordsAreas(lastSpCoords.el, lastSpCoords.lat, lastSpCoords.lon, lastSpCoords.summary);
+  }
+  function renderSpCoordsAreas(el, lat, lon, summary) {
+    if (!el) return;
+    lastSpCoords = { el: el, lat: lat, lon: lon, summary: summary };
+    var raw = (fetchedAreas || []).map(function (a) {
+      var c = a.bounds && a.bounds.getCenter ? a.bounds.getCenter() : null;
+      return { id: a.id, name: a.name || "", clat: c ? c.lat : NaN, clon: c ? c.lng : NaN };
+    }).filter(function (a) { return isFinite(a.clat) && isFinite(a.clon); });
+    if (!raw.length) {
+      if (isFinite(lat) && isFinite(lon)) setCoordsWithPlace(el, lat, lon, summary);
+      else { el.textContent = ""; el.dataset.flat = ""; delete el.dataset.placeKey; }
+      return;
+    }
+    raw.sort(function (x, y) { return (y.clat - x.clat) || (x.clon - y.clon); });   // N→S, W→E — deterministic
+    var counts = obsCountByArea();
+    // Aggregate by label (same place resolved from two squares → one line, counts summed).
+    var order = [], agg = Object.create(null);
+    raw.forEach(function (a) {
+      var key = placeKey(a.clat, a.clon), cached = placeCache[key];
+      var label = a.name || (cached ? cached : "");
+      if (!a.name && cached === undefined) {   // resolve this square's name once, then re-render
+        reverseGeocode(a.clat, a.clon).then(function (n) {
+          placeCache[key] = n || "";
+          if (el.isConnected) renderSpCoordsAreas(el, lat, lon, summary);
+        });
+      }
+      if (!label) label = a.clat.toFixed(4) + "°, " + a.clon.toFixed(4) + "°";
+      if (!(label in agg)) { agg[label] = 0; order.push(label); }
+      agg[label] += counts[a.id] || 0;
+    });
+    var lineTxt = function (l) { return l + " · " + t("sp.obsN", { n: agg[l] }); };
+    el.innerHTML = order.map(function (l) { var s = lineTxt(l); return '<span class="sp-area-line" title="' + escapeHtml(s) + '">' + escapeHtml(s) + "</span>"; }).join("") +
+      (summary ? '<span class="sp-area-line sp-area-meta">' + escapeHtml(summary) + "</span>" : "");
+    el.dataset.flat = order.map(lineTxt).join(" · ") + (summary ? " · " + summary : "");
+    delete el.dataset.placeKey;
+  }
 
   // A detailed, specific place name (the actual locality — building/park/road/
   // neighbourhood, plus the town/city), not the county or country. Cached.
@@ -20270,7 +20357,7 @@
       tbl.classList.toggle("has-name2", !!secondLang);
       tbl.classList.toggle("hide-sci", !showSci);
       document.getElementById("sp-name2-head").textContent = secondLang ? window.GeoI18N.langByCode(secondLang).name : "";
-      setCoordsWithPlace(document.getElementById("sp-coords"), lat, lon,
+      renderSpCoordsAreas(document.getElementById("sp-coords"), lat, lon,
         t("sp.summary", { lat: lat.toFixed(4), lon: lon.toFixed(4), week: weekMonthLabel(week), n: results.length, p: (pmin * 100).toFixed(0) }) +
         " · " + t("sp.radius", { km: recentRadiusKm() }) +
         (hist ? " · " + t("hist.range") + " " + fmtDate(hist.from) + " – " + fmtDate(hist.to) +

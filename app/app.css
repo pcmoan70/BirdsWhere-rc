@@ -700,6 +700,7 @@ input:focus-visible {
 #species-panel.as-page #sp-back { margin-top: 2px; flex: 0 0 auto; }
 .sp-head-lines { display: flex; flex-direction: column; min-width: 0; }
 #species-panel .sp-area-line { display: block; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#species-panel .sp-area-meta { white-space: normal; overflow: visible; margin-top: 2px; opacity: 0.85; }
 
 /* Species List & Migration open as a full-screen page, not an under-map card */
 #species-panel.as-page,
