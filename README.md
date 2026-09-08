@@ -281,6 +281,9 @@ failed or timed-out sources are flagged in the status line.
 | **Laji.fi** | Finland only | free access token (requested by email right in Settings) |
 | **BirdTrack (NBN)** | UK only — BTO+partners datasets on the NBN Atlas (~1 km grid, months of lag; birds-only) | none |
 
+On a fresh install **eBird** (needs your own key) and **BirdWeather** (slow, acoustic AI detections) start
+**switched off**; turn either on in Settings → Data sources.
+
 Country-scoped sources are queried only when the point (plus its radius) reaches that
 country. **BirdWeather** collapses machine detections to one "present" record per species,
 station and day, tunable by **min detections/day** and **min confidence**. **eBird** and
@@ -548,12 +551,21 @@ another app. Options are `;`- or `&`-separated `key=value` pairs.
 ?location=here&radius=2&days=14&skip=ebird&show=list&layout=observation&sortby=rarity_decreasing
     Last two weeks within 2 km as a By-observation list, eBird left out.
 
+https://pcmoan70.github.io/BirdsWhere/f/
+    Short link for print (the "Fugler å se?" poster) — see below.
+
 ?location=60.12312,32.00123;radius=10;show=map;sortby=rarity_decreasing
     Go to those coordinates, 10 km radius, land on the map, rarest species first.
 
 ?location=59.9139,10.7522
     Go to a fixed point (Oslo) with the current defaults.
 ```
+
+**Short link for print** — `https://pcmoan70.github.io/BirdsWhere/f/` is a tiny redirect page
+(`app/f/index.html`, served by the service worker even offline) that forwards to
+`?location=here&radius=2&days=14&skip=ebird&show=list&sortby=rarity_decreasing`. Being 41 characters
+instead of ~120 it makes a much coarser QR code (37×37 modules at the highest error-correction level,
+instead of 57×57), which survives print wear far better. Change the target by editing that file.
 
 ---
 

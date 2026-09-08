@@ -142,10 +142,11 @@ window.AppSources = (function () {
   function saveDirectSources(list) { window.GeoState.save({ directSources: list }); onConfigChange(); }
   // On/off toggles. A source/dataset is ON unless its id/key is in the "off" map,
   // so existing setups (and freshly added ones) default to enabled.
-  // BirdWeather (acoustic AI IDs) is OFF by default; enabling it removes it from the map.
+  // Default-OFF sources for a fresh install: BirdWeather (acoustic AI IDs) and eBird (needs
+  // the user's own key — pointless until one is entered). Enabling one removes it from the map.
   function sourcesOff() {
     var m = window.GeoState.get("srcOff", null);
-    if (!m) return { birdweather: 1 };
+    if (!m) return { birdweather: 1, ebird: 1 };
     // v1604 one-time migration: v1582's default-off only reached users with NO stored
     // map — anyone who had toggled a source before kept BirdWeather on. Force it off
     // once; the marker then leaves the user's later choice alone.

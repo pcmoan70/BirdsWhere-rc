@@ -21,13 +21,13 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1607";
+var VERSION = "v1608";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• New installs start with eBird off as well (it needs your own key) — turn it on in Settings → Data sources once you have one.",
   "• BirdWeather (acoustic AI detections, slow to load) is now OFF for everyone — it had stayed on for anyone who had touched the source list before the v1582 default. Re-enable it any time in Settings → Data sources.",
-  "• Every language now covers all UI text: 47 strings that had fallen back to English (the species-list header’s “N species / N obs”, the Locations filter, the confusion-species tips and traits, the protected-area layer tips, the credits) are translated in all 14 languages. The header’s species count is shown only from a 10% probability floor up.",
   "• Shortcut URLs take two new options alongside location / radius / show / sortby: days=<n> (how many days back to fetch, 1–92), skip=<sources> (leave e.g. ebird out of that launch’s fetch) and layout=observation (open the By-observation list). Example: ?location=here&radius=2&days=7&skip=birdweather&show=list&sortby=rarity_decreasing opens last week’s rarest species near you. location=here now waits for a good GPS fix (≤100 m, up to 20 s) before fetching — a blinking satellite mid-screen shows the wait and the current accuracy. Fix: a list opened this way now also puts its observations on the map, whichever way you leave the list.",
   "• The “Birding spots” overlay is now called “View points” (OSM hides, towers and viewpoints — where to watch from), in every language.",
   "• New Location filter (Filters → Locations): a checklist of the places among your plotted observations — tick a few to show only those spots on the map and in the lists. You can also tap any location name in a species’ records (or the per-observation list) and choose “Show only this location” to filter straight from there.",
@@ -132,6 +132,7 @@ self.addEventListener("notificationclick", function (event) {
 var SHELL = [
   "./",
   "index.html",
+  "f/index.html",      // short link (QR poster) → forwards to the full shortcut URL
   "sw-register.js",
   "app.js",
   "rarity.js",
@@ -398,6 +399,8 @@ function cacheFirst(req, cacheName) {
 function shellCacheFirst(req) {
   return caches.open(SHELL_CACHE).then(function (cache) {
     if (req.mode === "navigate") {
+      // The /f/ short link is its own tiny redirect page (precached), not the app shell.
+      if (/\/f\/?$/.test(new URL(req.url).pathname)) return cache.match("f/index.html").then(function (hit) { return hit || fetch(req); });
       return cache.match("index.html").then(function (idx) {
         if (idx) return idx;
         return cache.match("./").then(function (root) {
