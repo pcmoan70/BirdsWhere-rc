@@ -197,7 +197,8 @@ probability. Options:
 **The panel header** lists **every fetched square on its own line**, ordered by geography
 (north→south, west→east) rather than fetch order: *place name · N species · N obs · lat, lon ·
 radius* — the species count is the model's species above the probability floor at that square's
-centre. Each line has a **red ×** that removes all observations for that location (a record
+centre, shown only when the floor is **10 % or higher** (below that it is most of the model, so the
+number says nothing). Each line has a **red ×** that removes all observations for that location (a record
 fetched by two overlapping squares is kept until its last owning square is removed). The
 **back button** sits to the left of these lines. A square fetched by a plain map click gets its
 own named line as soon as its fetch lands.

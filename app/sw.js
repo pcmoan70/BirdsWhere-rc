@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1600";
+var VERSION = "v1601";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• Every language now covers all UI text: 47 strings that had fallen back to English (the species-list header’s “N species / N obs”, the Locations filter, the confusion-species tips and traits, the protected-area layer tips, the credits) are translated in all 14 languages. The header’s species count is shown only from a 10% probability floor up.",
   "• Shortcut URLs take a new days=<n> option (how many days back to fetch, 1–92) alongside location / radius / show / sortby — e.g. ?location=here;radius=2;days=7;show=list;sortby=rarity_decreasing opens last week’s rarest species near you. Fix: a list opened this way now also puts its observations on the map, whichever way you leave the list (Back or the Map button).",
   "• The “Birding spots” overlay is now called “View points” (OSM hides, towers and viewpoints — where to watch from), in every language.",
   "• New Location filter (Filters → Locations): a checklist of the places among your plotted observations — tick a few to show only those spots on the map and in the lists. You can also tap any location name in a species’ records (or the per-observation list) and choose “Show only this location” to filter straight from there.",
   "• Fix: “Best sites” dots that had stopped appearing on the map (a stale cached data index after the recent best-sites update) now load correctly — this version refreshes the best-sites data.",
-  "• Update button (✓, right side of the map): one tap refreshes every area you’ve already fetched right up to today’s latest observations — it re-fetches each area from a couple of days before its last fetch, so nothing is missed. Hold the button for its two settings: how many days to overlap the previous fetch (default 2) and whether to update only the areas currently in view.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

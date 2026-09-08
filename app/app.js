@@ -19115,13 +19115,14 @@
     });
     // Each square: place · N species · N obs · lat°, lon° (3 dp) · radius. The species
     // count is the model's species-above-floor at the square's centre for the current
-    // week (per-centre inference, fills in async); omitted for no-model groups.
+    // week (per-centre inference, fills in async); omitted for no-model groups and
+    // when the floor is below 10% (the count is then most of the model — meaningless).
     var week = +document.getElementById("week-select").value;
     var pmin = +document.getElementById("prob-min").value / 100, pmax = +document.getElementById("prob-max").value / 100;
     var flatParts = [];
     var html = order.map(function (l) {
       var g = agg[l], parts = [l];
-      if (groupHasModel()) {
+      if (groupHasModel() && pmin >= 0.1) {
         var sc = areaSpeciesCount(g.clat, g.clon, week, pmin, pmax, reRender);
         parts.push(t("sp.spN", { n: (sc === undefined ? "…" : sc) }));
       }
@@ -20394,7 +20395,9 @@
       tbl.classList.toggle("hide-sci", !showSci);
       document.getElementById("sp-name2-head").textContent = secondLang ? window.GeoI18N.langByCode(secondLang).name : "";
       renderSpCoordsAreas(document.getElementById("sp-coords"), lat, lon,
-        t("sp.summary", { lat: lat.toFixed(4), lon: lon.toFixed(4), week: weekMonthLabel(week), n: results.length, p: (pmin * 100).toFixed(0) }) +
+        // The "N species above p%" count only from a 10% floor up — below that it is most of the model.
+        (pmin >= 0.1 ? t("sp.summary", { lat: lat.toFixed(4), lon: lon.toFixed(4), week: weekMonthLabel(week), n: results.length, p: (pmin * 100).toFixed(0) })
+                     : t("sp.summaryShort", { lat: lat.toFixed(4), lon: lon.toFixed(4), week: weekMonthLabel(week) })) +
         " · " + t("sp.radius", { km: recentRadiusKm() }) +
         (hist ? " · " + t("hist.range") + " " + fmtDate(hist.from) + " – " + fmtDate(hist.to) +
           (hist.months && hist.months.length ? " · " + t("hist.months") + " " + hist.months.slice().sort(function (a, b) { return a - b; }).map(histMonthShort).join(", ") : "") : ""));
@@ -20525,6 +20528,7 @@
           if (listFirst && spListGen === fetchGen && currentSpView && currentSpView._result &&
               (currentSpView._plotGen === undefined || currentSpView._plotGen === detPlotGen)) {
             try { plotSightingsResult(currentSpView._result); } catch (e) {}
+            refreshSpCoords();   // the square registered by that plot now shows in the header (place · N species · N obs …)
           }
         }).then(releaseDot, releaseDot);   // fetch settled → drop this fetch's status-line dot
       }
