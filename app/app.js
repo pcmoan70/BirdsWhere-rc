@@ -6010,8 +6010,10 @@
               '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="share-tiny-toggle"> <span data-i18n="ctrl.shareTiny">Shorten share links (TinyURL)</span></label>' +
                 '<p class="cu-hint" data-i18n="ctrl.shareTinyHint">Turns share links into short tinyurl.com links (easier to paste / QR), for links under 14 kB. On by default. ⚠ The shared data is sent to TinyURL — a third party — so it may be exposed to unknown parties. Turn off for a plain link + .share file, so nothing leaves via a shortener.</p>' +
+                '<div id="tiny-token-wrap">' +   // token field + its explanation: only while shortening is on
                 '<input type="text" id="tiny-token-input" autocomplete="off" spellcheck="false" data-i18n-ph="ph.tinyToken" placeholder="TinyURL API token (optional)" />' +
                 '<p class="cu-hint" data-i18n="ctrl.tinyTokenHint">TinyURL is retiring its free keyless API: links made without a token now show a TinyURL notice page first, and only small links can be shortened at all. With a personal API token (free TinyURL account → Settings → API) ALL share links — big lists included — become clean short links that go straight to the app.</p>' +
+                '</div>' +
               '</div>' +
               '<div class="ctrl-group" id="points-kml-wrap">' +
                 '<label data-i18n="ctrl.exportPoints">Map points</label>' +
@@ -16136,7 +16138,9 @@
     var shareTinyCb = document.getElementById("share-tiny-toggle");
     if (shareTinyCb) {
       shareTinyCb.checked = window.GeoState.get("shareTinyUrl", true) !== false;
-      shareTinyCb.addEventListener("change", function () { window.GeoState.save({ shareTinyUrl: !!this.checked }); });
+      var syncTinyWrap = function () { var w = document.getElementById("tiny-token-wrap"); if (w) w.style.display = shareTinyCb.checked ? "" : "none"; };
+      shareTinyCb.addEventListener("change", function () { window.GeoState.save({ shareTinyUrl: !!this.checked }); syncTinyWrap(); });
+      syncTinyWrap();
     }
     var tinyTokIn = document.getElementById("tiny-token-input");
     if (tinyTokIn) {
