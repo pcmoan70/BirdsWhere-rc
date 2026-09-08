@@ -91,6 +91,8 @@
   "obs.editLists": "✎ Stebėtojų sąrašai",
   "detlist.sumIndiv": "Iš viso suskaičiuota individų",
   "status.gpsWait": "Laukiama GPS padėties (±{m} m)…",
+  "moved.text": "BirdsWhere persikėlė į thebirding.site. Jūsų sąrašai ir nustatymai lieka šiuo adresu – pirmiausia pasidarykite atsarginę kopiją (Nustatymai → Sinchronizuoti: Eksportuoti arba „Google“ diskas).",
+  "moved.open": "Atidaryti thebirding.site",
   "srcshort.gbif": "Tarptautinė gamtos duomenų rinkinių saugykla",
   "srcshort.ebird": "Pasaulinė paukščių stebėjimo platforma",
   "srcshort.inat": "Pasaulinė gamtos stebėjimo platforma",

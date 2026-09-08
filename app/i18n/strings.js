@@ -1173,6 +1173,8 @@ window.GeoI18N = (function () {
         "ctrl.fullscreen": "Toggle full screen",
         "status.locateError": "Could not get your location.",
         "status.gpsWait": "Waiting for a GPS fix (±{m} m)…",
+        "moved.text": "BirdsWhere has moved to thebirding.site. Your lists and settings stay on this address — back them up first (Settings → Synchronize: Export or Google Drive).",
+        "moved.open": "Open thebirding.site",
         "status.offline": "Offline — using cached data",
         "ctrl.basemap": "Base map",
         "ctrl.hires": "Resolution",

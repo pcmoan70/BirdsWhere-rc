@@ -91,6 +91,8 @@
   "obs.editLists": "✎ Seznamy pozorovatelů",
   "detlist.sumIndiv": "Celkem spočítaných jedinců",
   "status.gpsWait": "Čekání na GPS polohu (±{m} m)…",
+  "moved.text": "BirdsWhere se přestěhoval na thebirding.site. Vaše seznamy a nastavení zůstávají na této adrese – nejprve je zálohujte (Nastavení → Synchronizace: Export nebo Google Drive).",
+  "moved.open": "Otevřít thebirding.site",
   "srcshort.gbif": "Mezinárodní úložiště přírodních datových sad",
   "srcshort.ebird": "Celosvětová platforma pro pozorování ptáků",
   "srcshort.inat": "Celosvětová platforma pro pozorování přírody",

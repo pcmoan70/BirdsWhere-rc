@@ -91,6 +91,8 @@
   "obs.editLists": "✎ Havainnoijaluettelot",
   "detlist.sumIndiv": "Laskettuja yksilöitä yhteensä",
   "status.gpsWait": "Odotetaan GPS-paikannusta (±{m} m)…",
+  "moved.text": "BirdsWhere on muuttanut osoitteeseen thebirding.site. Listasi ja asetuksesi jäävät tähän osoitteeseen – tee ensin varmuuskopio (Asetukset → Synkronoi: Vie tai Google Drive).",
+  "moved.open": "Avaa thebirding.site",
   "srcshort.gbif": "Kansainvälinen luontoaineistojen varasto",
   "srcshort.ebird": "Maailmanlaajuinen lintuhavaintojen alusta",
   "srcshort.inat": "Maailmanlaajuinen luontohavaintojen alusta",

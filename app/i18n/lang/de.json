@@ -91,6 +91,8 @@
   "obs.editLists": "✎ Beobachterlisten",
   "detlist.sumIndiv": "Insgesamt gezählte Individuen",
   "status.gpsWait": "Warte auf GPS-Position (±{m} m)…",
+  "moved.text": "BirdsWhere ist zu thebirding.site umgezogen. Deine Listen und Einstellungen bleiben unter dieser Adresse – sichere sie zuerst (Einstellungen → Synchronisieren: Export oder Google Drive).",
+  "moved.open": "thebirding.site öffnen",
   "srcshort.gbif": "Ein internationaler Speicher für Naturdatensätze",
   "srcshort.ebird": "Weltweite Plattform für Vogelbeobachtungen",
   "srcshort.inat": "Weltweite Plattform für Naturbeobachtungen",

@@ -91,6 +91,8 @@
   "obs.editLists": "✎ Vaatlejate loendid",
   "detlist.sumIndiv": "Loendatud isendeid kokku",
   "status.gpsWait": "Ootan GPS-asukohta (±{m} m)…",
+  "moved.text": "BirdsWhere kolis aadressile thebirding.site. Sinu nimekirjad ja seaded jäävad sellele aadressile – tee kõigepealt varukoopia (Seaded → Sünkroniseeri: Eksport või Google Drive).",
+  "moved.open": "Ava thebirding.site",
   "srcshort.gbif": "Rahvusvaheline looduse andmestike hoidla",
   "srcshort.ebird": "Ülemaailmne linnuvaatluste platvorm",
   "srcshort.inat": "Ülemaailmne loodusvaatluste platvorm",

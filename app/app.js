@@ -6610,6 +6610,7 @@
       showLastChange();
       showPerfModal();
       initOfflineIndicator();
+      maybeShowMovedNotice();
       initInstall();
       initRarityAlerts();
       // Keyless first tap on the rarity bell → the one-time eBird-key nudge
@@ -6656,6 +6657,23 @@
   // Small badge shown only while the browser is offline, reassuring the user
   // the app is running from its cache. Re-localized on language change via the
   // data-i18n attribute picked up by applyI18n().
+  // Domain move (2026-09): production now lives at thebirding.site. An install on the old
+  // github.io origin is served by its cache-first service worker and never sees GitHub's
+  // redirect (and a SW update fetch is refused across origins), so nudge it over: once the
+  // new origin answers, show a persistent notice with a button to the new address. Data
+  // (lists, settings) is per origin — the text points to Settings → Synchronize first.
+  var NEW_HOME = "https://thebirding.site/";
+  function maybeShowMovedNotice() {
+    if (location.origin !== "https://pcmoan70.github.io" || !/^\/BirdsWhere\//.test(location.pathname)) return;
+    if (!navigator.onLine) return;
+    fetch(NEW_HOME + "last-change.txt", { cache: "no-store", mode: "cors" }).then(function (r) {
+      if (!r.ok || document.getElementById("moved-notice")) return;
+      var el = document.createElement("div"); el.id = "moved-notice"; el.setAttribute("role", "status");
+      el.innerHTML = '<span>' + escapeHtml(t("moved.text")) + '</span>' +
+        '<a class="btn" href="' + NEW_HOME + '" rel="noopener">' + escapeHtml(t("moved.open")) + '</a>';
+      document.body.appendChild(el);
+    }).catch(function () {});
+  }
   function initOfflineIndicator() {
     var badge = document.createElement("div");
     badge.id = "offline-badge";
@@ -7069,7 +7087,7 @@
       // the repository. English text falls through for untranslated languages.
       '<div id="about-credits">' + t("about.creditsHtml") + "</div>" +
       '<div id="about-footer">' +
-        '<div id="visit-counter"><img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fpcmoan70.github.io%2FBirdsWhere&label=page%20visits&labelColor=%230f1b24&countColor=%232f6f4f" alt="page visits" /></div>' +
+        '<div id="visit-counter"><img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fthebirding.site&label=page%20visits&labelColor=%230f1b24&countColor=%232f6f4f" alt="page visits" /></div>' +
         (lastChangeText ? '<div id="last-change">' + escapeHtml(t("footer.lastchange", { t: lastChangeText })) + "</div>" : "") +
       "</div>";
     // Localize the embedded [data-i18n] bits (e.g. the feedback button), scoped

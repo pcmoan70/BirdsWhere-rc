@@ -91,6 +91,8 @@
   "obs.editLists": "✎ Waarnemerslijsten",
   "detlist.sumIndiv": "Totaal getelde individuen",
   "status.gpsWait": "Wachten op GPS-positie (±{m} m)…",
+  "moved.text": "BirdsWhere is verhuisd naar thebirding.site. Je lijsten en instellingen blijven op dit adres – maak eerst een back-up (Instellingen → Synchroniseren: Exporteren of Google Drive).",
+  "moved.open": "thebirding.site openen",
   "srcshort.gbif": "Een internationaal archief van natuurdatasets",
   "srcshort.ebird": "Wereldwijd platform voor vogelwaarnemingen",
   "srcshort.inat": "Wereldwijd platform voor natuurwaarnemingen",

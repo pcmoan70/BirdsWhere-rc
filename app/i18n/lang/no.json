@@ -91,6 +91,8 @@
   "obs.editLists": "✎ Observatørlister",
   "detlist.sumIndiv": "Totalt antall talte individer",
   "status.gpsWait": "Venter på GPS-posisjon (±{m} m)…",
+  "moved.text": "BirdsWhere har flyttet til thebirding.site. Listene og innstillingene dine blir liggende på denne adressen – ta en sikkerhetskopi først (Innstillinger → Synkroniser: Eksporter eller Google Disk).",
+  "moved.open": "Åpne thebirding.site",
   "srcshort.gbif": "Et internasjonalt arkiv med naturdatasett",
   "srcshort.ebird": "Verdensomspennende plattform for fugleobservasjoner",
   "srcshort.inat": "Verdensomspennende plattform for naturobservasjoner",

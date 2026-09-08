@@ -2,7 +2,7 @@
 
 **Live app:** <https://pcmoan70.github.io/BirdsWhere-rc/>
 
-> Release-candidate test channel. Production: <https://pcmoan70.github.io/BirdsWhere/>
+> Release-candidate test channel. Production: <https://thebirding.site/>
 
 An interactive, **100% in-browser** explorer of species **distribution, migration and live
 observations**. Everything runs on your device — there is **no server and no backend of our own**;
@@ -530,7 +530,7 @@ another app. Options are `;`- or `&`-separated `key=value` pairs.
   `rarity_decreasing` (rarest first), or `time_recent` (most recently observed first); applies to both
   layouts.
 
-**Examples** (base: `https://pcmoan70.github.io/BirdsWhere/`)
+**Examples** (base: `https://thebirding.site/`)
 
 ```
 ?here=1
@@ -551,7 +551,7 @@ another app. Options are `;`- or `&`-separated `key=value` pairs.
 ?location=here&radius=2&days=14&skip=ebird&show=list&layout=observation&sortby=rarity_decreasing
     Last two weeks within 2 km as a By-observation list, eBird left out.
 
-https://pcmoan70.github.io/BirdsWhere/f/
+https://thebirding.site/f/
     Short link for print (the "Fugler å se?" poster) — see below.
 
 ?location=60.12312,32.00123;radius=10;show=map;sortby=rarity_decreasing
@@ -561,10 +561,10 @@ https://pcmoan70.github.io/BirdsWhere/f/
     Go to a fixed point (Oslo) with the current defaults.
 ```
 
-**Short link for print** — `https://pcmoan70.github.io/BirdsWhere/f/` is a tiny redirect page
+**Short link for print** — `https://thebirding.site/f/` is a tiny redirect page
 (`app/f/index.html`, served by the service worker even offline) that forwards to
-`?location=here&radius=2&days=14&skip=ebird&show=list&sortby=rarity_decreasing`. Being 41 characters
-instead of ~120 it makes a much coarser QR code (37×37 modules at the highest error-correction level,
+`?location=here&radius=2&days=14&skip=ebird&show=list&sortby=rarity_decreasing`. Being 27 characters
+instead of ~120 it makes a much coarser QR code (33×33 modules at the highest error-correction level,
 instead of 57×57), which survives print wear far better. Change the target by editing that file.
 
 ---
