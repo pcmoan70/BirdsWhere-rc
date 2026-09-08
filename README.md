@@ -20,7 +20,7 @@ layered on top are the real sightings.
 > Model outputs are estimates, not ground truth; BirdWeather detections are AI acoustic
 > identifications, not human-verified.
 
-*Documentation last updated 2026-09-03 (app version ~v1572).*
+*Documentation last updated 2026-09-08 (app version ~v1597).*
 
 ---
 
@@ -28,9 +28,9 @@ layered on top are the real sightings.
 
 | Use case | How BirdsWhere helps |
 |---|---|
-| **"Where should I go birding today?"** | Fetch live observations around you (or all your stored locations at once), sort the list by **probability low→high** so the locally-rarest finds top it, check the **Dist** column, and browse **eBird hotspots** and OSM **birding spots** (hides, towers & viewpoints) on the map. |
+| **"Where should I go birding today?"** | Fetch live observations around you (or all your stored locations at once), sort the list by **probability low→high** so the locally-rarest finds top it, check the **Dist** column, and browse **eBird hotspots** and OSM **view points** (hides, towers & viewpoints) on the map. |
 | **"What's arriving this week?"** | **Migration mode**: per-point arrival/departure heatmaps, phenology timelines and a scatter of *arrival × probability*. The **Season** column (↑ arriving · ● peak · ↓ leaving) puts the same signal in every species list. |
-| **Chasing / studying one species** | Its **Range map** animated across 48 weeks, **"More of these"** (recent sightings within 50 km from eBird/GBIF/iNaturalist), Macaulay photos matched to the season, Xeno-canto audio, Wikipedia/BirdLife — all from one tap on any species name. |
+| **Chasing / studying one species** | Its **Range map** animated across 48 weeks, **"More of these"** (recent sightings within 50 km from eBird/GBIF/iNaturalist), Macaulay photos matched to the season, Xeno-canto audio, Wikipedia — all from one tap on any species name. |
 | **Planning a trip** | **Historic mode** shows what was seen there in your travel months in previous years; premade **taxonomic groups** and saved species lists focus the view; build a **route** of stops (hides, points, spots) and open it in Google Maps; **download offline maps** for the areas you'll bird without signal. |
 | **Field logging** | The per-location **field checklist**: tick, count, activity/sex, note and 📷 photos per species, all GPS-stamped — exported as PDF/CSV or an **eBird Record Format CSV** ready for upload. |
 | **Year & life listing** | Mark what you've seen; dots, legend and lists show **bronze/yellow "needs" rings** for species missing from this year's or your life list, and one tap filters the map to just the birds you still need. |
@@ -102,7 +102,7 @@ map dots and the observation fetch. The model covers birds/mammals/amphibians/in
 to Natura 2000), **Land cover** (CORINE / Copernicus-EEA — habitat backdrop, Europe/EEA, with a
 colour-coded class legend in the lower-right while it's on),
 **GBIF occurrence density** (*Experimental* — enable in Settings; a seasonal heatmap of where records concentrate),
-**OSM protected areas**, **Birding spots** (*Experimental* — enable in Settings → Experimental features;
+**OSM protected areas**, **View points** (*Experimental* — enable in Settings → Experimental features;
 a **bundled worldwide snapshot** of 71k+ OSM bird hides, bird-watching towers and birdwatching
 viewpoints — incl. towers/viewpoints validated by proximity to an eBird hotspot — served from the
 app's own origin as small on-demand tiles, cached for offline; no live Overpass involved. Tap a
@@ -141,7 +141,7 @@ holding a button:
 | the **collapsed legend pill** | pan/zoom to frame **all fetched points** |
 | the **rarity bell 🔔** | poll eBird's notable sightings at all 🔔 locations right now |
 | the **✓ update** button (right of the map) | its two settings — how many **overlap days** to re-fetch before each area's last fetch (default 2) and **only areas in view** |
-| the **Birding spots**, **Best sites** or **eBird hotspots** row in the overlays menu | that layer's settings: the zoom from which its icons appear, how many are shown at once, and for Best sites the **site detail level** (Auto / 500 m / 25 km / 75 km) + the chart's AI-model cutoff |
+| the **View points**, **Best sites** or **eBird hotspots** row in the overlays menu | that layer's settings: the zoom from which its icons appear, how many are shown at once, and for Best sites the **site detail level** (Auto / 500 m / 25 km / 75 km) + the chart's AI-model cutoff |
 
 ---
 
@@ -193,6 +193,14 @@ probability. Options:
   species within **50 km** (eBird / GBIF / iNaturalist).
 - Species the model doesn't cover but that the sources reported are appended below the
   predicted rows, tagged with a class glyph.
+
+**The panel header** lists **every fetched square on its own line**, ordered by geography
+(north→south, west→east) rather than fetch order: *place name · N species · N obs · lat, lon ·
+radius* — the species count is the model's species above the probability floor at that square's
+centre. Each line has a **red ×** that removes all observations for that location (a record
+fetched by two overlapping squares is kept until its last owning square is removed). The
+**back button** sits to the left of these lines. A square fetched by a plain map click gets its
+own named line as soon as its fetch lands.
 
 **The colour dot** before each species name carries its **status**, the same way the map
 marker does — no separate status columns:
@@ -389,6 +397,13 @@ The control line opens three mutually-exclusive **filter subwindows**:
   re-fetching (in Historic mode the month toggles above the date picker filter the plotted
   dots live too).
 - **Species** — **– All · ★ Starred · ◉ Rare · 🟠 Not on this year's list · 🟡 Not on your life list**.
+- **📍 Locations** (all-filters pane, just above Observers) — a checklist of the **named places**
+  among the plotted observations; tick a subset to restrict the map dots, legend, histogram and
+  every list to those spots (All/None master toggle; the section × clears it). Records without an
+  accurate place name (coordinate-only, or bare country/region names) group under **"(no
+  location)"**. Ticking applies after a ~1 s pause, so several boxes rebuild the map once. You can
+  also filter straight from a record: tap a **location name** in a species' expanded records or
+  the per-observation list and choose **"Show only this location"** (or add / remove it).
 - **👤 Observers** — a checklist of observers with a scope button that cycles **All → None →
   each saved observer list**, plus an editor (**✎**).
 
@@ -525,10 +540,12 @@ another app. Options are `;`- or `&`-separated `key=value` pairs.
 Right-click / long-press / tap any species name for a menu **led by the species name in bold**
 (wrapping when long), followed by the observation-specific actions when opened from a record, then:
 
-- **Information** — Distribution map (a Wikipedia range image), **Wikipedia**, **BirdLife
-  DataZone** (birds), **Macaulay Library** photos/audio (narrowed to the observation's season — a
-  ±1-month `beginMonth`/`endMonth` window — so images match the time of year), **Xeno-canto** audio,
-  **NBN Atlas (UK)**, **EuroBirdPortal** (birds, deep-linked to the species).
+- **Information** — Distribution map (a Wikipedia range image, with a BirdLife link in its popup),
+  **Wikipedia**, then group-specific references: **Macaulay Library** photos/audio (narrowed to the
+  observation's season — a ±1-month `beginMonth`/`endMonth` window — so images match the time of
+  year) and **eBird photos** for birds, **Kew POWO** for plants, **Animal Diversity Web** for
+  mammals, plus **Xeno-canto** audio (animals). *Experimental features* (Settings) adds the
+  **NBN Atlas (UK)** link.
 - **Lists & actions** — **Show only this species** (when it has observations plotted: isolates that
   species on the map + detections list, like a legend selection; tap again on the same species to show
   everything), then state-showing **toggles**: **Interesting** (★), **Year list**, **Life
@@ -753,7 +770,7 @@ app/
   rarity.js             eBird rarity alerts: poll loop, feed, bell, panel (AppRarity)
   offline-maps.js       Offline map areas: download / manage / prompt (AppOffline)
   points-lists.js       Map points, saved lists, KML/GeoJSON, routes (AppPoints)
-  site-overlays.js      Birding spots / best sites / eBird hotspots layers (AppSites)
+  site-overlays.js      View points / best sites / eBird hotspots layers (AppSites)
   share-links.js        Shareable links: encode, share, import (AppShare)
   field-checklist.js    Field checklist: live entry, review, eBird/CSV/PDF (AppField)
   sources.js            Data-source registry + enabled/keys config (AppSources)
