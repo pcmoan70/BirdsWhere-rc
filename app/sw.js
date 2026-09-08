@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1605";
+var VERSION = "v1606";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
   "• BirdWeather (acoustic AI detections, slow to load) is now OFF for everyone — it had stayed on for anyone who had touched the source list before the v1582 default. Re-enable it any time in Settings → Data sources.",
   "• Every language now covers all UI text: 47 strings that had fallen back to English (the species-list header’s “N species / N obs”, the Locations filter, the confusion-species tips and traits, the protected-area layer tips, the credits) are translated in all 14 languages. The header’s species count is shown only from a 10% probability floor up.",
-  "• Shortcut URLs take two new options alongside location / radius / show / sortby: days=<n> (how many days back to fetch, 1–92) and skip=<sources> (leave e.g. birdweather out of that launch’s fetch). Example: ?location=here&radius=2&days=7&skip=birdweather&show=list&sortby=rarity_decreasing opens last week’s rarest species near you. location=here now waits for a good GPS fix (≤100 m, up to 20 s) before fetching. Fix: a list opened this way now also puts its observations on the map, whichever way you leave the list.",
+  "• Shortcut URLs take two new options alongside location / radius / show / sortby: days=<n> (how many days back to fetch, 1–92) and skip=<sources> (leave e.g. birdweather out of that launch’s fetch). Example: ?location=here&radius=2&days=7&skip=birdweather&show=list&sortby=rarity_decreasing opens last week’s rarest species near you. location=here now waits for a good GPS fix (≤100 m, up to 20 s) before fetching — a blinking satellite mid-screen shows the wait and the current accuracy. Fix: a list opened this way now also puts its observations on the map, whichever way you leave the list.",
   "• The “Birding spots” overlay is now called “View points” (OSM hides, towers and viewpoints — where to watch from), in every language.",
   "• New Location filter (Filters → Locations): a checklist of the places among your plotted observations — tick a few to show only those spots on the map and in the lists. You can also tap any location name in a species’ records (or the per-observation list) and choose “Show only this location” to filter straight from there.",
 ].join("\n");

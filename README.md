@@ -508,8 +508,8 @@ another app. Options are `;`- or `&`-separated `key=value` pairs.
 
 - **`location`** — `here` (geolocate to your current position) **or** explicit `lat,lon` coordinates
   (e.g. `60.12312,32.00123`; latitude −90…90, longitude −180…180). `here` **waits for a good GPS
-  fix** before fetching: it watches the position until the accuracy is within 100 m (the status line
-  shows the current ±m), and after 20 s falls back to the best fix seen — so a first coarse network
+  fix** before fetching: it watches the position until the accuracy is within 100 m (a blinking
+  satellite mid-screen and the status line show the current ±m), and after 20 s falls back to the best fix seen — so a first coarse network
   position can't send a small-radius search to the wrong place.
 - **`radius`** — sightings search radius in km (e.g. `5`); persisted, so it also updates the Settings
   slider.

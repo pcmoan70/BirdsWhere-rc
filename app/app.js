@@ -5558,17 +5558,36 @@
   // Watch until the accuracy is within URL_FIX_M, else use the best fix seen by the
   // deadline; the status line shows the current ±accuracy while waiting.
   var URL_FIX_M = 100, URL_FIX_WAIT_MS = 20000;
+  // Satellite glyph (app line-icon style: 24-grid, 2px round strokes) — body + two solar
+  // panels along the diagonal, a dish and a signal arc. Blinks mid-screen while waiting.
+  var GPS_SAT_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M9 12l3 3 5-5-3-3z"/><path d="M4.5 16.5l3-3 3 3-3 3z"/><path d="M10.5 13.5L9 15"/>' +
+    '<path d="M15.5 5.5l3-3 3 3-3 3z"/><path d="M15.5 8.5L17 7"/><path d="M11.5 9.5L9.6 7.6"/>' +
+    '<circle cx="8.2" cy="6.2" r="1.9"/><path d="M3.5 6.2a4.7 4.7 0 0 1 4.7-4.7"/></svg>';
+  function gpsWaitShow(accM) {
+    var el = document.getElementById("gps-wait");
+    if (!el) {
+      el = document.createElement("div"); el.id = "gps-wait"; el.setAttribute("aria-hidden", "true");
+      el.innerHTML = '<div class="gps-wait-disc">' + GPS_SAT_SVG + '</div><div class="gps-wait-acc"></div>';
+      document.body.appendChild(el);
+    }
+    var acc = el.querySelector(".gps-wait-acc"); if (acc) acc.textContent = accM != null ? "\u00b1" + Math.round(accM) + " m" : "";
+  }
+  function gpsWaitHide() { var el = document.getElementById("gps-wait"); if (el) el.remove(); }
   function waitForGoodFix(onFix, onFail) {
     var best = null, done = false, wid = null, timer = null;
     function finish() {
       if (done) return; done = true;
       if (wid !== null) navigator.geolocation.clearWatch(wid);
       clearTimeout(timer);
+      gpsWaitHide();
       if (best) onFix(best.coords.latitude, best.coords.longitude); else onFail();
     }
+    gpsWaitShow(null);
     wid = navigator.geolocation.watchPosition(function (pos) {
       if (!best || pos.coords.accuracy < best.coords.accuracy) best = pos;
       setStatus(t("status.gpsWait", { m: Math.round(pos.coords.accuracy) }));
+      gpsWaitShow(pos.coords.accuracy);
       if (pos.coords.accuracy <= URL_FIX_M) finish();
     }, function (err) { if (err && err.code === 1) finish(); },   // denied → give up now; else the deadline decides
     { enableHighAccuracy: true, maximumAge: 0, timeout: URL_FIX_WAIT_MS });
