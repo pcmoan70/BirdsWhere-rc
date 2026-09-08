@@ -5629,7 +5629,9 @@
   //   skip=<id,id…>  → leave these sources out of this launch's fetches (gbif, ebird, inat,
   //                    artsobs, artportalen, laji, nbn, birdweather); Settings are untouched
   //   show=list|map  → land on the list page, or the map with dots dropping in (default)
-  //   sortby=…       → rarity_increasing (default) | rarity_decreasing | time_recent
+  //   layout=table|observation → the list page's layout: ranked species table (default) or
+  //                    one row per observation ("By observation")
+  //   sortby=…       → rarity_increasing (default) | rarity_decreasing | time_recent (both layouts)
   function maybeUrlLocationParam() {
     var p = parseSemiParams();
     var locRaw = (p.location || "").trim();
@@ -5664,8 +5666,14 @@
     urlSkipSrc = {};
     (p.skip || "").toLowerCase().split(",").forEach(function (id) { id = id.trim(); if (id) urlSkipSrc[id] = 1; });
 
+    var lay = (p.layout || "").toLowerCase();
+    if (lay === "observation" || lay === "observations" || lay === "obs") spLayout = "observation";
+    else if (lay === "table" || lay === "species") spLayout = "table";
     var sort = urlSortState(p.sortby);
-    if (sort) speciesListSort = sort;
+    if (sort) {
+      speciesListSort = sort;
+      spObsSort = sort.col === "recent" ? { col: "date", dir: "desc" } : { col: sort.col, dir: sort.dir };   // same order in the By-observation layout
+    }
     updateSortIndicators();
     urlForceView = (p.show || "").toLowerCase() === "list" ? "list" : null;   // else map-first (also 'map')
 

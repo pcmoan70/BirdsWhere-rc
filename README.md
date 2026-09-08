@@ -521,8 +521,11 @@ another app. Options are `;`- or `&`-separated `key=value` pairs.
   sources are not changed.
 - **`show`** — `map` (default: land on the map with the dots dropping in as they load) or `list` (open
   the ranked list page directly).
+- **`layout`** — with `show=list`: `table` (default, the ranked species table) or `observation` (the
+  *By observation* layout — one row per record, grouped by day and observer).
 - **`sortby`** — `rarity_increasing` (default; most likely / commonest species first),
-  `rarity_decreasing` (rarest first), or `time_recent` (most recently observed first).
+  `rarity_decreasing` (rarest first), or `time_recent` (most recently observed first); applies to both
+  layouts.
 
 **Examples** (base: `https://pcmoan70.github.io/BirdsWhere/`)
 
@@ -541,6 +544,9 @@ another app. Options are `;`- or `&`-separated `key=value` pairs.
 
 ?location=here&radius=2&days=7&skip=birdweather&show=list&sortby=rarity_decreasing
     Same, without querying BirdWeather (the `&` form is the safest for QR codes).
+
+?location=here&radius=2&days=14&skip=ebird&show=list&layout=observation&sortby=rarity_decreasing
+    Last two weeks within 2 km as a By-observation list, eBird left out.
 
 ?location=60.12312,32.00123;radius=10;show=map;sortby=rarity_decreasing
     Go to those coordinates, 10 km radius, land on the map, rarest species first.
