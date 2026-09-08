@@ -5560,6 +5560,9 @@
   function parseSemiParams() {
     var out = {}, s = (window.location.search || "").replace(/^\?/, "");
     if (!s) return out;
+    // Some QR scanners / share sheets percent-encode the ";" separators (%3B) — decode
+    // the whole string once so the split below still sees them (values never contain ; or &).
+    try { s = decodeURIComponent(s); } catch (e) {}
     s.split(/[&;]/).forEach(function (pair) {
       if (!pair) return;
       var i = pair.indexOf("="), k = i < 0 ? pair : pair.slice(0, i), v = i < 0 ? "" : pair.slice(i + 1);
