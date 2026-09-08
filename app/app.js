@@ -4832,7 +4832,7 @@
     };
   }
   function exportAppData() {
-    downloadCsv("BirdsWhere_backup_" + new Date().toISOString().slice(0, 10) + ".json", JSON.stringify(buildPayload(), null, 2));
+    downloadCsv("BirdsWhere_backup_" + new Date().toISOString().slice(0, 10) + ".json", JSON.stringify(buildPayload(), null, 2), "application/json;charset=utf-8;");
   }
   function mergeChecklists(local, incoming) {
     var out = {}; Object.keys(local || {}).forEach(function (k) { out[k] = local[k]; });
@@ -6040,7 +6040,7 @@
                 '<div class="sync-row">' +
                   icoBtn("sync-export", "download", "sync.export", "Export") +
                   icoBtn("sync-import", "upload", "sync.import", "Import") +
-                  '<input type="file" id="sync-file" accept=".json,application/json" style="display:none" />' +
+                  '<input type="file" id="sync-file" accept=".json,application/json,.csv,text/csv,.txt,text/plain" style="display:none" />' +
                 '</div>' +
                 '<div class="sync-row" id="gdrive-row">' +
                   icoBtn("gd-connect", "cloud", "gdrive.connect", "Connect Google Drive") +
@@ -20689,8 +20689,10 @@
   }
 
   // ---- CSV helpers ---------------------------------------------------------
-  function downloadCsv(filename, content) {
-    var blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+  function downloadCsv(filename, content, mime) {
+    // The media type must match the extension: Android records it in the file index,
+    // and a picker filtering on JSON won't show a .json backup saved as text/csv.
+    var blob = new Blob([content], { type: mime || "text/csv;charset=utf-8;" });
     var url = URL.createObjectURL(blob);
     var a = document.createElement("a");
     a.href = url;
