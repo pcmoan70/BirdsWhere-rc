@@ -142,11 +142,20 @@ window.AppSources = (function () {
   function saveDirectSources(list) { window.GeoState.save({ directSources: list }); onConfigChange(); }
   // On/off toggles. A source/dataset is ON unless its id/key is in the "off" map,
   // so existing setups (and freshly added ones) default to enabled.
-  function sourcesOff() { return window.GeoState.get("srcOff", { birdweather: 1 }) || { birdweather: 1 }; }   // BirdWeather (acoustic AI IDs) is OFF by default; enabling it removes it from the map
+  // BirdWeather (acoustic AI IDs) is OFF by default; enabling it removes it from the map.
+  function sourcesOff() {
+    var m = window.GeoState.get("srcOff", null);
+    if (!m) return { birdweather: 1 };
+    // v1604 one-time migration: v1582's default-off only reached users with NO stored
+    // map — anyone who had toggled a source before kept BirdWeather on. Force it off
+    // once; the marker then leaves the user's later choice alone.
+    if (!window.GeoState.get("srcOffBwMig", false)) { m.birdweather = 1; window.GeoState.save({ srcOff: m, srcOffBwMig: true }); }
+    return m;
+  }
   function isSourceOff(id) { return !!sourcesOff()[id]; }
   function setSourceOff(id, off) {
     var m = sourcesOff(); if (off) m[id] = 1; else delete m[id];
-    window.GeoState.save({ srcOff: m }); onConfigChange();
+    window.GeoState.save({ srcOff: m, srcOffBwMig: true }); onConfigChange();
   }
   // GBIF isn't a direct source (it's the always-present base), but it gets the
   // same "days to fetch" control: how far back its window goes. Default 90 keeps
