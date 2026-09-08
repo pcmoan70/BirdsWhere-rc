@@ -22,7 +22,7 @@
   "route.savePrompt": "Pavadinkite šį maršrutą:",
   "route.saved": "Maršrutas „{name}“ įrašytas ({n} stotelių).",
   "ctrl.experimental": "Eksperimentinės funkcijos",
-  "ctrl.experimentalHint": "Išjungta (numatyta). Įjungta: atrakina mažiau nugludintus priedus — šiuo metu žemėlapio sluoksnius „Stebėjimo vietos“ ir GBIF radimviečių tankį, AI modelio metų grafiką Geriausių vietų kortelėse bei NBN Atlas nuorodą rūšies meniu; ilgainiui gali atsirasti daugiau.",
+  "ctrl.experimentalHint": "Išjungta (numatyta). Įjungta: atrakina mažiau nugludintus priedus — šiuo metu žemėlapio sluoksnius „Stebėjimo vietos“, GBIF radimviečių tankį ir „Natura 2000“, AI modelio metų grafiką Geriausių vietų kortelėse bei NBN Atlas nuorodą rūšies meniu; ilgainiui gali atsirasti daugiau.",
   "ctrl.hotspotHint": "Nuspalvina žemėlapį pagal tai, kiek aktyvumo yra kiekvienoje srityje — bakstelėkite, kad perjungtumėte Išjungta → rūšys srityje → skirtingi stebėtojai → bendri skaičiai. Sklandus, keičiant mastelį stabilus šilumos debesis; naudokite „Rodyti taškus“, kad matytumėte vien šilumos žemėlapį, vien taškus arba abu.",
   "ctrl.groupHint": "Apriboja visą programą — sąrašus, Paplitimą, Rūšių gausą ir stebėjimų paiešką — iki vienos grupės: paukščiai, žinduoliai, varliagyviai, vabzdžiai, augalai arba grybai.",
   "ctrl.recentradiusHint": "Kaip toli aplink spustelėtą tašką ar išsaugotą vietą kiekviename šaltinyje ieškoma naujausių stebėjimų.",

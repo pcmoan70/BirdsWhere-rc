@@ -22,7 +22,7 @@
   "route.savePrompt": "Pane sellele marsruudile nimi:",
   "route.saved": "Marsruut „{name}“ salvestatud ({n} peatust).",
   "ctrl.experimental": "Eksperimentaalsed funktsioonid",
-  "ctrl.experimentalHint": "Väljas (vaikimisi). Sees: avab vähem viimistletud lisad — praegu kaardikihid Vaatluskohad ja GBIF-i leidude tihedus, AI-mudeli aastagraafik Parimate kohtade kaartidel ning NBN Atlase link liigimenüüs; aja jooksul võib siia lisanduda veel.",
+  "ctrl.experimentalHint": "Väljas (vaikimisi). Sees: avab vähem viimistletud lisad — praegu kaardikihid Vaatluskohad, GBIF-i leidude tihedus ja Natura 2000, AI-mudeli aastagraafik Parimate kohtade kaartidel ning NBN Atlase link liigimenüüs; aja jooksul võib siia lisanduda veel.",
   "ctrl.hotspotHint": "Varjutab kaardi selle järgi, kui palju tegevust igas piirkonnas on — koputa, et vahetada Väljas → liigid piirkonna kohta → eri vaatlejad → koguarvud. Sujuv, suumimisel püsiv soojuspilv; kasuta „Näita punkte“, et näha ainult soojuskaarti, ainult punkte või mõlemat.",
   "ctrl.groupHint": "Piira kogu rakendus — loendid, Levik, Liigirikkus ja vaatluste otsing — ühele rühmale: linnud, imetajad, kahepaiksed, putukad, taimed või seened.",
   "ctrl.recentradiusHint": "Kui kaugelt klõpsatud punkti või salvestatud asukoha ümbert igast allikast hiljutisi vaatlusi otsitakse.",

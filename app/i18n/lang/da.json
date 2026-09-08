@@ -22,7 +22,7 @@
   "route.savePrompt": "Navngiv denne rute:",
   "route.saved": "Gemte ruten ”{name}” ({n} stop).",
   "ctrl.experimental": "Eksperimentelle funktioner",
-  "ctrl.experimentalHint": "Fra (standard). Til: låser mindre polerede ekstrafunktioner op — i øjeblikket kortlagene Udkigspunkter og GBIF-forekomsttæthed, AI-modellens årsgraf i Bedste lokaliteter-kortene samt NBN Atlas-linket i artsmenuen; flere kan dukke op her med tiden.",
+  "ctrl.experimentalHint": "Fra (standard). Til: låser mindre polerede ekstrafunktioner op — i øjeblikket kortlagene Udkigspunkter, GBIF-forekomsttæthed og Natura 2000, AI-modellens årsgraf i Bedste lokaliteter-kortene samt NBN Atlas-linket i artsmenuen; flere kan dukke op her med tiden.",
   "ctrl.hotspotHint": "Skyggelægger kortet efter hvor meget aktivitet hvert område har — tryk for at skifte Fra → arter pr. område → forskellige observatører → samlede antal. En blød, zoom-stabil varmesky; brug „Vis prikker“ til at se varmekortet alene, prikkerne alene eller begge.",
   "ctrl.groupHint": "Begræns hele appen — lister, Udbredelse, Artsrigdom og observationssøgning — til én gruppe: fugle, pattedyr, padder, insekter, planter eller svampe.",
   "ctrl.recentradiusHint": "Hvor langt omkring et klikket punkt eller en gemt placering hver kilde søges for nylige observationer.",

@@ -22,7 +22,7 @@
   "route.savePrompt": "Geef deze route een naam:",
   "route.saved": "Route ”{name}” opgeslagen ({n} stops).",
   "ctrl.experimental": "Experimentele functies",
-  "ctrl.experimentalHint": "Uit (standaard). Aan: ontgrendelt minder verfijnde extra’s — momenteel de kaartlagen Kijkplekken en GBIF-waarnemingsdichtheid, de jaargrafiek van het AI-model in de Beste plekken-kaarten, plus de link NBN Atlas in het soortenmenu; er kunnen er na verloop van tijd meer verschijnen.",
+  "ctrl.experimentalHint": "Uit (standaard). Aan: ontgrendelt minder verfijnde extra’s — momenteel de kaartlagen Kijkplekken, GBIF-waarnemingsdichtheid en Natura 2000, de jaargrafiek van het AI-model in de Beste plekken-kaarten, plus de link NBN Atlas in het soortenmenu; er kunnen er na verloop van tijd meer verschijnen.",
   "ctrl.hotspotHint": "Kleurt de kaart naar hoeveel activiteit elk gebied heeft — tik om te wisselen tussen Uit → soorten per gebied → verschillende waarnemers → totale aantallen. Een vloeiende, bij zoomen stabiele warmtewolk; gebruik „Stippen tonen“ om alleen de heatmap, alleen de stippen of beide te zien.",
   "ctrl.groupHint": "Beperk de hele app — lijsten, Verspreiding, Soortenrijkdom en waarnemingszoeken — tot één groep: vogels, zoogdieren, amfibieën, insecten, planten of schimmels.",
   "ctrl.recentradiusHint": "Hoe ver rond een aangeklikt punt of opgeslagen locatie elke bron naar recente waarnemingen zoekt.",

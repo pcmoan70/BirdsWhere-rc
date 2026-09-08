@@ -22,7 +22,7 @@
   "route.savePrompt": "Namnge rutten:",
   "route.saved": "Sparade rutten ”{name}” ({n} stopp).",
   "ctrl.experimental": "Experimentella funktioner",
-  "ctrl.experimentalHint": "Av (standard). På: låser upp mindre polerade extrafunktioner – för närvarande kartlagren Utkiksplatser och GBIF-fyndtäthet, AI-modellens årsdiagram i Bästa lokaler-korten, plus NBN Atlas-länken i artmenyn; fler kan dyka upp här med tiden.",
+  "ctrl.experimentalHint": "Av (standard). På: låser upp mindre polerade extrafunktioner – för närvarande kartlagren Utkiksplatser, GBIF-fyndtäthet och Natura 2000, AI-modellens årsdiagram i Bästa lokaler-korten, plus NBN Atlas-länken i artmenyn; fler kan dyka upp här med tiden.",
   "ctrl.hotspotHint": "Skuggar kartan efter hur mycket aktivitet varje område har — tryck för att växla Av → arter per område → olika observatörer → totala antal. Ett mjukt, zoomstabilt värmemoln; använd „Visa prickar“ för att se enbart värmekartan, enbart prickarna eller båda.",
   "ctrl.groupHint": "Begränsa hela appen — listor, Utbredning, Artrikedom och observationssökning — till en grupp: fåglar, däggdjur, groddjur, insekter, växter eller svampar.",
   "ctrl.recentradiusHint": "Hur långt runt en klickad punkt eller sparad plats varje källa söks efter senaste observationer.",

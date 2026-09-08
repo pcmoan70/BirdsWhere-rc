@@ -22,7 +22,7 @@
   "route.savePrompt": "Assegna un nome a questo percorso:",
   "route.saved": "Percorso «{name}» salvato ({n} tappe).",
   "ctrl.experimental": "Funzioni sperimentali",
-  "ctrl.experimentalHint": "Disattivato (predefinito). Attivato: sblocca extra meno rifiniti — al momento i livelli mappa Punti di osservazione e densità di occorrenze GBIF, il grafico annuale del modello IA nelle schede Migliori siti, più il link NBN Atlas nel menu delle specie; altri potrebbero comparire qui col tempo.",
+  "ctrl.experimentalHint": "Disattivato (predefinito). Attivato: sblocca extra meno rifiniti — al momento i livelli mappa Punti di osservazione, densità di occorrenze GBIF e Natura 2000, il grafico annuale del modello IA nelle schede Migliori siti, più il link NBN Atlas nel menu delle specie; altri potrebbero comparire qui col tempo.",
   "ctrl.hotspotHint": "Ombreggia la mappa in base a quanta attività ha ogni area — tocca per passare tra Off → specie per area → osservatori distinti → conteggi totali. Una nuvola di calore morbida e stabile allo zoom; usa „Mostra punti“ per vedere solo la mappa di calore, solo i punti o entrambi.",
   "ctrl.groupHint": "Limita l'intera app — elenchi, Distribuzione, Ricchezza e ricerca di osservazioni — a un solo gruppo: uccelli, mammiferi, anfibi, insetti, piante o funghi.",
   "ctrl.recentradiusHint": "Quanto lontano attorno a un punto cliccato o a una posizione salvata ogni fonte viene cercata per osservazioni recenti.",

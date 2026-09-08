@@ -98,7 +98,7 @@ map dots and the observation fetch. The model covers birds/mammals/amphibians/in
 **Plants 🌿 and Fungi 🍄 are observation-only** (Range/Richness/Migration are hidden for them).
 
 **Overlay layers** (layer control): **WDPA · Protected Planet**, **Ramsar wetlands**,
-**Natura 2000** (EU SPA/SCI), **Emerald Network** (Bern Convention — the non-EU counterpart
+**Natura 2000** (EU SPA/SCI; *Experimental* — enable in Settings), **Emerald Network** (Bern Convention — the non-EU counterpart
 to Natura 2000), **Land cover** (CORINE / Copernicus-EEA — habitat backdrop, Europe/EEA, with a
 colour-coded class legend in the lower-right while it's on),
 **GBIF occurrence density** (*Experimental* — enable in Settings; a seasonal heatmap of where records concentrate),

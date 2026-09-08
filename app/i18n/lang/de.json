@@ -22,7 +22,7 @@
   "route.savePrompt": "Route benennen:",
   "route.saved": "Route „{name}“ gespeichert ({n} Halte).",
   "ctrl.experimental": "Experimentelle Funktionen",
-  "ctrl.experimentalHint": "Aus (Standard). Ein: schaltet weniger ausgereifte Extras frei – derzeit die Kartenebenen Beobachtungsplätze und GBIF-Funddichte, das Jahresdiagramm des KI-Modells in den Beste-Orte-Karten sowie den Link NBN Atlas im Artenmenü; mit der Zeit kommen ggf. weitere hinzu.",
+  "ctrl.experimentalHint": "Aus (Standard). Ein: schaltet weniger ausgereifte Extras frei – derzeit die Kartenebenen Beobachtungsplätze, GBIF-Funddichte und Natura 2000, das Jahresdiagramm des KI-Modells in den Beste-Orte-Karten sowie den Link NBN Atlas im Artenmenü; mit der Zeit kommen ggf. weitere hinzu.",
   "ctrl.hotspotHint": "Schattiert die Karte danach, wie viel Aktivität jedes Gebiet hat — tippen, um zwischen Aus → Arten pro Gebiet → verschiedene Beobachter → Gesamtzahlen zu wechseln. Eine weiche, zoomstabile Wärmewolke; mit „Punkte zeigen“ siehst du die Heatmap allein, die Punkte allein oder beides.",
   "ctrl.groupHint": "Beschränkt die ganze App — Listen, Verbreitung, Artenreichtum und Beobachtungssuche — auf eine Gruppe: Vögel, Säugetiere, Amphibien, Insekten, Pflanzen oder Pilze.",
   "ctrl.recentradiusHint": "Wie weit um einen angeklickten Punkt oder gespeicherten Ort jede Quelle nach aktuellen Beobachtungen durchsucht wird.",
