@@ -90,6 +90,7 @@
   "obs.addToFilter": "＋ Lisa vaatlejafiltrisse",
   "obs.editLists": "✎ Vaatlejate loendid",
   "detlist.sumIndiv": "Loendatud isendeid kokku",
+  "status.gpsWait": "Ootan GPS-asukohta (±{m} m)…",
   "srcshort.gbif": "Rahvusvaheline looduse andmestike hoidla",
   "srcshort.ebird": "Ülemaailmne linnuvaatluste platvorm",
   "srcshort.inat": "Ülemaailmne loodusvaatluste platvorm",

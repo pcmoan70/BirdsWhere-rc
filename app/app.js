@@ -5544,14 +5544,35 @@
       modeSel.value = "list";
       modeSel.dispatchEvent(new Event("change", { bubbles: true }));
     }
-    navigator.geolocation.getCurrentPosition(function (pos) {
-      var lat = pos.coords.latitude, lon = pos.coords.longitude;
+    waitForGoodFix(function (lat, lon) {
       if (marker) map.removeLayer(marker);
       marker = L.marker([lat, lon]).addTo(map);
       map.setView([lat, lon], Math.max(map.getZoom() || 0, 11));
       renderSpeciesList(lat, lon);
-    }, function () { setStatus(t("status.locateError")); },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 });
+    }, function () { setStatus(t("status.locateError")); });
+  }
+
+  // ?location=here / ?here=1: wait for a GOOD fix before fetching. The first position a
+  // phone hands out is often a coarse network fix (hundreds of metres to kilometres)
+  // or a cached one — with a small radius that lands the search in the wrong place.
+  // Watch until the accuracy is within URL_FIX_M, else use the best fix seen by the
+  // deadline; the status line shows the current ±accuracy while waiting.
+  var URL_FIX_M = 100, URL_FIX_WAIT_MS = 20000;
+  function waitForGoodFix(onFix, onFail) {
+    var best = null, done = false, wid = null, timer = null;
+    function finish() {
+      if (done) return; done = true;
+      if (wid !== null) navigator.geolocation.clearWatch(wid);
+      clearTimeout(timer);
+      if (best) onFix(best.coords.latitude, best.coords.longitude); else onFail();
+    }
+    wid = navigator.geolocation.watchPosition(function (pos) {
+      if (!best || pos.coords.accuracy < best.coords.accuracy) best = pos;
+      setStatus(t("status.gpsWait", { m: Math.round(pos.coords.accuracy) }));
+      if (pos.coords.accuracy <= URL_FIX_M) finish();
+    }, function (err) { if (err && err.code === 1) finish(); },   // denied → give up now; else the deadline decides
+    { enableHighAccuracy: true, maximumAge: 0, timeout: URL_FIX_WAIT_MS });
+    timer = setTimeout(finish, URL_FIX_WAIT_MS);
   }
 
   // Parse the query string as semicolon- OR ampersand-separated key=value pairs,
@@ -5641,10 +5662,7 @@
       renderSpeciesList(lat, lon);
     }
     if (coords) openAt(coords[0], coords[1]);
-    else navigator.geolocation.getCurrentPosition(
-      function (pos) { openAt(pos.coords.latitude, pos.coords.longitude); },
-      function () { setStatus(t("status.locateError")); },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 });
+    else waitForGoodFix(openAt, function () { setStatus(t("status.locateError")); });
     return true;
   }
 

@@ -1172,6 +1172,7 @@ window.GeoI18N = (function () {
         "ctrl.placeSearch": "Search a place (hold for stored locations)",
         "ctrl.fullscreen": "Toggle full screen",
         "status.locateError": "Could not get your location.",
+        "status.gpsWait": "Waiting for a GPS fix (±{m} m)…",
         "status.offline": "Offline — using cached data",
         "ctrl.basemap": "Base map",
         "ctrl.hires": "Resolution",

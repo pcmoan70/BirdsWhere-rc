@@ -90,6 +90,7 @@
   "obs.addToFilter": "＋ Lägg till i observatörsfilter",
   "obs.editLists": "✎ Observatörslistor",
   "detlist.sumIndiv": "Totalt antal räknade individer",
+  "status.gpsWait": "Väntar på GPS-position (±{m} m)…",
   "srcshort.gbif": "Ett internationellt arkiv med naturdataset",
   "srcshort.ebird": "Global plattform för fågelobservationer",
   "srcshort.inat": "Global plattform för naturobservationer",

@@ -90,6 +90,7 @@
   "obs.addToFilter": "＋ Zum Beobachterfilter hinzufügen",
   "obs.editLists": "✎ Beobachterlisten",
   "detlist.sumIndiv": "Insgesamt gezählte Individuen",
+  "status.gpsWait": "Warte auf GPS-Position (±{m} m)…",
   "srcshort.gbif": "Ein internationaler Speicher für Naturdatensätze",
   "srcshort.ebird": "Weltweite Plattform für Vogelbeobachtungen",
   "srcshort.inat": "Weltweite Plattform für Naturbeobachtungen",

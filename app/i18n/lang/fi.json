@@ -90,6 +90,7 @@
   "obs.addToFilter": "＋ Lisää havainnoijasuodattimeen",
   "obs.editLists": "✎ Havainnoijaluettelot",
   "detlist.sumIndiv": "Laskettuja yksilöitä yhteensä",
+  "status.gpsWait": "Odotetaan GPS-paikannusta (±{m} m)…",
   "srcshort.gbif": "Kansainvälinen luontoaineistojen varasto",
   "srcshort.ebird": "Maailmanlaajuinen lintuhavaintojen alusta",
   "srcshort.inat": "Maailmanlaajuinen luontohavaintojen alusta",

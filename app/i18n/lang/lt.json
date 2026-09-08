@@ -90,6 +90,7 @@
   "obs.addToFilter": "＋ Įtraukti į stebėtojų filtrą",
   "obs.editLists": "✎ Stebėtojų sąrašai",
   "detlist.sumIndiv": "Iš viso suskaičiuota individų",
+  "status.gpsWait": "Laukiama GPS padėties (±{m} m)…",
   "srcshort.gbif": "Tarptautinė gamtos duomenų rinkinių saugykla",
   "srcshort.ebird": "Pasaulinė paukščių stebėjimo platforma",
   "srcshort.inat": "Pasaulinė gamtos stebėjimo platforma",

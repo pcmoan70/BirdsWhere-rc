@@ -90,6 +90,7 @@
   "obs.addToFilter": "＋ Dodaj do filtra obserwatorów",
   "obs.editLists": "✎ Listy obserwatorów",
   "detlist.sumIndiv": "Łączna liczba policzonych osobników",
+  "status.gpsWait": "Oczekiwanie na pozycję GPS (±{m} m)…",
   "srcshort.gbif": "Międzynarodowe repozytorium zbiorów danych przyrodniczych",
   "srcshort.ebird": "Światowa platforma obserwacji ptaków",
   "srcshort.inat": "Światowa platforma obserwacji przyrody",

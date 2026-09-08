@@ -90,6 +90,7 @@
   "obs.addToFilter": "＋ Přidat do filtru pozorovatelů",
   "obs.editLists": "✎ Seznamy pozorovatelů",
   "detlist.sumIndiv": "Celkem spočítaných jedinců",
+  "status.gpsWait": "Čekání na GPS polohu (±{m} m)…",
   "srcshort.gbif": "Mezinárodní úložiště přírodních datových sad",
   "srcshort.ebird": "Celosvětová platforma pro pozorování ptáků",
   "srcshort.inat": "Celosvětová platforma pro pozorování přírody",
