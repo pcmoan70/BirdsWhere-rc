@@ -6611,6 +6611,7 @@
       showPerfModal();
       initOfflineIndicator();
       maybeShowMovedNotice();
+      maybeImportMigrated();   // arriving from the old origin with #migrate=… → merge the carried data
       initInstall();
       initRarityAlerts();
       // Keyless first tap on the rarity bell → the one-time eBird-key nudge
@@ -6663,6 +6664,7 @@
   // new origin answers, show a persistent notice with a button to the new address. Data
   // (lists, settings) is per origin — the text points to Settings → Synchronize first.
   var NEW_HOME = "https://thebirding.site/";
+  var MIGRATE_MAX = 1500000;   // fragment payload cap (chars); beyond it, hand over via Export / Import
   function maybeShowMovedNotice() {
     if (location.origin !== "https://pcmoan70.github.io" || !/^\/BirdsWhere\//.test(location.pathname)) return;
     if (!navigator.onLine) return;
@@ -6670,9 +6672,32 @@
       if (!r.ok || document.getElementById("moved-notice")) return;
       var el = document.createElement("div"); el.id = "moved-notice"; el.setAttribute("role", "status");
       el.innerHTML = '<span>' + escapeHtml(t("moved.text")) + '</span>' +
-        '<a class="btn" href="' + NEW_HOME + '" rel="noopener">' + escapeHtml(t("moved.open")) + '</a>';
+        '<button type="button" class="btn">' + escapeHtml(t("moved.open")) + '</button>';
+      el.querySelector("button").addEventListener("click", moveToNewHome);
       document.body.appendChild(el);
     }).catch(function () {});
+  }
+  // Carry the user's data across origins (storage is per origin): the full sync /
+  // export snapshot (buildPayload) rides in the URL fragment — compressed, never sent
+  // to any server — and the new origin merges it after a confirmation (below).
+  function moveToNewHome() {
+    var payload; try { payload = window.AppData.buildPayload(); } catch (e) { location.href = NEW_HOME; return; }
+    window.AppShare.encodeShare(payload).then(function (enc) {
+      if (enc.length > MIGRATE_MAX) { modalAlert(t("moved.tooBig")).then(function () { location.href = NEW_HOME; }); return; }
+      location.href = NEW_HOME + "#migrate=" + enc;
+    }, function () { location.href = NEW_HOME; });
+  }
+  function maybeImportMigrated() {
+    var m = /^#migrate=(.+)$/.exec(location.hash || ""); if (!m) return;
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}   // never re-import on reload
+    window.AppShare.decodeShare(m[1]).then(function (obj) {
+      return modalConfirm(t("moved.confirm")).then(function (ok) {
+        if (!ok) return;
+        applyRemote(obj, { incomingWins: true, interactive: true });
+        setStatus(t("moved.done"));
+        setTimeout(function () { location.reload(); }, 1000);
+      });
+    }).catch(function (err) { setStatus(t("sync.importFailed", { msg: (err && err.message) || "" })); });
   }
   function initOfflineIndicator() {
     var badge = document.createElement("div");

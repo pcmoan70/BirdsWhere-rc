@@ -4298,4 +4298,4 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 
 /* Domain-move notice on the old github.io origin (see maybeShowMovedNotice). */
 #moved-notice { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 1600; max-width: min(92vw, 560px); display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 14px; padding: 10px 14px; background: var(--brand-deep, #0b3a3a); color: #f3faf7; border-radius: var(--radius-s, 10px); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35); font-size: var(--fs-b); }
-#moved-notice .btn { background: var(--brand, #2e8b74); color: #fff; text-decoration: none; padding: 6px 12px; border-radius: var(--radius-xs, 6px); font-weight: 600; white-space: nowrap; }
+#moved-notice .btn { background: var(--brand, #2e8b74); color: #fff; text-decoration: none; padding: 6px 12px; border: 0; border-radius: var(--radius-xs, 6px); font: inherit; font-weight: 600; white-space: nowrap; cursor: pointer; }

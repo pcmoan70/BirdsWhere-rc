@@ -684,5 +684,7 @@ window.AppShare = (function () {
     maybeOpenSharedPoint: maybeOpenSharedPoint,
     detRowCount: detRowCount,
     fmtDateFile: fmtDateFile,
+    encodeShare: encodeShare,   // also used by the domain-move handoff (app.js moveToNewHome)
+    decodeShare: decodeShare,
   };
 })();

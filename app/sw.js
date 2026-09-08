@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1609";
+var VERSION = "v1610";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• BirdsWhere now lives at thebirding.site. On the old github.io address a notice offers to move — and it takes your lists, settings and points along (the data travels inside the link, never via a server).",
   "• New installs start with eBird off as well (it needs your own key) — turn it on in Settings → Data sources once you have one.",
   "• BirdWeather (acoustic AI detections, slow to load) is now OFF for everyone — it had stayed on for anyone who had touched the source list before the v1582 default. Re-enable it any time in Settings → Data sources.",
   "• Shortcut URLs take two new options alongside location / radius / show / sortby: days=<n> (how many days back to fetch, 1–92), skip=<sources> (leave e.g. ebird out of that launch’s fetch) and layout=observation (open the By-observation list). Example: ?location=here&radius=2&days=7&skip=birdweather&show=list&sortby=rarity_decreasing opens last week’s rarest species near you. location=here now waits for a good GPS fix (≤100 m, up to 20 s) before fetching — a blinking satellite mid-screen shows the wait and the current accuracy. Fix: a list opened this way now also puts its observations on the map, whichever way you leave the list.",
   "• The “Birding spots” overlay is now called “View points” (OSM hides, towers and viewpoints — where to watch from), in every language.",
-  "• New Location filter (Filters → Locations): a checklist of the places among your plotted observations — tick a few to show only those spots on the map and in the lists. You can also tap any location name in a species’ records (or the per-observation list) and choose “Show only this location” to filter straight from there.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
