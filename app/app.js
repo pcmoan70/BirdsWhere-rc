@@ -20309,6 +20309,7 @@
     var dotReleased = false;
     var releaseDot = function () { if (!dotReleased) { dotReleased = true; fetchDotsDone(); } };
     spMapFetch = false;   // reset; set true below only for the map-first point flow
+    var listFirst = false;   // ?show=list opened the list page directly → plot once when the fetch settles
     // Keep the list's ★/◉/🟠/🟡 flag filters in step with the global detection filters
     // (so a fresh fetch's list narrows the same way the map does).
     spFilters.star = detStarFilter === 1; spFilters.rare = detRareFilter === 1; spFilters.year = detYearFilter === -1; spFilters.life = detLifeFilter === -1;
@@ -20427,6 +20428,7 @@
           // A ?location=…;show=list URL asked for the list explicitly → open the
           // list page directly instead of the map-first default.
           sp.style.display = "block"; if (!keepScroll) sp.scrollTop = 0; navOpen("page", closeAnyFullPage);
+          listFirst = !noFetch;
         } else {
           // Species-List (recent): go straight to the map and drop dots in as the
           // fetch streams. The list stays rendered-but-hidden until the header
@@ -20516,6 +20518,14 @@
         // the flag once the fetch settles so later plots use the normal (fit) path.
         augmentRowsWithSightings(lat, lon).then(function () {
           if (spListGen === fetchGen) spMapFetch = false;
+          // List-first (?show=list): nothing was plotted progressively (the map wasn't the
+          // visible view — see applySightings), so put the settled result on the map now.
+          // Otherwise the dots only appear via the header Map button (goToMapView →
+          // plotAllSightings) and never when the list is left with Back.
+          if (listFirst && spListGen === fetchGen && currentSpView && currentSpView._result &&
+              (currentSpView._plotGen === undefined || currentSpView._plotGen === detPlotGen)) {
+            try { plotSightingsResult(currentSpView._result); } catch (e) {}
+          }
         }).then(releaseDot, releaseDot);   // fetch settled → drop this fetch's status-line dot
       }
       lastSpeciesPdf = {
