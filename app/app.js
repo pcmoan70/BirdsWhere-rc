@@ -5579,9 +5579,10 @@
       default: return null;
     }
   }
-  // Richer shortcut URL: ?location=here;radius=5;show=list;sortby=time_recent
+  // Richer shortcut URL: ?location=here;radius=5;days=7;show=list;sortby=time_recent
   //   location=here | <lat>,<lon>  → geolocate, or go to explicit coordinates
   //   radius=<km>    → set the sightings radius before fetching
+  //   days=<n>       → set the "Download — last N days" window before fetching (1–92)
   //   show=list|map  → land on the list page, or the map with dots dropping in (default)
   //   sortby=…       → rarity_increasing (default) | rarity_decreasing | time_recent
   function maybeUrlLocationParam() {
@@ -5607,6 +5608,13 @@
       window.GeoState.save({ recentRadiusKm: rk }); allSightingsCache = {};
       var rrEl = document.getElementById("recent-radius"); if (rrEl) rrEl.value = String(radiusStepIndex(rk));
       var rrVal = document.getElementById("recent-radius-val"); if (rrVal) rrVal.textContent = radiusLabel(rk);
+    }
+    var dd = parseInt(p.days, 10);
+    if (isFinite(dd) && dd > 0) {   // persist like radius so the fetch + the Settings field agree
+      dd = Math.min(92, dd);
+      window.GeoState.save({ downloadDays: dd });
+      var ddEl = document.getElementById("download-days"); if (ddEl) ddEl.value = String(dd);
+      refreshRecentModeLabel();   // the "📍 Recent" mode label carries the window as a superscript
     }
 
     var sort = urlSortState(p.sortby);
