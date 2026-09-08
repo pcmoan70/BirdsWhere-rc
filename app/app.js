@@ -4033,7 +4033,7 @@
   }
   function obsSources() {
     var list = [
-      { name: "GBIF", id: "gbif", country: null, enabled: function () { return !isSourceOff("gbif"); }, run: function (c) { var gd = c.days ? Math.min((window.AppSources && AppSources.GBIF_MAX_DAYS) || 92, c.days) : gbifDays(); return AppFetch.fetchGbifAll(c.lat, c.lon, c.dateBack(gd) + "," + c.d2, c.rkm, c.cc, c.signal, null, null, function (done, total, names) { obsSub["GBIF"] = { done: done, total: total, names: names }; obsRender(); }).then(AppNormalize.normGbif); } }
+      { name: "GBIF", id: "gbif", country: null, enabled: function () { return !isSourceOff("gbif") && !urlSkipSrc.gbif; }, run: function (c) { var gd = c.days ? Math.min((window.AppSources && AppSources.GBIF_MAX_DAYS) || 92, c.days) : gbifDays(); return AppFetch.fetchGbifAll(c.lat, c.lon, c.dateBack(gd) + "," + c.d2, c.rkm, c.cc, c.signal, null, null, function (done, total, names) { obsSub["GBIF"] = { done: done, total: total, names: names }; obsRender(); }).then(AppNormalize.normGbif); } }
     ];
     directSources().forEach(function (s) {
       // eBird and BirdWeather are bird-only feeds (eBird is birds-only; BirdWeather
@@ -4043,7 +4043,7 @@
       // Enabled = just the on/off toggle. A keyed source with no key still runs
       // (and shows in the loading line), then fails — surfaced as a clear "API key
       // missing" line in the status strip (see splitFailed), not the failure popup.
-      list.push({ name: s.name, id: s.id, country: s.country, enabled: function () { return !isSourceOff(s.id); }, run: function (c) { return runDirectSource(s, c); } });
+      list.push({ name: s.name, id: s.id, country: s.country, enabled: function () { return !isSourceOff(s.id) && !urlSkipSrc[s.id]; }, run: function (c) { return runDirectSource(s, c); } });
     });
     return list;
   }
@@ -5586,6 +5586,8 @@
   //   location=here | <lat>,<lon>  → geolocate, or go to explicit coordinates
   //   radius=<km>    → set the sightings radius before fetching
   //   days=<n>       → set the "Download — last N days" window before fetching (1–92)
+  //   skip=<id,id…>  → leave these sources out of this launch's fetches (gbif, ebird, inat,
+  //                    artsobs, artportalen, laji, nbn, birdweather); Settings are untouched
   //   show=list|map  → land on the list page, or the map with dots dropping in (default)
   //   sortby=…       → rarity_increasing (default) | rarity_decreasing | time_recent
   function maybeUrlLocationParam() {
@@ -5619,6 +5621,8 @@
       var ddEl = document.getElementById("download-days"); if (ddEl) ddEl.value = String(dd);
       refreshRecentModeLabel();   // the "📍 Recent" mode label carries the window as a superscript
     }
+    urlSkipSrc = {};
+    (p.skip || "").toLowerCase().split(",").forEach(function (id) { id = id.trim(); if (id) urlSkipSrc[id] = 1; });
 
     var sort = urlSortState(p.sortby);
     if (sort) speciesListSort = sort;
@@ -19440,6 +19444,7 @@
   var spListGen = 0;
   var spMapFetch = false;   // Species-List point fetch in "map-first" mode → drop dots as they load
   var urlForceView = null;  // one-shot: a ?location=…;show=list URL wants the LIST page (not the map-first default)
+  var urlSkipSrc = {};      // ?skip=birdweather,… → source ids left out of this launch's fetches (Settings untouched)
   var plotNoFit = false;    // suppress plotSightingsResult's fitBounds (progressive partial plots)
   // eBird country species list (all species ever recorded in the region) —
   // used as the "official" national bird list to merge against the model's

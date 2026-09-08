@@ -512,6 +512,10 @@ another app. Options are `;`- or `&`-separated `key=value` pairs.
   slider.
 - **`days`** — how many days back to fetch (1–92, e.g. `7` for the last week); persisted as the
   *Download — last N days* setting, so it also updates that Settings field.
+- **`skip`** — comma-separated source ids to leave out of this launch's fetches, e.g.
+  `skip=birdweather` (BirdWeather is slow) or `skip=birdweather,ebird`. Ids: `gbif`, `ebird`, `inat`,
+  `artsobs`, `artportalen`, `laji`, `nbn`, `birdweather`. Applies to the launch only — Settings → Data
+  sources are not changed.
 - **`show`** — `map` (default: land on the map with the dots dropping in as they load) or `list` (open
   the ranked list page directly).
 - **`sortby`** — `rarity_increasing` (default; most likely / commonest species first),
@@ -531,6 +535,9 @@ another app. Options are `;`- or `&`-separated `key=value` pairs.
 
 ?location=here;radius=2;days=7;show=list;sortby=rarity_decreasing
     Geolocate, 2 km radius, last week's observations, open the list, rarest species first.
+
+?location=here&radius=2&days=7&skip=birdweather&show=list&sortby=rarity_decreasing
+    Same, without querying BirdWeather (the `&` form is the safest for QR codes).
 
 ?location=60.12312,32.00123;radius=10;show=map;sortby=rarity_decreasing
     Go to those coordinates, 10 km radius, land on the map, rarest species first.
