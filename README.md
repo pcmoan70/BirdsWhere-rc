@@ -113,7 +113,8 @@ each with its full 53-week profile, at **three detail levels**: single sites · 
 regions (each level pools the one below it), following the map zoom by default or pinned in the
 overlay's ⚙. Blue dots count species per
 visit for the selected week; tap one for its year chart — species/visit with an upper-estimate trend,
-or observed species against the AI model's species count above a cutoff you choose), and
+observed species with a thin red observers line, the species turnover, and — with *Experimental
+features* on — the AI model's own year profile for the spot), and
 **eBird hotspots** (clickable — each opens a popup
 with an eBird link and *Navigate*; needs the eBird key). All are streamed from the providers;
 nothing is stored. Hover a layer's checkbox for a tip on what it shows. Overlays that carry a colour

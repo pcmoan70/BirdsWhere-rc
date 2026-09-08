@@ -716,7 +716,7 @@ window.AppSites = (function () {
   // (bestChartView is remembered across popups):
   //   0 — species per visit (bars) + the max-biased "upper estimate" trend line
   //   1 — species actually observed (bars) + observers on their own axis
-  //   2 — the AI model's own year profile for this spot (async, map-click parity)
+  //   2 — the AI model's own year profile for this spot (async, map-click parity) — Experimental only
   //   3 — species TURNOVER: arrivals (green, up) vs departures (rust, down) against
   //       the week before, from the FLICKER-SMOOTHED series (n_arrived_s/n_departed_s
   //       — presence median-filtered over 3 weeks, so a species must hold a place for
@@ -724,6 +724,9 @@ window.AppSites = (function () {
   //       birds). Tall both ways = a migration turnstile; flat = a resident site the
   //       richness total rates the same. ISO week 53 deliberately carries no flux.
   var bestChartView = 0;
+  // Views on offer: the AI-model profile (2) is gated behind Settings → Experimental features.
+  function experimentalOn() { return !!window.GeoState.get("experimental", false); }
+  function chartViews() { return experimentalOn() ? [0, 1, 2, 3] : [0, 1, 3]; }
   // Whittaker beta turnover: total species over the mean active week. The tiles
   // ship it per single site (s.tb); a screen-merged site has none, so fall back to
   // its pooled total over its own weekly-species mean.
@@ -760,7 +763,7 @@ window.AppSites = (function () {
       for (i = 0; i < 53; i++) obsSm.push(smoothWeek(obs, i));
       body = barsSvg(obs, maxSp, "#2f6fb0", isoNow - 1) +
         lineSvg(obsSm, maxSp, "#2f6fb0", 1.6, 0.95, "3 2") +
-        lineSvg(obsv, maxO, "#666", 1, 0.75);
+        lineSvg(obsv, maxO, "#c0392b", 1, 0.9);   // observers: thin red line (was grey — hard to spot)
       lblL = '<text x="2" y="8" font-size="7" fill="#2f6fb0">' + Math.round(maxSp) + "</text>";
       lblR = '<text x="' + (W - 2) + '" y="8" font-size="7" fill="#666" text-anchor="end">' + maxO + "</text>";
     } else if (view === 3) {
@@ -976,11 +979,12 @@ window.AppSites = (function () {
         // three views, and nothing else tells a touch user that.
         function viewDots() {
           var out = "";
-          for (var vi = 0; vi < 4; vi++) out += (vi === bestChartView ? "\u25cf" : "\u25cb");
+          chartViews().forEach(function (vi) { out += (vi === bestChartView ? "\u25cf" : "\u25cb"); });
           return out + "  ";
         }
         function drawChart() {
-          if (bestChartView > 3) bestChartView = 0;
+          var views = chartViews();
+          if (views.indexOf(bestChartView) < 0) bestChartView = views[0];   // e.g. remembered model view after Experimental went off
           if (bestChartView === 2) {
             // Third view (moved here from the point popup): the AI model's year
             // profile for this exact spot — species at/above six probabilities,
@@ -1005,7 +1009,8 @@ window.AppSites = (function () {
         ensureSiteDetail(s).then(function () { if (pop.isConnected && bestChartView !== 2) drawChart(); });
         ch.addEventListener("click", function (e) {
           e.stopPropagation();
-          bestChartView = (bestChartView + 1) % 4;   // click the chart → next view (remembered)
+          var views = chartViews();
+          bestChartView = views[(views.indexOf(bestChartView) + 1) % views.length];   // click the chart → next view (remembered)
           drawChart();
         });
         // The app's standard icon trio: save point · navigate · add to route.
