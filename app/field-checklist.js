@@ -19,7 +19,7 @@ window.AppField = (function () {
 
   // ---- injected by app.js (init) -----------------------------------------
   var buildChecklistItems, closeAnyFullPage, csvEsc, detailedPlaceName, escapeHtml,
-      fmtDateFile, haversineKm, ico, inGroup, interestingStar, isBirdKey, isHidden,
+      fmtDateFile, haversineKm, ico, inGroup, interestingStar, isBirdKey,
       isInteresting, navClose, navOpen, nearbyPlaces, placeKey, recordSpeciesSeen,
       refreshChecklists, runInference, setStatus, speciesName, t, tLabel;
   // … and getters for app state that changes at runtime.
@@ -30,7 +30,7 @@ window.AppField = (function () {
     csvEsc = ctx.csvEsc; detailedPlaceName = ctx.detailedPlaceName; escapeHtml = ctx.escapeHtml;
     fmtDateFile = ctx.fmtDateFile; haversineKm = ctx.haversineKm; ico = ctx.ico;
     inGroup = ctx.inGroup; interestingStar = ctx.interestingStar; isBirdKey = ctx.isBirdKey;
-    isHidden = ctx.isHidden; isInteresting = ctx.isInteresting; navClose = ctx.navClose;
+    isInteresting = ctx.isInteresting; navClose = ctx.navClose;
     navOpen = ctx.navOpen; nearbyPlaces = ctx.nearbyPlaces; placeKey = ctx.placeKey;
     recordSpeciesSeen = ctx.recordSpeciesSeen; refreshChecklists = ctx.refreshChecklists;
     runInference = ctx.runInference; setStatus = ctx.setStatus; speciesName = ctx.speciesName;
@@ -475,7 +475,7 @@ window.AppField = (function () {
       var out = await runInference(new Float32Array([lat, lon, week]), 1);
       var rows = [];
       for (var i = 0; i < getLabels().length; i++) {
-        if (out[i] >= pmin && out[i] <= pmax && inGroup(i) && !isHidden(getLabels()[i].key)) {
+        if (out[i] >= pmin && out[i] <= pmax && inGroup(i)) {
           rows.push({ key: getLabels()[i].key, name: speciesName(getLabels()[i]), prob: out[i] });
         }
       }

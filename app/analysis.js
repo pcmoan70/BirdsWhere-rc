@@ -65,10 +65,9 @@ window.GeoAnalysis = (function () {
   // renderer/CSV builder). The cohort is a pure function of ctx's inputs, so
   // the ctx OBJECT IDENTITY is itself a complete, leak-proof cache key: any
   // change to any input — week, thresholds, group filter, text filter, the
-  // hidden set, the prediction array (allProbs), or the active language —
   // produces a brand-new ctx on the next render and therefore a cache miss.
   // This is why we key on identity rather than trying to signature inputs
-  // that can't be reliably observed from here (inGroup/isHidden/speciesName
+  // that can't be reliably observed from here (inGroup/speciesName
   // are closures whose behaviour mutates in place, with no version we can
   // see). A scalar signature is stored only as a secondary sanity guard so a
   // hypothetical reused-but-mutated ctx still misses. We intentionally
@@ -99,7 +98,6 @@ window.GeoAnalysis = (function () {
       if (ctx.thresholdMax != null && cur > ctx.thresholdMax) continue;
       if (ctx.inGroup && !ctx.inGroup(i)) continue;
       var lbl = ctx.labels[i];
-      if (ctx.isHidden && ctx.isHidden(lbl.key)) continue;
       if (f) {
         var nm = ctx.speciesName(lbl).toLowerCase();
         if (nm.indexOf(f) < 0 && lbl.sci.toLowerCase().indexOf(f) < 0 && lbl.key.indexOf(f) < 0) continue;

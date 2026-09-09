@@ -213,7 +213,6 @@ marker does — no separate status columns:
 | centre dot | rare here |
 | bronze ring | not on this year's list |
 | yellow ring | not on your life list |
-| red slash | blocked |
 
 **"Rare here"** means the **habitat model** gives the species at most the *Rare species
 threshold* probability at that point (Settings, default 10 %) — it is **not** a count of
@@ -588,11 +587,8 @@ Right-click / long-press / tap any species name for a menu **led by the species 
   **NBN Atlas (UK)** link.
 - **Lists & actions** — **Show only this species** (when it has observations plotted: isolates that
   species on the map + detections list, like a legend selection; tap again on the same species to show
-  everything), then state-showing **toggles**: **Interesting** (★), **Year list**, **Life
-  list** (each coloured when the species is in that set, greyed when not), and **Hidden**, which
-  toggles both ways (**red** = this click hides the species, **green** = this click brings it
-  back — so a blocked species surfaced via the list's 🚫 filter can be unblocked here). Also
-  **＋ Add to route**.
+  everything), then state-showing **toggles**: **Interesting** (★), **Year list** and **Life
+  list** (each coloured when the species is in that set, greyed when not). Also **＋ Add to route**.
 
 ---
 
@@ -751,7 +747,7 @@ no direction can delete data on the other device.
 ## Your data & privacy
 
 Everything you create — saved **points**, **lists / trips**, **field checklists** (and attached
-photos), **stored locations**, your ★/year/life/hidden species, observer lists and all **settings**
+photos), **stored locations**, your ★/year/life species, observer lists and all **settings**
 — is kept **only on your device** (localStorage + IndexedDB). There is **no account and no server of
 ours**; nothing is uploaded on its own.
 

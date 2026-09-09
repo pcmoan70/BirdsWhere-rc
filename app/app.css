@@ -1674,7 +1674,7 @@ table.an-scatter-table td.an-tint { color: #fff; font-weight: 600; text-shadow: 
 #app-controls .btn { display: inline-flex; align-items: center; }
 
 /* ===== Dropdown popovers (Saved locations, Hidden species) ===== */
-#savedloc-wrap, #hidden-wrap, #checklists-wrap, #settings-wrap { position: relative; }
+#savedloc-wrap, #checklists-wrap, #settings-wrap { position: relative; }
 .dd-toggle {
   height: 36px;
   box-sizing: border-box;
@@ -1859,7 +1859,6 @@ button.dd-name:hover { text-decoration: underline; }
 .aff-sec-clear { display: inline-flex; align-items: center; background: none; border: none; cursor: pointer; color: var(--brand); padding: 0; }
 .aff-sec-body { margin-top: 7px; }
 /* Standalone Hidden checkbox at the very bottom of the filter pane. */
-.aff-hidden-sec { padding: 8px 14px; }
 .aff-sel-names { font-size: var(--fs-b); color: var(--ink); line-height: 1.4; max-height: 84px; overflow-y: auto; }
 .aff-src-list { display: flex; flex-direction: column; gap: 2px; }
 /* Sort section: a wrap of column chips, each cycling ⇅ → ▲ → ▼. */
@@ -1869,7 +1868,6 @@ button.dd-name:hover { text-decoration: underline; }
 .aff-sort-btn.on { border-color: var(--brand); color: var(--brand); font-weight: 600; }
 .aff-sort-gly { font-size: var(--fs-s); color: var(--ink-muted); }
 .aff-sort-btn.on .aff-sort-gly { color: var(--brand); }
-.aff-hidden-row { margin-top: 6px; }
 /* Funnel button in the species-list controls bar (opens the all-filters pane). */
 .sp-filter-btn { border: 1px solid var(--border); background: var(--surface); color: var(--ink-muted); cursor: pointer;
   padding: 4px 7px; border-radius: 6px; display: inline-flex; align-items: center; }
@@ -2138,11 +2136,11 @@ button.dd-name:hover { text-decoration: underline; }
 }
 #ebird-key-link { font-size: var(--fs-xs); margin-top: 4px; color: var(--brand-strong); }
 /* GBIF datasets / National databases popups. */
-#gbif-modal, #natdb-modal, #offline-modal, #sources-modal, #det-sets-modal, #blocked-modal, #lists-modal, #blogs-modal {
+#gbif-modal, #natdb-modal, #offline-modal, #sources-modal, #det-sets-modal, #lists-modal, #blogs-modal {
   position: fixed; inset: 0; z-index: 5000; display: none;
   align-items: center; justify-content: center; background: rgba(0,0,0,0.55); padding: 20px;
 }
-#gbif-box, #natdb-box, #offline-box, #sources-box, #det-sets-box, #blocked-box, #lists-box, #blogs-box {
+#gbif-box, #natdb-box, #offline-box, #sources-box, #det-sets-box, #lists-box, #blogs-box {
   position: relative; background: var(--surface); color: var(--ink);
   max-width: 640px; width: 100%; max-height: 80vh; overflow: auto;
   border-radius: 10px; padding: 20px 22px; box-shadow: var(--shadow-md, 0 6px 24px rgba(0,0,0,.35));
@@ -2185,32 +2183,32 @@ button.dd-name:hover { text-decoration: underline; }
 #offline-box.min #offline-min, #offline-box.min #offline-close { top: 4px; font-size: var(--fs-h); }
 #offline-box.min #offline-min { left: 6px; }
 #offline-box.min #offline-close { right: 7px; }
-#gbif-box h3, #natdb-box h3, #sources-box h3, #det-sets-box h3, #blocked-box h3, #lists-box h3, #blogs-box h3 { margin: 0 28px 8px 0; font-size: var(--fs-h); color: var(--brand-deep); }
+#gbif-box h3, #natdb-box h3, #sources-box h3, #det-sets-box h3, #lists-box h3, #blogs-box h3 { margin: 0 28px 8px 0; font-size: var(--fs-h); color: var(--brand-deep); }
 #offline-box h3 { margin: 0 28px 8px 28px; font-size: var(--fs-h); color: var(--brand-deep); text-align: center; }
-#gbif-close, #natdb-close, #offline-close, #sources-close, #det-sets-close, #blocked-close, #lists-close, #blogs-close {
+#gbif-close, #natdb-close, #offline-close, #sources-close, #det-sets-close, #lists-close, #blogs-close {
   position: absolute; top: 10px; right: 12px; border: none; background: transparent;
   cursor: pointer; font-size: var(--fs-glyph); line-height: 1; color: var(--ink-muted);
 }
-#gbif-close:hover, #natdb-close:hover, #offline-close:hover, #sources-close:hover, #det-sets-close:hover, #blocked-close:hover, #lists-close:hover, #blogs-close:hover { color: var(--ink); }
+#gbif-close:hover, #natdb-close:hover, #offline-close:hover, #sources-close:hover, #det-sets-close:hover, #lists-close:hover, #blogs-close:hover { color: var(--ink); }
 /* Tall dialogs (long lists / the Help text) scroll, but the title bar — with the ×
    close — stays pinned at the top so it's always reachable. (The detections list
    uses a flex header for the same effect.) The box's top padding moves into the
    sticky header so it sits flush at the top while scrolling. */
-#gbif-box, #natdb-box, #sources-box, #det-sets-box, #blocked-box, #lists-box, #blogs-box {
+#gbif-box, #natdb-box, #sources-box, #det-sets-box, #lists-box, #blogs-box {
   padding-top: 0; max-height: 88vh; overscroll-behavior: contain;
 }
-#gbif-box > h3, #natdb-box > h3, #sources-box > h3, #det-sets-box > h3, #blocked-box > h3,
+#gbif-box > h3, #natdb-box > h3, #sources-box > h3, #det-sets-box > h3,
 #lists-box > h3, #blogs-box > h3 {
   position: sticky; top: 0; z-index: 3; background: var(--surface);
   margin-right: 0; margin-bottom: 8px; padding: 16px 40px 8px 0;
   border-bottom: 1px solid var(--border, rgba(0,0,0,.12));
 }
-#gbif-close, #natdb-close, #sources-close, #det-sets-close, #blocked-close, #lists-close, #blogs-close {
+#gbif-close, #natdb-close, #sources-close, #det-sets-close, #lists-close, #blogs-close {
   position: sticky; float: right; top: 0; right: auto; z-index: 4; margin: 14px -2px 0 8px;
 }
 /* createModal dialogs (link editor, prompts, country/area pickers): cap + scroll. */
 .ui-modal { max-height: 90vh; overflow-y: auto; }
-#gbif-box .cu-hint, #natdb-box .cu-hint, #offline-box .cu-hint, #sources-box .cu-hint, #det-sets-box .cu-hint, #blocked-box .cu-hint, #lists-box .cu-hint, #blogs-box .cu-hint { font-size: var(--fs-xs); color: var(--ink-muted); margin: 0 0 12px; }
+#gbif-box .cu-hint, #natdb-box .cu-hint, #offline-box .cu-hint, #sources-box .cu-hint, #det-sets-box .cu-hint, #lists-box .cu-hint, #blogs-box .cu-hint { font-size: var(--fs-xs); color: var(--ink-muted); margin: 0 0 12px; }
 #det-sets-box .cu-actions { display: flex; gap: 8px; margin: 0 0 12px; }
 #det-sets-list .dset-name { font-weight: 600; }
 #det-sets-list .dset-count { display: block; font-weight: 400; font-size: var(--fs-xs); color: var(--ink-muted); }
@@ -3508,8 +3506,6 @@ table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(7) { width: 26px; }
 /* Species-list dot holder — carries the map-style state swatch (colour + ★ / rare /
    need-ring via .det-sw*). Blocked species get a red slash across the dot. */
 .sp-dot { position: relative; display: inline-flex; align-items: center; justify-content: center; margin-right: 5px; vertical-align: middle; flex: 0 0 auto; }
-.sp-dot.blocked .det-sw { opacity: 0.45; }
-.sp-dot.blocked::after { content: ""; position: absolute; left: 50%; top: 50%; width: 15px; height: 2px; background: #c0392b; border-radius: 1px; transform: translate(-50%, -50%) rotate(-45deg); }
 /* Date + observer label: truncate with an ellipsis; the full name(s) stay
    available via the title tooltip on hover. */
 .dl-date-head .dl-date-lbl { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -3556,17 +3552,10 @@ a.dl-row:hover, .dl-row-menu:hover { background: var(--surface-2, rgba(0,0,0,.05
 .drm-ico-svg { display: inline-flex; align-items: center; justify-content: center; filter: none; opacity: 1; }
 .drm-ico-svg .btn-ico { width: var(--ico-m); height: var(--ico-m); color: inherit; }
 /* Status toggles drawn with our own line icons: dim when off, full when on/hover
-   (the monochrome equivalent of the emoji's grayscale/opacity states above). The
-   Hidden row keeps opacity 1 via its drm-will-* colour rules below. */
+   (the monochrome equivalent of the emoji's grayscale/opacity states above). */
 .drm-toggle .drm-ico-svg { opacity: 0.4; }
 .drm-toggle.on .drm-ico-svg,
 .drm-toggle:hover .drm-ico-svg,
-.drm-toggle.drm-will-hide .drm-ico-svg,
-.drm-toggle.drm-will-show .drm-ico-svg { opacity: 1; }
-.drm-toggle.drm-will-hide .drm-ico,
-.drm-toggle.drm-will-show .drm-ico { filter: none; opacity: 1; }
-.drm-toggle.drm-will-hide { color: var(--danger, #c0392b); }
-.drm-toggle.drm-will-show { color: var(--brand-strong, #1e7a5a); }
 
 .detrow-menu-item.ico-btn { display: flex; justify-content: flex-start; }
 .detrow-menu-item .btn-ico { color: var(--brand); width: var(--ico-m); height: var(--ico-m); }

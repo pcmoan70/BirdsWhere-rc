@@ -1324,7 +1324,6 @@
   var scatterSort = { column: "arrival", dir: "desc" };
 
   // Species the user has chosen to hide ("Do not show"). species_code -> true.
-  var hiddenSpecies = {};
   var interestingSpecies = {};
   // Year lists (one per calendar year, kept until the user deletes them) and a
   // single life list of species the user has recorded. Used to highlight
@@ -1437,8 +1436,8 @@
   // "★ and ◉" is now expressible, which the old single-cycle header could not do.
   // `hidden` inverts rather than narrows: off excludes blocked species (the
   // normal case), on shows ONLY them so they can be reviewed.
-  var spFilters = { star: false, rare: false, year: false, life: false, hidden: false };
-  var SP_FILTER_KEYS = ["star", "rare", "year", "life", "hidden"];
+  var spFilters = { star: false, rare: false, year: false, life: false };
+  var SP_FILTER_KEYS = ["star", "rare", "year", "life"];
   function anySpFilter() { return SP_FILTER_KEYS.some(function (k) { return spFilters[k]; }); }
   function clearSpFilters() { SP_FILTER_KEYS.forEach(function (k) { spFilters[k] = false; }); }
   // Species-list column filters, each cycled by clicking its header:
@@ -1469,27 +1468,7 @@
   function spRecordLayout() { return "date"; }   // the only record layout now is "Per observation" (date→observer→location)
   var menuKey = null, menuName = "", menuSci = "";  // species the menu targets
 
-  function isHidden(key) { return !!hiddenSpecies[key]; }
-  function loadHidden() {
-    hiddenSpecies = {};
-    (window.GeoState.get("hidden", []) || []).forEach(function (k) { hiddenSpecies[k] = true; });
-  }
-  function persistHidden() { window.GeoState.save({ hidden: Object.keys(hiddenSpecies) }); }
-  function hideSpecies(key) {
-    if (!key) return;
-    hiddenSpecies[key] = true;
-    persistHidden(); refreshHiddenUI();
-    if (!refreshCueCellsInPlace()) { keepListScroll = true; refreshCurrentView(); }   // stay on the list (no jump to map)
-    if (typeof detPlot !== "undefined" && detPlot[key]) { rebuildDetLayers(); updateDetLegend(); }   // drop its dots too
-  }
-  function unhideSpecies(key) {
-    delete hiddenSpecies[key];
-    persistHidden(); refreshHiddenUI();
-    if (!refreshCueCellsInPlace()) { keepListScroll = true; refreshCurrentView(); }
-    if (typeof detPlot !== "undefined" && detPlot[key]) { rebuildDetLayers(); updateDetLegend(); }   // restore its dots
-  }
-
-  // ★ Interesting — a user-tagged set persisted alongside the hidden list. Used
+  // ★ Interesting — a user-tagged set persisted in state. Used
   // to filter species lists and the field checklist down to the ones flagged.
   function isInteresting(key) { return !!interestingSpecies[key]; }
   function loadInteresting() {
@@ -1511,10 +1490,10 @@
   // "★ " prefix for species the user has tagged as interesting (lists/cards).
   // Wrapped in a styled span so the star is visually distinct from the name.
   function interestingStar(key) { return isInteresting(key) ? '<span class="int-star" aria-label="interesting">★</span> ' : ""; }
-  // Status glyphs (★ interesting · ◉ rare here · 🟠 this-year · 🟡 life · 🚫 blocked)
+  // Status glyphs (★ interesting · ◉ rare here · 🟠 this-year · 🟡 life)
   // — used by the Species header panel's filter chips. The species-list dot conveys the
   // same states visually (see spListDot / detSwatch), replacing the old status columns.
-  var SP_FLAG_GLYPH = { star: "★", rare: "◉", year: "🟠", life: "🟡", hidden: "🚫" };
+  var SP_FLAG_GLYPH = { star: "★", rare: "◉", year: "🟠", life: "🟡" };
   // "Rare here" for the species list — the same verdict the map legend reaches
   // (isRareProb), just sourced differently: the row already carries the model
   // probability in data-prob, so no extra inference is needed. Restricted to
@@ -1546,8 +1525,6 @@
   // edges. ◉ rare is absent here on purpose — it needs the fetched observations,
   // so it is applied as a row-hiding pass in applyAgeFilter instead.
   function passSpeciesFilter(key) {
-    // 🚫 inverts rather than narrows: off hides blocked species, on shows only them.
-    if (spFilters.hidden !== isHidden(key)) return false;
     if (spFilters.star && !isInteresting(key)) return false;
     if (spFilters.year && inYearList(key)) return false;
     if (spFilters.life && inLifeList(key)) return false;
@@ -1710,14 +1687,14 @@
   // stable .sp-dot holder (data-key) so paintSpDot can re-render it in place.
   function spListDot(key, rare) {
     var color = (typeof detPlot !== "undefined" && detPlot[key] && detPlot[key].color) || speciesColor(key);
-    return '<span class="sp-dot' + (key && isHidden(key) ? " blocked" : "") + '" data-key="' + escapeHtml(key || "") + '">' +
+    return '<span class="sp-dot' + '" data-key="' + escapeHtml(key || "") + '">' +
       detSwatch(color, !!key && isInteresting(key), !!rare, key) + "</span>";
   }
   function paintSpDot(holder, rare) {
     if (!holder) return;
     var key = holder.getAttribute("data-key"); if (!key) return;
     var color = (typeof detPlot !== "undefined" && detPlot[key] && detPlot[key].color) || speciesColor(key);
-    holder.className = "sp-dot" + (isHidden(key) ? " blocked" : "");
+    holder.className = "sp-dot";
     holder.innerHTML = detSwatch(color, isInteresting(key), !!rare, key);
   }
   // Distance origin for the list views: while automatic updating is ON, your LIVE
@@ -2202,7 +2179,7 @@
     var agg = tbody._sightingsAgg, days = speciesAgeFilterDays;
     var rareAll = tbody._rareSet;                              // rare-here set (for the dot), independent of the filter
     var rareSet = spFilters.rare ? rareAll : null;
-    var anyBuild = withBuild && (spFilters.star || spFilters.year || spFilters.life || spFilters.hidden);
+    var anyBuild = withBuild && (spFilters.star || spFilters.year || spFilters.life);
     var hasSel = Object.keys(detSelected).length > 0;   // a species selection / applied species list narrows the table too
     var now = Date.now();
     Array.prototype.forEach.call(tbody.querySelectorAll("tr"), function (tr) {
@@ -2322,7 +2299,7 @@
     el.textContent = t("sp.recencyNote", { window: win, n: hidden });
     el.style.display = "";
   }
-  // Toggling a cue (★ / year / life / 🚫) in the recent or historic species list
+  // Toggling a cue (★ / year / life) in the recent or historic species list
   // only changes that species' status icons — it needs NO refetch and NO re-run of
   // the model. Repaint the cue cells for the visible rows from the live state and
   // re-apply the filters as a show/hide pass. Returns false when the species list
@@ -2420,7 +2397,7 @@
     if (detDaysPanelOpen || detModePanelOpen || detObsPanelOpen) return true;
     if (_anchMenuEl) return true;   // an anchored row menu is up
     var ps = document.querySelector(".place-search-panel"); if (ps && ps.style && ps.style.display !== "none") return true;   // the Search-place box is open
-    var ids = ["hidden-panel", "checklists-panel", "settings-panel", "mp-panel", "stored-loc-panel", "group-quick-panel"];
+    var ids = ["checklists-panel", "settings-panel", "mp-panel", "stored-loc-panel", "group-quick-panel"];
     for (var i = 0; i < ids.length; i++) { var p = document.getElementById(ids[i]); if (p && p.style && p.style.display !== "none") return true; }
     return false;
   }
@@ -3600,23 +3577,6 @@
     });
   }
   function resetSources() { window.GeoState.save({ directSources: null, srcRemoved: null }); allSightingsCache = {}; srcDetailId = null; renderSourcesTable(); }
-  // Settings → Blocked species: list every hidden species with an × to unblock.
-  function renderBlockedList() {
-    var el = document.getElementById("blocked-list"); if (!el) return;
-    var keys = Object.keys(hiddenSpecies);
-    if (!keys.length) { el.innerHTML = '<p class="cu-hint">' + escapeHtml(t("blocked.empty")) + "</p>"; return; }
-    var nameByKey = Object.create(null);
-    keys.forEach(function (k) { var lbl = labelsByKey[k]; nameByKey[k] = lbl ? speciesName(lbl) : k; });   // compute once, not per comparison
-    keys.sort(function (a, b) { return nameByKey[a].localeCompare(nameByKey[b]); });
-    el.innerHTML = '<table class="src-tbl"><tbody>' + keys.map(function (k) {
-      var n = escapeHtml(nameByKey[k]);
-      return '<tr><td class="dset-name">' + n + "</td>" +
-        '<td class="dset-actions"><button type="button" class="src-del blk-del" data-key="' + escapeHtml(k) + '" aria-label="' + escapeHtml(t("loc.unhide")) + '">×</button></td></tr>';
-    }).join("") + "</tbody></table>";
-    el.querySelectorAll(".blk-del").forEach(function (b) {
-      b.addEventListener("click", function () { unhideSpecies(this.getAttribute("data-key")); renderBlockedList(); });
-    });
-  }
   // Display name for a species key (current UI language), for the lists view.
   function listKeyName(key) {
     var lbl = labelsByKey[key];
@@ -4826,7 +4786,7 @@
   // (eBird/Artdatabanken key storage moved to the AppSources module.)
 
   // ---- Cross-device share: Export / Import the user's data ------------------
-  // Settings, checklists, eBird key, interesting/hidden lists, plotted points —
+  // Settings, checklists, eBird key, interesting list, plotted points —
   // anything held in our two localStorage entries. The H3 range cache is left
   // out (large, fully reconstructible). Imports MERGE checklists by id and
   // append log entries (deduped by entry id), so observations made on either
@@ -5808,11 +5768,6 @@
           '<div class="ctrl-group ctrl-group-btn" id="play-btn-wrap">' +
             '<button id="play-btn" class="btn" data-i18n="btn.play">\u25b6 Play migration</button>' +
           '</div>' +
-          '<div class="ctrl-group" id="hidden-wrap" style="display:none">' +
-            '<label data-i18n="ctrl.hidden">Hidden species</label>' +
-            '<button type="button" id="hidden-btn" class="dd-toggle"><span id="hidden-btn-text"></span><span class="dd-caret" aria-hidden="true">▾</span></button>' +
-            '<div id="hidden-panel" class="dd-panel" style="display:none"></div>' +
-          '</div>' +
           '<div class="ctrl-group" id="checklists-wrap" style="display:none">' +
             '<button type="button" id="checklists-toggle" class="hdr-icon-btn" aria-haspopup="true" title="Checklists" aria-label="Checklists">' +
               '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
@@ -5989,10 +5944,6 @@
                 '<label class="ctrl-check"><input type="checkbox" id="rarity-ticker-toggle"> <span data-i18n="ctrl.rarityTicker">Rarest-finds intro</span></label>' +
                 '<p class="cu-hint" data-i18n="ctrl.rarityTickerHint">Off by default. After each fetch, the rarest species found scroll up from the bottom of the map in their dot colours down the right side (rarest at the top) and stay there until you act. Tap a tile to jump to that species in the list; any other tap, key or map move dismisses it.</p>' +
               '</div>' +
-              '<div class="ctrl-group">' +
-                '<label class="ctrl-check"><input type="checkbox" id="prob-perobs-toggle" checked> <span data-i18n="ctrl.probPerObs">Per-observation probabilities</span></label>' +
-                '<p class="cu-hint" data-i18n="ctrl.probPerObsHint">On (default): each observation\'s model probability uses its own location (25 km grid) and the week of its date — so the legend/list order and the ◉ rare flag reflect where & when things were actually seen (values are cached). Off: the whole set uses one lookup at the middle of the fetched area and the middle of the date range.</p>' +
-              '</div>' +
               '<div class="settings-section" data-i18n="settings.secData">Data sources</div>' +
               '<div class="ctrl-group" id="sources-wrap">' +
                 '<label data-i18n="sources.label">Data sources</label>' +
@@ -6058,11 +6009,6 @@
                 icoBtn("lists-open", "list", "lists.manage", "Administer lists…") +
                 '<p class="cu-hint" data-i18n="lists.titleHint">Open the managers for your saved species lists and observer lists — rename, edit members or delete.</p>' +
               '</div>' +
-              '<div class="ctrl-group">' +
-                '<label data-i18n="blocked.title">Blocked species</label>' +
-                icoBtn("blocked-open", "block", "blocked.manage", "Manage blocked species…") +
-                '<p class="cu-hint" data-i18n="blocked.titleHint">Species you’ve hidden from the lists — review them here and unblock any you want back.</p>' +
-              '</div>' +
               '<div class="ctrl-group" id="sync-wrap">' +
                 '<label data-i18n="ctrl.syncData">Share between devices</label>' +
                 '<div class="sync-row">' +
@@ -6085,11 +6031,6 @@
                 '<p class="cu-hint" id="storage-usage"></p>' +
                 '<p class="cu-hint storage-warn" id="storage-warn" style="display:none"></p>' +
                 '<button type="button" id="errlog-open" class="btn btn-light" data-i18n="errlog.title">Error log</button>' +
-              '</div>' +
-              '<div class="ctrl-group" id="install-wrap" hidden>' +
-                '<label data-i18n="install.label">Offline mode</label>' +
-                icoBtn("install-settings", "install", "install.app", "Offline mode") +
-                '<div class="install-steps cu-hint" hidden></div>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label data-i18n="clear.label">Clear cached data</label>' +
@@ -6181,7 +6122,7 @@
           '<div id="sp-records" style="display:none"></div>' +
           '<table id="species-list-table">' +
             '<thead><tr>' +
-            // Status (★/◉/🟠/🟡/🚫) rides on the species dot now (see spListDot), not in
+            // Status (★/◉/🟠/🟡) rides on the species dot now (see spListDot), not in
             // its own columns; filtering by status lives in the Species header panel.
             '<th id="sp-nd-head" class="num clickable-head" data-i18n="th.total">Total</th><th id="sp-species-head" class="clickable-head" data-i18n="th.species">Species</th><th class="name2 clickable-head" id="sp-name2-head"></th><th id="sp-sci-head" class="clickable-head" data-i18n="th.sci">Scientific name</th><th id="sp-last-head" class="num clickable-head" data-i18n="th.last">Last</th><th id="sp-dist-head" class="num clickable-head" data-i18n="th.dist" data-hintkey="th.distHint">Dist</th><th id="sp-prob-head" class="clickable-head" data-hintkey="th.probHint"><span class="th-full">Probability</span><span class="th-abbr">Prob.</span></th><th id="sp-season-head" class="season-cell clickable-head" data-i18n="th.season" data-hintkey="th.seasonHint">Season</th><th id="sp-delta-head"></th></tr></thead>' +
             '<tbody id="sp-tbody"></tbody>' +
@@ -6404,12 +6345,6 @@
             '<button type="button" id="sources-reset" class="btn btn-light" data-i18n="sources.reset">Reset to defaults</button>' +
           '</div>' +
         '</div></div>' +
-        '<div id="blocked-modal" style="display:none"><div id="blocked-box">' +
-          '<button type="button" id="blocked-close" aria-label="Close">×</button>' +
-          '<h3 data-i18n="blocked.title">Blocked species</h3>' +
-          '<p class="cu-hint" data-i18n="blocked.hint">Blocked species are hidden from the lists, checklist and map. Tap × to unblock.</p>' +
-          '<div id="blocked-list"></div>' +
-        '</div></div>' +
         '<div id="lists-modal" style="display:none"><div id="lists-box">' +
           '<button type="button" id="lists-close" aria-label="Close">×</button>' +
           '<h3 data-i18n="lists.title">Administer lists</h3>' +
@@ -6575,7 +6510,7 @@
             if (p.style.display !== "none" && p.classList && p.classList.contains("dd-panel") && hdr.contains(p)) placeHeaderPanel(p);
           });
         });
-        ["hidden-panel", "checklists-panel", "settings-panel", "mp-panel"].forEach(function (id) {
+        ["checklists-panel", "settings-panel", "mp-panel"].forEach(function (id) {
           var p = document.getElementById(id);
           if (p) mo.observe(p, { attributes: true, attributeFilter: ["style"] });
         });
@@ -6627,7 +6562,6 @@
       initMap();
       initMapHelpTips();
       bindControls();
-      refreshHiddenUI();
       refreshChecklists();
       // The init above rendered everything in the current language (or English
       // if the UI-string pack is still in flight) — from here on, refreshLangUI
@@ -6918,7 +6852,6 @@
   }
   // Everything that renders species names, re-run when a name pack arrives.
   function refreshSpeciesNames() {
-    if (typeof refreshHiddenUI === "function") refreshHiddenUI();
     if (typeof refreshChecklists === "function") refreshChecklists();
     if (typeof refreshDetections === "function") refreshDetections();
     if (typeof refreshCurrentView === "function") refreshCurrentView();
@@ -7015,7 +6948,6 @@
     try { updateBasemapOptions(); } catch (e) {}   // re-append the 🔑 to key-maps after applyI18n reset the option text
     populateWeekSelect();   // re-label weeks in the new language
     populateSecondLangSelect();   // re-localize the "(none)" option
-    refreshHiddenUI();      // re-localize hidden-species chip names
     refreshChecklists();    // re-localize the "Checklist (N)" button text
     if (document.getElementById("field-page").style.display === "flex") renderFieldList();  // re-localize activity labels if open
     if (window.__refreshFilterCycle) window.__refreshFilterCycle();   // cycle-button text isn't covered by data-i18n
@@ -8621,7 +8553,7 @@
   function detIsVisible(key, selActive) {
     if (selActive === undefined) selActive = detSelectionActive();
     if (detExcluded[key]) return false;   // list red-excluded → never show
-    return !isHidden((dEntry(key) && dEntry(key).key) || key) && detPassesStatus(key) && detPassesGroup(key) && detPassesCount(key) && detPassesProb(key) && detPassesRows(key) && detPassesRegion(key) && (!selActive || !!detSelected[key]);
+    return detPassesStatus(key) && detPassesGroup(key) && detPassesCount(key) && detPassesProb(key) && detPassesRows(key) && detPassesRegion(key) && (!selActive || !!detSelected[key]);
   }
   // Dots are always shown in their species colour (no grey overview mode) — so
   // "all"/"1 day"/etc. all render coloured. Visibility (above) does the filtering.
@@ -10107,13 +10039,6 @@
         function () { toggleYearList(key); closeDetRowMenu(); redraw(); }));
       el.appendChild(drmToggle({ html: ico("sprout") }, inLifeList(key), t("menu.lifelist"),
         function () { toggleLifeList(key); closeDetRowMenu(); redraw(); }));
-      // Hidden toggles both ways — reachable because the list's 🚫 filter can
-      // show blocked species. Its icon previews the ACTION rather than the state:
-      // red = this click hides the species, green = this click brings it back.
-      var hid = isHidden(key);
-      el.appendChild(drmToggle({ html: ico("block") }, false, t("menu.hidden"),
-        function () { (hid ? unhideSpecies : hideSpecies)(key); closeDetRowMenu(); redraw(); },
-        hid ? "drm-will-show" : "drm-will-hide"));
     }
   }
   function drmRenderLists(el, d) {
@@ -12750,13 +12675,12 @@
   // ---- Per-observation habitat probability -------------------------------------
   // Each observation gets a model probability P(species, week-of-its-date, its
   // 25×25 km cell). Values are cached (idx|week|cell) so re-renders are instant and
-  // repeated obs collapse to one inference. A toggle (probPerObs, default on) swaps
-  // this for a single lookup at the MIDDLE of the fetched rectangle + the MIDDLE of
-  // the date range. Per species we keep the MIN over its observations (legend/list
-  // order — lowest = rarest first) and the MAX (drives the ◉ "locally rare" flag).
+  // repeated obs collapse to one inference. (The old "one lookup at the middle of the
+  // fetched rectangle" mode is gone — per-observation is the only basis.) Per species
+  // we keep the MIN over its observations (legend/list order — lowest = rarest first)
+  // and the MAX (drives the ◉ "locally rare" flag).
   var LOC_GRID_DELTA = 25;   // km — observation → grid-cell size (fewer inferences + cache key)
   var obsProbCache = Object.create(null);   // "idx|week|cell" -> model prob (deterministic; kept across renders)
-  function probPerObs() { return window.GeoState.get("probPerObs", true) !== false; }
   function histoZeroDays() { return window.GeoState.get("histoZeroDays", true) !== false; }   // bar chart: include zero-observation days (default on)
   function snapCell(lat, lon) {
     var dLat = LOC_GRID_DELTA / 111.32, iy = Math.round(lat / dLat), glat = iy * dLat;
@@ -12806,18 +12730,6 @@
       });
     });
     if (!any) { finish(); return; }
-
-    if (!probPerObs()) {
-      // MID mode: one lookup at the rectangle centre + the mid date-range week.
-      var mLat = (La + Lb) / 2, mLon = (Oa + Ob) / 2, mWk;
-      if (dMin && dMax) { var mid = new Date((Date.parse(dMin) + Date.parse(dMax)) / 2); mWk = isNaN(mid.getTime()) ? weekOfToday() : weekOfDate(mid); }
-      else mWk = weekOfToday();
-      runInference(new Float32Array([mLat, mLon, mWk]), 1, { task: "raw" }).then(function (out) {
-        keys.forEach(function (k) { var idx = idxOf[k]; if (idx < 0) return; var p = out[idx]; (detPlot[k].rows || []).forEach(function (r) { if (valid(r)) r._prob = p; }); });
-        finish();
-      }, function () { detProbBusy = false; });
-      return;
-    }
 
     // PER-OBS mode: each row → its 25 km cell + its date's week, cached.
     var need = Object.create(null), meta = [];
@@ -13514,7 +13426,6 @@
     var selActive = selKeys.length > 0 || exKeys.length > 0;
     var selSum = selKeys.length ? t("filters.nSelected", { n: selKeys.length }) : t("det.allSpecies");
     var secSel = affSection("sel", t("th.species"), selActive, selSum, selNames);
-    var hiddenRow = '<div class="aff-hidden-sec"><label class="det-obs-row"><input type="checkbox" class="aff-hidden-cb"' + (spFilters.hidden ? " checked" : "") + "> " + escapeHtml(t("menu.hidden")) + "</label></div>";
 
     // Species lists — saved + premade groups, tri-state include/exclude. Always shown so
     // lists are reachable straight from the pane (premade appear once IOC taxonomy loads).
@@ -13590,7 +13501,7 @@
     var secRegion = affSection("region", t("region.title"), detRegionMode !== "off", regSum, affRegionHtml());
 
     // Order: "Show last" (date) at the top; Probability sits right under Status; the standalone Hidden checkbox at the very bottom.
-    return head + '<div class="aff-body">' + secDate + secSort + secSel + secLists + secMode + secProb + secNew + secCnt + secName + secLoc + secObs + secSrc + secRegion + hiddenRow + "</div>";
+    return head + '<div class="aff-body">' + secDate + secSort + secSel + secLists + secMode + secProb + secNew + secCnt + secName + secLoc + secObs + secSrc + secRegion + "</div>";
   }
   function affRegionHtml() {
     var opts = DET_REGIONS.map(function (n, i) { return '<option value="' + i + '"' + (i === detRegionPick ? " selected" : "") + ">" + escapeHtml(regionName(i)) + "</option>"; }).join("");
@@ -13657,10 +13568,8 @@
         }
       });
     });
-    // Species lists picker (shared with the header panel) + hidden toggle
+    // Species lists picker (shared with the header panel) 
     wireSpListsPicker(box);
-    var hc = box.querySelector(".aff-hidden-cb");
-    if (hc) hc.addEventListener("change", function (e) { e.stopPropagation(); toggleSpFlag("hidden"); renderAllFiltersPane(); });
     // Sort buttons — cycle a column the same way clicking its header does.
     box.querySelectorAll(".aff-sort-btn").forEach(function (b) {
       b.addEventListener("click", function (e) { e.stopPropagation(); cycleSpeciesListSort(this.getAttribute("data-col")); renderAllFiltersPane(); });
@@ -15507,8 +15416,6 @@
     var installed = installIsStandalone();
     var info = document.getElementById("install-info");
     if (info) info.hidden = installed;
-    var wrap = document.getElementById("install-wrap");
-    if (wrap) wrap.hidden = installed;
   }
   function initInstall() {
     window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); deferredInstall = e; refreshInstallUI(); });
@@ -15899,17 +15806,6 @@
       document.getElementById("sources-reset").addEventListener("click", resetSources);
     }
 
-    var blockedOpenBtn = document.getElementById("blocked-open");
-    if (blockedOpenBtn) {
-      blockedOpenBtn.addEventListener("click", function () {
-        closeDropdowns();
-        renderBlockedList();
-        document.getElementById("blocked-modal").style.display = "flex";
-        navOpen("blocked", function () { document.getElementById("blocked-modal").style.display = "none"; });
-      });
-      document.getElementById("blocked-close").addEventListener("click", function () { navClose("blocked"); });
-      document.getElementById("blocked-modal").addEventListener("click", function (e) { if (e.target === this) navClose("blocked"); });
-    }
 
     var listsOpenBtn = document.getElementById("lists-open");
     if (listsOpenBtn) {
@@ -15957,16 +15853,6 @@
     }
     function relayerDet() { rebuildDetLayers(); updateDetLegend(); }
     wireNumSetting("rare-pct", rarePct, 1, 100, 10, function (v) { window.GeoState.save({ rarePct: v }); }, relayerDet);
-    var probCb = document.getElementById("prob-perobs-toggle");
-    if (probCb) {
-      probCb.checked = probPerObs();
-      probCb.addEventListener("change", function () {
-        window.GeoState.save({ probPerObs: !!this.checked });
-        detProbSig = "";   // basis changed → force a full recompute
-        if (typeof renderDetListModal === "function") renderDetListModal();
-        relayerDet();
-      });
-    }
     var rtCb = document.getElementById("rarity-ticker-toggle");
     if (rtCb) {
       rtCb.checked = rarityTickerOn();
@@ -16382,11 +16268,9 @@
     document.getElementById("perf-modal").addEventListener("click", function (e) {
       if (e.target === this) hidePerfModal();   // click outside the box
     });
-    // Install buttons (info screen + Settings) → native prompt or manual steps.
+    // Install button (info screen) → native prompt or manual steps.
     var installInfoBtn = document.getElementById("install-info");
     if (installInfoBtn) installInfoBtn.addEventListener("click", function () { doInstall(this); });
-    var installSettingsBtn = document.getElementById("install-settings");
-    if (installSettingsBtn) installSettingsBtn.addEventListener("click", function () { doInstall(this); });
     document.getElementById("distmap-close").addEventListener("click", function () { navClose("distmap"); });
     document.getElementById("distmap-modal").addEventListener("click", function (e) {
       if (e.target === this) navClose("distmap");
@@ -16837,7 +16721,7 @@
     });
     window.addEventListener("pagehide", function () { if (h3SaveTimer) saveH3Cache(); });
 
-    // Dropdown popovers (Hidden species, Saved locations).
+    // Dropdown popovers (Saved locations).
     function wireDropdown(btnId, panelId) {
       document.getElementById(btnId).addEventListener("click", function (e) {
         e.stopPropagation();
@@ -16848,7 +16732,6 @@
         p.style.display = willOpen ? "block" : "none";
       });
     }
-    wireDropdown("hidden-btn", "hidden-panel");
     wireDropdown("checklists-toggle", "checklists-panel");
     wireDropdown("mp-toggle", "mp-panel");
     // Re-render the panel after open so distances reflect the current map centre.
@@ -17725,7 +17608,7 @@
     function ks(o) { return o ? Object.keys(o).sort().join(",") : ""; }
     var pm = document.getElementById("prob-min"), px = document.getElementById("prob-max"), dr = detDateRange();
     return [
-      ks(hiddenSpecies), ks(detExcluded), ks(detSelected),
+      ks(detExcluded), ks(detSelected),
       detStarFilter, detRareFilter, detYearFilter, detLifeFilter, detAlertFilter,
       speciesGroup, spCountMin, spCountMax, spCountMetric,
       (pm ? pm.value : ""), (px ? px.value : ""), detLegendRows,
@@ -19571,7 +19454,7 @@
     csvEsc: csvEsc, detailedPlaceName: detailedPlaceName, escapeHtml: escapeHtml,
     fmtDateFile: fmtDateFile, haversineKm: haversineKm, ico: ico,
     inGroup: inGroup, interestingStar: interestingStar, isBirdKey: isBirdKey,
-    isHidden: isHidden, isInteresting: isInteresting, navClose: navClose,
+    isInteresting: isInteresting, navClose: navClose,
     navOpen: navOpen, nearbyPlaces: nearbyPlaces, placeKey: placeKey,
     recordSpeciesSeen: recordSpeciesSeen, refreshChecklists: refreshChecklists,
     runInference: runInference, setStatus: setStatus, speciesName: speciesName,
@@ -20264,8 +20147,8 @@
     // Name search — narrows the list by species name (name / 2nd name / scientific).
     html += '<input type="search" class="sp-search sp-name-filter" placeholder="' + escapeHtml(t("ph.filter")) + '" aria-label="' + escapeHtml(t("ph.filter")) + '" autocomplete="off" autocorrect="off" spellcheck="false" value="' + escapeHtml(spNameQuery) + '" />';
     // Active status-flag filters as toggle chips (mirror the flag columns).
-    var spfTip = { star: t("det.starred"), rare: t("det.rare"), year: t("det.needsYear", { year: curYear() }), life: t("det.needsLife"), hidden: t("menu.hidden") };
-    var modes = [["star", SP_FLAG_GLYPH.star], ["rare", SP_FLAG_GLYPH.rare], ["year", SP_FLAG_GLYPH.year], ["life", SP_FLAG_GLYPH.life], ["hidden", SP_FLAG_GLYPH.hidden]];
+    var spfTip = { star: t("det.starred"), rare: t("det.rare"), year: t("det.needsYear", { year: curYear() }), life: t("det.needsLife") };
+    var modes = [["star", SP_FLAG_GLYPH.star], ["rare", SP_FLAG_GLYPH.rare], ["year", SP_FLAG_GLYPH.year], ["life", SP_FLAG_GLYPH.life]];
     html += '<div class="sp-spf-modes">' + modes.map(function (m) {
       return '<button type="button" class="sp-spf-chip' + (spFilters[m[0]] ? " on" : "") + '" data-flag="' + m[0] + '" title="' + escapeHtml(spfTip[m[0]]) + '">' + m[1] + "</button>";
     }).join("") + "</div>";
@@ -20480,8 +20363,8 @@
     if (spHeadPanel === "last") { spHeadPanel = null; spHeadPanelDate = null; renderSpControls(); return; }
     detDaysPanelOpen = false; obsDatePanelDate = null; reRenderFilterBar();
   }
-  // Toggle a status-flag filter (★/◉/🟠/🟡/🚫), mirroring ★/◉/🟠/🟡 to the global
-  // detection filters so the map + legend + record views follow (🚫 stays list-only).
+  // Toggle a status-flag filter (★/◉/🟠/🟡), mirroring it to the global detection
+  // filters so the map + legend + record views follow.
   // Shared by the flag column headers and the Species header panel's chips.
   function toggleSpFlag(f) {
     if (!f || !(f in spFilters)) return;
@@ -20492,10 +20375,10 @@
     else if (f === "rare") detRareFilter = spFilters.rare ? 1 : 0;
     else if (f === "year") detYearFilter = spFilters.year ? -1 : 0;
     else if (f === "life") detLifeFilter = spFilters.life ? -1 : 0;
-    if (f !== "hidden") saveLegendState();
+    saveLegendState();
     syncFlagsHead();
     keepListScroll = true;
-    if (f !== "hidden") { rebuildDetLayers(); updateDetLegend(); }
+    rebuildDetLayers(); updateDetLegend();
     if (f === "rare") applyAgeFilter();
     else if (!refreshCueCellsInPlace()) refreshCurrentView();
   }
@@ -20581,7 +20464,7 @@
         return r;
       }
       var results = buildResults();
-      // If an active species filter (★/🟡/🟠/🚫) leaves the freshly fetched list
+      // If an active species filter (★/🟡/🟠) leaves the freshly fetched list
       // empty, drop the filter so all observations show instead of a blank list.
       if (results.length === 0 && anySpFilter()) {
         clearSpFilters();
@@ -20910,7 +20793,6 @@
       scatterRankBy: document.getElementById("an-rankby").value,
       scatterSort: scatterSort,
       inGroup: inGroup,
-      isHidden: function (key) { return isHidden(key); },
       nameLink: nameLinkHtml,
       speciesName: speciesName,
       escapeHtml: escapeHtml,
@@ -21128,7 +21010,7 @@
   }
 
   function closeDropdowns() {
-    ["hidden-panel", "checklists-panel", "settings-panel", "mp-panel", "group-quick-panel"].forEach(function (idp) {
+    ["checklists-panel", "settings-panel", "mp-panel", "group-quick-panel"].forEach(function (idp) {
       var p = document.getElementById(idp);
       if (p) p.style.display = "none";
     });
@@ -21290,31 +21172,6 @@
     return lines.join("\n");
   }
 
-  // Editable "Hidden species" list shown in a dropdown popover; each row has
-  // an × to remove the species from the hidden ("sanction") list.
-  function refreshHiddenUI() {
-    var wrap = document.getElementById("hidden-wrap");
-    var btnText = document.getElementById("hidden-btn-text");
-    var panel = document.getElementById("hidden-panel");
-    if (!wrap || !btnText || !panel) return;
-    var keys = Object.keys(hiddenSpecies);
-    wrap.style.display = keys.length ? "" : "none";
-    if (!keys.length) panel.style.display = "none";
-    btnText.textContent = t("ctrl.hidden") + " (" + keys.length + ")";
-    panel.innerHTML = keys.map(function (k) {
-      var lbl = labelsByKey[k];
-      var n = escapeHtml(lbl ? speciesName(lbl) : k);
-      return '<div class="dd-row"><span class="dd-name" title="' + n + '">' + n + "</span>" +
-        '<button type="button" class="dd-del" data-key="' + escapeHtml(k) + '" title="' + escapeHtml(t("loc.unhide")) + '" aria-label="' + escapeHtml(t("loc.unhide")) + '">×</button></div>';
-    }).join("");
-    panel.querySelectorAll(".dd-del").forEach(function (b) {
-      b.addEventListener("click", function (e) { e.stopPropagation(); unhideSpecies(this.getAttribute("data-key")); });
-    });
-    // The hidden-species control is the only thing that can populate the bar in
-    // List mode, so re-evaluate whether the bar should show.
-    updateControlsBarVisibility();
-    fitMapHeight();
-  }
 
   // ---- Restore persisted control values ------------------------------------
   // Remember the active view (mode + open page + point) so a reload — e.g. when
@@ -21389,7 +21246,6 @@
       document.getElementById("prob-max-val").textContent = ph + "%";
     })();
 
-    loadHidden();
     loadInteresting();
     loadLists();
 
