@@ -1900,8 +1900,8 @@
           var gLoc = null;
           for (var gli = 0; gli < g.items.length; gli++) { var git = g.items[gli]; if (git && isFinite(+git.lat) && isFinite(+git.lon)) { gLoc = git; break; } }
           locSpan = gLoc
-            ? ' · <span class="dl-loc sp-loc-click" role="button" data-lat="' + (+gLoc.lat) + '" data-lon="' + (+gLoc.lon) + '" data-loc="' + escapeHtml(g.loc) + '">' + escapeHtml(g.loc) + "</span>"
-            : ' <span class="dl-loc">· ' + escapeHtml(g.loc) + "</span>";
+            ? ' · <span class="dl-loc sp-loc-click" role="button" data-lat="' + (+gLoc.lat) + '" data-lon="' + (+gLoc.lon) + '" data-loc="' + escapeHtml(g.loc) + '" title="' + escapeHtml(g.loc) + '">' + escapeHtml(g.loc) + "</span>"
+            : ' · <span class="dl-loc" title="' + escapeHtml(g.loc) + '">' + escapeHtml(g.loc) + "</span>";
         } else if (g.items[0] && isFinite(+g.items[0].lat) && isFinite(+g.items[0].lon)) {
           // No (accurate) source place → the group is one spot (grouped by its
           // coordinates); show its map-derived name — the source's generic text
@@ -1910,7 +1910,7 @@
           locSpan = " " + rgeoSpanHtml(g.items[0].lat, g.items[0].lon, "dl-loc sp-loc-click", "· ", ' role="button"', g.fb,
             g.items.reduce(function (mx, it) { return Math.max(mx, +it.posFuzzM || 0); }, 0));
         } else if (g.fb) {
-          locSpan = ' <span class="dl-loc">· ' + escapeHtml(g.fb) + "</span>";   // generic place, no coords → keep the source text
+          locSpan = ' · <span class="dl-loc" title="' + escapeHtml(g.fb) + '">' + escapeHtml(g.fb) + "</span>";   // generic place, no coords → keep the source text
         }
         // Distance + source(s) belong to the whole group (same place, usually one
         // checklist), so they live here in the subheading, not per species row.

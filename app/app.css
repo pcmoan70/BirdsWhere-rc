@@ -3444,17 +3444,17 @@ table.sp-detail-tbl.sp-obs-tbl { table-layout: fixed; }
    wide enough for "100%" (+ the season glyph); headers ellipsize to fit. */
 table.sp-detail-tbl.sp-obs-tbl th:nth-child(1) { width: 4.5ch; }     /* count (first, left of the name) */
 table.sp-detail-tbl.sp-obs-tbl th:nth-child(2) { width: auto; }      /* species name gets the slack */
-table.sp-detail-tbl.sp-obs-tbl th:nth-child(3) { width: 7ch; }       /* prob */
-table.sp-detail-tbl.sp-obs-tbl th:nth-child(4) { width: 8.5ch; }     /* season (glyph + %) */
-table.sp-detail-tbl.sp-obs-tbl th:nth-child(5) { width: 7ch; }       /* yr peak */
+table.sp-detail-tbl.sp-obs-tbl th:nth-child(3) { width: 10ch; }      /* prob — fits "Prob. ▲" */
+table.sp-detail-tbl.sp-obs-tbl th:nth-child(4) { width: 10ch; }      /* season (glyph + %) */
+table.sp-detail-tbl.sp-obs-tbl th:nth-child(5) { width: 10ch; }      /* yr peak */
 table.sp-detail-tbl.sp-obs-tbl th:nth-child(6) { width: 26px; }      /* ⓘ */
 /* With the 2nd-language name column everything shifts one right. */
 table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(1) { width: 4.5ch; }   /* count */
 table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(2) { width: auto; }    /* name */
 table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(3) { width: 16%; }     /* 2nd name */
-table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(4) { width: 7ch; }     /* prob */
-table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(5) { width: 8.5ch; }   /* season */
-table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(6) { width: 7ch; }     /* yr peak */
+table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(4) { width: 10ch; }    /* prob */
+table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(5) { width: 10ch; }    /* season */
+table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(6) { width: 10ch; }    /* yr peak */
 table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(7) { width: 26px; }    /* ⓘ */
 table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(7) { width: 26px; }
 .sp-obs-tbl td.sp-d-name { overflow: hidden; text-overflow: ellipsis; }
@@ -3491,7 +3491,8 @@ table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(7) { width: 26px; }
 .sp-obs-tbl .sp-obs-grp > td { background: var(--surface-2, #f2f2f2); font-weight: 600; font-size: var(--fs-xs);
   color: var(--ink, #222); padding: 3px 6px; }
 .sp-obs-tbl .sp-obs-grp .dl-ct { margin-left: 6px; font-weight: 400; color: var(--ink-muted, #888); }
-.sp-obs-tbl .sp-obs-grp .dl-loc { font-weight: 400; font-style: italic; color: var(--ink-muted, #888); }
+.sp-obs-tbl .sp-obs-grp .dl-loc { font-weight: 400; font-style: italic; color: var(--ink-muted, #888);
+  display: inline-block; max-width: 38vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }   /* the place gives way first — full name in the hover title; still tappable */
 /* Species colour swatch inline before the name (species list + record tables). */
 .sp-cdot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: middle; flex: 0 0 auto; }
 /* Species-list dot holder — carries the map-style state swatch (colour + ★ / rare /
