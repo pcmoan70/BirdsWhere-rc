@@ -27,7 +27,7 @@
   "ctrl.groupHint": "Apriboja visą programą — sąrašus, Paplitimą, Rūšių gausą ir stebėjimų paiešką — iki vienos grupės: paukščiai, žinduoliai, varliagyviai, vabzdžiai, augalai arba grybai.",
   "ctrl.recentradiusHint": "Kaip toli aplink spustelėtą tašką ar išsaugotą vietą kiekviename šaltinyje ieškoma naujausių stebėjimų.",
   "ctrl.basemapHint": "Fono žemėlapio stilius po duomenimis — Šviesus, Tamsus, Gatvės, Topografinis arba Palydovinis.",
-  "ctrl.maplabelsHint": "Papildomas vietovardžių tankis Šviesiam, Tamsiam ir Palydoviniam žemėlapiams: Išjungta palieka paties žemėlapio pavadinimus, Įjungta prideda švarų etikečių sluoksnį, Daugiau įtraukia tankesnius kito mastelio pavadinimus.",
+  "ctrl.maplabelsHint": "Vietovardžiai „Voyager“ ir palydoviniame žemėlapiuose: Išjungta = jokių (Voyager pasilieka savus), Įjungta = švarus užrašų sluoksnis, Daugiau = dar ir tankesni kito mastelio pavadinimai. Kiti žemėlapiai turi savo pavadinimus, todėl jiems šis nustatymas paslėptas.",
   "ctrl.bcthresholdHint": "Apatinė ir viršutinė modelio tikimybės ribos — už šio intervalo esančios rūšys (ir pavaizduoti stebėjimai) paslepiami iš sąrašo ir žemėlapio.",
   "ctrl.weekHint": "Metų savaitė, kuriai vertinamas modelis (48 savaitės, keturios per mėnesį) — naudojama Paplitimo, Rūšių gausos ir rūšių sąrašo tikimybėms.",
   "ctrl.compareHint": "Į rūšių sąrašą prideda stulpelį, lyginantį dabartinę savaitę su kita savaite arba metiniu vidurkiu/piku, kad matytumėte, kas dabar atvyksta arba yra geriausioje formoje.",

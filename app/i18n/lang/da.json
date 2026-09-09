@@ -27,7 +27,7 @@
   "ctrl.groupHint": "Begræns hele appen — lister, Udbredelse, Artsrigdom og observationssøgning — til én gruppe: fugle, pattedyr, padder, insekter, planter eller svampe.",
   "ctrl.recentradiusHint": "Hvor langt omkring et klikket punkt eller en gemt placering hver kilde søges for nylige observationer.",
   "ctrl.basemapHint": "Baggrundskortets stil bag dataene — Lys, Mørk, Gader, Topografisk eller Satellit.",
-  "ctrl.maplabelsHint": "Ekstra tæthed af stednavne til Lys-, Mørk- og Satellitkort: Fra beholder kortets egne navne, Til tilføjer et rent etiketlag, Mere henter det næste zoomniveaus tættere navne.",
+  "ctrl.maplabelsHint": "Stednavne på Voyager- og Satellit-kortene: Fra = ingen (Voyager beholder sine egne), Til = et rent navnelag, Flere = også næste zoomtrins tættere navne. De andre kort har navnene indbygget, så indstillingen er skjult for dem.",
   "ctrl.bcthresholdHint": "Nedre og øvre grænser for modelsandsynlighed — arter (og plottede observationer) uden for dette interval skjules fra listen og kortet.",
   "ctrl.weekHint": "Årets uge, som modellen evalueres for (48 uger, fire pr. måned) — bruges af Udbredelse, Artsrigdom og artslistens sandsynligheder.",
   "ctrl.compareHint": "Tilføjer en kolonne til artslisten, der sammenligner den aktuelle uge med en anden uge eller årsgennemsnittet/-toppen, så du kan se, hvad der ankommer eller er bedst netop nu.",

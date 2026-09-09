@@ -27,7 +27,7 @@
   "ctrl.groupHint": "Ogranicz całą aplikację — listy, Zasięg, Bogactwo gatunkowe i wyszukiwanie obserwacji — do jednej grupy: ptaki, ssaki, płazy, owady, rośliny lub grzyby.",
   "ctrl.recentradiusHint": "Jak daleko wokół klikniętego punktu lub zapisanej lokalizacji każde źródło jest przeszukiwane pod kątem ostatnich obserwacji.",
   "ctrl.basemapHint": "Styl mapy w tle za danymi — Jasna, Ciemna, Ulice, Topograficzna lub Satelitarna.",
-  "ctrl.maplabelsHint": "Dodatkowa gęstość nazw miejsc dla map Jasna, Ciemna i Satelitarna: Wył. zachowuje własne nazwy mapy, Wł. dodaje czystą warstwę etykiet, Więcej wciąga gęstsze nazwy z następnego przybliżenia.",
+  "ctrl.maplabelsHint": "Nazwy miejsc na mapach Voyager i Satelita: Wył. = brak (Voyager zachowuje własne), Wł. = czysta warstwa etykiet, Więcej = dodatkowo gęstsze nazwy z kolejnego powiększenia. Pozostałe mapy mają nazwy wbudowane, więc to ustawienie jest dla nich ukryte.",
   "ctrl.bcthresholdHint": "Dolna i górna granica prawdopodobieństwa modelu — gatunki (i naniesione obserwacje) spoza tego zakresu są ukrywane z listy i z mapy.",
   "ctrl.weekHint": "Tydzień roku, dla którego oceniany jest model (48 tygodni, cztery na miesiąc) — używany przez Zasięg, Bogactwo gatunkowe i prawdopodobieństwa na liście gatunków.",
   "ctrl.compareHint": "Dodaje do listy gatunków kolumnę porównującą bieżący tydzień z innym tygodniem lub średnią/szczytem rocznym, abyś widział, co teraz przylatuje lub jest w szczytowej formie.",

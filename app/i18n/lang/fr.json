@@ -27,7 +27,7 @@
   "ctrl.groupHint": "Limite toute l'appli — listes, Répartition, Richesse et recherche d'observations — à un seul groupe : oiseaux, mammifères, amphibiens, insectes, plantes ou champignons.",
   "ctrl.recentradiusHint": "Jusqu'à quelle distance autour d'un point cliqué ou d'un lieu enregistré chaque source est interrogée pour les observations récentes.",
   "ctrl.basemapHint": "Le style de la carte de fond derrière les données — Clair, Sombre, Rues, Topographique ou Satellite.",
-  "ctrl.maplabelsHint": "Densité supplémentaire de noms de lieux pour les cartes Clair, Sombre et Satellite : Désactivé garde les noms propres de la carte, Activé ajoute une couche d'étiquettes nette, Plus récupère les noms plus denses du zoom suivant.",
+  "ctrl.maplabelsHint": "Noms de lieux sur les cartes Voyager et Satellite : Non = aucun (Voyager garde les siens), Oui = une couche d’étiquettes propre, Plus = en plus les noms plus denses du zoom suivant. Les autres cartes portent leurs propres noms ; ce réglage est donc masqué pour elles.",
   "ctrl.bcthresholdHint": "Bornes inférieure et supérieure de probabilité du modèle — les espèces (et les observations tracées) hors de cette plage sont masquées de la liste et de la carte.",
   "ctrl.weekHint": "La semaine de l'année pour laquelle le modèle est évalué (48 semaines, quatre par mois) — utilisée par Répartition, Richesse et les probabilités de la liste d'espèces.",
   "ctrl.compareHint": "Ajoute à la liste d'espèces une colonne comparant la semaine actuelle à une autre semaine ou à la moyenne/au pic annuel, pour voir ce qui arrive ou est au mieux en ce moment.",

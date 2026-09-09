@@ -27,7 +27,7 @@
   "ctrl.groupHint": "Begränsa hela appen — listor, Utbredning, Artrikedom och observationssökning — till en grupp: fåglar, däggdjur, groddjur, insekter, växter eller svampar.",
   "ctrl.recentradiusHint": "Hur långt runt en klickad punkt eller sparad plats varje källa söks efter senaste observationer.",
   "ctrl.basemapHint": "Bakgrundskartans stil bakom data — Ljus, Mörk, Gator, Topografisk eller Satellit.",
-  "ctrl.maplabelsHint": "Extra täthet av ortnamn för Ljus-, Mörk- och Satellitkartor: Av behåller kartans egna namn, På lägger till ett rent etikettlager, Mer hämtar nästa zoomnivås tätare namn.",
+  "ctrl.maplabelsHint": "Ortnamn på kartorna Voyager och Satellit: Av = inga (Voyager behåller sina egna), På = ett rent namnlager, Fler = även nästa zoomnivås tätare namn. De andra kartorna har namnen inbakade, så inställningen är dold för dem.",
   "ctrl.bcthresholdHint": "Nedre och övre gräns för modellsannolikhet — arter (och plottade observationer) utanför detta intervall döljs från listan och kartan.",
   "ctrl.weekHint": "Årets vecka som modellen utvärderas för (48 veckor, fyra per månad) — används av Utbredning, Artrikedom och artlistans sannolikheter.",
   "ctrl.compareHint": "Lägger till en kolumn i artlistan som jämför aktuell vecka med en annan vecka eller årsmedel/-topp, så att du ser vad som anländer eller är som bäst nu.",

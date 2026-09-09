@@ -27,7 +27,7 @@
   "ctrl.groupHint": "Piira kogu rakendus — loendid, Levik, Liigirikkus ja vaatluste otsing — ühele rühmale: linnud, imetajad, kahepaiksed, putukad, taimed või seened.",
   "ctrl.recentradiusHint": "Kui kaugelt klõpsatud punkti või salvestatud asukoha ümbert igast allikast hiljutisi vaatlusi otsitakse.",
   "ctrl.basemapHint": "Andmete taga oleva taustakaardi stiil — Hele, Tume, Tänavad, Topograafiline või Satelliit.",
-  "ctrl.maplabelsHint": "Lisatihedus kohanimede jaoks Hele, Tume ja Satelliit kaartidel: Väljas jätab kaardi enda nimed, Sees lisab puhta siltide kihi, Rohkem toob järgmise suumi tihedamad nimed.",
+  "ctrl.maplabelsHint": "Kohanimed Voyageri ja Satelliidi kaartidel: Väljas = mitte ühtegi (Voyager jätab enda omad), Sees = puhas nimekiht, Rohkem = lisaks järgmise suumi tihedamad nimed. Teistel kaartidel on nimed sisse joonistatud, seega on see seade nende puhul peidetud.",
   "ctrl.bcthresholdHint": "Mudeli tõenäosuse alumine ja ülemine piir — sellest vahemikust väljas olevad liigid (ja kuvatud vaatlused) peidetakse loendist ja kaardilt.",
   "ctrl.weekHint": "Aasta nädal, mille kohta mudelit hinnatakse (48 nädalat, neli kuus) — kasutavad Levik, Liigirikkus ja liiginimekirja tõenäosused.",
   "ctrl.compareHint": "Lisab liiginimekirja veeru, mis võrdleb praegust nädalat teise nädala või aasta keskmise/tipuga, et näha, mis praegu saabub või on parimas vormis.",

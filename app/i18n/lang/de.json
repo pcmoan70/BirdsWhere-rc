@@ -27,7 +27,7 @@
   "ctrl.groupHint": "Beschränkt die ganze App — Listen, Verbreitung, Artenreichtum und Beobachtungssuche — auf eine Gruppe: Vögel, Säugetiere, Amphibien, Insekten, Pflanzen oder Pilze.",
   "ctrl.recentradiusHint": "Wie weit um einen angeklickten Punkt oder gespeicherten Ort jede Quelle nach aktuellen Beobachtungen durchsucht wird.",
   "ctrl.basemapHint": "Der Stil der Hintergrundkarte hinter den Daten — Hell, Dunkel, Straßen, Topografisch oder Satellit.",
-  "ctrl.maplabelsHint": "Zusätzliche Ortsnamendichte für die Karten Hell, Dunkel und Satellit: Aus behält die eigenen Namen der Karte, An fügt eine saubere Beschriftungsebene hinzu, Mehr holt die dichteren Namen der nächsten Zoomstufe.",
+  "ctrl.maplabelsHint": "Ortsnamen für die Karten Voyager und Satellit: Aus = keine (Voyager behält seine eigenen), Ein = eine saubere Beschriftungsebene, Mehr = zusätzlich die dichteren Namen der nächsten Zoomstufe. Die übrigen Karten tragen ihre Namen selbst, daher ist die Einstellung dort ausgeblendet.",
   "ctrl.bcthresholdHint": "Untere und obere Grenze der Modellwahrscheinlichkeit — Arten (und dargestellte Beobachtungen) außerhalb dieses Bereichs werden aus Liste und Karte ausgeblendet.",
   "ctrl.weekHint": "Die Woche des Jahres, für die das Modell ausgewertet wird (48 Wochen, vier pro Monat) — genutzt von Verbreitung, Artenreichtum und den Wahrscheinlichkeiten der Artenliste.",
   "ctrl.compareHint": "Fügt der Artenliste eine Spalte hinzu, die die aktuelle Woche mit einer anderen Woche oder dem Jahresmittel/-höhepunkt vergleicht, damit du siehst, was gerade ankommt oder jetzt am besten ist.",

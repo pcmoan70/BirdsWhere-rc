@@ -27,7 +27,7 @@
   "ctrl.groupHint": "Limita toda a aplicação — listas, Distribuição, Riqueza e pesquisa de observações — a um grupo: aves, mamíferos, anfíbios, insetos, plantas ou fungos.",
   "ctrl.recentradiusHint": "A que distância em torno de um ponto clicado ou local guardado cada fonte é pesquisada por observações recentes.",
   "ctrl.basemapHint": "O estilo do mapa de fundo por trás dos dados — Claro, Escuro, Ruas, Topográfico ou Satélite.",
-  "ctrl.maplabelsHint": "Densidade extra de nomes de lugares para os mapas Claro, Escuro e Satélite: Desligado mantém os nomes próprios do mapa, Ligado adiciona uma camada de rótulos limpa, Mais traz os nomes mais densos do zoom seguinte.",
+  "ctrl.maplabelsHint": "Nomes de lugares nos mapas Voyager e Satélite: Não = nenhum (o Voyager mantém os seus), Sim = uma camada limpa de rótulos, Mais = também os nomes mais densos do zoom seguinte. Os outros mapas trazem os seus próprios nomes, por isso esta definição fica oculta neles.",
   "ctrl.bcthresholdHint": "Limites inferior e superior de probabilidade do modelo — as espécies (e as observações representadas) fora deste intervalo ficam ocultas da lista e do mapa.",
   "ctrl.weekHint": "A semana do ano para a qual o modelo é avaliado (48 semanas, quatro por mês) — usada pela Distribuição, Riqueza e pelas probabilidades da lista de espécies.",
   "ctrl.compareHint": "Adiciona à lista de espécies uma coluna que compara a semana atual com outra semana ou com a média/pico anual, para ver o que está a chegar ou no seu melhor agora.",

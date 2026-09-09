@@ -5865,7 +5865,7 @@
                   '<option value="on" data-i18n="labels.on">On</option>' +
                   '<option value="more" data-i18n="labels.more">More</option>' +
                 '</select>' +
-                '<p class="cu-hint" data-i18n="ctrl.maplabelsHint">Extra place-name density for the Light, Dark and Satellite maps: Off keeps the map’s own names, On adds a clean label layer, More pulls in the next zoom’s denser names.</p>' +
+                '<p class="cu-hint" data-i18n="ctrl.maplabelsHint">Place names for the Voyager and Satellite maps: Off = none (Voyager keeps its own), On = a clean label layer, More = the next zoom’s denser names too. The other maps carry their own names, so this setting is hidden for them.</p>' +
               '</div>' +
               '<div class="ctrl-group" id="barchart-threshold-wrap" style="display:none">' +
                 '<label data-i18n="ctrl.bcthreshold">Probability range</label>' +
@@ -5932,10 +5932,6 @@
                 '<label for="rare-pct" data-i18n="ctrl.rarepct">Rare species threshold (%)</label>' +
                 '<input id="rare-pct" type="number" min="1" max="100" step="1" />' +
                 '<p class="cu-hint" data-i18n="ctrl.rarepcthint">A plotted species is “rare locally” when its detection count is at most this % of the commonest plotted species. Rare dots get a black centre; filter them with the legend’s ◉ Rare.</p>' +
-              '</div>' +
-              '<div class="ctrl-group">' +
-                '<label class="ctrl-check"><input type="checkbox" id="dot-cluster-toggle"> <span data-i18n="ctrl.dotCluster">Cluster crowded dots</span></label>' +
-                '<p class="cu-hint" data-i18n="ctrl.dotClusterHint">Observation dots that overlap on screen merge into a count dot — tap to zoom in and split it. Dots standing free stay ordinary dots at every zoom.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="rarity-ticker-toggle"> <span data-i18n="ctrl.rarityTicker">Rarest-finds intro</span></label>' +
@@ -7711,6 +7707,13 @@
     if (cw) cw.style.display = (which === "voyager") ? "" : "none";
     if (mw) mw.style.display = (which === "maptiler") ? "" : "none";
   }
+  // The Place-labels control only makes sense on the basemaps that take the overlay
+  // (Voyager / Satellite) — hide it for the ones with baked-in names.
+  var renderedBasemap = "";   // the basemap actually on the map (a key-less choice renders as Streets)
+  function syncLabelsControl() {
+    var w = document.getElementById("maplabels-wrap");
+    if (w) w.style.display = labelsSupported(renderedBasemap) ? "" : "none";
+  }
   function updateBasemapOptions() {
     var sel = document.getElementById("maptype-select"); if (!sel) return;
     // ALL maps are always listed; the key-requiring ones get a 🔑 after the name.
@@ -7723,6 +7726,7 @@
   function setBasemap(which) {
     if (!BASEMAPS[which]) which = "streets";   // migrate a removed/unknown choice (e.g. the old Light/Dark)
     var render = basemapGated(which) ? "streets" : which;   // key-map with no key yet → show a working Streets map, but KEEP `which` as the choice
+    renderedBasemap = render;
     var cfg = BASEMAPS[render];
     if (baseLayer) map.removeLayer(baseLayer);
     // subdomains must not be undefined — Leaflet reads .length even when the
@@ -7743,6 +7747,7 @@
     window.GeoState.save({ basemap: which });
     updateMapKeyInputs(which);   // reveal the key field for a chosen key-map
     applyLabelsOverlay();   // re-pick label style (dark/light) for the new basemap
+    syncLabelsControl();
   }
   // ---- Extra place-name labels overlay --------------------------------------
   // OPTIONAL CARTO labels-only tiles over a labels-FREE base (satellite, or CARTO
@@ -10832,7 +10837,8 @@
   // heatmap metric (Off/Species/Observers/Counts) — both live here so the dot
   // rebuild below and the hotspot painter further down share one source of truth.
   var dotsShown = true, hotMode = "off";
-  function dotClusterOn() { return !!window.GeoState.get("dotCluster", false); }
+  var DOT_CLUSTER = true;   // crowded dots always merge into count markers (the Settings toggle is gone)
+  function dotClusterOn() { return DOT_CLUSTER; }
   function clearDotClusterLayers() {
     dotClusterHiddenN = 0;
     if (detClusterLayer) { try { map.removeLayer(detClusterLayer); } catch (e) {} detClusterLayer = null; }
@@ -11334,11 +11340,6 @@
       var bounds = L.latLngBounds([]);
       entries.forEach(function (e) { (e.rows || []).forEach(function (r) { if (r && isFinite(+r.lat) && isFinite(+r.lon)) bounds.extend([+r.lat, +r.lon]); }); });
       if (bounds.isValid() && !autoOpenPlotting && !plotNoFit) { try { fitBoundsMin(bounds, 0.2); } catch (e3) {} }
-      // One-time tip: a big plot with clustering off → point at the setting.
-      if (!dotClusterOn() && !window.GeoState.get("clusterHintShown", false) && detDrawableCount() > 1000) {
-        window.GeoState.save({ clusterHintShown: true });
-        setStatus(t("hint.cluster"));
-      }
       // Don't auto-switch the list⇄map view here — that only changes when the user taps
       // the header toggle. (The map-first flow already hid the list; re-plots on filter
       // changes must NOT yank the user off the list.) Just refresh the toggle icon —
@@ -15853,11 +15854,6 @@
       rtCb.checked = rarityTickerOn();
       rtCb.addEventListener("change", function () { window.GeoState.save({ rarityTicker: !!this.checked }); });
     }
-    var dcCb = document.getElementById("dot-cluster-toggle");
-    if (dcCb) {
-      dcCb.checked = dotClusterOn();
-      dcCb.addEventListener("change", function () { window.GeoState.save({ dotCluster: !!this.checked }); rebuildDetLayers(); });
-    }
     var hsCycle = document.getElementById("hotspot-cycle");
     if (hsCycle) {
       var HS_MODES = ["off", "species", "observers", "counts"];
@@ -16251,6 +16247,7 @@
     var mapLabelsSel = document.getElementById("maplabels-select");
     if (mapLabelsSel) {
       mapLabelsSel.value = labelsMode();
+      syncLabelsControl();
       mapLabelsSel.addEventListener("change", function () { window.GeoState.save({ mapLabels: this.value }); setBasemap(window.GeoState.get("basemap", "voyager")); });   // re-apply base (CARTO swaps to _nolabels) + overlay
     }
 

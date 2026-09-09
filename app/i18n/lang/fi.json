@@ -27,7 +27,7 @@
   "ctrl.groupHint": "Rajaa koko sovellus — luettelot, Levinneisyys, Lajirunsaus ja havaintohaku — yhteen ryhmään: linnut, nisäkkäät, sammakkoeläimet, hyönteiset, kasvit tai sienet.",
   "ctrl.recentradiusHint": "Kuinka kaukaa napautetun pisteen tai tallennetun sijainnin ympäriltä kustakin lähteestä haetaan tuoreita havaintoja.",
   "ctrl.basemapHint": "Datan taustalla olevan taustakartan tyyli — Vaalea, Tumma, Kadut, Topografinen tai Satelliitti.",
-  "ctrl.maplabelsHint": "Lisää paikannimitiheyttä Vaalea-, Tumma- ja Satelliittikartoille: Pois säilyttää kartan omat nimet, Päällä lisää siistin nimikerroksen, Enemmän tuo seuraavan zoomin tiheämmät nimet.",
+  "ctrl.maplabelsHint": "Paikannimet Voyager- ja Satelliittikartoilla: Pois = ei nimiä (Voyager pitää omansa), Päällä = siisti nimikerros, Enemmän = lisäksi seuraavan zoomin tiheämmät nimet. Muissa kartoissa nimet ovat valmiina, joten asetus on niillä piilossa.",
   "ctrl.bcthresholdHint": "Mallin todennäköisyyden ala- ja yläraja — tämän alueen ulkopuoliset lajit (ja piirretyt havainnot) piilotetaan luettelosta ja kartalta.",
   "ctrl.weekHint": "Vuoden viikko, jolle malli arvioidaan (48 viikkoa, neljä kuukaudessa) — käytössä Levinneisyydessä, Lajirunsaudessa ja lajiluettelon todennäköisyyksissä.",
   "ctrl.compareHint": "Lisää lajiluetteloon sarakkeen, joka vertaa nykyistä viikkoa toiseen viikkoon tai vuoden keskiarvoon/huippuun, jotta näet, mitä on nyt saapumassa tai parhaimmillaan.",

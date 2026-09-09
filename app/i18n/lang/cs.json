@@ -27,7 +27,7 @@
   "ctrl.groupHint": "Omezí celou aplikaci — seznamy, Rozšíření, Rozmanitost i vyhledávání pozorování — na jednu skupinu: ptáci, savci, obojživelníci, hmyz, rostliny nebo houby.",
   "ctrl.recentradiusHint": "Jak daleko kolem klepnutého bodu nebo uložené polohy se v každém zdroji hledají nedávná pozorování.",
   "ctrl.basemapHint": "Styl podkladové mapy pod daty — Světlá, Tmavá, Ulice, Topografická nebo Satelitní.",
-  "ctrl.maplabelsHint": "Vyšší hustota názvů míst pro mapy Světlá, Tmavá a Satelitní: Vyp ponechá vlastní názvy mapy, Zap přidá čistou vrstvu popisků, Více přinese hustší názvy z dalšího přiblížení.",
+  "ctrl.maplabelsHint": "Názvy míst pro mapy Voyager a Satelit: Vypnuto = žádné (Voyager si nechá své), Zapnuto = čistá vrstva popisků, Více = navíc hustší názvy dalšího přiblížení. Ostatní mapy mají názvy v sobě, proto je u nich toto nastavení skryté.",
   "ctrl.bcthresholdHint": "Dolní a horní hranice modelové pravděpodobnosti — druhy (a vykreslená pozorování) mimo tento rozsah jsou skryty ze seznamu i z mapy.",
   "ctrl.weekHint": "Týden v roce, pro který se model vyhodnocuje (48 týdnů, čtyři na měsíc) — používají ho Rozšíření, Rozmanitost i pravděpodobnosti v seznamu druhů.",
   "ctrl.compareHint": "Přidá do seznamu druhů sloupec porovnávající aktuální týden s jiným týdnem nebo s ročním průměrem/vrcholem, takže vidíte, co právě přilétá nebo je v nejlepší formě.",
