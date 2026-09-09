@@ -130,9 +130,11 @@
   function setSecondLang(code) {
     secondLang = code || "";
     secondTaxCol = secondLang ? window.GeoI18N.langByCode(secondLang).taxCol : "";
-    // Second-language names live in an on-demand pack; re-render once it arrives.
-    // (During init taxonomy isn't loaded yet → no-op; the boot sequence loads it.)
-    ensureLangNames(secondTaxCol).then(function (loaded) { if (loaded) refreshSpeciesNames(); });
+    // Second-language names live in an on-demand pack. Resolves once it is merged (or
+    // at once when it already is / isn't needed) — callers re-render AFTER that, else the
+    // list is built with the bracketed English fallback and never revisited. (During
+    // init taxonomy isn't loaded yet → no-op; the boot sequence loads it.)
+    return ensureLangNames(secondTaxCol).then(function (loaded) { if (loaded) refreshSpeciesNames(); return loaded; });
   }
   // Toggle the scientific-name column on the species-list table via a class
   // (CSS hides .sci cells + the header when present). Pure presentation.
@@ -15599,9 +15601,11 @@
     });
 
     document.getElementById("secondlang-select").addEventListener("change", function () {
-      setSecondLang(this.value);
-      window.GeoState.save({ secondLang: secondLang });
-      rerenderPointList();
+      var v = this.value;
+      window.GeoState.save({ secondLang: v });
+      // Re-render only once the language's name pack is on the device — a rendered-but-
+      // hidden list (map-first) is rebuilt too, so opening it later shows the new column.
+      setSecondLang(v).then(function () { rerenderPointList(); });
     });
 
     // Scientific-name column toggle — pure CSS show/hide on the live table,
