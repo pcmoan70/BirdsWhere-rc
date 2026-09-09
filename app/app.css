@@ -809,9 +809,12 @@ input:focus-visible {
 .prob-cell {
   /* min-width, not a fixed width: the header ("Probability", "Wahrscheinlichkeit")
      must fit on one line — see the nowrap rule on the table's headers. */
-  position: relative; min-width: 88px; padding: 3px 6px;
+  position: relative; min-width: 62px; padding: 3px 6px;
   font-variant-numeric: tabular-nums;
 }
+/* Species name column (2nd cell — Total comes first): room for ~20 letters + the dot on
+   ONE line; longer names may wrap. The value columns are kept narrow to pay for it. */
+#species-list-table td:nth-child(2) { min-width: 25ch; }
 .prob-num { position: relative; z-index: 1; }
 .prob-bar {
   position: absolute; left: 0; top: 0; bottom: 0;
@@ -885,7 +888,7 @@ input:focus-visible {
    ratio %, over a faint bar the length of the ratio and coloured by phase. Black text
    on white, matching the probability column. */
 .season-cell {
-  position: relative; min-width: 84px; padding: 3px 6px; white-space: nowrap;
+  position: relative; min-width: 66px; padding: 3px 6px; white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 .season-glyph { position: relative; z-index: 1; font-weight: 700; margin-right: 3px; }
@@ -2865,7 +2868,7 @@ table.chk-table .chk-text { min-width: 100px; }
 
 /* Species List comparison column rendered as a probability-style bar */
 .cmp-bar-cell {
-  position: relative; min-width: 76px; padding: 3px 6px;
+  position: relative; min-width: 62px; padding: 3px 6px;
   font-variant-numeric: tabular-nums;
 }
 .cmp-bar-cell .cmp-num { position: relative; z-index: 1; font-size: var(--fs-s); }
@@ -3446,17 +3449,21 @@ table.sp-detail-tbl.sp-obs-tbl { table-layout: fixed; }
    wide enough for "100%" (+ the season glyph); headers ellipsize to fit. */
 table.sp-detail-tbl.sp-obs-tbl th:nth-child(1) { width: 4.5ch; }     /* count (first, left of the name) */
 table.sp-detail-tbl.sp-obs-tbl th:nth-child(2) { width: auto; }      /* species name gets the slack */
-table.sp-detail-tbl.sp-obs-tbl th:nth-child(3) { width: 10ch; }      /* prob — fits "Prob. ▲" */
-table.sp-detail-tbl.sp-obs-tbl th:nth-child(4) { width: 10ch; }      /* season (glyph + %) */
-table.sp-detail-tbl.sp-obs-tbl th:nth-child(5) { width: 10ch; }      /* yr peak */
+table.sp-detail-tbl.sp-obs-tbl th:nth-child(3) { width: 8ch; }       /* prob — the header may wrap (see below) */
+table.sp-detail-tbl.sp-obs-tbl th:nth-child(4) { width: 8ch; }       /* season (glyph + %) */
+table.sp-detail-tbl.sp-obs-tbl th:nth-child(5) { width: 8ch; }       /* yr peak */
+/* Narrow value columns so a ~20-letter species name fits on one line on a phone: the
+   uppercase header labels may break onto two lines instead of clipping. */
+table.sp-detail-tbl.sp-obs-tbl th.sp-obs-h { white-space: normal; line-height: 1.15; overflow: visible; text-overflow: clip; }
+table.sp-detail-tbl.sp-obs-tbl td, table.sp-detail-tbl.sp-obs-tbl th { padding-left: 4px; padding-right: 4px; }
 table.sp-detail-tbl.sp-obs-tbl th:nth-child(6) { width: 26px; }      /* ⓘ */
 /* With the 2nd-language name column everything shifts one right. */
 table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(1) { width: 4.5ch; }   /* count */
 table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(2) { width: auto; }    /* name */
 table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(3) { width: 16%; }     /* 2nd name */
-table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(4) { width: 10ch; }    /* prob */
-table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(5) { width: 10ch; }    /* season */
-table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(6) { width: 10ch; }    /* yr peak */
+table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(4) { width: 8ch; }     /* prob */
+table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(5) { width: 8ch; }     /* season */
+table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(6) { width: 8ch; }     /* yr peak */
 table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(7) { width: 26px; }    /* ⓘ */
 table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(7) { width: 26px; }
 .sp-obs-tbl td.sp-d-name { overflow: hidden; text-overflow: ellipsis; }
