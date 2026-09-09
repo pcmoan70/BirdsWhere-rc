@@ -5858,15 +5858,6 @@
                 '</div>' +
                 '<p class="cu-hint" data-i18n="ctrl.hotspotHint">Shades the map by how much activity each area has — tap to cycle Off → species per area → distinct observers → total counts. A smooth, zoom-steady heat cloud; use “Show dots” to see the heatmap alone, the dots alone, or both.</p>' +
               '</div>' +
-              '<div class="ctrl-group" id="maplabels-wrap">' +
-                '<label for="maplabels-select" data-i18n="ctrl.maplabels">Place labels</label>' +
-                '<select id="maplabels-select">' +
-                  '<option value="off" data-i18n="labels.off">Off</option>' +
-                  '<option value="on" data-i18n="labels.on">On</option>' +
-                  '<option value="more" data-i18n="labels.more">More</option>' +
-                '</select>' +
-                '<p class="cu-hint" data-i18n="ctrl.maplabelsHint">Place names for the Voyager and Satellite maps: Off = none (Voyager keeps its own), On = a clean label layer, More = the next zoom’s denser names too. The other maps carry their own names, so this setting is hidden for them.</p>' +
-              '</div>' +
               '<div class="ctrl-group" id="barchart-threshold-wrap" style="display:none">' +
                 '<label data-i18n="ctrl.bcthreshold">Probability range</label>' +
                 '<div id="prob-range">' +
@@ -7707,13 +7698,6 @@
     if (cw) cw.style.display = (which === "voyager") ? "" : "none";
     if (mw) mw.style.display = (which === "maptiler") ? "" : "none";
   }
-  // The Place-labels control only makes sense on the basemaps that take the overlay
-  // (Voyager / Satellite) — hide it for the ones with baked-in names.
-  var renderedBasemap = "";   // the basemap actually on the map (a key-less choice renders as Streets)
-  function syncLabelsControl() {
-    var w = document.getElementById("maplabels-wrap");
-    if (w) w.style.display = labelsSupported(renderedBasemap) ? "" : "none";
-  }
   function updateBasemapOptions() {
     var sel = document.getElementById("maptype-select"); if (!sel) return;
     // ALL maps are always listed; the key-requiring ones get a 🔑 after the name.
@@ -7747,7 +7731,6 @@
     window.GeoState.save({ basemap: which });
     updateMapKeyInputs(which);   // reveal the key field for a chosen key-map
     applyLabelsOverlay();   // re-pick label style (dark/light) for the new basemap
-    syncLabelsControl();
   }
   // ---- Extra place-name labels overlay --------------------------------------
   // OPTIONAL CARTO labels-only tiles over a labels-FREE base (satellite, or CARTO
@@ -7758,7 +7741,11 @@
   // streets/topo, whose baked-in names can't be removed (would double up).
   var LABEL_LEVEL_OFFSET = { on: 0, more: 1 };   // zoom levels deeper than the view
   var labelsOverlay = null;
-  function labelsMode() { return window.GeoState.get("mapLabels", "more"); }
+  // Place-name labels are automatic: the dense ("more") overlay on every basemap that has no
+  // names of its own (Voyager's own are swapped for it, Satellite has none); maps with baked-in
+  // names get nothing extra. The former Settings choice is gone.
+  function labelsMode() { return "more"; }
+  var renderedBasemap = "";   // the basemap actually on the map — a key-less choice renders as Streets, which has its own names
   // Experimental features gate (Settings) — off by default. Currently unlocks the
   // less-polished species-menu references (NBN Atlas, EuroBirdPortal); the home for
   // any future try-it-out links/features.
@@ -7832,7 +7819,7 @@
     if (labelsOverlay) { try { map.removeLayer(labelsOverlay); } catch (e) {} labelsOverlay = null; }
     var mode = labelsMode();
     if (!map || mode === "off") return;
-    var bm = window.GeoState.get("basemap", "voyager");
+    var bm = renderedBasemap || window.GeoState.get("basemap", "voyager");
     if (!labelsSupported(bm)) return;   // streets/topo/etc. bake their names in — don't print a second set
     var offline = isOfflineNow();
     labelsRenderedOffline = offline;
@@ -16244,12 +16231,6 @@
       mtKeyIn.addEventListener("change", applyMtKey);
     }
     updateBasemapOptions();
-    var mapLabelsSel = document.getElementById("maplabels-select");
-    if (mapLabelsSel) {
-      mapLabelsSel.value = labelsMode();
-      syncLabelsControl();
-      mapLabelsSel.addEventListener("change", function () { window.GeoState.save({ mapLabels: this.value }); setBasemap(window.GeoState.get("basemap", "voyager")); });   // re-apply base (CARTO swaps to _nolabels) + overlay
-    }
 
     document.getElementById("perf-modal-ok").addEventListener("click", hidePerfModal);
     document.getElementById("perf-modal").addEventListener("click", function (e) {
