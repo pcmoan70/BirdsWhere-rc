@@ -92,6 +92,7 @@
   "obs.addToListAct": "＋ Pridėti prie stebėtojų sąrašo",
   "obs.addToFilter": "＋ Įtraukti į stebėtojų filtrą",
   "obs.editLists": "✎ Stebėtojų sąrašai",
+  "det.rowsYear": "Naujos {year} m.",
   "detlist.sumIndiv": "Iš viso suskaičiuota individų",
   "status.gpsWait": "Laukiama GPS padėties (±{m} m)…",
   "moved.text": "BirdsWhere turi naują adresą: thebirding.site. Šis senas adresas atnaujinimų nebegaus. Paspauskite mygtuką žemiau, kad pereitumėte – jūsų sąrašai, nustatymai ir taškai bus nukopijuoti automatiškai.",

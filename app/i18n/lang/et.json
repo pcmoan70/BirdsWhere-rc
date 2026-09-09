@@ -92,6 +92,7 @@
   "obs.addToListAct": "＋ Lisa vaatlejate loendisse",
   "obs.addToFilter": "＋ Lisa vaatlejafiltrisse",
   "obs.editLists": "✎ Vaatlejate loendid",
+  "det.rowsYear": "Uued {year}",
   "detlist.sumIndiv": "Loendatud isendeid kokku",
   "status.gpsWait": "Ootan GPS-asukohta (±{m} m)…",
   "moved.text": "BirdsWhere'il on uus aadress: thebirding.site. See vana aadress enam uuendusi ei saa. Vahetamiseks vajuta allolevat nuppu – sinu nimekirjad, seaded ja punktid kopeeritakse automaatselt kaasa.",

@@ -92,6 +92,7 @@
   "obs.addToListAct": "＋ Aan waarnemerslijst toevoegen",
   "obs.addToFilter": "＋ Aan waarnemersfilter toevoegen",
   "obs.editLists": "✎ Waarnemerslijsten",
+  "det.rowsYear": "Nieuw voor {year}",
   "detlist.sumIndiv": "Totaal getelde individuen",
   "status.gpsWait": "Wachten op GPS-positie (±{m} m)…",
   "moved.text": "BirdsWhere heeft een nieuw adres: thebirding.site. Dit oude adres krijgt geen updates meer. Tik op de knop hieronder om over te stappen – je lijsten, instellingen en punten worden automatisch meegekopieerd.",

@@ -8592,6 +8592,7 @@
     if (detLegendRows === "selected") return !!detSelected[key];
     if (detLegendRows === "starred") return isInteresting((dEntry(key) && dEntry(key).key) || key);
     if (detLegendRows === "rare") return detIsRare(key);
+    if (detLegendRows === "year") return !rowsYearAvail() || !!detNeedTier(key);   // not on this year's list (incl. lifers); edges off → no filter
     return true;   // "all"
   }
   // Region filter (labels' geographic weights): "off" · "far" (far migrant HERE:
@@ -11788,12 +11789,19 @@
   // Collapsed/expanded state for the detection legend (persisted in mapLegend).
   var detLegendMini = false;
   // Legend "Total" row-set: which species the legend lists — cycled by tapping "Total".
-  var DET_ROWS_STATES = ["all", "selected", "starred", "rare"];
+  var DET_ROWS_STATES = ["all", "selected", "starred", "rare", "year"];
   var detLegendRows = "all";
+  // The "year" row-set (species not yet on this year's list — the ones wearing the
+  // year/life-list edge) is offered only while those edges are shown and a list is kept.
+  function rowsYearAvail() { return listEdgesOn() && (yearListActive() || lifeListActive()); }
+  function detRowsStates() { return rowsYearAvail() ? DET_ROWS_STATES : DET_ROWS_STATES.slice(0, 4); }
   // Legend sort order, cycled by the indicator next to "Total".
   var DET_SORT_STATES = ["rarity", "az", "date", "count", "distance"];
   var detLegendSort = "rarity";
-  function detRowsLabel() { return t({ all: "det.rowsAll", selected: "det.rowsSel", starred: "det.rowsStar", rare: "det.rowsRare" }[detLegendRows] || "det.rowsAll"); }
+  function detRowsLabel() {
+    if (detLegendRows === "year") return rowsYearAvail() ? t("det.rowsYear", { year: curYear() }) : t("det.rowsAll");
+    return t({ all: "det.rowsAll", selected: "det.rowsSel", starred: "det.rowsStar", rare: "det.rowsRare" }[detLegendRows] || "det.rowsAll");
+  }
   // Symbol for the legend's sort cycler (HTML): app-style line icons for date (clock) and
   // distance (pin) instead of emoji, text glyphs for the rest.
   function detSortSymHtml() {
@@ -13149,11 +13157,12 @@
       else clearDetections();
     });
     wireClearFilterBtn(el.querySelector(".det-clear-sel"));   // click = clear all; long-press/right-click = all-filters pane
-    // "Total" cycles the listed row-set: All → Selected → Starred → Rare → All.
+    // "Total" cycles the listed row-set: All → Selected → Starred → Rare (→ New for {year}, when the list edges are on) → All.
     var totTg = el.querySelector(".det-total-toggle");
     if (totTg) totTg.addEventListener("click", function (e) {
       e.stopPropagation(); mapClickGuardUntil = Date.now() + 250;
-      detLegendRows = DET_ROWS_STATES[(DET_ROWS_STATES.indexOf(detLegendRows) + 1) % DET_ROWS_STATES.length];
+      var states = detRowsStates();
+      detLegendRows = states[(states.indexOf(detLegendRows) + 1) % states.length];
       saveLegendState(); updateDetLegend();
     });
     // Sort indicator (next to Total): cycles Rarity → A-Z → Date → # → Rarity.

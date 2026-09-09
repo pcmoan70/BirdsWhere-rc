@@ -92,6 +92,7 @@
   "obs.addToListAct": "＋ Přidat do seznamu pozorovatelů",
   "obs.addToFilter": "＋ Přidat do filtru pozorovatelů",
   "obs.editLists": "✎ Seznamy pozorovatelů",
+  "det.rowsYear": "Nové pro {year}",
   "detlist.sumIndiv": "Celkem spočítaných jedinců",
   "status.gpsWait": "Čekání na GPS polohu (±{m} m)…",
   "moved.text": "BirdsWhere má novou adresu: thebirding.site. Tato stará adresa už nebude dostávat aktualizace. Klepněte na tlačítko níže a přejděte tam – vaše seznamy, nastavení a body se zkopírují automaticky.",

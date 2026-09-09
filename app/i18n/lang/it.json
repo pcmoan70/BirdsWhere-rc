@@ -92,6 +92,7 @@
   "obs.addToListAct": "＋ Aggiungi alla lista osservatori",
   "obs.addToFilter": "＋ Aggiungi al filtro osservatori",
   "obs.editLists": "✎ Elenchi osservatori",
+  "det.rowsYear": "Nuove per {year}",
   "detlist.sumIndiv": "Totale individui contati",
   "status.gpsWait": "In attesa della posizione GPS (±{m} m)…",
   "moved.text": "BirdsWhere ha un nuovo indirizzo: thebirding.site. Questo vecchio indirizzo non riceverà più aggiornamenti. Tocca il pulsante qui sotto per passare: le tue liste, impostazioni e punti vengono copiati automaticamente.",

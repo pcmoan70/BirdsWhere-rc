@@ -713,6 +713,7 @@ window.GeoI18N = (function () {
         "det.rowsSel": "Selected",
         "det.rowsStar": "Starred",
         "det.rowsRare": "Rare",
+        "det.rowsYear": "New for {year}",
         "det.rowsHint": "Which species the legend lists — tap to cycle: All → Selected → Starred → Rare. The totals still cover everything.",
         "det.rowsNone": "None match “{sel}” — tap to change.",
         "det.sortRarity": "Sorted by rarity (rarest on top) — tap to change",

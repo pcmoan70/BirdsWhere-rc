@@ -92,6 +92,7 @@
   "obs.addToListAct": "＋ Zur Beobachterliste hinzufügen",
   "obs.addToFilter": "＋ Zum Beobachterfilter hinzufügen",
   "obs.editLists": "✎ Beobachterlisten",
+  "det.rowsYear": "Neu für {year}",
   "detlist.sumIndiv": "Insgesamt gezählte Individuen",
   "status.gpsWait": "Warte auf GPS-Position (±{m} m)…",
   "moved.text": "BirdsWhere hat eine neue Adresse: thebirding.site. Diese alte Adresse bekommt keine Updates mehr. Tippe unten auf die Schaltfläche, um zu wechseln – deine Listen, Einstellungen und Punkte werden automatisch mitkopiert.",

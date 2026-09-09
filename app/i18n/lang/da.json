@@ -92,6 +92,7 @@
   "obs.addToListAct": "＋ Føj til observatørliste",
   "obs.addToFilter": "＋ Føj til observatørfilter",
   "obs.editLists": "✎ Observatørlister",
+  "det.rowsYear": "Nye for {year}",
   "detlist.sumIndiv": "Samlet antal talte individer",
   "status.gpsWait": "Venter på GPS-position (±{m} m)…",
   "moved.text": "BirdsWhere har fået ny adresse: thebirding.site. Denne gamle adresse får ikke flere opdateringer. Tryk på knappen nedenfor for at skifte – dine lister, indstillinger og punkter kopieres med automatisk.",

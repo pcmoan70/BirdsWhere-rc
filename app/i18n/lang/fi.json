@@ -92,6 +92,7 @@
   "obs.addToListAct": "＋ Lisää havainnoitsijalistaan",
   "obs.addToFilter": "＋ Lisää havainnoijasuodattimeen",
   "obs.editLists": "✎ Havainnoijaluettelot",
+  "det.rowsYear": "Uudet {year}",
   "detlist.sumIndiv": "Laskettuja yksilöitä yhteensä",
   "status.gpsWait": "Odotetaan GPS-paikannusta (±{m} m)…",
   "moved.text": "BirdsWherellä on uusi osoite: thebirding.site. Tämä vanha osoite ei enää saa päivityksiä. Vaihda napauttamalla alla olevaa painiketta – listasi, asetuksesi ja pisteesi kopioidaan mukaan automaattisesti.",
