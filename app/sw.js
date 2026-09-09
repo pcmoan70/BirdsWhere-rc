@@ -21,7 +21,7 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1616";
+var VERSION = "v1617";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
@@ -192,6 +192,15 @@ var DATA = [
 // (Per-language species-name packs under i18n/names/ and the birding-spot
 // quadtree tiles under birding-spots/ are runtime-cached into DATA_CACHE on
 // first use — offline keeps every language/area you've opened once.)
+// On-demand SHELL files: never precached (fetched on first use by shellCacheFirst),
+// but hashed in files.json so an install can CARRY an unchanged one over from the
+// previous version's cache. Without this every update re-downloaded the UI-language
+// pack on the next load (and the UI flashed English until it arrived).
+var LAZY = [
+  "i18n/lang/cs.json", "i18n/lang/da.json", "i18n/lang/de.json", "i18n/lang/es.json", "i18n/lang/et.json",
+  "i18n/lang/fi.json", "i18n/lang/fr.json", "i18n/lang/it.json", "i18n/lang/lt.json", "i18n/lang/nl.json",
+  "i18n/lang/no.json", "i18n/lang/pl.json", "i18n/lang/pt.json", "i18n/lang/sv.json",
+];
 
 var TILE_HOSTS = /(\.basemaps\.cartocdn\.com|\.tile\.openstreetmap\.org|\.tile\.opentopomap\.org|server\.arcgisonline\.com|data-gis\.unep-wcmc\.org|bio\.discomap\.eea\.europa\.eu)/;
 var API_HOSTS = /(nominatim\.openstreetmap\.org|overpass-api\.de|api\.inaturalist\.org|api\.gbif\.org|api\.ebird\.org|artskart\.artsdatabanken\.no|api\.artdatabanken\.se|wikipedia\.org|wikidata\.org|wikimedia\.org)/;
@@ -265,6 +274,11 @@ self.addEventListener("install", function (event) {
             return addCounted(c, u, tally);
           });
           if (cur) puts.push(c.put("files.json", cur.res));
+          // Lazy files: copy over only when present before AND unchanged — never fetch here.
+          if (canDiff) LAZY.forEach(function (u) {
+            if (!cur.man[u] || cur.man[u] !== prev.man[u]) return;
+            puts.push(prev.cache.match(u).then(function (hit) { return hit ? c.put(u, hit) : null; }));
+          });
           return Promise.all(puts);
         }),
         // Data files are big; tolerate individual failures so install still

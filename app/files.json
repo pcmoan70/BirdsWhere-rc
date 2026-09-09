@@ -1,5 +1,5 @@
 {
- "_version": "v1616",
+ "_version": "v1617",
  "./": "a3e2dc2b934a2647",
  "index.html": "a3e2dc2b934a2647",
  "f/index.html": "e58b131443753001",
@@ -51,5 +51,19 @@
  "vendor/ort/ort-wasm-simd-threaded.mjs.js": "e9ba2350c370278f",
  "vendor/ort/ort-wasm-simd-threaded.wasm": "06b3f98e5aa2fffe",
  "birding-spots/index.json": "56f873a48f12e902",
- "best-sites/index.json": "d524561cbb840ee5"
+ "best-sites/index.json": "d524561cbb840ee5",
+ "i18n/lang/cs.json": "f3a68d2d8df00237",
+ "i18n/lang/da.json": "c766dcf38075014e",
+ "i18n/lang/de.json": "a9c13bfc0fdf4b2a",
+ "i18n/lang/es.json": "a9ef0196ef251cfc",
+ "i18n/lang/et.json": "8f81d2ecca2d8174",
+ "i18n/lang/fi.json": "a5b8e50021c78f39",
+ "i18n/lang/fr.json": "7e2454ba201d5884",
+ "i18n/lang/it.json": "2fef32c4af48a1fd",
+ "i18n/lang/lt.json": "d54193c100d69555",
+ "i18n/lang/nl.json": "92ba121e55cb2a43",
+ "i18n/lang/no.json": "3df7eec7bed685d2",
+ "i18n/lang/pl.json": "373f15e4d48208ab",
+ "i18n/lang/pt.json": "8de8dee58e91c2ab",
+ "i18n/lang/sv.json": "4c1ed48346a3129a"
 }
