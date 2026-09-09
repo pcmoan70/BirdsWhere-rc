@@ -3481,7 +3481,7 @@ table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(7) { width: 26px; }
 .sp-obs-filter, .sp-loc-click, .sp-detail-tbl .dl-date-click, .sp-obs-head .dl-date-click { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 2px; }
 .sp-obs-filter:hover, .sp-loc-click:hover, .sp-detail-tbl .dl-date-click:hover, .sp-obs-head .dl-date-click:hover { color: var(--brand); }
 /* "+N" to reveal the rest of a truncated observer list. */
-.sp-obs-more { cursor: pointer; color: var(--brand); font-weight: 700; white-space: nowrap; margin-left: 3px; }   /* "|…" → tap for all observers */
+.sp-obs-more { cursor: pointer; color: var(--brand); font-weight: 700; white-space: nowrap; margin-left: 3px; }   /* "…" → tap for all observers */
 .sp-obs-more:hover { text-decoration: underline; }
 /* Record tables: sortable headers + "Per observation" date×observer×location group rows. */
 .sp-detail-tbl thead th.sp-obs-h { cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

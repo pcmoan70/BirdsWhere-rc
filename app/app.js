@@ -1777,7 +1777,7 @@
   // One record row: colour swatch + species name, 2nd name, probability, [date],
   // distance, count, [observer] — separate columns (no parenthesised 2nd name).
   // Observer names as tappable filter spans. Long lists (shared checklists) show the
-  // first TWO names; a "|…" marks the rest and tapping it reveals them inline. Shared by
+  // first TWO names; an "…" marks the rest and tapping it reveals them inline. Shared by
   // the record rows and the By-observation group subheadings.
   function obsNamesHtml(observer) {
     var names = detObsRealNames(observer);
@@ -1787,7 +1787,7 @@
     if (spans.length <= OBS_SHOWN) return spans.join(", ");
     return spans.slice(0, OBS_SHOWN).join(", ") +
       '<span class="sp-obs-rest" hidden>, ' + spans.slice(OBS_SHOWN).join(", ") + "</span>" +
-      '<span class="sp-obs-more" role="button" title="' + escapeHtml(t("obs.showAll")) + '">|\u2026</span>';
+      '<span class="sp-obs-more" role="button" title="' + escapeHtml(t("obs.showAll")) + '">\u2026</span>';
   }
   function spRecRowHtml(d, opts) {
     var km = spRecDistKm(d); km = isFinite(km) ? escapeHtml(nearbyFmtDist(km)) : "";
@@ -1891,7 +1891,7 @@
       var datePart = dt ? '<span class="dl-date-click" role="button" data-date="' + escapeHtml(dt) + '" title="' + escapeHtml(t("detlist.dateFilterHint")) + '">' + dateLbl + "</span>" : dateLbl;
       return gkeys.map(function (gk) {
         var g = byG[gk];
-        var obsSpan = g.obs ? " · " + obsNamesHtml(g.obs) : "";   // same two-names-then-"|…" rule as the record rows
+        var obsSpan = g.obs ? " · " + obsNamesHtml(g.obs) : "";   // same two-names-then-"…" rule as the record rows
         // The place-name opens the same location menu as the "Species" list's expanded
         // records (find on map · add point · route). Needs coordinates, so use the first
         // record in the group that has them; otherwise it stays a plain label.
@@ -2039,7 +2039,7 @@
         var rest = this.parentNode && this.parentNode.querySelector(".sp-obs-rest");
         if (rest) rest.hidden = false;
         var cell = this.closest && this.closest("td"); if (cell) cell.classList.add("sp-obs-expanded");   // let the full list wrap
-        this.parentNode && this.parentNode.removeChild(this);   // drop the "|…" once expanded
+        this.parentNode && this.parentNode.removeChild(this);   // drop the "…" once expanded
       });
     });
     Array.prototype.forEach.call(container.querySelectorAll(".dl-src-click"), function (s) {
