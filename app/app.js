@@ -5934,10 +5934,6 @@
                 '<p class="cu-hint" data-i18n="ctrl.rarepcthint">A plotted species is “rare locally” when its detection count is at most this % of the commonest plotted species. Rare dots get a black centre; filter them with the legend’s ◉ Rare.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
-                '<label class="ctrl-check"><input type="checkbox" id="histo-zero-toggle" checked> <span data-i18n="ctrl.histoZero">Show zero-observation days in bar chart</span></label>' +
-                '<p class="cu-hint" data-i18n="ctrl.histoZeroHint">In the per-day observations bar chart, mark days with no observations as faint stubs (so gaps show) instead of skipping them.</p>' +
-              '</div>' +
-              '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="dot-cluster-toggle"> <span data-i18n="ctrl.dotCluster">Cluster crowded dots</span></label>' +
                 '<p class="cu-hint" data-i18n="ctrl.dotClusterHint">Observation dots that overlap on screen merge into a count dot — tap to zoom in and split it. Dots standing free stay ordinary dots at every zoom.</p>' +
               '</div>' +
@@ -12682,7 +12678,6 @@
   // and the MAX (drives the ◉ "locally rare" flag).
   var LOC_GRID_DELTA = 25;   // km — observation → grid-cell size (fewer inferences + cache key)
   var obsProbCache = Object.create(null);   // "idx|week|cell" -> model prob (deterministic; kept across renders)
-  function histoZeroDays() { return window.GeoState.get("histoZeroDays", true) !== false; }   // bar chart: include zero-observation days (default on)
   function snapCell(lat, lon) {
     var dLat = LOC_GRID_DELTA / 111.32, iy = Math.round(lat / dLat), glat = iy * dLat;
     var cv = Math.cos(glat * Math.PI / 180); if (Math.abs(cv) < 1e-6) cv = 1e-6;
@@ -12830,12 +12825,12 @@
     function localDay(d) { return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
     function parseD(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
     var t0 = new Date(), todayStr = localDay(t0);
+    // Every calendar day from the first observation to today — days without observations show
+    // as empty slots (always on; the former Settings toggle is gone).
     var days = [];
-    if (histoZeroDays()) {
-      var startStr = obsDays[0] < todayStr ? obsDays[0] : todayStr;
-      var span = Math.min(3660, Math.round((parseD(todayStr) - parseD(startStr)) / 86400000) + 1);   // hard cap ~10 years of bars
-      for (var di = span - 1; di >= 0; di--) days.push(localDay(new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() - di)));
-    } else days = obsDays.slice();
+    var startStr = obsDays[0] < todayStr ? obsDays[0] : todayStr;
+    var span = Math.min(3660, Math.round((parseD(todayStr) - parseD(startStr)) / 86400000) + 1);   // hard cap ~10 years of bars
+    for (var di = span - 1; di >= 0; di--) days.push(localDay(new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() - di)));
     var max = 0; days.forEach(function (dt) { if ((byDay[dt] || 0) > max) max = byDay[dt]; });
     if (!max) { if (barsEl) barsEl.innerHTML = ""; if (axisEl) axisEl.innerHTML = ""; return; }
     var SLOT = 13;   // 12px bar + 1px gap (wide bars = easy clicking)
@@ -15882,11 +15877,6 @@
       sdCb.checked = (savedDots === undefined || savedDots === null) ? true : !!savedDots;
       dotsShown = sdCb.checked;
       sdCb.addEventListener("change", function () { window.GeoState.save({ showDots: !!this.checked }); setShowDots(this.checked); });
-    }
-    var hzCb = document.getElementById("histo-zero-toggle");
-    if (hzCb) {
-      hzCb.checked = histoZeroDays();
-      hzCb.addEventListener("change", function () { window.GeoState.save({ histoZeroDays: !!this.checked }); updateHdrHisto(); });
     }
     // Rarity alerts: interval + sound (with a test chirp — the click doubles as
     // the audio-unlock gesture) + system notifications (permission asked only on

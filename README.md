@@ -81,7 +81,7 @@ With observations plotted, a slim **per-day histogram strip docks under the map*
 mobile), counting only the observations **inside the current map view** (re-counted as you
 pan/zoom) and honouring the species selection + active filters: one bar per day from the oldest plotted observation to
 **today** (right end), **horizontally scrollable** with date labels along the bottom, and faint
-stubs on zero-observation days (toggleable in Settings). **Hover** a bar to preview just that
+stubs on zero-observation days. **Hover** a bar to preview just that
 day's dots on the map and in the legend; **click** it (green → orange) to add that date to the
 filters — multi-select, click again to remove; clears with *Clear filters*.
 
