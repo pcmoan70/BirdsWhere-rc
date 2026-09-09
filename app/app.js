@@ -19312,8 +19312,22 @@
         if (!btn || !el.contains(btn)) return;
         e.stopPropagation(); e.preventDefault();
         (btn.getAttribute("data-ids") || "").split("|").filter(Boolean).forEach(function (id) { deleteFetchedArea(id); });
+        // The list must mirror the map now, not this point's own fetch result — else the
+        // deleted records would flow straight back into the counts via _result.agg.
+        if (currentSpView && (currentSpView.mode === "point" || currentSpView.mode === "historic")) {
+          currentSpView._result = { agg: {}, extras: {}, bySrc: {}, dedupTotal: 0, timedOut: [], failed: [] };
+        }
         refreshSpCoords();
         if (typeof refreshOpenList === "function") refreshOpenList();
+        try { renderSpControls(); } catch (e2) {}   // the By-observation body is built by the layout renderer, not by the refresh above
+        if (!fetchedAreas.length) {
+          // Last area gone: no location to head the list with.
+          el.textContent = ""; el.dataset.flat = ""; delete el.dataset.placeKey;
+          // And an empty list (no rows left — [?] predictions may still keep some) → back to the map.
+          var rowsLeft = Array.prototype.filter.call(document.querySelectorAll("#sp-tbody tr:not(.sp-detail-row)"), function (tr) { return tr.style.display !== "none"; }).length +
+                         document.querySelectorAll("#sp-records .sp-d-row").length;
+          if (!rowsLeft && onListView()) { navClose("page"); updateViewToggle(); }
+        }
       });
     }
   }
