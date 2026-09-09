@@ -417,6 +417,8 @@ window.GeoI18N = (function () {
         "inat.namesTitle": "names on iNaturalist",
         "inat.colLang": "Language",
         "inat.colApp": "In app",
+        "inat.colName": "Name",
+        "inat.starHint": "* = the app's own name files on this device also cover this language",
         "inat.useLang": "Tap a language to use it in the app",
         "inat.namesLoading": "Looking up…",
         "inat.namesNone": "No match on iNaturalist",

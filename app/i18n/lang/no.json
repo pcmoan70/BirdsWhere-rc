@@ -44,6 +44,8 @@
   "ctrl.showsciHint": "Vis kolonnen med vitenskapelig navn i artslistene.",
   "settings.updateReady": "Oppdater til {v}",
   "settings.updateApplying": "Oppdaterer…",
+  "inat.colName": "Navn",
+  "inat.starHint": "* = appens egne navnefiler på denne enheten dekker også dette språket",
   "confusion.tipMatch": "Hvor like de to fuglene er: en samlet score (0–100) fra morfologi — AVONET-form, størrelse, økologisk nisje og slekt — og fjærdraktfarge, blandet med hvor ofte de faktisk forveksles med hverandre.",
   "confusion.tipMisid": "Reelle forvekslinger gjort av folk på iNaturalist: denne forvekslingsartens andel (%) av alle registrerte feilbestemmelser av utgangsarten. «—» betyr at iNaturalist ikke har forvekslingsdata for paret.",
   "confusion.tipHere": "AI-modellens sannsynlighet for at denne forvekslingsarten forekommer på nøyaktig det stedet og i den uken du ser på — slik at arter som ikke finnes her, faller nedover listen.",

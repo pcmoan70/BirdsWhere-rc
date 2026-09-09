@@ -44,6 +44,8 @@
   "ctrl.showsciHint": "Kuva liiginimekirjades teaduslike nimede veerg.",
   "settings.updateReady": "Uuenda versioonile {v}",
   "settings.updateApplying": "Värskendamine…",
+  "inat.colName": "Nimi",
+  "inat.starHint": "* = ka rakenduse enda nimefailid selles seadmes katavad seda keelt",
   "confusion.tipMatch": "Kui sarnased need kaks lindu on: koondskoor (0–100) morfoloogiast — AVONET-i kuju, suurus, ökoloogiline nišš ja perekond — ning sulestiku värvusest, ühendatuna sellega, kui sageli neid tegelikult omavahel segi aetakse.",
   "confusion.tipMisid": "Tegelik inimlik segiajamine iNaturalisti andmeil: selle sarnase liigi osakaal (%) kõigist põhiliigi kirja pandud valemäärangutest. „—” tähendab, et iNaturalistil pole selle paari kohta segiajamise andmeid.",
   "confusion.tipHere": "AI-mudeli tõenäosus, et see sarnane liik esineb täpselt vaadatavas kohas ja nädalal — nii langevad liigid, keda siin ei leidu, nimekirjas allapoole.",

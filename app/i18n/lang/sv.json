@@ -44,6 +44,8 @@
   "ctrl.showsciHint": "Visa kolumnen med vetenskapligt namn i artlistorna.",
   "settings.updateReady": "Uppdatera till {v}",
   "settings.updateApplying": "Uppdaterar…",
+  "inat.colName": "Namn",
+  "inat.starHint": "* = appens egna namnfiler på den här enheten täcker också det här språket",
   "confusion.tipMatch": "Hur lika de två fåglarna är: ett sammanvägt värde (0–100) från morfologi — AVONET-form, storlek, ekologisk nisch och släkte — och fjäderdräktens färg, blandat med hur ofta de faktiskt förväxlas med varandra.",
   "confusion.tipMisid": "Verkliga förväxlingar av människor på iNaturalist: förväxlingsartens andel (%) av alla registrerade felbestämningar av utgångsarten. ”—” betyder att iNaturalist saknar förväxlingsdata för paret.",
   "confusion.tipHere": "AI-modellens sannolikhet att förväxlingsarten förekommer på exakt den plats och vecka du tittar på — så att arter som inte finns här hamnar längre ner i listan.",

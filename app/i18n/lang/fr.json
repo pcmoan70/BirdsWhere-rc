@@ -44,6 +44,8 @@
   "ctrl.showsciHint": "Affiche la colonne du nom scientifique dans les listes d'espèces.",
   "settings.updateReady": "Mettre à jour vers {v}",
   "settings.updateApplying": "Mise à jour…",
+  "inat.colName": "Nom",
+  "inat.starHint": "* = les fichiers de noms propres à l’application sur cet appareil couvrent aussi cette langue",
   "confusion.tipMatch": "Degré de ressemblance des deux oiseaux : un score fusionné (0–100) issu de la morphologie — forme, taille, niche écologique et genre d'après AVONET — et de la coloration du plumage, combiné à la fréquence à laquelle on les confond réellement.",
   "confusion.tipMisid": "Confusions humaines réelles d'après iNaturalist : la part (%) de cette espèce ressemblante parmi toutes les erreurs d'identification enregistrées pour l'espèce de référence. « — » signifie qu'iNaturalist n'a aucune donnée de confusion pour cette paire.",
   "confusion.tipHere": "Probabilité, selon le modèle d'habitat (IA), que cette espèce ressemblante soit présente au lieu et à la semaine exacts que vous consultez — les espèces absentes d'ici descendent ainsi dans la liste.",

@@ -44,6 +44,8 @@
   "ctrl.showsciHint": "Toon de kolom met de wetenschappelijke naam in de soortenlijsten.",
   "settings.updateReady": "Bijwerken naar {v}",
   "settings.updateApplying": "Bijwerken…",
+  "inat.colName": "Naam",
+  "inat.starHint": "* = de eigen naambestanden van de app op dit apparaat dekken deze taal ook",
   "confusion.tipMatch": "Hoe sterk de twee vogels op elkaar lijken: een samengestelde score (0–100) uit morfologie — AVONET-vorm, grootte, ecologische niche en geslacht (genus) — en verenkleedkleur, gecombineerd met hoe vaak ze in de praktijk daadwerkelijk met elkaar worden verward.",
   "confusion.tipMisid": "Echte verwarring door waarnemers, uit iNaturalist: het aandeel (%) van deze gelijkende soort in alle geregistreerde misidentificaties van de basisvogel. “—” betekent dat iNaturalist geen verwarringsgegevens heeft voor dit paar.",
   "confusion.tipHere": "De kans volgens het AI-model dat deze gelijkende soort voorkomt op precies de locatie en in de week die je bekijkt — zodat soorten die hier niet voorkomen lager in de lijst zakken.",

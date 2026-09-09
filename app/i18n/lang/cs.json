@@ -44,6 +44,8 @@
   "ctrl.showsciHint": "Zobrazí v seznamech druhů sloupec s vědeckým názvem.",
   "settings.updateReady": "Aktualizovat na {v}",
   "settings.updateApplying": "Aktualizace…",
+  "inat.colName": "Název",
+  "inat.starHint": "* = i vlastní soubory názvů aplikace v tomto zařízení pokrývají tento jazyk",
   "confusion.tipMatch": "Jak moc jsou si oba ptáci podobní: sloučené skóre (0–100) z morfologie — tvar, velikost, ekologická nika a rod podle AVONET — a ze zbarvení opeření, zkombinované s tím, jak často jsou ve skutečnosti zaměňováni.",
   "confusion.tipMisid": "Skutečné záměny lidmi podle iNaturalist: podíl (%) tohoto podobného druhu na všech zaznamenaných chybných určeních výchozího ptáka. „—“ znamená, že iNaturalist pro tuto dvojici žádná data o záměnách nemá.",
   "confusion.tipHere": "Pravděpodobnost podle AI modelu, že se tento podobný druh vyskytuje přesně na místě a v týdnu, které právě prohlížíte — druhy, které tu nebývají, tak v seznamu klesají níž.",

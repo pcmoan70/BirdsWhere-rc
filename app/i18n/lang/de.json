@@ -44,6 +44,8 @@
   "ctrl.showsciHint": "Zeigt die Spalte mit dem wissenschaftlichen Namen in den Artenlisten.",
   "settings.updateReady": "Auf {v} aktualisieren",
   "settings.updateApplying": "Wird aktualisiert…",
+  "inat.colName": "Name",
+  "inat.starHint": "* = auch die eigenen Namensdateien der App auf diesem Gerät decken diese Sprache ab",
   "confusion.tipMatch": "Wie ähnlich sich die beiden Vögel sind: ein kombinierter Wert (0–100) aus Morphologie — AVONET-Gestalt, Größe, ökologische Nische und Gattung — und Gefiederfärbung, verrechnet damit, wie oft sie tatsächlich miteinander verwechselt werden.",
   "confusion.tipMisid": "Tatsächliche Verwechslungen durch Menschen laut iNaturalist: der Anteil (%) dieser Verwechslungsart an allen erfassten Fehlbestimmungen der Ausgangsart. „—“ bedeutet, dass iNaturalist für dieses Paar keine Verwechslungsdaten hat.",
   "confusion.tipHere": "Die Wahrscheinlichkeit des KI-Modells, dass diese Verwechslungsart genau am angezeigten Ort und in der angezeigten Woche vorkommt — Arten, die hier nicht vorkommen, rutschen so in der Liste nach unten.",

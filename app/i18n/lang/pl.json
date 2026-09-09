@@ -44,6 +44,8 @@
   "ctrl.showsciHint": "Pokaż kolumnę nazwy naukowej na listach gatunków.",
   "settings.updateReady": "Zaktualizuj do {v}",
   "settings.updateApplying": "Aktualizowanie…",
+  "inat.colName": "Nazwa",
+  "inat.starHint": "* = własne pliki nazw aplikacji na tym urządzeniu również obejmują ten język",
   "confusion.tipMatch": "Jak bardzo oba ptaki są do siebie podobne: łączny wynik (0–100) z morfologii — kształt, rozmiar, nisza ekologiczna i rodzaj wg AVONET — oraz barwy upierzenia, zestawiony z tym, jak często są faktycznie ze sobą mylone.",
   "confusion.tipMisid": "Rzeczywiste pomyłki obserwatorów wg iNaturalist: udział (%) tego sobowtóra we wszystkich zarejestrowanych błędnych oznaczeniach ptaka bazowego. „—” oznacza, że iNaturalist nie ma danych o pomyłkach dla tej pary.",
   "confusion.tipHere": "Prawdopodobieństwo wg modelu AI, że ten sobowtór występuje dokładnie w oglądanym miejscu i tygodniu — dzięki temu gatunki, których tu nie ma, spadają na dół listy.",

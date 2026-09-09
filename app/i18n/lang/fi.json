@@ -44,6 +44,8 @@
   "ctrl.showsciHint": "Näytä tieteellisen nimen sarake lajiluetteloissa.",
   "settings.updateReady": "Päivitä versioon {v}",
   "settings.updateApplying": "Päivitetään…",
+  "inat.colName": "Nimi",
+  "inat.starHint": "* = myös sovelluksen omat nimitiedostot tällä laitteella kattavat tämän kielen",
   "confusion.tipMatch": "Kuinka samannäköisiä linnut ovat: yhdistetty pistemäärä (0–100) morfologiasta — AVONET-muodosta, koosta, ekologisesta lokerosta ja suvusta — sekä höyhenpuvun väristä, yhdistettynä siihen, kuinka usein ne todella sekoitetaan toisiinsa.",
   "confusion.tipMisid": "Todellisia ihmisten tekemiä sekaannuksia iNaturalistista: tämän sekaannuslajin osuus (%) kaikista peruslajin kirjatuista virhemäärityksistä. ”—” tarkoittaa, ettei iNaturalistilla ole sekaannustietoja tästä lajiparista.",
   "confusion.tipHere": "Tekoälymallin todennäköisyys sille, että tämä sekaannuslaji esiintyy juuri katsomassasi paikassa ja viikolla — lajit, joita ei täällä tavata, putoavat siis listalla alemmas.",

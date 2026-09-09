@@ -44,6 +44,8 @@
   "ctrl.showsciHint": "Muestra la columna del nombre científico en las listas de especies.",
   "settings.updateReady": "Actualizar a {v}",
   "settings.updateApplying": "Actualizando…",
+  "inat.colName": "Nombre",
+  "inat.starHint": "* = los archivos de nombres propios de la app en este dispositivo también cubren este idioma",
   "confusion.tipMatch": "Cuánto se parecen las dos aves: una puntuación combinada (0–100) a partir de la morfología — forma, tamaño, nicho ecológico y género según AVONET — y de la coloración del plumaje, mezclada con la frecuencia con que realmente se confunden entre sí.",
   "confusion.tipMisid": "Confusión humana real según iNaturalist: porcentaje (%) de todas las identificaciones erróneas registradas del ave base que corresponden a esta especie parecida. «—» significa que iNaturalist no tiene datos de confusión para ese par.",
   "confusion.tipHere": "Probabilidad, según el modelo de IA, de que esta especie parecida esté presente en la ubicación y la semana exactas que estás viendo — así las especies que no se encuentran por aquí bajan en la lista.",

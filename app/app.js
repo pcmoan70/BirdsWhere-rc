@@ -2572,16 +2572,22 @@
         var hint = document.createElement("div"); hint.className = "drm-names-hint";
         hint.textContent = t("inat.useLang"); el.appendChild(hint);
         var wrap = document.createElement("div"); wrap.className = "drm-names";
+        // One "Name" column: iNaturalist's name (the app's own when iNaturalist has none).
+        // "*" marks languages the app's own name files on this device also cover;
+        // orange = the two sources disagree.
         var body = table.rows.map(function (r) {
-          var differs = r.inat && r.app && r.inat.toLowerCase() !== r.app.toLowerCase();
+          var local = !!(r.have && r.app);
+          var differs = r.inat && local && r.inat.toLowerCase() !== r.app.toLowerCase();
           var cls = "drm-name-row" + (differs ? " drm-name-diff" : "") + (r.code === lang ? " drm-name-cur" : "");
           // Each row is tappable: switch the whole app to that language.
           return '<tr class="' + cls + '" data-lang="' + escapeHtml(r.code) + '" title="' + escapeHtml(t("inat.useLang")) +
-            '"><td class="drm-lang">' + escapeHtml(r.code) + '</td><td>' + escapeHtml(r.inat || "–") + "</td><td>" + escapeHtml(r.have ? (r.app || "–") : "–") + "</td></tr>";
+            '"><td class="drm-lang">' + escapeHtml(r.code) + '</td><td>' + escapeHtml(r.inat || r.app || "–") + (local ? " *" : "") + "</td></tr>";
         }).join("");
         wrap.innerHTML = '<table class="drm-names-tbl"><thead><tr><th>' + escapeHtml(t("inat.colLang")) +
-          "</th><th>iNaturalist</th><th>" + escapeHtml(t("inat.colApp")) + "</th></tr></thead><tbody>" + body + "</tbody></table>";
+          "</th><th>" + escapeHtml(t("inat.colName")) + "</th></tr></thead><tbody>" + body + "</tbody></table>";
         el.appendChild(wrap);
+        var foot = document.createElement("div"); foot.className = "drm-names-hint";
+        foot.textContent = t("inat.starHint"); el.appendChild(foot);
         wrap.querySelectorAll("tr[data-lang]").forEach(function (tr) {
           tr.addEventListener("click", function (e) { e.stopPropagation(); setLang(tr.getAttribute("data-lang")); closeAnchoredMenu(); });
         });
