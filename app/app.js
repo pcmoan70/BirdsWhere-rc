@@ -2573,7 +2573,7 @@
         hint.textContent = t("inat.useLang"); el.appendChild(hint);
         var wrap = document.createElement("div"); wrap.className = "drm-names";
         // One "Name" column: iNaturalist's name (the app's own when iNaturalist has none).
-        // "*" marks languages the app's own name files on this device also cover;
+        // "*" on the language code marks languages the app's own name files on this device also cover;
         // orange = the two sources disagree.
         var body = table.rows.map(function (r) {
           var local = !!(r.have && r.app);
@@ -2581,7 +2581,7 @@
           var cls = "drm-name-row" + (differs ? " drm-name-diff" : "") + (r.code === lang ? " drm-name-cur" : "");
           // Each row is tappable: switch the whole app to that language.
           return '<tr class="' + cls + '" data-lang="' + escapeHtml(r.code) + '" title="' + escapeHtml(t("inat.useLang")) +
-            '"><td class="drm-lang">' + escapeHtml(r.code) + '</td><td>' + escapeHtml(r.inat || r.app || "–") + (local ? " *" : "") + "</td></tr>";
+            '"><td class="drm-lang">' + escapeHtml(r.code) + (local ? "*" : "") + '</td><td>' + escapeHtml(r.inat || r.app || "–") + "</td></tr>";
         }).join("");
         wrap.innerHTML = '<table class="drm-names-tbl"><thead><tr><th>' + escapeHtml(t("inat.colLang")) +
           "</th><th>" + escapeHtml(t("inat.colName")) + "</th></tr></thead><tbody>" + body + "</tbody></table>";

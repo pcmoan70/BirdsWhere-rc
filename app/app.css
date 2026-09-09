@@ -3572,7 +3572,7 @@ a.dl-row:hover, .dl-row-menu:hover { background: var(--surface-2, rgba(0,0,0,.05
   padding: 2px 6px; border-bottom: 1px solid var(--border, #e3e3e3); }
 .drm-names-tbl td { padding: 2px 6px; border-bottom: 1px solid var(--border, #eee); white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis; max-width: 24ch; }
-.drm-names-tbl td.drm-lang { color: var(--ink-muted, #888); text-transform: uppercase; max-width: 4ch; }
+.drm-names-tbl td.drm-lang { color: var(--ink-muted, #888); text-transform: uppercase; max-width: 5ch; white-space: nowrap; }   /* room for the * */
 .drm-names-tbl tr.drm-name-diff td { color: var(--warn, #e8801f); }   /* the two sources disagree */
 /* Each language row is tappable to switch the app to that language. */
 .drm-names-hint { margin: 0 6px 4px; font-size: var(--fs-xs); color: var(--ink-muted, #888); }
