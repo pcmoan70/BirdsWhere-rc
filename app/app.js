@@ -326,7 +326,9 @@
       info:     '<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.6v.4"/>',
       // Arrow out of a box — a note that carries a web link (obs ⓘ turns into this, green).
       linkout:  '<path d="M14 5h5v5"/><path d="M19 5l-8 8"/><path d="M17 13.5V18a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h4.5"/>',
-      bell:     '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>'
+      bell:     '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
+      // Clock — the legend's "sort by date" state.
+      clock:    '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>'
     };
     return '<svg class="btn-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (P[name] || "") + "</svg>";
   }
@@ -11786,7 +11788,13 @@
   var DET_SORT_STATES = ["rarity", "az", "date", "count", "distance"];
   var detLegendSort = "rarity";
   function detRowsLabel() { return t({ all: "det.rowsAll", selected: "det.rowsSel", starred: "det.rowsStar", rare: "det.rowsRare" }[detLegendRows] || "det.rowsAll"); }
-  function detSortSym() { return { rarity: "◉", az: "A↓", date: "🕑", count: "#", distance: "📍" }[detLegendSort] || "◉"; }
+  // Symbol for the legend's sort cycler (HTML): app-style line icons for date (clock) and
+  // distance (pin) instead of emoji, text glyphs for the rest.
+  function detSortSymHtml() {
+    if (detLegendSort === "date") return ico("clock");
+    if (detLegendSort === "distance") return ico("pin");
+    return escapeHtml({ rarity: "◉", az: "A↓", count: "#" }[detLegendSort] || "◉");
+  }
   function detSortTip() { return t({ rarity: "det.sortRarity", az: "det.sortAz", date: "det.sortDate", count: "det.sortCount", distance: "det.sortDist" }[detLegendSort] || "det.sortRarity"); }
   // Distinct observer names across all plotted detections, plus whether any record
   // has no observer. Used to build the legend's 👤 observer checklist.
@@ -13110,7 +13118,7 @@
       // collapses to a bare message and the toggle stays reachable to switch back.
       (allKeys.length ? '<div class="det-row det-legend-total' + (detLegendRows !== "all" ? " det-total-plain" : "") + '">' +
           '<span class="det-nm det-total-toggle" role="button" tabindex="0" title="' + escapeHtml(t("det.rowsHint")) + '">' + escapeHtml(detRowsLabel()) + '</span>' +
-          '<span class="det-legend-sort" role="button" tabindex="0" title="' + escapeHtml(detSortTip()) + '" aria-label="' + escapeHtml(detSortTip()) + '">' + escapeHtml(detSortSym()) + '</span>' +
+          '<span class="det-legend-sort" role="button" tabindex="0" title="' + escapeHtml(detSortTip()) + '" aria-label="' + escapeHtml(detSortTip()) + '">' + detSortSymHtml() + '</span>' +
           '<span class="det-ct">' + sumCt + "</span></div>" : "") +
       (keys.length ? keys.map(function (k) {   // already narrowed to the "Total" row-set (detPassesRows) above
         var e = dEntry(k), nm = escapeHtml(detName(e));

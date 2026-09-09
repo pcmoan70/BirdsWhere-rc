@@ -3645,6 +3645,7 @@ a.dl-row:hover, .dl-row-menu:hover { background: var(--surface-2, rgba(0,0,0,.05
 .det-legend-total .det-ct { font-variant-numeric: tabular-nums; }
 .det-legend-total .det-legend-sort { cursor: pointer; margin: 0 6px; opacity: .7; font-weight: 700; font-size: var(--fs-s); white-space: nowrap; }
 .det-legend-total .det-legend-sort:hover { opacity: 1; }
+.det-legend-total .det-legend-sort .btn-ico { width: 14px; height: 14px; vertical-align: -3px; }   /* clock / pin sort states */
 /* While the map is being panned/zoomed the on-screen counts are out of date — grey them
    until the legend re-renders (after the map has been still a few seconds). */
 .det-counts-stale .det-ct { color: #b7bdba; opacity: 0.6; transition: color .1s; }
