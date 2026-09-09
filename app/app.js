@@ -11004,8 +11004,12 @@
       var color = (rarest || dominant).color;
       // A locally-rare species inside the cluster shows as BLACK numerals (no
       // corner dot on merged markers — single dots keep their black rare-dot).
-      var html = '<span class="dc-dot' + (hasRare ? " dc-has-rare" : "") + '" style="background:' + color + '"><span class="dc-n">' + c.nPos + "</span></span>" +   // badge = merged DOTS (localities), not records
-        (hasStar ? '<span class="dc-star">★</span>' : "");
+      // A starred species among the merged dots turns the marker ITSELF into a star (the
+      // same shape single starred dots use), filled with the cluster colour — instead of a
+      // corner ★ beside the circle.
+      var html = hasStar
+        ? '<span class="dc-dot dc-dot-star' + (hasRare ? " dc-has-rare" : "") + '"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="' + detStarPathD(16, 16, 15) + '" fill="' + color + '" stroke="#1a1a1a" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="dc-n">' + c.nPos + "</span></span>"
+        : '<span class="dc-dot' + (hasRare ? " dc-has-rare" : "") + '" style="background:' + color + '"><span class="dc-n">' + c.nPos + "</span></span>";   // badge = merged DOTS (localities), not records
       var mk = L.marker([lat, lon], { icon: L.divIcon({ className: "det-cluster", html: html, iconSize: [32, 32], iconAnchor: [16, 16] }), keyboard: false });
       // Metres per pixel here-and-now → the radius the shared views need to
       // catch every member (pixel spread from the centroid + a dot's width).
