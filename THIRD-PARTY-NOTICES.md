@@ -109,7 +109,7 @@ respective providers and subject to each provider's terms of use:
 - **Basemaps & overlays:** © OpenStreetMap contributors; © CARTO; OpenTopoMap (CC-BY-SA);
   Esri / ArcGIS World Imagery; UNEP-WCMC (protected areas); European Environment Agency (EEA).
 
-Reverse geocoding uses OpenStreetMap Nominatim; place/feature lookups use the Overpass API.
+Reverse geocoding uses OpenStreetMap Nominatim, with Photon (komoot.io, OpenStreetMap data) as the fallback; place/feature lookups use the Overpass API.
 
 ---
 

@@ -19320,8 +19320,18 @@
     if (placeDetailCache[k] !== undefined) return Promise.resolve(placeDetailCache[k]);
     return fetch("https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&addressdetails=1&lat=" + lat + "&lon=" + lon, { headers: { Accept: "application/json" } })
       .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (j) { var n = detailedPlaceLabel(j); placeDetailCache[k] = n; return n; })
-      .catch(function () { placeDetailCache[k] = ""; return ""; });
+      .then(function (j) { return j ? detailedPlaceLabel(j) : ""; })
+      .catch(function () { return ""; })
+      .then(function (n) {
+        if (n) return n;
+        // Nominatim failed / rate-limited → Photon: specific place (name / street / district) + town.
+        return photonReverse(lat, lon).then(function (p) {
+          if (!p) return "";
+          var specific = p.name || p.street || p.district || "", town = p.city || p.county || p.state || "";
+          return (specific && town && specific !== town) ? specific + ", " + town : (specific || town || p.country || "");
+        });
+      })
+      .then(function (n) { if (n) placeDetailCache[k] = n; return n; });   // a failed lookup is not cached — retried next time
   }
 
   // ---- Map-derived place names for the observation lists --------------------
@@ -21072,11 +21082,22 @@
 
   // ---- Checklists ----------------------------------------------------------
   // Reverse-geocode to a place name for the header (falls back to coordinates).
+  // Photon (komoot) reverse geocoder — CORS-open and without Nominatim's strict per-IP
+  // limit (which a mobile carrier's shared address often exhausts, leaving every lookup
+  // "failed"). Second try for both place lookups below. Returns the feature properties.
+  function photonReverse(lat, lon) {
+    return fetch("https://photon.komoot.io/reverse?lon=" + lon + "&lat=" + lat + "&limit=1", { headers: { Accept: "application/json" } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { var f = j && j.features && j.features[0]; return (f && f.properties) || null; })
+      .catch(function () { return null; });
+  }
   async function reverseGeocode(lat, lon) {
     try {
       var r = await fetch("https://nominatim.openstreetmap.org/reverse?format=json&zoom=10&lat=" + lat + "&lon=" + lon, { headers: { Accept: "application/json" } });
-      if (r.ok) { var j = await r.json(); return j.display_name || j.name || null; }
-    } catch (e) { /* offline / blocked — use coordinates */ }
+      if (r.ok) { var j = await r.json(); var n = j.display_name || j.name || null; if (n) return n; }
+    } catch (e) { /* offline / blocked / rate-limited — try the fallback */ }
+    var p = await photonReverse(lat, lon);   // area-level label: town/district + country
+    if (p) { var lbl = [p.city || p.district || p.county || p.state, p.country].filter(Boolean).join(", "); if (lbl) return lbl; }
     return null;
   }
 
