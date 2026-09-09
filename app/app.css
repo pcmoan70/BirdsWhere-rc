@@ -1200,7 +1200,7 @@ body {
   /* Pad by the notch/status-bar (and side notch in landscape) so the controls sit
      below the iOS safe area while the gradient still paints edge-to-edge. Needs the
      viewport-fit=cover meta; env() is 0 elsewhere so this is a no-op off iOS. */
-  padding: calc(9px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 9px calc(16px + env(safe-area-inset-left));
+  padding: calc(5px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 5px calc(16px + env(safe-area-inset-left));   /* 5px (was 9) → a 44px bar */
   background: linear-gradient(100deg, var(--brand-deep) 0%, #114a44 55%, var(--brand-strong) 100%);
   color: #f3faf7;
   box-shadow: var(--shadow-sm);
