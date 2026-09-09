@@ -19155,6 +19155,7 @@
 
   // Reverse-geocoded place names for the coords line, cached per location.
   var placeCache = {};
+  var placePending = {};   // reverse-geocodes in flight (header squares) — one request per square at a time
   function placeKey(lat, lon) { return lat.toFixed(3) + "," + lon.toFixed(3); }
 
   // Set a coords/summary line, prefixed with the resolved place name. The base
@@ -19171,7 +19172,8 @@
     if (placeCache[k] !== undefined) { apply(placeCache[k]); return; }
     apply("");   // show the coordinate/summary line while the place name resolves
     reverseGeocode(lat, lon).then(function (name) {
-      placeCache[k] = name || "";
+      if (!name) return;                 // failed / rate-limited → keep the coordinate line, retry next time
+      placeCache[k] = name;
       if (el.dataset.placeKey === k) apply(placeCache[k]);
     });
   }
@@ -19244,11 +19246,13 @@
     raw.forEach(function (a) {
       var key = placeKey(a.clat, a.clon), cached = placeCache[key];
       var label = a.name || (cached ? cached : "");
-      if (!a.name && cached === undefined) {   // resolve this square's name once, then re-render
-        reverseGeocode(a.clat, a.clon).then(function (n) { placeCache[key] = n || ""; reRender(); });
+      if (!a.name && !cached && !placePending[key]) {   // resolve this square's name, then re-render; a FAILED lookup is not cached — it retries on the next render
+        placePending[key] = 1;
+        reverseGeocode(a.clat, a.clon).then(function (n) { delete placePending[key]; if (n) { placeCache[key] = n; reRender(); } });
       }
+      var named = !!label;
       if (!label) label = a.clat.toFixed(4) + "°, " + a.clon.toFixed(4) + "°";
-      if (!(label in agg)) { agg[label] = { ids: [], obs: 0, clat: a.clat, clon: a.clon, rkm: areaRkm(a.id) }; order.push(label); }
+      if (!(label in agg)) { agg[label] = { ids: [], obs: 0, clat: a.clat, clon: a.clon, rkm: areaRkm(a.id), named: named }; order.push(label); }
       agg[label].ids.push(a.id); agg[label].obs += counts[a.id] || 0;
     });
     // Each square: place · N species · N obs · lat°, lon° (3 dp) · radius. The species
@@ -19265,7 +19269,7 @@
         parts.push(t("sp.spN", { n: (sc === undefined ? "…" : sc) }));
       }
       parts.push(t("sp.obsN", { n: g.obs }));
-      parts.push(g.clat.toFixed(3) + "°, " + g.clon.toFixed(3) + "°");
+      if (g.named) parts.push(g.clat.toFixed(3) + "°, " + g.clon.toFixed(3) + "°");   // no name yet → the label IS the coordinates; don't print them twice
       parts.push(t("sp.radius", { km: g.rkm }));
       var txt = parts.join(" · ");
       flatParts.push(txt);
