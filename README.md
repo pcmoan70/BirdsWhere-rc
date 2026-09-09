@@ -112,7 +112,7 @@ opening hours, fee, height, website… — plus map actions find · add point ·
 each with its full 53-week profile, at **three detail levels**: single sites · 25 km areas · 75 km
 regions (each level pools the one below it), following the map zoom by default or pinned in the
 overlay's ⚙. Blue dots count species per
-visit for the selected week; tap one for its year chart — species/visit with an upper-estimate trend,
+visit for the current week; tap one for its year chart — species/visit with an upper-estimate trend,
 observed species with a thin red observers line, the species turnover, and — with *Experimental
 features* on — the AI model's own year profile for the spot), and
 **eBird hotspots** (clickable — each opens a popup
@@ -149,8 +149,8 @@ holding a button:
 ## Species Range & Richness (the model)
 
 - **Species Range** — pick a species; the map shades occurrence probability (red → green) for
-  the selected week. **▶ Play migration** animates the range across all 48 weeks without
-  changing your selected week; **⏸ Pause** stops it.
+  the current week (opened from an observation, for the week it was seen). **▶ Play migration**
+  animates the range across all 48 weeks; **⏸ Pause** stops it.
 - **Species Richness** — the predicted number of species per grid cell, also animatable across
   the year.
 
@@ -726,7 +726,7 @@ no direction can delete data on the other device.
 
 ## Persistence, settings & languages
 
-- **Persistence** — settings, week, view, species/year/life lists, checklists, points and plotted
+- **Persistence** — settings, view, species/year/life lists, checklists, points and plotted
   detections survive across visits. Small settings live in **localStorage**; bulky per-list data
   (saved sets, detections) lives in **IndexedDB** to avoid the ~5 MB cap, hydrated into memory once
   at boot.

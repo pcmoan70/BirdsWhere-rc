@@ -5877,10 +5877,11 @@
                 '<div id="prob-range-vals"><span id="prob-min-val">0%</span> – <span id="prob-max-val">100%</span></div>' +
                 '<p class="cu-hint" data-i18n="ctrl.bcthresholdHint">Lower and upper model-probability bounds — species (and plotted observations) outside this range are hidden from the list and the map.</p>' +
               '</div>' +
-              '<div class="ctrl-group" id="week-select-wrap">' +
-                '<label for="week-select" data-i18n="ctrl.week">Week</label>' +
-                '<select id="week-select"></select>' +
-                '<p class="cu-hint" data-i18n="ctrl.weekHint">The week of the year the model is evaluated for (48 weeks, four per month) — used by Range, Richness and the species-list probabilities.</p>' +
+              // The week is always the current week (no user override). The <select> stays
+              // as the app's internal week register — Range/Migration playback, the
+              // "week it was seen" jumps and share links still set it programmatically.
+              '<div class="ctrl-group" id="week-select-wrap" style="display:none">' +
+                '<select id="week-select" aria-hidden="true" tabindex="-1"></select>' +
               '</div>' +
               '<div class="ctrl-group" id="compare-wrap" style="display:none">' +
                 '<label for="compare-select" data-i18n="ctrl.compare">Compare to</label>' +
