@@ -9346,7 +9346,7 @@
         srcHtml].filter(Boolean).join(" · ");
       subLines =
         (al ? '<span class="dl-sub" title="' + escapeHtml(al) + '">' + escapeHtml(al) + "</span>" : "") +
-        (note ? '<span class="dl-sub dl-note" title="' + escapeHtml(note) + '">' + escapeHtml(note) + "</span>" : "");
+        (note ? '<span class="dl-sub dl-note" title="' + escapeHtml(note) + '">' + linkifyHtml(note) + "</span>" : "");
     }
     var nameBlock = '<span class="dl-name-wrap"><span class="dl-sp">' + escapeHtml(detListName(d.key, d.name)) + "</span>" + subLines + "</span>";
     var inner = detSwatch(d.color || "#888", isInteresting(d.key), detIsRare(d.key), d.key) +
@@ -9491,6 +9491,13 @@
     clearTimeout(_obsInfoHideT);
     _obsInfoHideT = setTimeout(function () { if (_anchMenuEl && _anchMenuEl.className === "obs-info-pop") closeAnchoredMenu(); }, 160);
   }
+  // Escape text, then turn any http(s) URL in it into a link that opens in a new tab
+  // (observer notes often carry a photo / checklist link). Trailing punctuation stays text.
+  function linkifyHtml(text) {
+    return escapeHtml(String(text || "")).replace(/https?:\/\/[^\s<]+[^\s<.,;:!?)"']/g, function (u) {
+      return '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + u + "</a>";
+    });
+  }
   function showObsInfoPopup(anchor, act, note, flags, src) {
     var al = act ? actLabel(act) : "", nt = String(note || "").trim(), fls = obsFlagLabels(flags);
     if (!al && !nt && !fls.length) return;
@@ -9499,7 +9506,7 @@
     var html = '<div class="oip-head">' + escapeHtml(src || t("obs.infoLabel")) + "</div>";
     if (fls.length) html += '<div class="oip-row"><span class="oip-lbl">' + escapeHtml(t("obs.status")) + '</span><span class="oip-val">' + escapeHtml(fls.join(" · ")) + "</span></div>";
     if (al) html += '<div class="oip-row"><span class="oip-lbl">' + escapeHtml(t("obs.activity")) + '</span><span class="oip-val">' + escapeHtml(al) + "</span></div>";
-    if (nt) html += '<div class="oip-row"><span class="oip-lbl">' + escapeHtml(t("obs.notes")) + '</span><span class="oip-val">' + escapeHtml(nt) + "</span></div>";
+    if (nt) html += '<div class="oip-row"><span class="oip-lbl">' + escapeHtml(t("obs.notes")) + '</span><span class="oip-val">' + linkifyHtml(nt) + "</span></div>";
     el.innerHTML = html;
     // Keep it open while the pointer is over the popup; close shortly after leaving.
     el.addEventListener("mouseenter", obsInfoCancelHide);
