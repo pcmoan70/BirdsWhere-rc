@@ -3429,13 +3429,13 @@ tr.sp-open { background: var(--surface-2, rgba(0,0,0,.05)); }
 .sp-detail-tbl th, .sp-detail-tbl td { white-space: nowrap; }
 /* Observers get the room their two shown names need (no wrapping until expanded); the
    LOCATION gives way instead — clipped at its end with an ellipsis, leading part kept. */
-.sp-detail-tbl td.sp-d-loc { max-width: 40ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-detail-tbl td.sp-d-loc { max-width: 22ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }   /* ~20 chars fit; sizes down to the content when names are short */
 .sp-detail-tbl td.sp-d-src { max-width: 16ch; }
 .sp-detail-tbl td.sp-d-obs { white-space: nowrap; }
 .sp-detail-tbl td.sp-d-obs.sp-obs-expanded { white-space: normal; }
 @media (max-width: 560px) {
   .sp-detail-tbl .sp-h-sort { display: none; }   /* the ⇅ hint costs ~10px; tapping the header still sorts */
-  .sp-detail-tbl td.sp-d-loc { max-width: 14ch; }
+  .sp-detail-tbl td.sp-d-loc { max-width: 22ch; }   /* phones too — the table scrolls sideways rather than clipping a 20-char name */
   .sp-detail-tbl td.sp-d-src { max-width: 10ch; }
 }
 .sp-detail-tbl td.sp-d-src { overflow: hidden; text-overflow: ellipsis; }

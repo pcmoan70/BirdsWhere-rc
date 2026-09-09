@@ -1845,10 +1845,10 @@
       (opts.loc ? '<td class="sp-d-loc">' + (placeAccurate(d)
         ? '<span class="sp-loc-click" role="button" data-loc="' + escapeHtml(String(d.place).trim()) + '" title="' + escapeHtml(d.place) + '">' + escapeHtml(d.place) + "</span>"
         : rgeoSpanHtml(d.lat, d.lon, "sp-loc-click", "", ' role="button"', String(d.place || "").trim(), d.posFuzzM)) + "</td>" : "") +   // lat/lon-only or generic place → map-derived name
-      (opts.dist !== false ? '<td class="num">' + km + "</td>" : "") +
       (opts.src ? '<td class="sp-d-src">' + srcClickHtml(srcLabel(d)) + infoIcon + "</td>" : "") +
       (opts.info ? '<td class="sp-d-info">' + (timeSpan ? timeSpan + " " : "") + infoIcon + "</td>" : "") +   // ⓘ in its own column (obs list — dist/src live in the group subheading; rarity obs time beside it)
-      (opts.obs ? '<td class="sp-d-obs">' + obsCell + "</td>" : "") + "</tr>";
+      (opts.obs ? '<td class="sp-d-obs">' + obsCell + "</td>" : "") +
+      (opts.dist !== false ? '<td class="num sp-d-dist">' + km + "</td>" : "") + "</tr>";   // distance rightmost
   }
   // The expanded sub-list for one species: full columns, sorted by spObsSort.
   function spDetailTableHtml(key, rows) {
@@ -1857,8 +1857,8 @@
     var hdr = "<thead><tr>" + spObsHeadCell("count", t("th.count"), true) +
       spObsHeadCell("prob", t("th.probAbbr"), true) + spObsHeadCell("date", t("th.date")) +
       spObsHeadCell("loc", t("th.location")) +
-      spObsHeadCell("dist", t("th.dist"), true) +
-      spObsHeadCell("src", t("th.source")) + spObsHeadCell("obs", t("th.obs")) + "</tr></thead>";
+      spObsHeadCell("src", t("th.source")) + spObsHeadCell("obs", t("th.obs")) +
+      spObsHeadCell("dist", t("th.dist"), true) + "</tr></thead>";   // distance rightmost
     var body = rows.slice().sort(spObsCmp).map(function (d) { return spRecRowHtml(d, { name: false, date: true, loc: true, src: true, obs: true }); }).join("");
     // Column widths are pinned on the cells in CSS (.sp-detail-tbl is table-layout:fixed),
     // so EVERY expanded species' sub-table has identical columns and they line up
