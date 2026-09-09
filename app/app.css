@@ -2726,6 +2726,8 @@ button.dd-name:hover { text-decoration: underline; }
 /* ⓘ on an observation row → activity/note popup. */
 .obs-info { display: inline-flex; vertical-align: middle; margin-left: 5px; color: var(--ink-faint); cursor: help; }
 .obs-info:hover { color: var(--brand, #2e8b74); }
+.obs-info.obs-info-link { color: var(--brand, #2e8b74); }   /* note with a web link: green arrow-out */
+.obs-info.obs-info-link:hover { color: var(--brand-strong, #246b59); }
 .obs-info .btn-ico { width: var(--ico-m); height: var(--ico-m); }
 /* Wide enough for real notes; when a note still exceeds the height cap the popup
    scrolls (hover keep-open lets the wheel work; on touch it stays until tapped away). */

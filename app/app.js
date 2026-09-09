@@ -324,6 +324,8 @@
       calendar: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M8.5 3.3v3.4M15.5 3.3v3.4"/>',
       sprout:   '<path d="M12 21v-7.5"/><path d="M12 13.5c0-3.3 2.6-5.8 6-5.8 0 3.3-2.6 5.8-6 5.8z"/><path d="M12 13.5c0-2.7-2.1-4.8-4.8-4.8 0 2.7 2.1 4.8 4.8 4.8z"/>',
       info:     '<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.6v.4"/>',
+      // Arrow out of a box — a note that carries a web link (obs ⓘ turns into this, green).
+      linkout:  '<path d="M14 5h5v5"/><path d="M19 5l-8 8"/><path d="M17 13.5V18a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h4.5"/>',
       bell:     '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>'
     };
     return '<svg class="btn-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (P[name] || "") + "</svg>";
@@ -1823,9 +1825,10 @@
     // iNaturalist, Artsobservasjoner, Artportalen have them; eBird/BirdNET don't),
     // an ⓘ opens a small formatted popup with those details.
     var infoAl = d.act ? actLabel(d.act) : "", infoNt = String(d.note || "").trim(), infoFl = String(d.flags || "").trim();
+    var hasLink = /https?:\/\//i.test(infoNt);   // the note carries a web link → green "link out" arrow instead of ⓘ
     var infoIcon = (infoAl || infoNt || infoFl)
-      ? ' <span class="obs-info" role="button" tabindex="0" aria-label="' + escapeHtml(t("obs.infoLabel")) + '" title="' + escapeHtml(t("obs.infoLabel")) +
-        '" data-act="' + escapeHtml(d.act || "") + '" data-note="' + escapeHtml(String(d.note || "")) + '" data-flags="' + escapeHtml(infoFl) + '" data-src="' + escapeHtml(srcLabel(d)) + '">' + ico("info") + "</span>"
+      ? ' <span class="obs-info' + (hasLink ? " obs-info-link" : "") + '" role="button" tabindex="0" aria-label="' + escapeHtml(t("obs.infoLabel")) + '" title="' + escapeHtml(t("obs.infoLabel")) +
+        '" data-act="' + escapeHtml(d.act || "") + '" data-note="' + escapeHtml(String(d.note || "")) + '" data-flags="' + escapeHtml(infoFl) + '" data-src="' + escapeHtml(srcLabel(d)) + '">' + ico(hasLink ? "linkout" : "info") + "</span>"
       : "";
     return '<tr class="sp-d-row"' + recAttrs + ">" +
       '<td class="num sp-d-cnt">' + cnt + "</td>" +   // count FIRST, left of the name
