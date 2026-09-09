@@ -15115,7 +15115,7 @@
   function renderClcLegend() { renderLegendStack(); }
   // Overlays that live behind Settings → Experimental features (less-polished / heavy
   // third-party services). Kept out of the layer control until the gate is on.
-  var EXPERIMENTAL_OVERLAY_KEYS = ["layer.birdSpots", "layer.gbif", "layer.emerald", "layer.osmpa", "layer.natura2000"];
+  var EXPERIMENTAL_OVERLAY_KEYS = ["layer.birdSpots", "layer.gbif", "layer.emerald", "layer.osmpa", "layer.natura2000", "layer.wdpa"];
   function isExperimentalOverlay(key) { return EXPERIMENTAL_OVERLAY_KEYS.indexOf(key) >= 0; }
   // Add/remove the experimental overlays from the layer control when the Settings →
   // Experimental toggle changes (called from applyExperimentalUi). Re-render the CORINE

@@ -22,7 +22,7 @@
   "route.savePrompt": "Nadaj nazwę tej trasie:",
   "route.saved": "Zapisano trasę „{name}” ({n} przystanków).",
   "ctrl.experimental": "Funkcje eksperymentalne",
-  "ctrl.experimentalHint": "Wył. (domyślnie). Wł.: odblokowuje mniej dopracowane dodatki — obecnie warstwy mapy Punkty obserwacyjne, gęstość wystąpień GBIF i Natura 2000, roczny wykres modelu AI w kartach Najlepszych miejsc oraz link NBN Atlas w menu gatunku; z czasem mogą pojawić się kolejne.",
+  "ctrl.experimentalHint": "Wył. (domyślnie). Wł.: odblokowuje mniej dopracowane dodatki — obecnie warstwy mapy Punkty obserwacyjne, gęstość wystąpień GBIF, Natura 2000 i WDPA · Protected Planet, roczny wykres modelu AI w kartach Najlepszych miejsc oraz link NBN Atlas w menu gatunku; z czasem mogą pojawić się kolejne.",
   "ctrl.hotspotHint": "Cieniuje mapę według tego, ile aktywności ma każdy obszar — dotknij, aby przełączać Wył. → gatunki na obszar → różni obserwatorzy → łączne liczby. Płynna, stabilna przy powiększaniu chmura ciepła; użyj „Pokaż kropki“, aby zobaczyć samą mapę ciepła, same kropki lub oba.",
   "ctrl.groupHint": "Ogranicz całą aplikację — listy, Zasięg, Bogactwo gatunkowe i wyszukiwanie obserwacji — do jednej grupy: ptaki, ssaki, płazy, owady, rośliny lub grzyby.",
   "ctrl.recentradiusHint": "Jak daleko wokół klikniętego punktu lub zapisanej lokalizacji każde źródło jest przeszukiwane pod kątem ostatnich obserwacji.",

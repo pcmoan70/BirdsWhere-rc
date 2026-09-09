@@ -22,7 +22,7 @@
   "route.savePrompt": "Anna reitille nimi:",
   "route.saved": "Reitti ”{name}” tallennettu ({n} pysäkkiä).",
   "ctrl.experimental": "Kokeelliset ominaisuudet",
-  "ctrl.experimentalHint": "Pois (oletus). Päällä: avaa vähemmän hiotut lisät — tällä hetkellä karttatasot Tähystyspaikat, GBIF-havaintotiheys ja Natura 2000, tekoälymallin vuosikaavion Parhaat paikat -korteissa sekä NBN Atlas -linkin lajivalikossa; lisää voi tulla tähän ajan myötä.",
+  "ctrl.experimentalHint": "Pois (oletus). Päällä: avaa vähemmän hiotut lisät — tällä hetkellä karttatasot Tähystyspaikat, GBIF-havaintotiheys, Natura 2000 ja WDPA · Protected Planet, tekoälymallin vuosikaavion Parhaat paikat -korteissa sekä NBN Atlas -linkin lajivalikossa; lisää voi tulla tähän ajan myötä.",
   "ctrl.hotspotHint": "Sävyttää kartan sen mukaan, kuinka paljon aktiivisuutta kullakin alueella on — napauta vaihtaaksesi Pois → lajit alueella → eri havainnoijat → kokonaismäärät. Pehmeä, zoomatessa pysyvä lämpöpilvi; „Näytä pisteet“ näyttää pelkän lämpökartan, pelkät pisteet tai molemmat.",
   "ctrl.groupHint": "Rajaa koko sovellus — luettelot, Levinneisyys, Lajirunsaus ja havaintohaku — yhteen ryhmään: linnut, nisäkkäät, sammakkoeläimet, hyönteiset, kasvit tai sienet.",
   "ctrl.recentradiusHint": "Kuinka kaukaa napautetun pisteen tai tallennetun sijainnin ympäriltä kustakin lähteestä haetaan tuoreita havaintoja.",
