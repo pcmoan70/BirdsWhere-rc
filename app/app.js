@@ -1776,6 +1776,19 @@
   function probBarNa(cls) { return '<td class="prob-cell prob-na' + (cls ? " " + cls : "") + '">—</td>'; }
   // One record row: colour swatch + species name, 2nd name, probability, [date],
   // distance, count, [observer] — separate columns (no parenthesised 2nd name).
+  // Observer names as tappable filter spans. Long lists (shared checklists) show the
+  // first TWO names; a "|…" marks the rest and tapping it reveals them inline. Shared by
+  // the record rows and the By-observation group subheadings.
+  function obsNamesHtml(observer) {
+    var names = detObsRealNames(observer);
+    if (!names.length) return escapeHtml(String(observer || ""));
+    var spans = names.map(function (n) { return '<span class="sp-obs-filter" role="button" data-obs="' + escapeHtml(n) + '" title="' + escapeHtml(t("obs.filterHint")) + '">' + escapeHtml(n) + "</span>"; });
+    var OBS_SHOWN = 2;
+    if (spans.length <= OBS_SHOWN) return spans.join(", ");
+    return spans.slice(0, OBS_SHOWN).join(", ") +
+      '<span class="sp-obs-rest" hidden>, ' + spans.slice(OBS_SHOWN).join(", ") + "</span>" +
+      '<span class="sp-obs-more" role="button" title="' + escapeHtml(t("obs.showAll")) + '">|\u2026</span>';
+  }
   function spRecRowHtml(d, opts) {
     var km = spRecDistKm(d); km = isFinite(km) ? escapeHtml(nearbyFmtDist(km)) : "";
     // Probability as a coloured bar (same treatment as the Species-list table), black
@@ -1792,18 +1805,7 @@
     // Rarity records carry an exact observation time (eBird checklist HH:MM) — show it.
     var timeSpan = d.time ? '<span class="sp-d-time">' + escapeHtml(d.time) + "</span>" : "";
     if (timeSpan) dateCell += " " + timeSpan;
-    var obs = detObsRealNames(d.observer);
-    var obsSpans = obs.map(function (n) { return '<span class="sp-obs-filter" role="button" data-obs="' + escapeHtml(n) + '" title="' + escapeHtml(t("obs.filterHint")) + '">' + escapeHtml(n) + "</span>"; });
-    // Long observer lists (shared checklists) show the first TWO names; a "|…" marks
-    // the rest, and tapping it reveals them inline (each still tappable to filter).
-    var OBS_SHOWN = 2, obsCell;
-    if (obsSpans.length > OBS_SHOWN) {
-      obsCell = obsSpans.slice(0, OBS_SHOWN).join(", ") +
-        '<span class="sp-obs-rest" hidden>, ' + obsSpans.slice(OBS_SHOWN).join(", ") + "</span>" +
-        '<span class="sp-obs-more" role="button" title="' + escapeHtml(t("obs.showAll")) + '">|\u2026</span>';
-    } else {
-      obsCell = obsSpans.join(", ");
-    }
+    var obsCell = obsNamesHtml(d.observer);
     var showName = opts.name !== false;   // the expanded per-species view drops the (redundant) species name
     // The species name is a .sp-link (opens the unified species menu); it also carries
     // this record's location so that menu shows the "this observation" actions too.
@@ -1889,7 +1891,7 @@
       var datePart = dt ? '<span class="dl-date-click" role="button" data-date="' + escapeHtml(dt) + '" title="' + escapeHtml(t("detlist.dateFilterHint")) + '">' + dateLbl + "</span>" : dateLbl;
       return gkeys.map(function (gk) {
         var g = byG[gk];
-        var obsSpan = g.obs ? ' · <span class="sp-obs-filter" role="button" data-obs="' + escapeHtml(g.obs) + '" title="' + escapeHtml(t("obs.filterHint")) + '">' + escapeHtml(g.obs) + "</span>" : "";
+        var obsSpan = g.obs ? " · " + obsNamesHtml(g.obs) : "";   // same two-names-then-"|…" rule as the record rows
         // The place-name opens the same location menu as the "Species" list's expanded
         // records (find on map · add point · route). Needs coordinates, so use the first
         // record in the group that has them; otherwise it stays a plain label.
