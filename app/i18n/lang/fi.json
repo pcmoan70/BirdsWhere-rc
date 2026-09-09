@@ -119,7 +119,7 @@
   "sp.summaryShort": "{lat}°, {lon}° · {week}",
   "sp.obsN": "{n} hav.",
   "sp.spN": "{n} lajia",
-  "sp.missingBtn": "Näytä myös lajit, joita malli odottaa täällä (harvinaisuusrajan yläpuolella) mutta joista ei vielä ole havaintoja",
+  "sp.missingBtn": "Näytä myös lajit, joita malli ennustaa täällä mutta joista ei vielä ole havaintoja",
   "area.removeObs": "Poista kaikki tämän paikan havainnot",
   "bc.detWeek": "havaittu tässä",
   "ctrl.downloadHold": "Lataa tämä näkymä (pidä pohjassa nähdäksesi tallennetut offline-kartat)",

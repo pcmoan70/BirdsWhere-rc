@@ -119,7 +119,7 @@
   "sp.summaryShort": "{lat}°, {lon}° · {week}",
   "sp.obsN": "{n} vaatl.",
   "sp.spN": "{n} liiki",
-  "sp.missingBtn": "Näita ka liike, mida mudel siin ootab (üle haruldusläve), kuid mida pole veel vaadeldud",
+  "sp.missingBtn": "Näita ka liike, mida mudel siin ennustab, kuid mida pole veel vaadeldud",
   "area.removeObs": "Eemalda kõik selle asukoha vaatlused",
   "bc.detWeek": "vaadeldud siin",
   "ctrl.downloadHold": "Laadi see vaade alla (hoia all salvestatud offline-kaartide jaoks)",

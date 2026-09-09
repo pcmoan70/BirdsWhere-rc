@@ -119,7 +119,7 @@
   "sp.summaryShort": "{lat}°, {lon}° · {week}",
   "sp.obsN": "{n} fynd",
   "sp.spN": "{n} arter",
-  "sp.missingBtn": "Visa även arter som modellen väntar sig här (över sällsynthetströskeln) men som ännu inte observerats",
+  "sp.missingBtn": "Visa även de arter som modellen förutsäger här men som ännu inte observerats",
   "area.removeObs": "Ta bort alla observationer för denna plats",
   "bc.detWeek": "observerad här",
   "ctrl.downloadView": "Ladda ner karta",

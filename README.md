@@ -242,10 +242,11 @@ fuzzily against the displayed, English and scientific names, shows a live **matc
 narrows the table, the legend *and* the map dots together. Active funnels turn **orange only when
 the filters actually remove observations**, with a tiny green/red bar underneath showing the
 kept-vs-removed fraction. The **? button** beside the funnel (orange when on, remembered) also
-lists the species the model *expects* here — probability at or above the rare threshold — that have
-**no observations yet**, slotted into the current sort with their probability, season and comparison
-columns and empty observation columns; the species-flag, rarity and selection filters still apply to
-them. **Sorting** is separate: **click a column name** to sort by it
+lists the species the model *predicts* here that have **no observations yet** — down to the list's
+probability floor (Settings → Probability range; with the floor at 0 % the rare-species threshold guards
+instead) — slotted into the current sort with their probability, season and comparison columns and
+empty observation columns; the species-flag, rarity and selection filters still apply to them, and
+they stay listed when the list is opened from the map (they have no dots to be "in view"). **Sorting** is separate: **click a column name** to sort by it
 (Species / Total / Last / Probability / Distance / Season), cycling ascending → descending → off.
 
 The filter pane also holds **species lists**: build a selection and *Save selection as list* to

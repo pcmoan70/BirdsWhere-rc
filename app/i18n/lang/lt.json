@@ -119,7 +119,7 @@
   "sp.summaryShort": "{lat}°, {lon}° · {week}",
   "sp.obsN": "{n} steb.",
   "sp.spN": "{n} rūšių",
-  "sp.missingBtn": "Rodyti ir rūšis, kurių modelis čia tikisi (virš retumo slenksčio), bet kurios dar nestebėtos",
+  "sp.missingBtn": "Rodyti ir rūšis, kurias modelis čia prognozuoja, bet kurios dar nestebėtos",
   "area.removeObs": "Pašalinti visus šios vietos stebėjimus",
   "bc.detWeek": "stebėta čia",
   "ctrl.downloadHold": "Atsisiųsti šį rodinį (laikykite – išsaugoti žemėlapiai neprisijungus)",

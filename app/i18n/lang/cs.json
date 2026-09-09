@@ -119,7 +119,7 @@
   "sp.summaryShort": "{lat}°, {lon}° · {week}",
   "sp.obsN": "{n} pozorování",
   "sp.spN": "{n} druhů",
-  "sp.missingBtn": "Zobrazit i druhy, které model zde očekává (nad prahem vzácnosti), ale zatím nemají pozorování",
+  "sp.missingBtn": "Zobrazit i druhy, které model zde předpovídá, ale zatím nemají pozorování",
   "area.removeObs": "Odstranit všechna pozorování z tohoto místa",
   "bc.detWeek": "pozorováno zde",
   "ctrl.downloadHold": "Stáhnout tento výřez (podržte pro uložené offline mapy)",

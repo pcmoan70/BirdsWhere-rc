@@ -119,7 +119,7 @@
   "sp.summaryShort": "{lat}°, {lon}° · {week}",
   "sp.obsN": "{n} obs.",
   "sp.spN": "{n} espécies",
-  "sp.missingBtn": "Mostrar também as espécies que o modelo espera aqui (acima do limiar de raridade) ainda sem observações",
+  "sp.missingBtn": "Mostrar também as espécies que o modelo prevê aqui e que ainda não têm observações",
   "area.removeObs": "Remover todas as observações deste local",
   "bc.detWeek": "observado aqui",
   "ctrl.downloadHold": "Descarregar esta vista (manter premido para mapas offline guardados)",

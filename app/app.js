@@ -2257,10 +2257,11 @@
       var excOk = !key || !detExcluded[key];
       // [?] on: a model row with no detections at all bypasses the count + recency rules
       // (it has no dates); the species-flag, rarity and selection filters still apply.
-      // Only species the model EXPECTS here: probability at/above the rare threshold (and the
-      // list's own floor) — else a 0 % floor would pour the whole model into the list.
+      // Predicted species down to the list's own probability floor; with the floor at 0 %
+      // the rare threshold guards instead — else the whole model would pour into the list.
+      var floor = (+document.getElementById("prob-min").value || 0) / 100;
       var missingOk = spShowMissing && !!agg && !entry && !extra &&
-        (+tr.getAttribute("data-prob") || 0) >= Math.max(rarePct() / 100, (+document.getElementById("prob-min").value || 0) / 100);
+        (+tr.getAttribute("data-prob") || 0) >= (floor > 0 ? floor : rarePct() / 100);
       tr.style.display = ((missingOk || (recencyOk && countOk && !obsFilteredOut)) && rareOk && buildOk && selOk && excOk) ? "" : "none";
     });
     refreshSpExpansions();   // keep expanded detail sub-rows under their (visible) species
@@ -6164,7 +6165,7 @@
           '<div id="sp-controls" style="display:none">' +
             '<select id="sp-layout" class="detlist-sort-sel" aria-label="Layout"></select>' +
             '<button id="sp-filter-btn" class="sp-filter-btn ico-btn" type="button" aria-label="Filters" title="Filters">' + ico("funnel") + '</button>' +
-            '<button id="sp-missing-btn" class="sp-filter-btn ico-btn sp-missing-btn" type="button" data-i18n-title="sp.missingBtn" title="Also list species the model expects here (above the rare threshold) that have no observations yet">?</button>' +
+            '<button id="sp-missing-btn" class="sp-filter-btn ico-btn sp-missing-btn" type="button" data-i18n-title="sp.missingBtn" title="Also list the species the model predicts here that have no observations yet">?</button>' +
             '<div id="sp-filters-bar"></div>' +
           '</div>' +
           '<div id="sp-filters-wrap"></div>' +
@@ -11263,12 +11264,17 @@
         if (isFinite(+r.lat) && isFinite(+r.lon) && b.contains([+r.lat, +r.lon]) && detDatePasses(r.date) && detPassesNew(r)) { inView[k] = 1; break; }
       }
     });
+    applyAgeFilter();   // baseline: the filters (and the [?] predicted rows) decide first
     var shown = 0;
     Array.prototype.forEach.call(tbody.querySelectorAll("tr"), function (tr) {
+      if (tr.classList.contains("sp-detail-row")) return;
+      if (tr.style.display === "none") return;   // already out by a filter
       var key, sl = tr.querySelector(".sp-link");
       if (sl) key = sl.getAttribute("data-key");
       else { var ex = tr.querySelector(".det-count-extra[data-sci]"); if (ex) key = "x:" + String(ex.getAttribute("data-sci") || "").toLowerCase(); }
-      var show = !!(key && inView[key]);
+      // [?] predictions have no detections to be "in view" — keep them (applyAgeFilter let them through).
+      var missing = spShowMissing && !!sl && !tr.classList.contains("sp-has-det") && !tr.classList.contains("sp-extra");
+      var show = missing || !!(key && inView[key]);
       tr.style.display = show ? "" : "none";
       if (show) shown++;
     });
