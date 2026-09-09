@@ -11794,7 +11794,19 @@
   // The "year" row-set (species not yet on this year's list — the ones wearing the
   // year/life-list edge) is offered only while those edges are shown and a list is kept.
   function rowsYearAvail() { return listEdgesOn() && (yearListActive() || lifeListActive()); }
-  function detRowsStates() { return rowsYearAvail() ? DET_ROWS_STATES : DET_ROWS_STATES.slice(0, 4); }
+  // The cycle only visits row-sets that would list something: no selection → no "Selected",
+  // nothing starred → no "Starred", nothing locally rare → no "Rare", nobody needing the
+  // year list (or edges off / no list kept) → no "New for {year}".
+  function detRowsStates() {
+    var keys = (typeof unionDetKeys === "function") ? unionDetKeys() : Object.keys(detPlot);
+    function any(pred) { for (var i = 0; i < keys.length; i++) if (pred(keys[i])) return true; return false; }
+    var out = ["all"];
+    if (any(function (k) { return !!detSelected[k]; })) out.push("selected");
+    if (any(function (k) { return isInteresting((dEntry(k) && dEntry(k).key) || k); })) out.push("starred");
+    if (any(function (k) { return detIsRare(k); })) out.push("rare");
+    if (rowsYearAvail() && any(function (k) { return !!detNeedTier(k); })) out.push("year");
+    return out;
+  }
   // Legend sort order, cycled by the indicator next to "Total".
   var DET_SORT_STATES = ["rarity", "az", "date", "count", "distance"];
   var detLegendSort = "rarity";
@@ -13157,7 +13169,7 @@
       else clearDetections();
     });
     wireClearFilterBtn(el.querySelector(".det-clear-sel"));   // click = clear all; long-press/right-click = all-filters pane
-    // "Total" cycles the listed row-set: All → Selected → Starred → Rare (→ New for {year}, when the list edges are on) → All.
+    // "Total" cycles the listed row-set: All → Selected → Starred → Rare → New for {year} → All, skipping the sets that would be empty (see detRowsStates).
     var totTg = el.querySelector(".det-total-toggle");
     if (totTg) totTg.addEventListener("click", function (e) {
       e.stopPropagation(); mapClickGuardUntil = Date.now() + 250;
