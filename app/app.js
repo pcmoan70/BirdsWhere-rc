@@ -1441,6 +1441,11 @@
   //    shows "days back" instead of the date.
   //  • Total column → count: null (any) → >0 → >1 → >5 (total specimens per species).
   var speciesAgeFilterDays = 0;
+  // [?] in the species-list controls: also list the model's predicted species that have NO
+  // observations yet (normally dropped by the Total ≥ 1 rule) and that the model rates at or
+  // above the rare threshold — slotted into the current sort with their probability / season /
+  // comparison columns; persisted.
+  var spShowMissing = !!window.GeoState.get("spShowMissing", false);
   var spCountMin = 1, spCountMax = null;   // Total-column lower/upper bounds (inclusive; null = open). Default: Total ≥ 1 — list only species actually observed.
   var spCountMetric = "total";                // which count the bounds restrict: "total" (specimens) or "pairs" (observations)
   var spNameQuery = "";                       // species-list name filter (raw text; lowercased at compare time)
@@ -2247,7 +2252,13 @@
       // and drop any list red-excluded species.
       var selOk = !hasSel || (!!key && !!detSelected[key]);
       var excOk = !key || !detExcluded[key];
-      tr.style.display = (recencyOk && countOk && rareOk && buildOk && !obsFilteredOut && selOk && excOk) ? "" : "none";
+      // [?] on: a model row with no detections at all bypasses the count + recency rules
+      // (it has no dates); the species-flag, rarity and selection filters still apply.
+      // Only species the model EXPECTS here: probability at/above the rare threshold (and the
+      // list's own floor) — else a 0 % floor would pour the whole model into the list.
+      var missingOk = spShowMissing && !!agg && !entry && !extra &&
+        (+tr.getAttribute("data-prob") || 0) >= Math.max(rarePct() / 100, (+document.getElementById("prob-min").value || 0) / 100);
+      tr.style.display = ((missingOk || (recencyOk && countOk && !obsFilteredOut)) && rareOk && buildOk && selOk && excOk) ? "" : "none";
     });
     refreshSpExpansions();   // keep expanded detail sub-rows under their (visible) species
     updateRecencyNote();
@@ -6150,6 +6161,7 @@
           '<div id="sp-controls" style="display:none">' +
             '<select id="sp-layout" class="detlist-sort-sel" aria-label="Layout"></select>' +
             '<button id="sp-filter-btn" class="sp-filter-btn ico-btn" type="button" aria-label="Filters" title="Filters">' + ico("funnel") + '</button>' +
+            '<button id="sp-missing-btn" class="sp-filter-btn ico-btn sp-missing-btn" type="button" data-i18n-title="sp.missingBtn" title="Also list species the model expects here (above the rare threshold) that have no observations yet">?</button>' +
             '<div id="sp-filters-bar"></div>' +
           '</div>' +
           '<div id="sp-filters-wrap"></div>' +
@@ -16914,6 +16926,13 @@
     // by clicking a column name; the pane keeps a full copy of the sort + every filter.
     var spFilterBtn = document.getElementById("sp-filter-btn");
     if (spFilterBtn) spFilterBtn.addEventListener("click", function (e) { e.stopPropagation(); openAllFiltersPane(); });
+    var spMissingBtn = document.getElementById("sp-missing-btn");
+    if (spMissingBtn) spMissingBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      spShowMissing = !spShowMissing; window.GeoState.save({ spShowMissing: spShowMissing });
+      this.classList.toggle("on", spShowMissing);
+      applyAgeFilter();
+    });
     var vtBtn = document.getElementById("viewtoggle-btn");
     if (vtBtn) vtBtn.addEventListener("click", function () { if (onListView()) goToMapView(); else showListView(); });
 
@@ -20077,6 +20096,8 @@
     }
     // The observation filter bar (day/date · mode · observer) applies to the detailed
     // record layouts; the prediction table keeps its own flag columns + age cycle.
+    var mb = document.getElementById("sp-missing-btn");
+    if (mb) { mb.classList.toggle("on", spShowMissing); mb.style.display = spLayout === "table" ? "" : "none"; }   // predictions only exist in the table layout
     if (spLayout === "table") {
       // Column-header panels (Species / Total / Last / Prob) open inline in
       // #sp-filters-wrap, between the header and the first rows. No toggle button.

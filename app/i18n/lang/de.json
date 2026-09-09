@@ -119,6 +119,7 @@
   "sp.summaryShort": "{lat}°, {lon}° · {week}",
   "sp.obsN": "{n} Beob.",
   "sp.spN": "{n} Arten",
+  "sp.missingBtn": "Auch Arten auflisten, die das Modell hier erwartet (über der Seltenheitsschwelle), aber noch nicht beobachtet wurden",
   "area.removeObs": "Alle Beobachtungen dieses Orts entfernen",
   "bc.detWeek": "hier beobachtet",
   "ctrl.downloadHold": "Diesen Ausschnitt herunterladen (halten für gespeicherte Offline-Karten)",

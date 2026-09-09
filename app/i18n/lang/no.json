@@ -119,6 +119,7 @@
   "sp.summaryShort": "{lat}°, {lon}° · {week}",
   "sp.obsN": "{n} obs",
   "sp.spN": "{n} arter",
+  "sp.missingBtn": "Vis også arter modellen forventer her (over sjeldenhetsterskelen) som ennå ikke er observert",
   "area.removeObs": "Fjern alle observasjoner for dette stedet",
   "bc.detWeek": "observert her",
   "ctrl.downloadHold": "Last ned dette kartutsnittet (hold for lagrede offline-kart)",

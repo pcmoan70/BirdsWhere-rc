@@ -119,6 +119,7 @@
   "sp.summaryShort": "{lat}°, {lon}° · {week}",
   "sp.obsN": "{n} waarn.",
   "sp.spN": "{n} soorten",
+  "sp.missingBtn": "Toon ook soorten die het model hier verwacht (boven de zeldzaamheidsdrempel) maar nog niet zijn waargenomen",
   "area.removeObs": "Alle waarnemingen van deze locatie verwijderen",
   "bc.detWeek": "hier waargenomen",
   "ctrl.downloadHold": "Download deze weergave (houd ingedrukt voor opgeslagen offlinekaarten)",
