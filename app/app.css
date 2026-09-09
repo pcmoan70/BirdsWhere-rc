@@ -3422,16 +3422,18 @@ tr.sp-open { background: var(--surface-2, rgba(0,0,0,.05)); }
    ellipsised so one very long place name can't push the rest off the panel.
    The observation-list variant below keeps its pinned columns. */
 .sp-detail-tbl th, .sp-detail-tbl td { white-space: nowrap; }
-.sp-detail-tbl td.sp-d-loc { max-width: 40ch; }
+/* Observers get the room their two shown names need (no wrapping until expanded); the
+   LOCATION gives way instead — clipped at its end with an ellipsis, leading part kept. */
+.sp-detail-tbl td.sp-d-loc { max-width: 40ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sp-detail-tbl td.sp-d-src { max-width: 16ch; }
-.sp-detail-tbl td.sp-d-obs { max-width: 22ch; }
+.sp-detail-tbl td.sp-d-obs { white-space: nowrap; }
+.sp-detail-tbl td.sp-d-obs.sp-obs-expanded { white-space: normal; }
 @media (max-width: 560px) {
   .sp-detail-tbl .sp-h-sort { display: none; }   /* the ⇅ hint costs ~10px; tapping the header still sorts */
-  .sp-detail-tbl td.sp-d-loc { max-width: 18ch; }
+  .sp-detail-tbl td.sp-d-loc { max-width: 14ch; }
   .sp-detail-tbl td.sp-d-src { max-width: 10ch; }
-  .sp-detail-tbl td.sp-d-obs { max-width: 12ch; }
 }
-.sp-detail-tbl td.sp-d-obs, .sp-detail-tbl td.sp-d-src { overflow: hidden; text-overflow: ellipsis; }
+.sp-detail-tbl td.sp-d-src { overflow: hidden; text-overflow: ellipsis; }
 /* The observation-list layout keeps pinned columns (its own widths follow below). */
 table.sp-detail-tbl.sp-obs-tbl { table-layout: fixed; }
 /* Observation-list variant (name [2nd name] prob season ytop dist count src): the
@@ -3440,19 +3442,20 @@ table.sp-detail-tbl.sp-obs-tbl { table-layout: fixed; }
 /* Observation-list columns: name [2nd name] prob season yr-peak count ⓘ.
    Dist + source live in the group SUBHEADING row. Percentage columns are just
    wide enough for "100%" (+ the season glyph); headers ellipsize to fit. */
-table.sp-detail-tbl.sp-obs-tbl th:nth-child(1) { width: auto; }      /* species name gets the slack */
-table.sp-detail-tbl.sp-obs-tbl th:nth-child(2) { width: 7ch; }       /* prob */
-table.sp-detail-tbl.sp-obs-tbl th:nth-child(3) { width: 8.5ch; }     /* season (glyph + %) */
-table.sp-detail-tbl.sp-obs-tbl th:nth-child(4) { width: 7ch; }       /* yr peak */
-table.sp-detail-tbl.sp-obs-tbl th:nth-child(5) { width: 4.5ch; }     /* count */
+table.sp-detail-tbl.sp-obs-tbl th:nth-child(1) { width: 4.5ch; }     /* count (first, left of the name) */
+table.sp-detail-tbl.sp-obs-tbl th:nth-child(2) { width: auto; }      /* species name gets the slack */
+table.sp-detail-tbl.sp-obs-tbl th:nth-child(3) { width: 7ch; }       /* prob */
+table.sp-detail-tbl.sp-obs-tbl th:nth-child(4) { width: 8.5ch; }     /* season (glyph + %) */
+table.sp-detail-tbl.sp-obs-tbl th:nth-child(5) { width: 7ch; }       /* yr peak */
 table.sp-detail-tbl.sp-obs-tbl th:nth-child(6) { width: 26px; }      /* ⓘ */
 /* With the 2nd-language name column everything shifts one right. */
-table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(1) { width: auto; }
-table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(2) { width: 16%; }
-table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(3) { width: 7ch; }
-table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(4) { width: 8.5ch; }
-table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(5) { width: 7ch; }
-table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(6) { width: 4.5ch; }
+table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(1) { width: 4.5ch; }   /* count */
+table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(2) { width: auto; }    /* name */
+table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(3) { width: 16%; }     /* 2nd name */
+table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(4) { width: 7ch; }     /* prob */
+table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(5) { width: 8.5ch; }   /* season */
+table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(6) { width: 7ch; }     /* yr peak */
+table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(7) { width: 26px; }    /* ⓘ */
 table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(7) { width: 26px; }
 .sp-obs-tbl td.sp-d-name { overflow: hidden; text-overflow: ellipsis; }
 .sp-obs-tbl th.sp-obs-h { overflow: hidden; text-overflow: ellipsis; }
@@ -3478,7 +3481,7 @@ table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(7) { width: 26px; }
 .sp-obs-filter, .sp-loc-click, .sp-detail-tbl .dl-date-click, .sp-obs-head .dl-date-click { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 2px; }
 .sp-obs-filter:hover, .sp-loc-click:hover, .sp-detail-tbl .dl-date-click:hover, .sp-obs-head .dl-date-click:hover { color: var(--brand); }
 /* "+N" to reveal the rest of a truncated observer list. */
-.sp-obs-more { cursor: pointer; color: var(--brand); font-weight: 700; white-space: nowrap; margin-left: 2px; }
+.sp-obs-more { cursor: pointer; color: var(--brand); font-weight: 700; white-space: nowrap; margin-left: 3px; }   /* "|…" → tap for all observers */
 .sp-obs-more:hover { text-decoration: underline; }
 /* Record tables: sortable headers + "Per observation" date×observer×location group rows. */
 .sp-detail-tbl thead th.sp-obs-h { cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

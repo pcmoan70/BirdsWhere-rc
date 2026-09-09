@@ -1794,13 +1794,13 @@
     if (timeSpan) dateCell += " " + timeSpan;
     var obs = detObsRealNames(d.observer);
     var obsSpans = obs.map(function (n) { return '<span class="sp-obs-filter" role="button" data-obs="' + escapeHtml(n) + '" title="' + escapeHtml(t("obs.filterHint")) + '">' + escapeHtml(n) + "</span>"; });
-    // Long observer lists (shared checklists) are truncated to the first few; a "+N"
-    // reveals the rest inline (each still tappable to filter). Below the cap: show all.
-    var OBS_SHOWN = 3, obsCell;
+    // Long observer lists (shared checklists) show the first TWO names; a "|…" marks
+    // the rest, and tapping it reveals them inline (each still tappable to filter).
+    var OBS_SHOWN = 2, obsCell;
     if (obsSpans.length > OBS_SHOWN) {
       obsCell = obsSpans.slice(0, OBS_SHOWN).join(", ") +
         '<span class="sp-obs-rest" hidden>, ' + obsSpans.slice(OBS_SHOWN).join(", ") + "</span>" +
-        ' <span class="sp-obs-more" role="button" title="' + escapeHtml(t("obs.showAll")) + '">+' + (obsSpans.length - OBS_SHOWN) + "</span>";
+        '<span class="sp-obs-more" role="button" title="' + escapeHtml(t("obs.showAll")) + '">|\u2026</span>';
     } else {
       obsCell = obsSpans.join(", ");
     }
@@ -1826,6 +1826,7 @@
         '" data-act="' + escapeHtml(d.act || "") + '" data-note="' + escapeHtml(String(d.note || "")) + '" data-flags="' + escapeHtml(infoFl) + '" data-src="' + escapeHtml(srcLabel(d)) + '">' + ico("info") + "</span>"
       : "";
     return '<tr class="sp-d-row"' + recAttrs + ">" +
+      '<td class="num sp-d-cnt">' + cnt + "</td>" +   // count FIRST, left of the name
       (showName ? '<td class="sp-d-name">' + sw + nameLink + "</td>" : "") +
       (opts.name2 ? '<td class="name2">' + escapeHtml(detName2(d.key) || "") + "</td>" : "") +
       probCell +
@@ -1836,7 +1837,6 @@
         ? '<span class="sp-loc-click" role="button" data-loc="' + escapeHtml(String(d.place).trim()) + '" title="' + escapeHtml(d.place) + '">' + escapeHtml(d.place) + "</span>"
         : rgeoSpanHtml(d.lat, d.lon, "sp-loc-click", "", ' role="button"', String(d.place || "").trim(), d.posFuzzM)) + "</td>" : "") +   // lat/lon-only or generic place → map-derived name
       (opts.dist !== false ? '<td class="num">' + km + "</td>" : "") +
-      '<td class="num">' + cnt + "</td>" +
       (opts.src ? '<td class="sp-d-src">' + srcClickHtml(srcLabel(d)) + infoIcon + "</td>" : "") +
       (opts.info ? '<td class="sp-d-info">' + (timeSpan ? timeSpan + " " : "") + infoIcon + "</td>" : "") +   // ⓘ in its own column (obs list — dist/src live in the group subheading; rarity obs time beside it)
       (opts.obs ? '<td class="sp-d-obs">' + obsCell + "</td>" : "") + "</tr>";
@@ -1845,10 +1845,10 @@
   function spDetailTableHtml(key, rows) {
     // The species name / 2nd name are already on the row above (the species this list
     // expands), so drop them here and show the observation's LOCATION instead.
-    var hdr = "<thead><tr>" +
+    var hdr = "<thead><tr>" + spObsHeadCell("count", t("th.count"), true) +
       spObsHeadCell("prob", t("th.probAbbr"), true) + spObsHeadCell("date", t("th.date")) +
       spObsHeadCell("loc", t("th.location")) +
-      spObsHeadCell("dist", t("th.dist"), true) + spObsHeadCell("count", t("th.count"), true) +
+      spObsHeadCell("dist", t("th.dist"), true) +
       spObsHeadCell("src", t("th.source")) + spObsHeadCell("obs", t("th.obs")) + "</tr></thead>";
     var body = rows.slice().sort(spObsCmp).map(function (d) { return spRecRowHtml(d, { name: false, date: true, loc: true, src: true, obs: true }); }).join("");
     // Column widths are pinned on the cells in CSS (.sp-detail-tbl is table-layout:fixed),
@@ -1860,13 +1860,13 @@
   // "Per observation": ONE columns table with the records grouped by date × observer ×
   // location (a spanning group-separator row per triple); columns sort WITHIN each group.
   function buildSpObsHtml(rows) {
-    var name2On = !!secondLang, ncols = 6 + (name2On ? 1 : 0);   // name [name2] prob season peak count ⓘ — dist/src moved to the group subheading
-    var hdr = "<thead><tr>" + spObsHeadCell("name", t("th.species")) +
+    var name2On = !!secondLang, ncols = 6 + (name2On ? 1 : 0);   // count name [name2] prob season peak ⓘ — dist/src moved to the group subheading
+    var hdr = "<thead><tr>" + spObsHeadCell("count", t("th.count"), true) +
+      spObsHeadCell("name", t("th.species")) +
       (name2On ? spObsHeadCell("name2", window.GeoI18N.langByCode(secondLang).name) : "") +
       spObsHeadCell("prob", t("th.probAbbr"), true) +
       spObsHeadCell("season", t("th.season")) +
       spObsHeadCell("ytop", t("th.ytop"), true) +
-      spObsHeadCell("count", t("th.count"), true) +
       '<th class="sp-obs-ih" aria-hidden="true"></th></tr></thead>';   // the per-row ⓘ column
     var byDate = {}, dates = [];
     rows.forEach(function (d) { var k = d.date || ""; if (!byDate[k]) { byDate[k] = []; dates.push(k); } byDate[k].push(d); });
@@ -2036,7 +2036,8 @@
         e.preventDefault(); e.stopPropagation();
         var rest = this.parentNode && this.parentNode.querySelector(".sp-obs-rest");
         if (rest) rest.hidden = false;
-        this.parentNode && this.parentNode.removeChild(this);   // drop the "+N" once expanded
+        var cell = this.closest && this.closest("td"); if (cell) cell.classList.add("sp-obs-expanded");   // let the full list wrap
+        this.parentNode && this.parentNode.removeChild(this);   // drop the "|…" once expanded
       });
     });
     Array.prototype.forEach.call(container.querySelectorAll(".dl-src-click"), function (s) {
@@ -2098,8 +2099,8 @@
       var ka, kb;
       if (!col) return (+b.getAttribute("data-prob") || 0) - (+a.getAttribute("data-prob") || 0);
       if (col === "sci") {
-        ka = (a.children[2].textContent || "").toLowerCase();   // name · name2 · sci
-        kb = (b.children[2].textContent || "").toLowerCase();
+        ka = (a.children[3].textContent || "").toLowerCase();   // total · name · name2 · sci
+        kb = (b.children[3].textContent || "").toLowerCase();
       } else if (col === "name") {
         ka = a.getAttribute("data-name") || ""; kb = b.getAttribute("data-name") || "";
       } else if (col === "name2") {
@@ -4797,11 +4798,11 @@
       if (exKm != null) tr.setAttribute("data-dist", exKm);
       var clsBadge = e.cls ? '<span class="sp-extra-cls" title="' + escapeHtml(e.cls) + '">' + classGlyph(e.cls) + "</span> " : "";
       tr.innerHTML =   // not a model species → no list/star status to show
+        '<td class="num det-nd"><button type="button" class="det-count-btn det-count-extra" data-sci="' + escapeHtml(e.sci) + '" data-name="' + escapeHtml(name) + '">' + eSpec + '</button>' +
+          (ePairs ? '<span class="det-pairs">(' + ePairs + ")</span>" : "") + '</td>' +
         '<td>' + clsBadge + '<span class="sp-extra-name" title="' + escapeHtml(t("sp.extraHint")) + '">' + escapeHtml(name) + '</span></td>' +
         '<td class="name2"></td>' +
         '<td class="sci">' + escapeHtml(e.sci) + '</td>' +
-        '<td class="num det-nd"><button type="button" class="det-count-btn det-count-extra" data-sci="' + escapeHtml(e.sci) + '" data-name="' + escapeHtml(name) + '">' + eSpec + '</button>' +
-          (ePairs ? '<span class="det-pairs">(' + ePairs + ")</span>" : "") + '</td>' +
         '<td class="num sp-last">' + (e.latestTs ? lastDateCellHtml(e.latestTs) : "") + '</td>' +
         '<td class="num sp-dist">' + (exKm != null ? escapeHtml(nearbyFmtDist(exKm)) : "") + '</td>' +
         '<td class="prob-cell prob-na">—</td>' +
@@ -6172,7 +6173,7 @@
             '<thead><tr>' +
             // Status (★/◉/🟠/🟡/🚫) rides on the species dot now (see spListDot), not in
             // its own columns; filtering by status lives in the Species header panel.
-            '<th id="sp-species-head" class="clickable-head" data-i18n="th.species">Species</th><th class="name2 clickable-head" id="sp-name2-head"></th><th id="sp-sci-head" class="clickable-head" data-i18n="th.sci">Scientific name</th><th id="sp-nd-head" class="num clickable-head" data-i18n="th.total">Total</th><th id="sp-last-head" class="num clickable-head" data-i18n="th.last">Last</th><th id="sp-dist-head" class="num clickable-head" data-i18n="th.dist" data-hintkey="th.distHint">Dist</th><th id="sp-prob-head" class="clickable-head" data-hintkey="th.probHint"><span class="th-full">Probability</span><span class="th-abbr">Prob.</span></th><th id="sp-season-head" class="season-cell clickable-head" data-i18n="th.season" data-hintkey="th.seasonHint">Season</th><th id="sp-delta-head"></th></tr></thead>' +
+            '<th id="sp-nd-head" class="num clickable-head" data-i18n="th.total">Total</th><th id="sp-species-head" class="clickable-head" data-i18n="th.species">Species</th><th class="name2 clickable-head" id="sp-name2-head"></th><th id="sp-sci-head" class="clickable-head" data-i18n="th.sci">Scientific name</th><th id="sp-last-head" class="num clickable-head" data-i18n="th.last">Last</th><th id="sp-dist-head" class="num clickable-head" data-i18n="th.dist" data-hintkey="th.distHint">Dist</th><th id="sp-prob-head" class="clickable-head" data-hintkey="th.probHint"><span class="th-full">Probability</span><span class="th-abbr">Prob.</span></th><th id="sp-season-head" class="season-cell clickable-head" data-i18n="th.season" data-hintkey="th.seasonHint">Season</th><th id="sp-delta-head"></th></tr></thead>' +
             '<tbody id="sp-tbody"></tbody>' +
           '</table>' +
           '<div class="sp-actions sp-actions-dl">' +
@@ -19812,7 +19813,7 @@
         else if (r.inModel && r.inList) chip = '<span class="src-chip src-both" title="' + escapeHtml(t("src.both")) + '">✓</span>';
         else if (r.inModel) chip = '<span class="src-chip src-model" title="' + escapeHtml(t("src.modelOnly")) + '">?</span>';
         else chip = '<span class="src-chip src-list" title="' + escapeHtml(t("src.listOnly")) + '">●</span>';
-        return "<tr" + (!r.inModel ? ' class="row-list-only"' : "") + '>' + "<td>" + spListDot(r.label.key) + nameLinkHtml(r.label, true) + "</td>" + name2Cell + '<td class="sci">' + escapeHtml(r.label.sci) + '</td><td class="num det-nd"></td><td class="num sp-last"></td><td class="num sp-dist"></td>' + probCell + '<td class="season-cell"></td><td>' + chip + "</td></tr>";
+        return "<tr" + (!r.inModel ? ' class="row-list-only"' : "") + '>' + '<td class="num det-nd"></td>' + "<td>" + spListDot(r.label.key) + nameLinkHtml(r.label, true) + "</td>" + name2Cell + '<td class="sci">' + escapeHtml(r.label.sci) + '</td><td class="num sp-last"></td><td class="num sp-dist"></td>' + probCell + '<td class="season-cell"></td><td>' + chip + "</td></tr>";
       }).join("");
       filterSpRows();   // apply any active name search to the country rows
       var sp = document.getElementById("species-panel");
@@ -20546,10 +20547,10 @@
         var pct = Math.round(r.prob * 100);
         var sortAttrs = ' data-name="' + escapeHtml(speciesName(r.label).toLowerCase()) + '" data-prob="' + r.prob + '"' + (hasCompare ? ' data-cmp="' + (Number.isNaN(r.cmpVal) ? -1 : r.cmpVal) + '"' : "");
         return '<tr' + sortAttrs + '>' +
+               '<td class="num det-nd" data-key="' + dKey + '"><span class="det-wait" title="' + escapeHtml(t("status.loadingDet")) + '"></span></td>' +   // Total FIRST (count left of the name)
                '<td>' + spListDot(r.label.key) + nameLinkHtml(r.label, true) + '</td>' + name2Cell +
                '<td class="sci"><span class="sci-link" data-key="' + dKey + '" title="' + escapeHtml(t("sci.familyTip")) + '">' +
                escapeHtml(r.label.sci) + '</span></td>' +
-               '<td class="num det-nd" data-key="' + dKey + '"><span class="det-wait" title="' + escapeHtml(t("status.loadingDet")) + '"></span></td>' +
                '<td class="num sp-last" data-key="' + dKey + '"></td>' +
                '<td class="num sp-dist" data-key="' + dKey + '"></td>' +
                probBarCell(pct + "%", pct, probHueColor(pRange > 0 ? (r.prob - pLo) / pRange : 1)) +
