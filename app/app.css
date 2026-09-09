@@ -3440,7 +3440,8 @@ tr.sp-open { background: var(--surface-2, rgba(0,0,0,.05)); }
 }
 .sp-detail-tbl td.sp-d-src { overflow: hidden; text-overflow: ellipsis; }
 /* The observation-list layout keeps pinned columns (its own widths follow below). */
-table.sp-detail-tbl.sp-obs-tbl { table-layout: fixed; }
+table.sp-detail-tbl.sp-obs-tbl { table-layout: fixed; min-width: calc(59.5ch + 42px); }   /* name column ≥ 31ch (~27 letters + dot): count 4.5ch + 3 × 8ch + ⓘ 26px + padding; narrower screens scroll sideways */
+#sp-records { overflow-x: auto; }
 /* Observation-list variant (name [2nd name] prob season ytop dist count src): the
    generic sub-table widths above mis-map onto this column set, so pin its own —
    WIDE species name, count squeezed to ~4 characters, source takes the leftover. */
