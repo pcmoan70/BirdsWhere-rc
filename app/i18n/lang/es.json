@@ -49,6 +49,7 @@
   "confusion.tipMatch": "Cuánto se parecen las dos aves: una puntuación combinada (0–100) a partir de la morfología — forma, tamaño, nicho ecológico y género según AVONET — y de la coloración del plumaje, mezclada con la frecuencia con que realmente se confunden entre sí.",
   "confusion.tipMisid": "Confusión humana real según iNaturalist: porcentaje (%) de todas las identificaciones erróneas registradas del ave base que corresponden a esta especie parecida. «—» significa que iNaturalist no tiene datos de confusión para ese par.",
   "confusion.tipHere": "Probabilidad, según el modelo de IA, de que esta especie parecida esté presente en la ubicación y la semana exactas que estás viendo — así las especies que no se encuentran por aquí bajan en la lista.",
+  "confusion.legend": "{match}: cuánto se parecen las dos aves (forma, tamaño, color, 0–100) · {misid}: proporción de confusiones reales en iNaturalist · {here}: probabilidad según el modelo de IA de que esta especie parecida esté aquí esta semana · {score}: probabilidad total de confundirla aquí = (0,25 × {match} + 0,75 × {misid}) × {here}",
   "confusion.tipScore": "Probabilidad global de que confundas esta ave aquí = (0,25 × Coinc. + 0,75 × misID) × Aquí. Las confusiones reales y probables en este lugar van primero; la lista se ordena por este valor.",
   "confusion.openList": "Mostrar las especies confundibles de esta ave",
   "traits.none": "Sin características registradas",

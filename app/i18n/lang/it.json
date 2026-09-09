@@ -49,6 +49,7 @@
   "confusion.tipMatch": "Quanto si somigliano i due uccelli: un punteggio combinato (0–100) da morfologia — forma, dimensioni, nicchia ecologica e genere secondo AVONET — e colorazione del piumaggio, fuso con la frequenza con cui vengono effettivamente scambiati l'uno per l'altro.",
   "confusion.tipMisid": "Confusione umana reale da iNaturalist: la quota (%) di questa specie simile su tutte le identificazioni errate registrate per l'uccello di riferimento. “—” significa che iNaturalist non ha dati di confusione per questa coppia.",
   "confusion.tipHere": "La probabilità, secondo il modello IA, che questa specie simile sia presente esattamente nel punto e nella settimana che stai visualizzando — così le specie che qui non ci sono scendono in fondo alla lista.",
+  "confusion.legend": "{match}: quanto si somigliano i due uccelli (forma, taglia, colore, 0–100) · {misid}: quota di confusioni reali su iNaturalist · {here}: probabilità secondo il modello IA che questo sosia sia qui questa settimana · {score}: probabilità complessiva di confonderlo qui = (0,25 × {match} + 0,75 × {misid}) × {here}",
   "confusion.tipScore": "Probabilità complessiva di scambiare questo uccello qui = (0,25 × Somigl. + 0,75 × misID) × Qui. Le confusioni reali e probabili sul posto vengono prima; la lista è ordinata in base a questo valore.",
   "confusion.openList": "Mostra le specie confondibili con questo uccello",
   "traits.none": "Nessuna caratteristica disponibile",

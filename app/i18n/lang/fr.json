@@ -49,6 +49,7 @@
   "confusion.tipMatch": "Degré de ressemblance des deux oiseaux : un score fusionné (0–100) issu de la morphologie — forme, taille, niche écologique et genre d'après AVONET — et de la coloration du plumage, combiné à la fréquence à laquelle on les confond réellement.",
   "confusion.tipMisid": "Confusions humaines réelles d'après iNaturalist : la part (%) de cette espèce ressemblante parmi toutes les erreurs d'identification enregistrées pour l'espèce de référence. « — » signifie qu'iNaturalist n'a aucune donnée de confusion pour cette paire.",
   "confusion.tipHere": "Probabilité, selon le modèle d'habitat (IA), que cette espèce ressemblante soit présente au lieu et à la semaine exacts que vous consultez — les espèces absentes d'ici descendent ainsi dans la liste.",
+  "confusion.legend": "{match} : ressemblance des deux oiseaux (forme, taille, couleur, 0–100) · {misid} : part des vraies confusions sur iNaturalist · {here} : probabilité selon le modèle IA que ce sosie soit ici cette semaine · {score} : risque global de le confondre ici = (0,25 × {match} + 0,75 × {misid}) × {here}",
   "confusion.tipScore": "Probabilité globale de confondre cet oiseau ici = (0,25 × Ressem. + 0,75 × misID) × Ici. Les confusions réelles et plausibles localement arrivent en tête ; la liste est triée selon ce score.",
   "confusion.openList": "Afficher les espèces ressemblantes de cet oiseau",
   "traits.none": "Aucune caractéristique répertoriée",

@@ -49,6 +49,7 @@
   "confusion.tipMatch": "Hur lika de två fåglarna är: ett sammanvägt värde (0–100) från morfologi — AVONET-form, storlek, ekologisk nisch och släkte — och fjäderdräktens färg, blandat med hur ofta de faktiskt förväxlas med varandra.",
   "confusion.tipMisid": "Verkliga förväxlingar av människor på iNaturalist: förväxlingsartens andel (%) av alla registrerade felbestämningar av utgångsarten. ”—” betyder att iNaturalist saknar förväxlingsdata för paret.",
   "confusion.tipHere": "AI-modellens sannolikhet att förväxlingsarten förekommer på exakt den plats och vecka du tittar på — så att arter som inte finns här hamnar längre ner i listan.",
+  "confusion.legend": "{match}: hur lika de två fåglarna ser ut (form, storlek, färg, 0–100) · {misid}: andel verkliga felbestämningar på iNaturalist · {here}: AI-modellens sannolikhet att förväxlingsarten finns här den här veckan · {score}: total risk att förväxla den här = (0,25 × {match} + 0,75 × {misid}) × {here}",
   "confusion.tipScore": "Total risk att du förväxlar den här fågeln här = (0,25 × Match + 0,75 × misID) × Här. Verkliga, lokalt sannolika förväxlingar kommer först; listan sorteras efter detta.",
   "confusion.openList": "Visa fågelns förväxlingsarter",
   "traits.none": "Inga egenskaper registrerade",

@@ -49,6 +49,7 @@
   "confusion.tipMatch": "Kuinka samannäköisiä linnut ovat: yhdistetty pistemäärä (0–100) morfologiasta — AVONET-muodosta, koosta, ekologisesta lokerosta ja suvusta — sekä höyhenpuvun väristä, yhdistettynä siihen, kuinka usein ne todella sekoitetaan toisiinsa.",
   "confusion.tipMisid": "Todellisia ihmisten tekemiä sekaannuksia iNaturalistista: tämän sekaannuslajin osuus (%) kaikista peruslajin kirjatuista virhemäärityksistä. ”—” tarkoittaa, ettei iNaturalistilla ole sekaannustietoja tästä lajiparista.",
   "confusion.tipHere": "Tekoälymallin todennäköisyys sille, että tämä sekaannuslaji esiintyy juuri katsomassasi paikassa ja viikolla — lajit, joita ei täällä tavata, putoavat siis listalla alemmas.",
+  "confusion.legend": "{match}: kuinka samannäköiset linnut ovat (muoto, koko, väri, 0–100) · {misid}: todellisten virhemääritysten osuus iNaturalistissa · {here}: tekoälymallin todennäköisyys, että tämä laji on täällä tällä viikolla · {score}: kokonaistodennäköisyys sekoittaa se täällä = (0,25 × {match} + 0,75 × {misid}) × {here}",
   "confusion.tipScore": "Kokonaistodennäköisyys, että sekoittaisit tämän linnun täällä = (0,25 × Osuma + 0,75 × misID) × Tässä. Todelliset, täällä todennäköiset sekaannukset nousevat kärkeen; lista on järjestetty tämän mukaan.",
   "confusion.openList": "Näytä tämän linnun sekaannuslajit",
   "traits.none": "Ei ominaisuustietoja",

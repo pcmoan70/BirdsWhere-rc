@@ -49,6 +49,7 @@
   "confusion.tipMatch": "Kui sarnased need kaks lindu on: koondskoor (0–100) morfoloogiast — AVONET-i kuju, suurus, ökoloogiline nišš ja perekond — ning sulestiku värvusest, ühendatuna sellega, kui sageli neid tegelikult omavahel segi aetakse.",
   "confusion.tipMisid": "Tegelik inimlik segiajamine iNaturalisti andmeil: selle sarnase liigi osakaal (%) kõigist põhiliigi kirja pandud valemäärangutest. „—” tähendab, et iNaturalistil pole selle paari kohta segiajamise andmeid.",
   "confusion.tipHere": "AI-mudeli tõenäosus, et see sarnane liik esineb täpselt vaadatavas kohas ja nädalal — nii langevad liigid, keda siin ei leidu, nimekirjas allapoole.",
+  "confusion.legend": "{match}: kui sarnased kaks lindu välja näevad (kuju, suurus, värv, 0–100) · {misid}: tegelike valemäärangute osakaal iNaturalistis · {here}: AI-mudeli tõenäosus, et see sarnane liik on sel nädalal siin · {score}: koguvõimalus seda siin segi ajada = (0,25 × {match} + 0,75 × {misid}) × {here}",
   "confusion.tipScore": "Üldine tõenäosus, et sa selle linnu siin segi ajad = (0,25 × Sarn. + 0,75 × misID) × Siin. Tegelikud ja siin tõenäolised segiajamised on eespool; nimekiri on selle järgi sorditud.",
   "confusion.openList": "Näita selle linnu segiajavaid liike",
   "traits.none": "Tunnuseid pole kirjas",

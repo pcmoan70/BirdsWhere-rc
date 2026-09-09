@@ -49,6 +49,7 @@
   "confusion.tipMatch": "Jak bardzo oba ptaki są do siebie podobne: łączny wynik (0–100) z morfologii — kształt, rozmiar, nisza ekologiczna i rodzaj wg AVONET — oraz barwy upierzenia, zestawiony z tym, jak często są faktycznie ze sobą mylone.",
   "confusion.tipMisid": "Rzeczywiste pomyłki obserwatorów wg iNaturalist: udział (%) tego sobowtóra we wszystkich zarejestrowanych błędnych oznaczeniach ptaka bazowego. „—” oznacza, że iNaturalist nie ma danych o pomyłkach dla tej pary.",
   "confusion.tipHere": "Prawdopodobieństwo wg modelu AI, że ten sobowtór występuje dokładnie w oglądanym miejscu i tygodniu — dzięki temu gatunki, których tu nie ma, spadają na dół listy.",
+  "confusion.legend": "{match}: jak bardzo oba ptaki są do siebie podobne (kształt, wielkość, barwa, 0–100) · {misid}: udział rzeczywistych pomyłek na iNaturalist · {here}: prawdopodobieństwo wg modelu AI, że ten podobny gatunek jest tu w tym tygodniu · {score}: łączna szansa pomylenia go tutaj = (0,25 × {match} + 0,75 × {misid}) × {here}",
   "confusion.tipScore": "Łączna szansa, że pomylisz tu tego ptaka = (0,25 × Podob. + 0,75 × misID) × Tutaj. Rzeczywiste i lokalnie prawdopodobne pomyłki są na początku; lista jest sortowana według tej wartości.",
   "confusion.openList": "Pokaż gatunki mylące z tym ptakiem",
   "traits.none": "Brak danych o cechach",

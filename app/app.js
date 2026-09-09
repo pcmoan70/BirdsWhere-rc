@@ -9929,6 +9929,10 @@
       tbl.appendChild(tr);
     });
     el.appendChild(tbl);
+    // Column legend at the bottom — the header tooltips need a hover, which a phone hasn't got.
+    var legend = document.createElement("div"); legend.className = "conf-legend";
+    legend.textContent = t("confusion.legend", { match: t("confusion.colScore"), misid: t("confusion.colMisid"), here: t("confusion.colHere"), score: t("confusion.colCombined") });
+    el.appendChild(legend);
     positionAnchoredMenu(el, x, y);
   }
   // The ONE species menu, used everywhere a species name (or dot/pin) is clicked

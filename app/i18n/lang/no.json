@@ -49,6 +49,7 @@
   "confusion.tipMatch": "Hvor like de to fuglene er: en samlet score (0–100) fra morfologi — AVONET-form, størrelse, økologisk nisje og slekt — og fjærdraktfarge, blandet med hvor ofte de faktisk forveksles med hverandre.",
   "confusion.tipMisid": "Reelle forvekslinger gjort av folk på iNaturalist: denne forvekslingsartens andel (%) av alle registrerte feilbestemmelser av utgangsarten. «—» betyr at iNaturalist ikke har forvekslingsdata for paret.",
   "confusion.tipHere": "AI-modellens sannsynlighet for at denne forvekslingsarten forekommer på nøyaktig det stedet og i den uken du ser på — slik at arter som ikke finnes her, faller nedover listen.",
+  "confusion.legend": "{match}: hvor like de to fuglene ser ut (form, størrelse, farge, 0–100) · {misid}: andel reelle feilbestemmelser på iNaturalist · {here}: AI-modellens sannsynlighet for at forvekslingsarten er her denne uken · {score}: samlet sjanse for å forveksle den her = (0,25 × {match} + 0,75 × {misid}) × {here}",
   "confusion.tipScore": "Samlet sjanse for at du forveksler denne fuglen her = (0,25 × Match + 0,75 × misID) × Her. Reelle, lokalt sannsynlige forvekslinger kommer først; listen er sortert etter dette.",
   "confusion.openList": "Vis denne fuglens forvekslingsarter",
   "traits.none": "Ingen kjennetegn registrert",

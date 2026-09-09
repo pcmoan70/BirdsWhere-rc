@@ -49,6 +49,7 @@
   "confusion.tipMatch": "Hoe sterk de twee vogels op elkaar lijken: een samengestelde score (0–100) uit morfologie — AVONET-vorm, grootte, ecologische niche en geslacht (genus) — en verenkleedkleur, gecombineerd met hoe vaak ze in de praktijk daadwerkelijk met elkaar worden verward.",
   "confusion.tipMisid": "Echte verwarring door waarnemers, uit iNaturalist: het aandeel (%) van deze gelijkende soort in alle geregistreerde misidentificaties van de basisvogel. “—” betekent dat iNaturalist geen verwarringsgegevens heeft voor dit paar.",
   "confusion.tipHere": "De kans volgens het AI-model dat deze gelijkende soort voorkomt op precies de locatie en in de week die je bekijkt — zodat soorten die hier niet voorkomen lager in de lijst zakken.",
+  "confusion.legend": "{match}: hoe sterk de twee vogels op elkaar lijken (vorm, grootte, kleur, 0–100) · {misid}: aandeel echte verwisselingen op iNaturalist · {here}: kans volgens het AI-model dat deze dubbelganger hier deze week is · {score}: totale kans om hem hier te verwisselen = (0,25 × {match} + 0,75 × {misid}) × {here}",
   "confusion.tipScore": "Totale kans dat je deze vogel hier verwart = (0,25 × Match + 0,75 × misID) × Hier. Echte, hier waarschijnlijke verwarringen staan bovenaan; de lijst is hierop gesorteerd.",
   "confusion.openList": "Toon de verwarringssoorten van deze vogel",
   "traits.none": "Geen kenmerken bekend",

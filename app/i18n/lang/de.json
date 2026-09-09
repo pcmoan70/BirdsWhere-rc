@@ -49,6 +49,7 @@
   "confusion.tipMatch": "Wie ähnlich sich die beiden Vögel sind: ein kombinierter Wert (0–100) aus Morphologie — AVONET-Gestalt, Größe, ökologische Nische und Gattung — und Gefiederfärbung, verrechnet damit, wie oft sie tatsächlich miteinander verwechselt werden.",
   "confusion.tipMisid": "Tatsächliche Verwechslungen durch Menschen laut iNaturalist: der Anteil (%) dieser Verwechslungsart an allen erfassten Fehlbestimmungen der Ausgangsart. „—“ bedeutet, dass iNaturalist für dieses Paar keine Verwechslungsdaten hat.",
   "confusion.tipHere": "Die Wahrscheinlichkeit des KI-Modells, dass diese Verwechslungsart genau am angezeigten Ort und in der angezeigten Woche vorkommt — Arten, die hier nicht vorkommen, rutschen so in der Liste nach unten.",
+  "confusion.legend": "{match}: wie ähnlich die beiden Vögel aussehen (Form, Größe, Farbe, 0–100) · {misid}: Anteil echter Fehlbestimmungen auf iNaturalist · {here}: Wahrscheinlichkeit laut KI-Modell, dass die Verwechslungsart hier diese Woche vorkommt · {score}: Gesamtchance, sie hier zu verwechseln = (0,25 × {match} + 0,75 × {misid}) × {here}",
   "confusion.tipScore": "Gesamtwahrscheinlichkeit, diesen Vogel hier zu verwechseln = (0,25 × Ähnl. + 0,75 × misID) × Hier. Echte, hier wahrscheinliche Verwechslungen stehen vorn; danach ist die Liste sortiert.",
   "confusion.openList": "Verwechslungsarten dieses Vogels anzeigen",
   "traits.none": "Keine Merkmale hinterlegt",

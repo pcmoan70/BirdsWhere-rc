@@ -835,6 +835,7 @@ input:focus-visible {
 .conf-match .prob-bar { background: var(--brand, #2e8b74); opacity: 0.28; }   /* Match bar: brand tint, not the prob hue */
 .conf-misid .prob-bar { background: #8a63d2; opacity: 0.30; }                 /* misID bar: violet — the iNaturalist human-confusion signal */
 .conf-menu .conf-name { word-break: break-word; }  /* let long names wrap when the menu is width-capped */
+.conf-legend { margin: 6px 8px 4px; font-size: var(--fs-xs); line-height: 1.35; color: var(--ink-muted, #888); }   /* what the columns mean (phones can't hover the headers) */
 /* Close (×) button, top-right of the confusion popup. */
 .conf-menu { position: relative; }
 .conf-menu .detrow-menu-name { padding-right: 28px; }

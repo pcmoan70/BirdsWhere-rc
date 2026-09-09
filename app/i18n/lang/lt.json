@@ -49,6 +49,7 @@
   "confusion.tipMatch": "Kiek abu paukščiai panašūs: jungtinis balas (0–100) iš morfologijos — AVONET formos, dydžio, ekologinės nišos ir genties — bei plunksnų spalvos, sujungtas su tuo, kaip dažnai jie iš tikrųjų painiojami tarpusavyje.",
   "confusion.tipMisid": "Tikri žmonių painiojimai iš iNaturalist: šios panašios rūšies dalis (%) tarp visų užregistruotų klaidingų pagrindinio paukščio atpažinimų. „—“ reiškia, kad iNaturalist neturi šios poros painiojimo duomenų.",
   "confusion.tipHere": "DI modelio tikimybė, kad ši panaši rūšis aptinkama būtent toje vietoje ir tą savaitę, kurią žiūrite — todėl čia nesutinkamos rūšys sąraše nusileidžia žemyn.",
+  "confusion.legend": "{match}: kiek du paukščiai panašūs (forma, dydis, spalva, 0–100) · {misid}: tikrų klaidingų nustatymų dalis iNaturalist · {here}: AI modelio tikimybė, kad ši panaši rūšis čia yra šią savaitę · {score}: bendra tikimybė ją čia supainioti = (0,25 × {match} + 0,75 × {misid}) × {here}",
   "confusion.tipScore": "Bendra tikimybė čia supainioti su šiuo paukščiu = (0,25 × Atit. + 0,75 × misID) × Čia. Pirmiausia rikiuojamos tikros, čia tikėtinos painiavos; sąrašas surikiuotas pagal šį balą.",
   "confusion.openList": "Rodyti šio paukščio panašias rūšis",
   "traits.none": "Požymių duomenų nėra",

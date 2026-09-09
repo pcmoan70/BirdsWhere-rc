@@ -49,6 +49,7 @@
   "confusion.tipMatch": "Jak moc jsou si oba ptáci podobní: sloučené skóre (0–100) z morfologie — tvar, velikost, ekologická nika a rod podle AVONET — a ze zbarvení opeření, zkombinované s tím, jak často jsou ve skutečnosti zaměňováni.",
   "confusion.tipMisid": "Skutečné záměny lidmi podle iNaturalist: podíl (%) tohoto podobného druhu na všech zaznamenaných chybných určeních výchozího ptáka. „—“ znamená, že iNaturalist pro tuto dvojici žádná data o záměnách nemá.",
   "confusion.tipHere": "Pravděpodobnost podle AI modelu, že se tento podobný druh vyskytuje přesně na místě a v týdnu, které právě prohlížíte — druhy, které tu nebývají, tak v seznamu klesají níž.",
+  "confusion.legend": "{match}: jak moc si oba ptáci jsou podobní (tvar, velikost, barva, 0–100) · {misid}: podíl skutečných záměn na iNaturalist · {here}: pravděpodobnost podle AI modelu, že tento podobný druh je zde tento týden · {score}: celková šance na záměnu zde = (0,25 × {match} + 0,75 × {misid}) × {here}",
   "confusion.tipScore": "Celková šance, že si tohoto ptáka tady spletete = (0,25 × Shoda + 0,75 × misID) × Zde. Skutečné, místně pravděpodobné záměny jsou na prvních místech; seznam je podle toho seřazen.",
   "confusion.openList": "Zobrazit zaměnitelné druhy tohoto ptáka",
   "traits.none": "Žádné vlastnosti v databázi",
