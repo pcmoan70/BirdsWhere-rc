@@ -21,7 +21,7 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1617";
+var VERSION = "v1618";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
@@ -188,6 +188,9 @@ var DATA = [
   "vendor/ort/ort-wasm-simd-threaded.wasm",
   "birding-spots/index.json",
   "best-sites/index.json",
+  "vendor/leaflet/images/marker-icon.png",      // the map pin — otherwise fetched on the FIRST pin placement
+  "vendor/leaflet/images/marker-icon-2x.png",
+  "vendor/leaflet/images/marker-shadow.png",
 ];
 // (Per-language species-name packs under i18n/names/ and the birding-spot
 // quadtree tiles under birding-spots/ are runtime-cached into DATA_CACHE on
