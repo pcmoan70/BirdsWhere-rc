@@ -9732,7 +9732,7 @@
     var data = await ensureTraits();
     var el = openAnchoredMenu("detrow-menu conf-menu cmp-menu");
     el.style.maxHeight = "min(82vh,640px)"; el.style.overflowY = "auto";
-    el.style.maxWidth = "min(94vw,430px)";
+    el.style.width = "min(94vw,430px)";                       // full phone width, like the confusion list it opens from
     var closeBtn = document.createElement("button");
     closeBtn.type = "button"; closeBtn.className = "conf-close"; closeBtn.textContent = "×";
     closeBtn.setAttribute("aria-label", "Close");
@@ -9848,7 +9848,7 @@
     var lbl = key && labelsByKey[key]; if (!lbl) return;
     var el = openAnchoredMenu("detrow-menu family-menu conf-menu");
     el.style.maxHeight = "min(72vh,560px)"; el.style.overflowY = "auto";
-    el.style.maxWidth = "min(97vw,540px)";                    // never overflow a phone
+    el.style.width = "min(97vw,540px)";                       // full phone width (content-sized it came out squashed), capped on desktop
     var hdr = document.createElement("div");
     hdr.className = "detrow-menu-hdr detrow-menu-name";
     hdr.textContent = t("menu.confusion");
