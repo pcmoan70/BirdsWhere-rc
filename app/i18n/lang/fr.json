@@ -22,7 +22,7 @@
   "route.savePrompt": "Nommer cet itinéraire :",
   "route.saved": "Itinéraire « {name} » enregistré ({n} arrêts).",
   "ctrl.experimental": "Fonctions expérimentales",
-  "ctrl.experimentalHint": "Désactivé (par défaut). Activé : débloque des extras moins aboutis — pour l’instant les couches Points d’observation, densité d’occurrences GBIF, Natura 2000 et WDPA · Protected Planet, le graphique annuel du modèle IA dans les fiches Meilleurs sites, plus le lien NBN Atlas dans le menu des espèces ; d’autres pourront apparaître ici avec le temps.",
+  "ctrl.experimentalHint": "Désactivé (par défaut). Activé : débloque des extras moins aboutis — pour l’instant les couches densité d’occurrences GBIF, Natura 2000 et WDPA · Protected Planet, le graphique annuel du modèle IA dans les fiches Meilleurs sites, plus le lien NBN Atlas dans le menu des espèces ; d’autres pourront apparaître ici avec le temps.",
   "ctrl.hotspotHint": "Ombre la carte selon le niveau d'activité de chaque zone — touchez pour faire défiler Désactivé → espèces par zone → observateurs distincts → totaux. Un nuage de chaleur lisse et stable au zoom ; utilisez « Afficher les points » pour voir la carte de chaleur seule, les points seuls ou les deux.",
   "ctrl.groupHint": "Limite toute l'appli — listes, Répartition, Richesse et recherche d'observations — à un seul groupe : oiseaux, mammifères, amphibiens, insectes, plantes ou champignons.",
   "ctrl.recentradiusHint": "Jusqu'à quelle distance autour d'un point cliqué ou d'un lieu enregistré chaque source est interrogée pour les observations récentes.",

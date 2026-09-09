@@ -399,7 +399,7 @@ window.GeoI18N = (function () {
         "blocked.titleHint": "Species you’ve hidden from the lists — review them here and unblock any you want back.",
         "ctrl.secondlangHint": "Show a second common-name column in the lists, in another language, next to the primary name.",
         "ctrl.showsciHint": "Show the scientific-name column in the species lists.",
-        "ctrl.experimentalHint": "Off (default). On: unlocks less-polished extras — currently the View points, GBIF occurrence-density, Natura 2000 and WDPA · Protected Planet map overlays, the AI-model year chart in the Best-sites cards, plus the NBN Atlas link in the species menu; more may appear here over time.",
+        "ctrl.experimentalHint": "Off (default). On: unlocks less-polished extras — currently the GBIF occurrence-density, Natura 2000 and WDPA · Protected Planet map overlays, the AI-model year chart in the Best-sites cards, plus the NBN Atlas link in the species menu; more may appear here over time.",
         "settings.updateReady": "Update to {v}",
         "settings.updateApplying": "Updating…",
         "ctrl.savedloc": "Saved locations",

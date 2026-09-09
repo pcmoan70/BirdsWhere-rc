@@ -15020,7 +15020,7 @@
   function renderClcLegend() { renderLegendStack(); }
   // Overlays that live behind Settings → Experimental features (less-polished / heavy
   // third-party services). Kept out of the layer control until the gate is on.
-  var EXPERIMENTAL_OVERLAY_KEYS = ["layer.birdSpots", "layer.gbif", "layer.emerald", "layer.osmpa", "layer.natura2000", "layer.wdpa"];
+  var EXPERIMENTAL_OVERLAY_KEYS = ["layer.gbif", "layer.emerald", "layer.osmpa", "layer.natura2000", "layer.wdpa"];
   function isExperimentalOverlay(key) { return EXPERIMENTAL_OVERLAY_KEYS.indexOf(key) >= 0; }
   // Add/remove the experimental overlays from the layer control when the Settings →
   // Experimental toggle changes (called from applyExperimentalUi). Re-render the CORINE
@@ -15101,9 +15101,8 @@
       ly.on("remove", function () { overlayBusy(nm(), false); });   // toggled off mid-load → stop pulsing
     });
     var overlays = {};
-    // Birding spots is an EXPERIMENTAL overlay (Overpass-backed, patchy) — only offered
-    // when Settings → Experimental features is on. syncBirdSpotsOverlay() adds/removes it
-    // live when that toggle changes.
+    // Experimental overlays (EXPERIMENTAL_OVERLAY_KEYS) are only offered when Settings →
+    // Experimental features is on; syncExperimentalOverlays() adds/removes them live.
     overlayDefsRef.forEach(function (d) {
       if (isExperimentalOverlay(d.key) && !experimentalOn()) return;
       overlays[isExperimentalOverlay(d.key) ? expMark(t(d.key)) : t(d.key)] = d.layer;   // "*" marks experimental overlays

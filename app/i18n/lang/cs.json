@@ -22,7 +22,7 @@
   "route.savePrompt": "Pojmenujte tuto trasu:",
   "route.saved": "Trasa „{name}“ uložena ({n} zastávek).",
   "ctrl.experimental": "Experimentální funkce",
-  "ctrl.experimentalHint": "Vypnuto (výchozí). Zapnuto: odemkne méně vyladěné doplňky — momentálně mapové překryvy Pozorovací místa, hustota výskytů GBIF, Natura 2000 a WDPA · Protected Planet, graf AI-modelu pro rok v kartách Nejlepších lokalit, plus odkaz NBN Atlas v nabídce druhu; časem zde mohou přibýt další.",
+  "ctrl.experimentalHint": "Vypnuto (výchozí). Zapnuto: odemkne méně vyladěné doplňky — momentálně mapové překryvy hustota výskytů GBIF, Natura 2000 a WDPA · Protected Planet, graf AI-modelu pro rok v kartách Nejlepších lokalit, plus odkaz NBN Atlas v nabídce druhu; časem zde mohou přibýt další.",
   "ctrl.hotspotHint": "Zbarví mapu podle množství aktivity v jednotlivých oblastech — klepnutím přepínáte Vyp → druhy na oblast → jednotliví pozorovatelé → celkové počty. Plynulý, při přiblížení stabilní teplotní oblak; pomocí „Zobrazit body“ uvidíte samotnou teplotní mapu, samotné body nebo obojí.",
   "ctrl.groupHint": "Omezí celou aplikaci — seznamy, Rozšíření, Rozmanitost i vyhledávání pozorování — na jednu skupinu: ptáci, savci, obojživelníci, hmyz, rostliny nebo houby.",
   "ctrl.recentradiusHint": "Jak daleko kolem klepnutého bodu nebo uložené polohy se v každém zdroji hledají nedávná pozorování.",

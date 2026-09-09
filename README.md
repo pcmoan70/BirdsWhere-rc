@@ -102,8 +102,7 @@ map dots and the observation fetch. The model covers birds/mammals/amphibians/in
 to Natura 2000), **Land cover** (CORINE / Copernicus-EEA — habitat backdrop, Europe/EEA, with a
 colour-coded class legend in the lower-right while it's on),
 **GBIF occurrence density** (*Experimental* — enable in Settings; a seasonal heatmap of where records concentrate),
-**OSM protected areas**, **View points** (*Experimental* — enable in Settings → Experimental features;
-a **bundled worldwide snapshot** of 71k+ OSM bird hides, bird-watching towers and birdwatching
+**OSM protected areas**, **View points** (a **bundled worldwide snapshot** of 71k+ OSM bird hides, bird-watching towers and birdwatching
 viewpoints — incl. towers/viewpoints validated by proximity to an eBird hotspot — served from the
 app's own origin as small on-demand tiles, cached for offline; no live Overpass involved. Tap a
 marker for its name, type, coordinates and any OSM details it carries — operator, access, wheelchair,

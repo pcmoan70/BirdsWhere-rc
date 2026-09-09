@@ -22,7 +22,7 @@
   "route.savePrompt": "Dê um nome a esta rota:",
   "route.saved": "Rota «{name}» guardada ({n} paragens).",
   "ctrl.experimental": "Funcionalidades experimentais",
-  "ctrl.experimentalHint": "Desligado (predefinição). Ligado: desbloqueia extras menos polidos — atualmente as camadas Pontos de observação, densidade de ocorrências GBIF, Natura 2000 e WDPA · Protected Planet, o gráfico anual do modelo de IA nos cartões de Melhores locais, mais a ligação NBN Atlas no menu de espécies; podem aparecer mais aqui com o tempo.",
+  "ctrl.experimentalHint": "Desligado (predefinição). Ligado: desbloqueia extras menos polidos — atualmente as camadas densidade de ocorrências GBIF, Natura 2000 e WDPA · Protected Planet, o gráfico anual do modelo de IA nos cartões de Melhores locais, mais a ligação NBN Atlas no menu de espécies; podem aparecer mais aqui com o tempo.",
   "ctrl.hotspotHint": "Sombreia o mapa consoante a atividade de cada área — toque para alternar Desligado → espécies por área → observadores distintos → contagens totais. Uma nuvem de calor suave e estável ao ampliar; use „Mostrar pontos“ para ver apenas o mapa de calor, apenas os pontos ou ambos.",
   "ctrl.groupHint": "Limita toda a aplicação — listas, Distribuição, Riqueza e pesquisa de observações — a um grupo: aves, mamíferos, anfíbios, insetos, plantas ou fungos.",
   "ctrl.recentradiusHint": "A que distância em torno de um ponto clicado ou local guardado cada fonte é pesquisada por observações recentes.",
