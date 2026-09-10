@@ -3515,6 +3515,9 @@
     h += '<div class="src-detail-field"><label>' + escapeHtml(t("sources.colDays")) + '</label><input type="number" class="src-days" min="1" max="' + (info.isGbif ? 92 : 365) + '" value="' + info.days + '" /></div>';
     h += '<div class="src-detail-field"><label>' + escapeHtml(t("sources.colTimeout")) + '</label><input type="number" class="src-timeout-inp" min="0" max="600" step="1" value="' + (+info.timeout) + '" /></div>' +
          '<p class="cu-hint">' + escapeHtml(t("sources.timeoutHint")) + "</p>";
+    if (info.isGbif) h += '<div class="src-detail-field"><label>' + escapeHtml(t("ctrl.gbifDatasets")) + '</label>' +
+      '<div>' + icoBtn("gbif-ds-open", "datasets", "gbif.manage", escapeHtml(t("gbif.manage"))) + '</div>' +
+      '<p class="cu-hint">' + escapeHtml(t("ctrl.gbifDatasetsHint")) + "</p></div>";
     if (!info.isGbif) h += '<div class="src-detail-field"><label>' + escapeHtml(t("sources.colUrl")) + '</label><input type="text" class="src-url" value="' + escapeHtml(info.url) + '" autocomplete="off" spellcheck="false" /></div>';
     // BirdWeather-specific "is here" thresholds live with the source, not in Settings:
     // a species counts as present on a day only with ≥ N detections at ≥ confidence.
@@ -3554,6 +3557,7 @@
     });
     var urlInp = el.querySelector(".src-url"); if (urlInp) urlInp.addEventListener("change", function () { patchSource(id, "url", this.value.trim()); });
     var daysInp = el.querySelector(".src-days"); if (daysInp) daysInp.addEventListener("change", function () { var v = Math.max(1, Math.min(info.isGbif ? 92 : 365, +this.value || 1)); if (info.isGbif) setGbifDays(v); else patchSource(id, "days", v); });
+    var dsBtn = el.querySelector("#gbif-ds-open"); if (dsBtn) dsBtn.addEventListener("click", openGbifDatasets);
     var toInp = el.querySelector(".src-timeout-inp"); if (toInp) toInp.addEventListener("change", function () { var v = Math.max(0, Math.min(600, Math.round(+this.value) || 0)); this.value = String(v); if (info.isGbif) setGbifTimeout(v); else patchSource(id, "timeout", v); allSightingsCache = {}; });
     var keyInp = el.querySelector(".src-key");
     if (keyInp) {
@@ -3903,6 +3907,20 @@
     renderSourcesTable();
     document.getElementById("sources-modal").style.display = "flex";
     navOpen("sources", function () { document.getElementById("sources-modal").style.display = "none"; });
+  }
+  // GBIF datasets manager — launched from the GBIF source panel. The sources modal is
+  // only HIDDEN (not navClosed): its history entry stays beneath the datasets one, and
+  // navOpen's "modals stand alone" sweep skips hidden modals — so closing the datasets
+  // modal (× / backdrop / Back) lands on the GBIF panel again, and one more Back closes it.
+  function openGbifDatasets() {
+    closeDropdowns();
+    renderGbifTable();
+    var sm = document.getElementById("sources-modal"); sm.style.display = "none";
+    document.getElementById("gbif-modal").style.display = "flex";
+    navOpen("gbif", function () {
+      document.getElementById("gbif-modal").style.display = "none";
+      srcDetailId = "gbif"; renderSourcesTable(); sm.style.display = "flex";
+    });
   }
   // Fetch-failure explanation lines: hard failures (with their reason) + timed-out
   // sources (partial — they kept whatever they'd already paged).
@@ -5932,11 +5950,6 @@
                 '<label data-i18n="sources.label">Data sources</label>' +
                 icoBtn("sources-open", "sources", "sources.manage", "Manage data sources…") +
                 '<p class="cu-hint" data-i18n="sources.labelHint">Turn each observation source on or off and enter its API key. GBIF and iNaturalist need no key; eBird and the regional databases each take a free key.</p>' +
-              '</div>' +
-              '<div class="ctrl-group" id="gbif-ds-wrap">' +
-                '<label data-i18n="ctrl.gbifDatasets">GBIF datasets (fetched separately)</label>' +
-                icoBtn("gbif-ds-open", "datasets", "gbif.manage", "Manage datasets…") +
-                '<p class="cu-hint" data-i18n="ctrl.gbifDatasetsHint">Extra GBIF publisher datasets queried alongside the main GBIF search — toggle each on or off.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label data-i18n="ctrl.customurls">National databases</label>' +
@@ -15980,14 +15993,7 @@
       histAllAreas.addEventListener("change", function () { window.GeoState.save({ histAllAreas: this.checked }); updateHistFetchBtn(); });
     }
 
-    var gbifOpen = document.getElementById("gbif-ds-open");
-    if (gbifOpen) {
-      gbifOpen.addEventListener("click", function () {
-        closeDropdowns();
-        renderGbifTable();
-        document.getElementById("gbif-modal").style.display = "flex";
-        navOpen("gbif", function () { document.getElementById("gbif-modal").style.display = "none"; });
-      });
+    if (document.getElementById("gbif-modal")) {
       document.getElementById("gbif-close").addEventListener("click", function () { navClose("gbif"); });
       document.getElementById("gbif-modal").addEventListener("click", function (e) { if (e.target === this) navClose("gbif"); });
       var gbifAddInp = document.getElementById("gbif-add");

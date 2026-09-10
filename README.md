@@ -294,7 +294,7 @@ country. **BirdWeather** collapses machine detections to one "present" record pe
 station and day, tunable by **min detections/day** and **min confidence**. **eBird** and
 **BirdWeather** are birds-only; the other sources honour the species-group filter.
 
-**GBIF datasets** (Settings → *GBIF datasets*, each individually toggled): **Observation.org**,
+**GBIF datasets** (Settings → Data sources → GBIF → *Manage datasets*, each individually toggled): **Observation.org**,
 **Birda**, **Xeno-canto** (georeferenced bird sound recordings, live), **Pl@ntNet** and
 **eBird EOD** (global, historic) — plus nation-tagged
 **Artportalen (SE)**, **Artsobservasjoner (NO)**, **Laji.fi / Notebook (FI)**, **DOFbasen (DK)**,
