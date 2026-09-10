@@ -532,7 +532,8 @@ another app. Options are `;`- or `&`-separated `key=value` pairs.
 - **`layout`** — with `show=list`: `table` (default, the ranked species table) or `observation` (the
   *By observation* layout — one row per record, grouped by day and observer).
 - **`sortby`** — `rarity_increasing` (default; most likely / commonest species first),
-  `rarity_decreasing` (rarest first), or `time_recent` (most recently observed first); applies to both
+  `rarity_decreasing` (rarest first), `time_recent` (most recently observed first) or `distance`
+  (nearest observation of each species first, equal distances ordered by rarity); applies to both
   layouts.
 
 **Examples** (base: `https://thebirding.site/`)
@@ -562,13 +563,17 @@ https://thebirding.site/f/
 ?location=60.12312,32.00123;radius=10;show=map;sortby=rarity_decreasing
     Go to those coordinates, 10 km radius, land on the map, rarest species first.
 
+?location=here&radius=2&days=14&skip=ebird&show=list&sortby=distance
+    Nearest species first (the closest observation of each); equal distances ordered by rarity.
+
 ?location=59.9139,10.7522
     Go to a fixed point (Oslo) with the current defaults.
 ```
 
 **Short link for print** — `https://thebirding.site/f/` is a tiny redirect page
 (`app/f/index.html`, served by the service worker even offline) that forwards to
-`?location=here&radius=2&days=14&skip=ebird&show=list&sortby=rarity_decreasing`. Being 27 characters
+`?location=here&radius=2&days=14&skip=ebird&show=list&sortby=distance` (the species list, nearest
+first, ties by rarity). Being 27 characters
 instead of ~120 it makes a much coarser QR code (33×33 modules at the highest error-correction level,
 instead of 57×57), which survives print wear far better. Change the target by editing that file.
 

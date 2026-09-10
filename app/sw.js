@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1666";
+var VERSION = "v1667";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• Shortcut URLs take sortby=distance: the species list with the nearest observation of each species first, and species seen at the same spot ordered rarest first. The /f/ poster link now opens that view.",
   "• Tapping a saved point on the map: the menu no longer offers “Show on map” and gains “Delete” — for a point that belongs to a list you are asked before it is removed from that list. Shared links now open straight on the map (no welcome screen, nothing fetched). Points panel: one Distance ⇄ Name sort button, and the panel stays open while you use it.",
   "• Map right-click / long-press menu: “Share link” is now “Share point” and sits right under Add point, and a new ＋ Add to route entry (under Navigate here) adds the spot as the next stop of the route you are building.",
-  "• Settings is easier to scan: every dropdown, slider, field and button spans the same width (slider values sit on the label line), and every other section is lightly green-tinted.",
   "• The GBIF datasets manager (📚 Datasets…) has moved from Settings into the GBIF entry under Settings → Data sources. Settings buttons now name what they open (Data sources…, National databases…, Lists…) without a “Manage” verb.",
   "• BirdsWhere now lives at thebirding.site. On the old github.io address a notice offers to move — and it takes your lists, settings and points along (the data travels inside the link, never via a server).",
 ].join("\n");

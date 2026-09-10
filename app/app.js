@@ -2104,12 +2104,14 @@
         if (isNaN(ka)) ka = -Infinity; if (isNaN(kb)) kb = -Infinity;
       } else if (col === "dist") {
         // Nearest first; species with no detection (no distance) sink to the bottom
-        // regardless of direction.
+        // regardless of direction. Equal distances (several species at one spot) are
+        // ordered by rarity — the lowest model probability first.
         ka = parseFloat(a.getAttribute("data-dist")); kb = parseFloat(b.getAttribute("data-dist"));
         if (isNaN(ka)) ka = Infinity; if (isNaN(kb)) kb = Infinity;
         var cd = ka < kb ? -1 : ka > kb ? 1 : 0;
         if (ka === Infinity && kb === Infinity) return 0;
         if (ka === Infinity) return 1; if (kb === Infinity) return -1;   // always last
+        if (cd === 0) return (+a.getAttribute("data-prob") || 0) - (+b.getAttribute("data-prob") || 0);
         return speciesListSort.dir === "asc" ? cd : -cd;
       } else if (col === "last") {
         // Most-recent first (desc); species with no observation date sink to the bottom.
@@ -5629,6 +5631,7 @@
       case "rarity_increasing": return { col: "prob", dir: "desc" };
       case "rarity_decreasing": return { col: "prob", dir: "asc" };
       case "time_recent":       return { col: "recent", dir: "desc" };
+      case "distance":          return { col: "dist", dir: "asc" };   // nearest first; ties by rarity
       default: return null;
     }
   }
@@ -5641,7 +5644,8 @@
   //   show=list|map  → land on the list page, or the map with dots dropping in (default)
   //   layout=table|observation → the list page's layout: ranked species table (default) or
   //                    one row per observation ("By observation")
-  //   sortby=…       → rarity_increasing (default) | rarity_decreasing | time_recent (both layouts)
+  //   sortby=…       → rarity_increasing (default) | rarity_decreasing | time_recent | distance
+  //                    (nearest first, equal distances by rarity) — both layouts
   function maybeUrlLocationParam() {
     var p = parseSemiParams();
     var locRaw = (p.location || "").trim();
