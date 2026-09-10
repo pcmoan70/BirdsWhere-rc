@@ -4302,6 +4302,7 @@ a.place-search-btn.is-open { background: var(--brand-soft, #e6f0ee); }
    best-effort — native mobile pickers ignore it. */
 #lang-select option, #secondlang-select option { font-weight: 700; }
 #lang-select option.lang-nopack, #secondlang-select option.lang-nopack { font-weight: 400; font-style: italic; }
+#lang-select option.lang-system { font-style: italic; }   /* "(System)" — follow the device language */
 
 /* Red "!" in front of a rarity record's name — observation list rows, Birds
    close by, the dot-hover tooltip, and (as a row class) the Recent species

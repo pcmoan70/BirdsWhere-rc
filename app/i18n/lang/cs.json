@@ -582,6 +582,7 @@
   "app.loading": "Načítání modelu, štítků a názvů druhů…",
   "app.failed": "Načtení selhalo: {msg}",
   "ctrl.language": "Jazyk",
+  "lang.system": "(Systém)",
   "ctrl.settings": "Nastavení",
   "ctrl.about": "O aplikaci a jak funguje",
   "blocked.title": "Blokované druhy",

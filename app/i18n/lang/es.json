@@ -582,6 +582,7 @@
   "app.loading": "Cargando modelo, etiquetas y nombres de especies…",
   "app.failed": "No se pudo cargar: {msg}",
   "ctrl.language": "Idioma",
+  "lang.system": "(Sistema)",
   "ctrl.settings": "Ajustes",
   "ctrl.about": "Acerca de & cómo funciona",
   "blocked.title": "Especies bloqueadas",

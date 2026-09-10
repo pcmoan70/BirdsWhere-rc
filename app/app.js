@@ -85,7 +85,8 @@
   var TRAITS_REV = 2;                        // bump when species-traits.json changes
 
   // ---- i18n / species names ------------------------------------------------
-  var lang = "en";            // current UI + species-name language code
+  var lang = "en";            // current UI + species-name language code (resolved)
+  var langChoice = "system";  // what the user picked: "system" (follow the device) or a language code
   var langTaxCol = "com_name"; // taxonomy.csv column for current language
   var taxByCode = {};          // species_code -> { com_name, class_name, common_name_xx, ... }
   var secondLang = "";         // optional 2nd species-name language ("" = off)
@@ -6352,7 +6353,7 @@
       '</div>';
 
     // Restore saved language before building the UI text.
-    setLang(window.GeoState.get("lang", defaultLang()), true);
+    setLang(window.GeoState.get("lang", "system"), true);   // "system" (default) follows the device language
 
     try {
       await Promise.all([initWorker(), loadLabels(), loadTaxonomy()]);
@@ -6922,8 +6923,12 @@
     return "en";
   }
 
+  // The stored choice: "system" (or nothing) → the device language via defaultLang()
+  // (English when unsupported); a code → that language.
+  function resolveLangChoice(choice) { return (!choice || choice === "system") ? defaultLang() : choice; }
   function setLang(code, skipRefresh) {
-    var L = window.GeoI18N.langByCode(code);
+    langChoice = (!code || code === "system") ? "system" : code;
+    var L = window.GeoI18N.langByCode(resolveLangChoice(code));
     lang = L.code;
     langTaxCol = L.taxCol;
     document.documentElement.setAttribute("lang", lang);
@@ -6933,7 +6938,7 @@
       if (loaded && lang === L.code) refreshLangUI();
     });
     if (skipRefresh) return;
-    window.GeoState.save({ lang: lang });
+    window.GeoState.save({ lang: langChoice });
     refreshLangUI();
   }
   // Everything that renders in the CURRENT language — run on a language switch
@@ -6949,6 +6954,7 @@
     syncAboutLink();
     try { updateBasemapOptions(); } catch (e) {}   // re-append the 🔑 to key-maps after applyI18n reset the option text
     populateWeekSelect();   // re-label weeks in the new language
+    populateLangSelect();         // re-localize the "(System)" option
     populateSecondLangSelect();   // re-localize the "(none)" option
     refreshChecklists();    // re-localize the "Checklist (N)" button text
     if (document.getElementById("field-page").style.display === "flex") renderFieldList();  // re-localize activity labels if open
@@ -6971,13 +6977,18 @@
       if (!!a.full !== !!b.full) return a.full ? -1 : 1;
       return a.name.localeCompare(b.name);
     });
-    sel.innerHTML = ordered.map(function (L) {
+    // "(System)" first: follow the device language (English when it isn't supported);
+    // the resolved language is shown after it so the choice is transparent.
+    var sysL = window.GeoI18N.langByCode(defaultLang());
+    sel.innerHTML = '<option value="system" class="lang-system"' + (langChoice === "system" ? " selected" : "") + ">" +
+        escapeHtml(t("lang.system")) + " — " + escapeHtml(sysL.name) + "</option>" +
+      ordered.map(function (L) {
       // ★ marks languages whose interface is fully translated (others fall
       // back to English for UI text). Italics = species-name pack not yet
       // downloaded (fetched on first use).
       var label = L.name + (L.full ? " ★" : "");
       var cls = langPackMissing(L.taxCol) ? ' class="lang-nopack"' : "";
-      return '<option value="' + L.code + '"' + cls + (L.code === lang ? " selected" : "") + ">" + label + "</option>";
+      return '<option value="' + L.code + '"' + cls + (langChoice !== "system" && L.code === lang ? " selected" : "") + ">" + label + "</option>";
     }).join("");
   }
 
@@ -8603,7 +8614,7 @@
     }).catch(function () {});
   }
   function extraVernacName(sci) {
-    var key = (window.GeoState.get("lang", "en") || "en") + "|" + sci.toLowerCase();
+    var key = (lang || "en") + "|" + sci.toLowerCase();
     var cache = vernacCache();
     if (key in cache) return cache[key] || "";   // "" = looked up before, none found
     if (!vernacPending[key]) { vernacPending[key] = sci; scheduleVernacFetch(); }
@@ -18977,8 +18988,8 @@
     AppGeo.countryInfo(lat, lon).then(function (info) {
       var cc = (info && info.cc) || "", cname = (info && info.name) || "";
       // Radar → Migration Aloft (European weather-radar migration map). A MAIN-level
-      // popup entry (not inside "More"), Europe only. Inserted before the More toggle.
-      if (continentFor(cc) === "EU") {
+      // popup entry (not inside "More"), Europe only, Experimental-gated. Inserted before the More toggle.
+      if (continentFor(cc) === "EU" && experimentalOn()) {
         wrap.insertBefore(
           makePopupBtn(t("link.aloft") + " ↗", "btn-green", function () {
             mk.closePopup(); openExternal("https://pcmoan70.github.io/BirdsWhere-aloft/");   // the Migration Aloft radar is its own repo/site now
@@ -19841,8 +19852,7 @@
   // Selecting some restricts the fetch to those months across ALL years in the
   // range (GBIF's &month filter); selecting none = every month.
   function histMonthShort(m) {
-    var lang = (window.GeoState.get("lang", defaultLang()) || "en");
-    var fmt; try { fmt = new Intl.DateTimeFormat(lang, { month: "short" }); } catch (e) { fmt = null; }
+    var fmt; try { fmt = new Intl.DateTimeFormat(lang, { month: "short" }); } catch (e) { fmt = null; }   // `lang` = the resolved UI language
     return fmt ? fmt.format(new Date(2021, m - 1, 15)) : String(m);
   }
   // Reflect the current selection in the collapsed dropdown's summary so the user

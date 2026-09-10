@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1669";
+var VERSION = "v1670";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• Language: the picker now starts with an italic (System) entry that follows your device language (English when unsupported) — the default for everyone who never chose a language. The Radar (Migration Aloft) link in the point popup is now behind Settings → Experimental.",
   "• Map overlays: every row in the layers panel has a ? at the right — tap it for a full explanation of that overlay (what it shows, why it helps birding, how to use it, caveats). English for now.",
   "• Shortcut URLs take sortby=distance: the species list with the nearest observation of each species first, and species seen at the same spot ordered rarest first. The /f/ poster link now opens that view (3 km, last 21 days).",
   "• Tapping a saved point on the map: the menu no longer offers “Show on map” and gains “Delete” — for a point that belongs to a list you are asked before it is removed from that list. Shared links now open straight on the map (no welcome screen, nothing fetched). Points panel: one Distance ⇄ Name sort button, and the panel stays open while you use it.",
   "• Map right-click / long-press menu: “Share link” is now “Share point” and sits right under Add point, and a new ＋ Add to route entry (under Navigate here) adds the spot as the next stop of the route you are building.",
-  "• The GBIF datasets manager (📚 Datasets…) has moved from Settings into the GBIF entry under Settings → Data sources. Settings buttons now name what they open (Data sources…, National databases…, Lists…) without a “Manage” verb.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

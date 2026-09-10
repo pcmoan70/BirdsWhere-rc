@@ -582,6 +582,7 @@
   "app.loading": "Model, labels & soortnamen laden…",
   "app.failed": "Laden mislukt: {msg}",
   "ctrl.language": "Taal",
+  "lang.system": "(Systeem)",
   "ctrl.settings": "Instellingen",
   "ctrl.about": "Over & hoe het werkt",
   "blocked.title": "Geblokkeerde soorten",

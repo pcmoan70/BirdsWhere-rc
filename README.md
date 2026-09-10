@@ -747,7 +747,9 @@ no direction can delete data on the other device.
   pl, cs, no, da, fi, et, lt); other languages fall back to English UI text while still showing
   localised species names. **Species common names are available in ~45 languages**, loaded as
   small on-demand per-language name packs (`i18n/names/`) so startup only downloads the
-  language(s) you actually use.
+  language(s) you actually use. The language picker's first entry, *(System)* in italics, follows
+  the device language (the default) and falls back to English when that language is not supported;
+  picking a language explicitly overrides it until you choose *(System)* again.
 - **CSV export** throughout (recent detections, species lists, checklist CSV/Log, eBird
   Record-Format CSV). A **Share between devices** section also **exports/imports all your data as a
   backup file** (merging checklists on import) and shows the app QR.

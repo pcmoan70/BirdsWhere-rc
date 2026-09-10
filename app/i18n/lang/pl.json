@@ -582,6 +582,7 @@
   "app.loading": "Wczytywanie modelu, etykiet i nazw gatunków…",
   "app.failed": "Nie udało się wczytać: {msg}",
   "ctrl.language": "Język",
+  "lang.system": "(System)",
   "ctrl.settings": "Ustawienia",
   "ctrl.about": "O aplikacji i jak działa",
   "blocked.title": "Zablokowane gatunki",

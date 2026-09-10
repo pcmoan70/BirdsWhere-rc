@@ -582,6 +582,7 @@
   "app.loading": "Ladataan mallia, otsikoita ja lajinimiä…",
   "app.failed": "Lataus epäonnistui: {msg}",
   "ctrl.language": "Kieli",
+  "lang.system": "(Järjestelmä)",
   "ctrl.settings": "Asetukset",
   "ctrl.about": "Tietoja ja toimintaperiaate",
   "blocked.title": "Estetyt lajit",

@@ -582,6 +582,7 @@
   "app.loading": "Laster modell, etiketter og artsnavn…",
   "app.failed": "Kunne ikke laste: {msg}",
   "ctrl.language": "Språk",
+  "lang.system": "(System)",
   "ctrl.settings": "Innstillinger",
   "ctrl.about": "Om & hvordan det virker",
   "blocked.title": "Blokkerte arter",

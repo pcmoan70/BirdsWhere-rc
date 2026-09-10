@@ -189,6 +189,7 @@
   "app.loading": "Laddar modell, etiketter & artnamn…",
   "app.failed": "Kunde inte ladda: {msg}",
   "ctrl.language": "Språk",
+  "lang.system": "(System)",
   "ctrl.settings": "Inställningar",
   "ctrl.about": "Om & hur det fungerar",
   "blocked.title": "Blockerade arter",

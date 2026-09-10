@@ -582,6 +582,7 @@
   "app.loading": "Mudeli, siltide ja liiginimede laadimine…",
   "app.failed": "Laadimine ebaõnnestus: {msg}",
   "ctrl.language": "Keel",
+  "lang.system": "(Süsteem)",
   "ctrl.settings": "Seaded",
   "ctrl.about": "Teave ja kuidas see töötab",
   "blocked.title": "Blokeeritud liigid",

@@ -583,6 +583,7 @@
   "app.loading": "Chargement du modèle, des étiquettes et des noms d'espèces…",
   "app.failed": "Échec du chargement : {msg}",
   "ctrl.language": "Langue",
+  "lang.system": "(Système)",
   "ctrl.settings": "Paramètres",
   "ctrl.about": "À propos & fonctionnement",
   "blocked.title": "Espèces bloquées",

@@ -582,6 +582,7 @@
   "app.loading": "Lade Modell, Bezeichnungen & Artnamen…",
   "app.failed": "Laden fehlgeschlagen: {msg}",
   "ctrl.language": "Sprache",
+  "lang.system": "(System)",
   "ctrl.settings": "Einstellungen",
   "ctrl.about": "Über & Funktionsweise",
   "blocked.title": "Blockierte Arten",

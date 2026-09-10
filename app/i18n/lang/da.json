@@ -582,6 +582,7 @@
   "app.loading": "Indlæser model, etiketter og artsnavne…",
   "app.failed": "Indlæsning mislykkedes: {msg}",
   "ctrl.language": "Sprog",
+  "lang.system": "(System)",
   "ctrl.settings": "Indstillinger",
   "ctrl.about": "Om & sådan virker det",
   "blocked.title": "Blokerede arter",

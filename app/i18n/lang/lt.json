@@ -582,6 +582,7 @@
   "app.loading": "Įkeliamas modelis, žymės ir rūšių pavadinimai…",
   "app.failed": "Nepavyko įkelti: {msg}",
   "ctrl.language": "Kalba",
+  "lang.system": "(Sistema)",
   "ctrl.settings": "Nustatymai",
   "ctrl.about": "Apie ir kaip tai veikia",
   "blocked.title": "Užblokuotos rūšys",
