@@ -572,7 +572,7 @@ https://thebirding.site/f/
 
 **Short link for print** — `https://thebirding.site/f/` is a tiny redirect page
 (`app/f/index.html`, served by the service worker even offline) that forwards to
-`?location=here&radius=2&days=14&skip=ebird&show=list&sortby=distance` (the species list, nearest
+`?location=here&radius=3&days=21&skip=ebird&show=list&sortby=distance` (the species list, nearest
 first, ties by rarity). Being 27 characters
 instead of ~120 it makes a much coarser QR code (33×33 modules at the highest error-correction level,
 instead of 57×57), which survives print wear far better. Change the target by editing that file.
