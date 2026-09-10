@@ -493,7 +493,7 @@ view**.
 
 ## Sharing
 
-- **A location** — the point popup's *Location ▸ → 🔗 Share link* makes a **plain, readable URL**
+- **A location** — the map right-click / long-press menu's *🔗 Share point* makes a **plain, readable URL**
   carrying just the coordinates (`…?lat=&lon=&zoom=`). Open it to land on that exact spot with the
   pin down; it stays in the address bar, so it's bookmarkable.
 - **A list or detection set** — the **🔗** on its Points-panel row makes a self-contained link.
@@ -661,8 +661,9 @@ an **eBird Record Format CSV** ready for [ebird.org/import](https://ebird.org/im
 
 ## Country resources & place links
 
-- **Map-click popup** — **📍 Recent** (species list), a **📍 Location** submenu (*Save location*,
-  *Share link*, *Copy coordinates*), a **Birdingplaces** link (birdingplaces.eu at the point),
+- **Map right-click / long-press menu** — *Add point*, *Share point*, *Save location*, *Navigate
+  here*, *Add to route* and *Offline maps* (the coordinates line copies them); the click popup adds
+  a **Birdingplaces** link (birdingplaces.eu at the point),
   and, for Sweden & Norway, a **Fågelkartan** link to that point's county / fylke page.
 - **Country button (globe, right side)** — reads the country at the map centre and opens **Birding
   blogs** (a curated, per-country list of personal birder blogs you can add to and remove — synced),

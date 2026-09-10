@@ -14226,9 +14226,11 @@
       }).catch(function () { ovlSec.innerHTML = '<div class="mc-ovl-none">' + escapeHtml(t("ovl.none")) + "</div>"; });
     }
     wrap.appendChild(makePopupBtn(t("points.add"), "", function () { map.closePopup(); openPointEditor({ lat: lat, lon: lon, name: "", tags: [], note: "" }); }, "dots"));
+    wrap.appendChild(makePopupBtn(t("share.point"), "btn-light", function () { map.closePopup(); offerShareUrl(pointShareUrl(lat, lon)); }, "share"));
     wrap.appendChild(makePopupBtn(t("loc.save"), "btn-light mc-btn-save", function () { map.closePopup(); registerLocationPrompt(lat, lon); }, "pin"));
-    wrap.appendChild(makePopupBtn(t("share.link"), "btn-light", function () { map.closePopup(); offerShareUrl(pointShareUrl(lat, lon)); }, "share"));
     wrap.appendChild(makePopupBtn(t("nav.here"), "btn-light", function () { map.closePopup(); navigatePoints([{ lat: lat, lon: lon }]); }, "nav"));
+    // Add this spot as the next stop of the in-progress route (named after the place if known).
+    wrap.appendChild(makePopupBtn(tLabel("route.add"), "btn-light", function () { map.closePopup(); addToRoute(lat, lon, nameHdr.textContent || ""); }, "navplus"));
     // Offline maps: opens the saved-areas panel, which carries the ⬇ Download map button.
     wrap.appendChild(makePopupBtn(t("offline.maps"), "btn-light", function () { map.closePopup(); openOfflineManager(); }, "folder"));
     L.popup({ className: "choose-popup", closeButton: true, autoClose: true, autoPan: true, offset: [0, -2] })
