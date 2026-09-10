@@ -12,8 +12,19 @@
        element style="" attributes). object-src/base-uri lock down tag-injection. -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://accounts.google.com https://apis.google.com https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' https:; font-src 'self'; worker-src 'self' blob:; child-src 'self' blob: https://accounts.google.com; frame-src https://accounts.google.com https://content.googleapis.com; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
-  <title>BirdsWhere</title>
-  <meta name="description" content="Interactive, in-browser explorer of species distribution, migration and live observations. Distribution maps, migration estimates and observation sorting are based on the BirdNET Geomodel, run on your device." />
+  <title>BirdsWhere — explore where and when birds are observed</title>
+  <meta name="description" content="Free interactive map of bird observations and migration: see where species are recorded, when they occur through the year, and plan birding trips responsibly. Live data from GBIF, eBird, iNaturalist and national portals; distribution maps from the BirdNET Geomodel, run on your device." />
+  <meta name="keywords" content="bird observations map, where to see birds, bird migration calendar, bird sightings near me, birding trip planner, species distribution map, rare bird alerts, offline birding app" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="canonical" href="https://thebirding.site/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="BirdsWhere" />
+  <meta property="og:title" content="BirdsWhere — explore where and when birds are observed" />
+  <meta property="og:description" content="Free interactive map of bird observations, seasonal occurrence and migration, for planning birding trips and understanding bird distribution." />
+  <meta property="og:url" content="https://thebirding.site/" />
+  <meta property="og:image" content="https://thebirding.site/icon-512.png" />
+  <meta name="twitter:card" content="summary" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"BirdsWhere","url":"https://thebirding.site/","description":"Free interactive map of bird observations and migration: see where species are recorded, when they occur through the year, and plan birding trips responsibly.","applicationCategory":"TravelApplication","operatingSystem":"Any (web browser, installable PWA)","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"image":"https://thebirding.site/icon-512.png","sameAs":["https://github.com/pcmoan70/BirdsWhere"]}</script>
 
   <!-- Leaflet (map) — vendored locally for offline use -->
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
@@ -37,6 +48,13 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12M6 22h12M8 2v4l4 6 4-6V2M8 22v-4l4-6 4 6v4"/></svg>
     <span>Loading…</span>
   </div>
+  <noscript>
+    <section style="max-width:720px;margin:24px auto;padding:0 16px;font:16px/1.5 system-ui,sans-serif">
+      <h1>BirdsWhere — explore where and when birds are observed</h1>
+      <p>BirdsWhere is an interactive geographic tool for exploring bird observations from multiple observation databases and geographic sources. It helps birders investigate where species have been recorded, how their occurrence changes through the year, and which locations are particularly important for individual species — with interactive maps, spatial filters and seasonal tools for planning birding trips and exploring patterns in bird distribution and migration. Sensitive observations and breeding locations are treated carefully. The app itself needs JavaScript.</p>
+      <p>About BirdsWhere: <a href="https://thebirding.site/about/" hreflang="en" lang="en">English</a> · <a href="https://thebirding.site/about/no/" hreflang="no" lang="no">Norsk</a> · <a href="https://thebirding.site/about/sv/" hreflang="sv" lang="sv">Svenska</a> · <a href="https://thebirding.site/about/da/" hreflang="da" lang="da">Dansk</a> · <a href="https://thebirding.site/about/fi/" hreflang="fi" lang="fi">Suomi</a> · <a href="https://thebirding.site/about/de/" hreflang="de" lang="de">Deutsch</a> · <a href="https://thebirding.site/about/es/" hreflang="es" lang="es">Español</a> · <a href="https://thebirding.site/about/fr/" hreflang="fr" lang="fr">Français</a> · <a href="https://thebirding.site/about/nl/" hreflang="nl" lang="nl">Nederlands</a> · <a href="https://thebirding.site/about/it/" hreflang="it" lang="it">Italiano</a> · <a href="https://thebirding.site/about/pt/" hreflang="pt" lang="pt">Português</a> · <a href="https://thebirding.site/about/pl/" hreflang="pl" lang="pl">Polski</a> · <a href="https://thebirding.site/about/cs/" hreflang="cs" lang="cs">Čeština</a> · <a href="https://thebirding.site/about/et/" hreflang="et" lang="et">Eesti</a> · <a href="https://thebirding.site/about/lt/" hreflang="lt" lang="lt">Lietuvių</a></p>
+    </section>
+  </noscript>
   <header id="site-header"><!-- controls (settings, mode, checklist) are moved here by app.js --></header>
 
   <!-- app.js renders the whole interactive app into this mount point -->

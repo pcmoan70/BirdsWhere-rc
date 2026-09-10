@@ -63,7 +63,7 @@ layered on top are the real sightings.
 - [Navigation & GPS](#navigation--gps)
 - [Offline use & install (PWA)](#offline-use--install-pwa)
 - [Persistence, settings & languages](#persistence-settings--languages)
-- [Run locally](#run-locally) · [Deploy](#deploy-github-pages) · [Project layout](#project-layout) · [Attribution](#attribution--licensing)
+- [Run locally](#run-locally) · [Deploy](#deploy-github-pages) · [Search engines](#search-engines-crawlable-pages) · [Project layout](#project-layout) · [Attribution](#attribution--licensing)
 
 ---
 
@@ -795,6 +795,23 @@ isolates itself from production (own localStorage key, IndexedDB database and se
 while map tiles/pinned areas are shared) and shows an **RC** badge in the title and Settings
 version line. The RC starts with empty user data — pull yours in via Drive sync (download-only) or
 a backup import.
+
+## Search engines (crawlable pages)
+
+The app itself is a JavaScript application, so the site also carries **static, text-only "About"
+pages** for crawlers and for people without the app: `https://thebirding.site/about/` (English) and
+`/about/<code>/` for the 14 other UI languages (Norwegian, Swedish, Danish, Finnish, German, Spanish,
+French, Dutch, Italian, Portuguese, Polish, Czech, Estonian, Lithuanian). Each page describes what
+BirdsWhere does — trip planning, finding birds nearby, migration timing, distribution maps, rarity
+alerts, lists, offline use — plus the data sources and the responsible-birding stance, with
+`hreflang` alternates, Open Graph tags and schema.org `WebApplication` data. They are generated from
+`tools/about-content.json` by `node tools/gen-about-pages.mjs` (edit the JSON, re-run, commit).
+`robots.txt` allows everything and points at `sitemap.xml` (root + all about pages); `index.html`
+carries a canonical URL, description, Open Graph tags and a `<noscript>` intro linking to the pages,
+and Settings has an **About BirdsWhere ↗** link in the current UI language. The service worker leaves
+`/about/`, `robots.txt` and `sitemap.xml` to the network so an installed app never swallows them.
+The RC channel is deployed with `noindex` on every page and without the crawler files, so only
+thebirding.site is indexed.
 
 ## Project layout
 

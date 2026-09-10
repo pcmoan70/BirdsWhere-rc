@@ -6060,7 +6060,8 @@
                 '<label class="ctrl-check"><input type="checkbox" id="experimental-toggle"> <span data-i18n="ctrl.experimental">Experimental features</span></label>' +
                 '<p class="cu-hint" data-i18n="ctrl.experimentalHint">Off (default). On: unlocks less-polished extras — currently the NBN Atlas link in the species menu; more may appear here over time.</p>' +
               '</div>' +
-              '<div class="app-qr"><img src="qr-app.svg" alt="" width="140" height="140" /><span class="app-qr-cap" data-i18n="settings.qrShare">Scan to open / share this app</span></div>' +
+              '<div class="app-qr"><img src="qr-app.svg" alt="" width="140" height="140" /><span class="app-qr-cap" data-i18n="settings.qrShare">Scan to open / share this app</span>' +
+                '<a id="about-page-link" class="app-about-link" href="about/" target="_blank" rel="noopener" data-i18n="settings.aboutPage">About BirdsWhere ↗</a></div>' +
               '<div class="settings-section" data-i18n="settings.secWhatsNew">What’s new</div>' +
               '<div id="whatsnew-list" class="whatsnew-list"></div>' +
             '</div>' +
@@ -6557,6 +6558,7 @@
       // may run for real; catch up if a pack landed mid-init.
       langUiReady = true;
       if (pendingLangUI) { pendingLangUI = false; refreshLangUI(); }
+      syncAboutLink();   // the About page link follows the boot language (English needs no refresh)
       renderWhatsNew();
       setStatus(modeHint());
       fitMapHeight();
@@ -6931,9 +6933,13 @@
   // and again when its UI-string pack arrives. During boot the init sequence
   // does the first full render itself, so early pack arrivals just mark it.
   var langUiReady = false, pendingLangUI = false;
+  // Static "About BirdsWhere" pages exist for every full UI language (app/about/<code>/).
+  var ABOUT_PAGE_LANGS = { cs: 1, da: 1, de: 1, es: 1, et: 1, fi: 1, fr: 1, it: 1, lt: 1, nl: 1, no: 1, pl: 1, pt: 1, sv: 1 };
+  function syncAboutLink() { var a = document.getElementById("about-page-link"); if (a) a.href = ABOUT_PAGE_LANGS[lang] ? "about/" + lang + "/" : "about/"; }
   function refreshLangUI() {
     if (!langUiReady) { pendingLangUI = true; return; }
     applyI18n();
+    syncAboutLink();
     try { updateBasemapOptions(); } catch (e) {}   // re-append the 🔑 to key-maps after applyI18n reset the option text
     populateWeekSelect();   // re-label weeks in the new language
     populateSecondLangSelect();   // re-localize the "(none)" option

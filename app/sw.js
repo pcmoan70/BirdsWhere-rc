@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1658";
+var VERSION = "v1659";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• New “About BirdsWhere” web pages in all 15 languages (Settings → About BirdsWhere ↗, or thebirding.site/about/) describe what the app does — also so search engines can find it. Settings, the QR code and the about pages all point at thebirding.site.",
   "• Offline maps: the ⬇ Download map button now lives in the Offline maps panel (opened from the map’s right-click / long-press menu) and is gone from that menu. The panel is tidier — the max-zoom choice now lives only in the Download map dialog, area rows show the zoom range on a second line, and the panel no longer stretches to the bottom.",
   "• The GBIF datasets manager (📚 Datasets…) has moved from Settings into the GBIF entry under Settings → Data sources. Settings buttons now name what they open (Data sources…, National databases…, Lists…) without a “Manage” verb.",
   "• The fetch timeout is now set per data source (Settings → Data sources → the source, default 120 s, 0 = none) instead of one global value in Settings. The ⏱ Increase timeout button now opens the timed-out source directly.",
   "• BirdsWhere now lives at thebirding.site. On the old github.io address a notice offers to move — and it takes your lists, settings and points along (the data travels inside the link, never via a server).",
-  "• BirdWeather (acoustic AI detections, slow to load) is now OFF for everyone — it had stayed on for anyone who had touched the source list before the v1582 default. Re-enable it any time in Settings → Data sources.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
@@ -362,6 +362,9 @@ self.addEventListener("fetch", function (event) {
     return;
   }
   if (sameOrigin) {
+    // Static, crawlable pages (about/…, robots.txt, sitemap.xml) are plain web pages, not
+    // the app shell: never answer them with the cached index.html — leave them to the network.
+    if (/\/about\//.test(url.pathname) || /\/(robots\.txt|sitemap\.xml)$/.test(url.pathname)) return;
     // (The Migration Aloft radar moved to its own repo/site — no /aloft/ path here now.)
     if (/\.(onnx|csv|wasm|mjs)$/.test(url.pathname) ||
         /\/vendor\//.test(url.pathname) ||

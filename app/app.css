@@ -2469,6 +2469,8 @@ button.dd-name:hover { text-decoration: underline; }
 .app-qr { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 14px 0 6px; }
 .app-qr img { display: block; background: #fff; padding: 8px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
 .app-qr-cap { font-size: var(--fs-s); color: var(--ink); opacity: .7; text-align: center; }
+.app-about-link { font-size: var(--fs-s); color: var(--brand); text-decoration: none; }
+.app-about-link:hover { text-decoration: underline; }
 /* "Install for offline use" section in the About panel */
 #about-install { margin-top: 14px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); }
 #about-install h4 { margin: 0 0 6px; font-size: var(--fs-h); }
