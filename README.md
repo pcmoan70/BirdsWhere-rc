@@ -116,7 +116,9 @@ observed species with a thin red observers line, the species turnover, and — w
 features* on — the AI model's own year profile for the spot), and
 **eBird hotspots** (clickable — each opens a popup
 with an eBird link and *Navigate*; needs the eBird key). All are streamed from the providers;
-nothing is stored. Hover a layer's checkbox for a tip on what it shows. Overlays that carry a colour
+nothing is stored. Hover a layer's checkbox for a short tip, or tap the **?** at the right of its row
+for a detailed explanation (what it shows, why it helps birding, how to use it, caveats — English
+for now). Overlays that carry a colour
 key (WDPA, Natura 2000, Emerald, GBIF density, CORINE land cover) show a **legend in the lower-right**;
 with several on, the legends stack as separate cards you can individually **minimise**.
 

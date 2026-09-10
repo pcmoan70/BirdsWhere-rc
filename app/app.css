@@ -466,6 +466,15 @@ input:focus-visible {
 #mode-wrap { display: none; }
 /* "Zoom in" badge on the birding-spots overlay row (spots only draw past a zoom level). */
 .ovl-zoomhint { color: #e8801f; font-size: var(--fs-s); white-space: nowrap; cursor: pointer; }
+/* "?" badge at the right of every overlay row → the overlay's explanation dialog. */
+.leaflet-control-layers-overlays label { position: relative; padding-right: 26px; }
+.ovl-help { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; border: 1.5px solid var(--brand, #2e8b74); border-radius: 50%; color: var(--brand, #2e8b74); font-size: 12px; font-weight: 700; line-height: 15px; text-align: center; cursor: pointer; user-select: none; }
+.ovl-help:hover, .ovl-help:focus { background: var(--brand, #2e8b74); color: #fff; outline: none; }
+.ui-modal.ovl-help-box { width: min(520px, 94vw); max-height: 88vh; overflow-y: auto; }
+.ovl-help-title { font-weight: 700; color: var(--brand-deep, #0b3a3a); margin-bottom: 4px; }
+.ovl-help-body { font-size: var(--fs-b); line-height: 1.45; }
+.ovl-help-body p { margin: 8px 0; }
+.ovl-help-body b { color: var(--brand-deep, #0b3a3a); }
 .ovl-zoomhint.ok { color: var(--ink-muted, #888); }   /* current zoom already shows the icons */
 /* Overlay legend stack (bottom-right): a collapsible card per active overlay. */
 .legend-stack { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; margin: 0 10px 10px 0 !important; }

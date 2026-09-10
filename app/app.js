@@ -14677,11 +14677,24 @@
   // runtime language change would leave them stale (e.g. still "Fugleplasser" after
   // switching to English). Keep a name-key per layer so the control can be re-labelled.
   var overlayLayersCtrl = null, overlayDefsRef = null;
+  // Detailed explanation of one overlay (what it shows, why it helps, how to use it,
+  // caveats) — opened from the ⓘ-style "?" badge at the right of its row. The texts are
+  // English so far; other languages get the English one with a small note.
+  function showOverlayHelp(def) {
+    var m = createModal({ escClose: true, backdropClose: true, boxClass: "ovl-help-box" });
+    var html = t(def.key + "Help");
+    var enOnly = (lang !== "en") && !window.GeoI18N.hasOwn(lang, def.key + "Help");
+    m.box.innerHTML = '<div class="ui-modal-msg ovl-help-title">' + escapeHtml(t(def.key)) + "</div>" +
+      (enOnly ? '<p class="cu-hint">' + escapeHtml(t("layer.helpEnOnly")) + "</p>" : "") +
+      '<div class="ovl-help-body">' + html + "</div>" +
+      '<div class="ui-modal-btns"><button type="button" class="btn ovl-help-ok">' + escapeHtml(t("popup.ok")) + "</button></div>";
+    m.box.querySelector(".ovl-help-ok").addEventListener("click", m.close);
+  }
   function applyOverlayTips() {
     if (!overlayLayersCtrl || !overlayDefsRef) return;
     try {
-      var tips = {};
-      overlayDefsRef.forEach(function (d) { if (d.tip) tips[t(d.key)] = t(d.tip); });
+      var tips = {}, defsByName = {};
+      overlayDefsRef.forEach(function (d) { if (d.tip) tips[t(d.key)] = t(d.tip); defsByName[t(d.key)] = d; });
       var wantBird = t("layer.birdSpots");
       Array.prototype.forEach.call(overlayLayersCtrl.getContainer().querySelectorAll(".leaflet-control-layers-overlays label"), function (lab) {
         // The zoom-hint badge (added below) lives in its own span; exclude it when
@@ -14692,6 +14705,16 @@
         txt = txt.trim();
         if (txt.slice(-1) === EXP_STAR) txt = txt.slice(0, -1).trim();   // drop the experimental "*" before matching
         lab.title = tips[txt] || "";
+        // "?" badge at the right edge of every row → the overlay's detailed explanation.
+        var def = defsByName[txt];
+        if (def && !lab.querySelector(".ovl-help")) {
+          var q = document.createElement("span");
+          q.className = "ovl-help"; q.setAttribute("role", "button"); q.tabIndex = 0;
+          q.textContent = "?"; q.title = t("layer.helpBtn"); q.setAttribute("aria-label", t("layer.helpBtn"));
+          q.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showOverlayHelp(def); });
+          q.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); showOverlayHelp(def); } });
+          lab.appendChild(q);
+        }
         // Birding spots + eBird hotspots + Best sites have related settings
         // (visibility zoom, max shown, min species) — a ⚙-badge marks that on the
         // row; tapping the gear (or long-pressing the row) opens the settings popup.
