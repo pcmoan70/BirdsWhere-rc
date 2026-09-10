@@ -5825,7 +5825,7 @@
             '<button type="button" id="settings-toggle" class="settings-icon-btn" aria-haspopup="true" aria-label="Settings" data-i18n-title="ctrl.settingsHold" title="Settings"></button>' +
             '<div id="settings-panel" class="dd-panel settings-panel" style="display:none">' +
               // Feedback form, first thing in Settings (the delegated ".feedback-open" click handler opens it).
-              '<button type="button" class="btn ico-btn feedback-open settings-feedback">' + ico("mail") + '<span class="ico-label" data-i18n="feedback.send">Message</span></button>' +
+              '<button type="button" class="btn ico-btn feedback-open settings-feedback">' + ico("mail") + '<span class="ico-label" data-i18n="feedback.send">Feedback</span></button>' +
               '<p class="settings-intro" data-i18n="settings.appIntro">BirdsWhere shows where species live, migrate, and are being seen right now — the BirdNET habitat model runs entirely in your browser, overlaid with live observations from eBird, GBIF, iNaturalist and national databases.</p>' +
               '<button type="button" id="about-open" class="settings-about" data-i18n="ctrl.about">About &amp; how it works</button>' +
               '<div id="settings-version" class="settings-version" style="display:none"></div>' +
@@ -6261,7 +6261,7 @@
         '</div></div>' +
         '<div id="feedback-modal" style="display:none"><div id="feedback-box">' +
           '<button type="button" id="feedback-close" aria-label="Close">×</button>' +
-          '<h3 data-i18n="feedback.title">Message</h3>' +
+          '<h3 data-i18n="feedback.title">Feedback</h3>' +
           '<textarea id="feedback-msg" rows="5" data-i18n-ph="feedback.msgPh" placeholder="Your message…"></textarea>' +
           '<input type="email" id="feedback-email" autocomplete="email" data-i18n-ph="feedback.emailPh" placeholder="Your email (optional, for a reply)" />' +
           '<div id="feedback-status" class="cu-hint"></div>' +
