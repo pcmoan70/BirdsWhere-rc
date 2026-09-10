@@ -20899,7 +20899,7 @@
         var monthClass = (w3 % 4 === 0) ? " bc-month-start" : "";
         var curClass = (w3 === wkIdx) ? " bc-cur" : "";
         var detClass = (ctx.detWeek && w3 === ctx.detWeek - 1) ? " bc-det" : "";   // the observation's week
-        html += '<div class="bc-bar' + monthClass + curClass + detClass + '" style="height:' + pct.toFixed(1) + '%;background:' + probHueColor(norm) + '" title="' + (w3 + 1) + ": " + (prob * 100).toFixed(1) + '%' + (detClass ? " · " + escapeHtml(t("bc.detWeek")) : "") + '"></div>';
+        html += '<div class="bc-bar' + monthClass + curClass + detClass + '" style="height:' + pct.toFixed(1) + '%;background:' + window.GeoAnalysis.probColor(norm) + '" title="' + (w3 + 1) + ": " + (prob * 100).toFixed(1) + '%' + (detClass ? " · " + escapeHtml(t("bc.detWeek")) : "") + '"></div>';
       }
       html += '</div><div class="bc-months">';
       for (var m = 0; m < 12; m++) html += "<span>" + escapeHtml(MONTH_LABELS[m]) + "</span>";

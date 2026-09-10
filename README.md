@@ -171,9 +171,9 @@ Click the map in **Migration** mode for a tabbed panel derived from a single 48-
 prediction at that point:
 
 - **Timeline** — per-species phenology bars across the year.
-- **Probability** — species × 48-week heatmap (red → green).
+- **Probability** — species × 48-week heatmap (orange → green).
 - **Arrivals** — a diverging heatmap of the arrival score `(P[next] − P[prev]) / max_year`
-  (green = arriving, red = departing).
+  (green = arriving, orange = departing).
 - **Annual Top** — a running total of arrival scores; the part of the year each species is most present.
 - **Scatter** — the top-N species plotted as *(arrival, probability)*, with a sortable table.
 

@@ -18,19 +18,21 @@
 window.GeoAnalysis = (function () {
   "use strict";
 
-  // ---- Colour scales (match the reference app's semantics) ----------------
-  // Probability: red (hue 10) at low → green (hue 130) at high.
+  // ---- Colour scales: the app's orange → green palette --------------------
+  // Probability: orange (the app's --warn, hue 30) at low → brand green (hue 163,
+  // #2e8b74) at high, through yellow-green in between.
+  var HUE_LO = 30, HUE_HI = 163;
   function probColor(norm) {
     var n = Math.max(0, Math.min(1, norm));
-    return "hsl(" + (10 + n * 120) + ", 60%, 42%)";
+    return "hsl(" + Math.round(HUE_LO + n * (HUE_HI - HUE_LO)) + ", " + Math.round(80 - n * 30) + "%, " + Math.round(50 - n * 14) + "%)";
   }
-  // Arrival: diverging — red (negative/departing) → grey (≈0) → green
+  // Arrival: diverging — orange (negative/departing) → grey (≈0) → green
   // (positive/arriving), intensity ∝ |value|. Value already in [-1, 1].
   function arrivalColor(val) {
     var a = Math.max(-1, Math.min(1, val));
-    var hue = a >= 0 ? 130 : 0;
+    var hue = a >= 0 ? HUE_HI : HUE_LO;
     var mag = Math.abs(a);
-    return "hsl(" + hue + ", " + Math.round(mag * 60) + "%, " + Math.round(60 - mag * 18) + "%)";
+    return "hsl(" + hue + ", " + Math.round(mag * (a >= 0 ? 55 : 80)) + "%, " + Math.round(62 - mag * (a >= 0 ? 26 : 12)) + "%)";
   }
 
   function arrivalAt(probs, w, maxYear) {
@@ -379,6 +381,8 @@ window.GeoAnalysis = (function () {
     visibleSpecies: visibleSpecies,
     renderHeatmap: renderHeatmap,
     renderScatter: renderScatter,
+    probColor: probColor,        // the migration palette (orange → green) — the Timeline tab bars use it too
+    arrivalColor: arrivalColor,
     buildCsv: buildCsv,
     focusSeries: focusSeries,
   };
