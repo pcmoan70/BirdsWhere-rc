@@ -1907,8 +1907,15 @@ button.dd-name:hover { text-decoration: underline; }
 .area-dl-est.area-dl-warn { color: #b06a00; font-weight: 600; }
 .area-dl-prog { margin-top: 8px; font-size: var(--fs-s); color: var(--brand-deep); }
 .area-dl .ui-modal-input { margin-top: 12px; }
-#offline-list { margin-top: 6px; }
-.offline-row { display: flex; align-items: center; gap: 8px; padding: 2px 0; font-size: var(--fs-s); }
+#offline-list { margin-top: 4px; }
+/* Offline area: grid — colour key | name / meta | ⟳ | × ; the name line takes the width. */
+.offline-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-rows: auto auto; column-gap: 8px; row-gap: 1px; align-items: center; padding: 6px 0; border-top: 1px solid var(--border, #e6e6e6); font-size: var(--fs-s); }
+.offline-row:first-child { border-top: none; }
+.offline-row .offline-sw { grid-row: 1 / span 2; }
+.offline-row .offline-name { grid-column: 2; grid-row: 1; font-size: var(--fs-b); }
+.offline-row .offline-meta { grid-column: 2; grid-row: 2; }
+.offline-row .offline-redl { grid-column: 3; grid-row: 1 / span 2; }
+.offline-row .offline-del { grid-column: 4; grid-row: 1 / span 2; }
 .blogs-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--brand-deep); text-decoration: none; }
 .blogs-name:hover { text-decoration: underline; }
 /* Birding-blogs list — one tidy card per blog: name + host + delete. */
@@ -2157,7 +2164,9 @@ button.dd-name:hover { text-decoration: underline; }
   background: transparent; pointer-events: none;
   align-items: stretch; justify-content: flex-end;
 }
-#offline-box { pointer-events: auto; width: 100%; max-width: none; max-height: 100%; margin: 0; padding: 12px 14px; }
+#offline-box { pointer-events: auto; width: 100%; max-width: none; max-height: 100%; margin: 0; padding: 12px 14px; overflow-x: hidden; }
+#offline-modal { align-items: flex-start; }   /* the panel hugs its content instead of stretching to the bottom */
+#offline-dl { width: 100%; justify-content: center; margin-bottom: 4px; }
 /* Colour key in the list matching each area's outline on the map. */
 .offline-sw { flex: 0 0 auto; width: 12px; height: 12px; border-radius: 3px; box-shadow: 0 0 0 1px rgba(0,0,0,.25) inset; }
 /* Tappable "×" delete handle at a downloaded area's top-right corner. */
@@ -2177,7 +2186,7 @@ button.dd-name:hover { text-decoration: underline; }
 /* Minimized: collapse to a small title bar at the bottom-right of the dock (shrunk
    to its content, not full width); the map's coloured areas + "×" delete handles
    stay visible for editing. */
-#offline-box.min { max-height: none; width: auto; align-self: flex-end; margin-top: auto; padding: 5px 8px; }
+#offline-box.min { max-height: none; width: auto; align-self: flex-end; margin-top: auto; margin-left: auto; padding: 5px 8px; }
 #offline-box.min .offline-body { display: none; }
 #offline-box.min h3 { margin: 1px 22px 1px 20px; font-size: var(--fs-b); white-space: nowrap; }
 #offline-box.min #offline-min, #offline-box.min #offline-close { top: 4px; font-size: var(--fs-h); }
@@ -2338,8 +2347,9 @@ button.dd-name:hover { text-decoration: underline; }
 .src-key-status.testing { color: var(--ink-muted); font-weight: 400; }
 .src-del { border: none; background: transparent; cursor: pointer; color: var(--danger, #c0392b); font-size: var(--fs-glyph); line-height: 1; padding: 0 4px; }
 #sources-box .cu-actions { display: flex; gap: 8px; margin-top: 12px; }
-.offline-zoom-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.offline-zoom-row label { font-size: var(--fs-b); color: var(--ink); }
+.offline-zoom-row { display: flex; align-items: center; gap: 10px; margin: 6px 0 8px; }
+.offline-zoom-row label { flex: 0 0 auto; font-size: var(--fs-b); color: var(--ink); white-space: nowrap; }
+.offline-zoom-row select { flex: 1 1 auto; min-width: 0; }
 .offline-zoom-row select { font: inherit; font-size: var(--fs-b); padding: 5px 8px; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--surface); color: var(--ink); }
 /* Fetch-radius slider: range input + the current value label beside it. */
 .radius-row { display: flex; align-items: center; gap: 12px; }

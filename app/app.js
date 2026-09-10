@@ -6316,11 +6316,11 @@
             '<button type="button" id="offline-dl" class="btn ico-btn">' + ico("download") + '<span class="ico-label" data-i18n="ctrl.downloadView">Download map</span></button>' +
             '<p class="cu-hint" data-i18n="offline.hint">Saves the map area shown on screen — pan and zoom first (– shrinks this panel to see more of the map).</p>' +
             '<div class="offline-zoom-row">' +
-              '<label for="offline-zoom" data-i18n="ctrl.offlineZoom">Download max zoom</label>' +
+              '<label for="offline-zoom" data-i18n="offline.maxzoom">Max zoom</label>' +
               '<select id="offline-zoom">' +
                 '<option value="11">11 · regional</option><option value="13">13 · town</option>' +
                 '<option value="15">15 · street</option><option value="17">17 · detailed</option>' +
-                '<option value="19" selected>19 · maximum (full)</option>' +
+                '<option value="19" selected>19 · maximum</option>' +
               '</select>' +
             '</div>' +
             '<div id="offline-list"></div>' +
@@ -14232,9 +14232,7 @@
     wrap.appendChild(makePopupBtn(t("loc.save"), "btn-light mc-btn-save", function () { map.closePopup(); registerLocationPrompt(lat, lon); }, "pin"));
     wrap.appendChild(makePopupBtn(t("share.link"), "btn-light", function () { map.closePopup(); offerShareUrl(pointShareUrl(lat, lon)); }, "share"));
     wrap.appendChild(makePopupBtn(t("nav.here"), "btn-light", function () { map.closePopup(); navigatePoints([{ lat: lat, lon: lon }]); }, "nav"));
-    // Offline maps moved here from a dedicated map button: download the current
-    // view's tiles, or open the saved-areas manager.
-    wrap.appendChild(makePopupBtn(t("ctrl.downloadView"), "btn-light", function () { map.closePopup(); openAreaDialog(map.getBounds()); }, "download"));
+    // Offline maps: opens the saved-areas panel, which carries the ⬇ Download map button.
     wrap.appendChild(makePopupBtn(t("offline.maps"), "btn-light", function () { map.closePopup(); openOfflineManager(); }, "folder"));
     L.popup({ className: "choose-popup", closeButton: true, autoClose: true, autoPan: true, offset: [0, -2] })
       .setLatLng([lat, lon]).setContent(wrap).openOn(map);

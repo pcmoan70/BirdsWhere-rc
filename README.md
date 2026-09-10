@@ -711,8 +711,8 @@ Settings** (a quiet no-op while offline).
 - **Android:** in **Chrome** (or Edge / Firefox / Brave) → **⋮ → Install app**; or tap the in-app
   **⤓ Offline mode** button when it appears.
 
-**Offline maps** — right-click / long-press the map → **Download map** saves the area on screen, and
-**Offline maps** in the same menu opens the manager, which has its own **⬇ Download map** button.
+**Offline maps** — right-click / long-press the map → **Offline maps** opens the panel; its
+**⬇ Download map** button saves the area on screen (pan/zoom first, – shrinks the panel).
 Areas are colour-coded frames you can delete individually; if the browser evicts
 tiles, the app detects it and offers to re-download. Pinned areas are never auto-purged.
 

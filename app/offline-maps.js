@@ -357,9 +357,11 @@ window.AppOffline = (function () {
     if (!areas.length) { list.innerHTML = '<p class="dd-empty">' + escapeHtml(t("offline.empty")) + "</p>"; return; }
     list.innerHTML = areas.map(function (a, i) {
       var mb = (a.bytes / 1048576).toFixed(a.bytes < 10485760 ? 1 : 0);
-      return '<div class="offline-row" data-id="' + escapeHtml(a.id) + '"><span class="offline-sw" style="background:' + offlineColor(i) + '"></span><span class="offline-name" title="z' + a.zStart + "–" + a.zMax + '">' + escapeHtml(a.name) +
+      // Two lines per area: name (with the colour key) on top, tiles · size · zoom range
+      // below, so long names get the panel's width; ⟳ / × sit at the right edge.
+      return '<div class="offline-row" data-id="' + escapeHtml(a.id) + '"><span class="offline-sw" style="background:' + offlineColor(i) + '"></span><span class="offline-name" title="' + escapeHtml(a.name) + '">' + escapeHtml(a.name) +
         '<span class="offline-purged" title="' + escapeHtml(t("offline.purged")) + '" style="display:none">⚠</span></span>' +
-        '<span class="offline-meta">' + a.tiles.toLocaleString() + " · ~" + mb + " MB</span>" +
+        '<span class="offline-meta">' + a.tiles.toLocaleString() + " · ~" + mb + " MB · z" + a.zStart + "–" + a.zMax + "</span>" +
         '<button type="button" class="offline-redl ico-btn" data-id="' + escapeHtml(a.id) + '" title="' + escapeHtml(t("offline.redownload")) + '" aria-label="' + escapeHtml(t("offline.redownload")) + '">' + ico("refresh") + "</button>" +
         '<button type="button" class="dd-del offline-del" data-id="' + escapeHtml(a.id) + '" aria-label="' + escapeHtml(t("offline.delete")) + '">×</button></div>';
     }).join("");
