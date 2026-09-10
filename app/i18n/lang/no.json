@@ -311,7 +311,6 @@
   "locmenu.find": "Vis på kartet",
   "locmenu.add": "Legg til som punkt",
   "locmenu.added": "Punkt lagt til",
-  "route.addShort": "+Rute",
   "route.count": "Rute ({n})",
   "route.go": "Naviger",
   "route.clear": "Tøm rute",

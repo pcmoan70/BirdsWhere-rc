@@ -311,7 +311,6 @@
   "locmenu.find": "Pokaż na mapie",
   "locmenu.add": "Dodaj jako punkt",
   "locmenu.added": "Dodano punkt",
-  "route.addShort": "+Trasa",
   "route.count": "Trasa ({n})",
   "route.go": "Nawiguj",
   "route.clear": "Wyczyść trasę",

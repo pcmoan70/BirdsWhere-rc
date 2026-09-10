@@ -311,7 +311,6 @@
   "locmenu.find": "Toon op kaart",
   "locmenu.add": "Als punt toevoegen",
   "locmenu.added": "Punt toegevoegd",
-  "route.addShort": "+Route",
   "route.count": "Route ({n})",
   "route.go": "Navigeren",
   "route.clear": "Route wissen",

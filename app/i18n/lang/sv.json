@@ -321,7 +321,6 @@
   "locmenu.find": "Visa på kartan",
   "locmenu.add": "Lägg till som punkt",
   "locmenu.added": "Punkt tillagd",
-  "route.addShort": "+Rutt",
   "route.count": "Rutt ({n})",
   "route.go": "Navigera",
   "route.clear": "Rensa rutt",

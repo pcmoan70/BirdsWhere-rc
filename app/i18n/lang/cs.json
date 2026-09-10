@@ -311,7 +311,6 @@
   "locmenu.find": "Zobrazit na mapě",
   "locmenu.add": "Přidat jako bod",
   "locmenu.added": "Bod přidán",
-  "route.addShort": "+Trasa",
   "route.count": "Trasa ({n})",
   "route.go": "Navigovat",
   "route.clear": "Vymazat trasu",

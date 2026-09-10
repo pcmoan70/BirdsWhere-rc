@@ -311,7 +311,6 @@
   "locmenu.find": "Näytä kartalla",
   "locmenu.add": "Lisää pisteenä",
   "locmenu.added": "Piste lisätty",
-  "route.addShort": "+Reitti",
   "route.count": "Reitti ({n})",
   "route.go": "Navigoi",
   "route.clear": "Tyhjennä reitti",

@@ -311,7 +311,6 @@
   "locmenu.find": "Voir sur la carte",
   "locmenu.add": "Ajouter comme point",
   "locmenu.added": "Point ajouté",
-  "route.addShort": "+Trajet",
   "route.count": "Itinéraire ({n})",
   "route.go": "Naviguer",
   "route.clear": "Effacer l'itinéraire",

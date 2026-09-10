@@ -311,7 +311,6 @@
   "locmenu.find": "Näita kaardil",
   "locmenu.add": "Lisa punktina",
   "locmenu.added": "Punkt lisatud",
-  "route.addShort": "+Teekond",
   "route.count": "Marsruut ({n})",
   "route.go": "Navigeeri",
   "route.clear": "Tühjenda marsruut",

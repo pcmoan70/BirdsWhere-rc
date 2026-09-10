@@ -295,7 +295,6 @@ window.GeoI18N = (function () {
         "locmenu.find": "Find on map",
         "locmenu.add": "Add as point",
         "locmenu.added": "Point added",
-        "route.addShort": "+Route",
         "route.count": "Route ({n})",
         "route.go": "Navigate",
         "route.save": "Save route",

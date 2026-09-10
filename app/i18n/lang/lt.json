@@ -311,7 +311,6 @@
   "locmenu.find": "Rodyti žemėlapyje",
   "locmenu.add": "Pridėti kaip tašką",
   "locmenu.added": "Taškas pridėtas",
-  "route.addShort": "+Maršrutas",
   "route.count": "Maršrutas ({n})",
   "route.go": "Naviguoti",
   "route.clear": "Išvalyti maršrutą",
