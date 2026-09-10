@@ -959,6 +959,7 @@
   "points.empty": "Ei pisteitä — napsauta karttaa hiiren kakkospainikkeella lisätäksesi.",
   "points.byDist": "Etäisyys",
   "points.byName": "Nimi",
+  "points.sortToggle": "Järjestys – vaihda napauttamalla",
   "points.notag": "(ei tunnistetta)",
   "points.clear": "Tyhjennä",
   "points.unsaved": "{n} tallentamatonta pistettä — säilytä ne valitsemalla ”Tallenna listana…”.",

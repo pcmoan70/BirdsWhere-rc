@@ -816,6 +816,7 @@ window.GeoI18N = (function () {
         "points.empty": "No points yet — right-click the map to add one.",
         "points.byDist": "Distance",
         "points.byName": "Name",
+        "points.sortToggle": "Sort order — tap to switch",
         "points.notag": "(no tag)",
         "points.clear": "Clear",
         "points.unsaved": "{n} unsaved point(s) — use “Save as list…” to keep them.",

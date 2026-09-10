@@ -959,6 +959,7 @@
   "points.empty": "Ingen punkter — højreklik på kortet for at tilføje.",
   "points.byDist": "Afstand",
   "points.byName": "Navn",
+  "points.sortToggle": "Sortering – tryk for at skifte",
   "points.notag": "(uden tag)",
   "points.clear": "Ryd",
   "points.unsaved": "{n} ikke-gemte punkter — brug “Gem som liste…” for at beholde dem.",

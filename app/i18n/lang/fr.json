@@ -959,6 +959,7 @@
   "points.empty": "Aucun point — clic droit sur la carte pour ajouter.",
   "points.byDist": "Distance",
   "points.byName": "Nom",
+  "points.sortToggle": "Ordre de tri – touchez pour changer",
   "points.notag": "(sans étiquette)",
   "points.clear": "Effacer",
   "points.unsaved": "{n} point(s) non enregistré(s) — utilisez « Enregistrer comme liste… » pour les conserver.",

@@ -959,6 +959,7 @@
   "points.empty": "Punkte pole — paremklõpsa kaarti, et lisada.",
   "points.byDist": "Kaugus",
   "points.byName": "Nimi",
+  "points.sortToggle": "Järjestus – puuduta vahetamiseks",
   "points.notag": "(sildita)",
   "points.clear": "Tühjenda",
   "points.unsaved": "{n} salvestamata punkti — kasuta „Salvesta loendina…“, et need säilitada.",

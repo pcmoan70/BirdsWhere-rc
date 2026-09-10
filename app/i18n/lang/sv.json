@@ -729,6 +729,7 @@
   "points.empty": "Inga punkter — högerklicka på kartan för att lägga till.",
   "points.byDist": "Avstånd",
   "points.byName": "Namn",
+  "points.sortToggle": "Sortering – tryck för att växla",
   "points.notag": "(ingen etikett)",
   "points.clear": "Rensa",
   "points.unsaved": "{n} osparade punkter — använd ”Spara som lista…” för att behålla dem.",

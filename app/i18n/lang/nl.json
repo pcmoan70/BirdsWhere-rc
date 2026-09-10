@@ -959,6 +959,7 @@
   "points.empty": "Geen punten — rechtsklik op de kaart om er een toe te voegen.",
   "points.byDist": "Afstand",
   "points.byName": "Naam",
+  "points.sortToggle": "Sortering – tik om te wisselen",
   "points.notag": "(zonder tag)",
   "points.clear": "Wissen",
   "points.unsaved": "{n} niet-opgeslagen punt(en) — gebruik “Opslaan als lijst…” om ze te bewaren.",

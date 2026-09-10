@@ -959,6 +959,7 @@
   "points.empty": "Taškų nėra — dešinį pelės klavišu spustelėk žemėlapį.",
   "points.byDist": "Atstumas",
   "points.byName": "Pavadinimas",
+  "points.sortToggle": "Rikiavimas – bakstelėkite, kad pakeistumėte",
   "points.notag": "(be žymos)",
   "points.clear": "Išvalyti",
   "points.unsaved": "{n} neišsaugotų taškų — naudokite „Išsaugoti kaip sąrašą…“, kad juos išsaugotumėte.",

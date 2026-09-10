@@ -959,6 +959,7 @@
   "points.empty": "Žádné body — pro přidání klikni pravým tlačítkem na mapu.",
   "points.byDist": "Vzdálenost",
   "points.byName": "Název",
+  "points.sortToggle": "Řazení – klepnutím přepnete",
   "points.notag": "(bez štítku)",
   "points.clear": "Vymazat",
   "points.unsaved": "{n} neuložených bodů — použijte „Uložit jako seznam…“ k jejich zachování.",

@@ -959,6 +959,7 @@
   "points.empty": "Nessun punto — clic destro sulla mappa per aggiungerne uno.",
   "points.byDist": "Distanza",
   "points.byName": "Nome",
+  "points.sortToggle": "Ordinamento – tocca per cambiare",
   "points.notag": "(senza tag)",
   "points.clear": "Svuota",
   "points.unsaved": "{n} punto/i non salvati — usa “Salva come elenco…” per conservarli.",

@@ -959,6 +959,7 @@
   "points.empty": "Noch keine Punkte — Rechtsklick auf die Karte zum Hinzufügen.",
   "points.byDist": "Entfernung",
   "points.byName": "Name",
+  "points.sortToggle": "Sortierung – antippen zum Wechseln",
   "points.notag": "(ohne Tag)",
   "points.clear": "Leeren",
   "points.unsaved": "{n} nicht gespeicherte Punkte – mit „Als Liste speichern…“ sichern.",

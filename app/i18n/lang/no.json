@@ -959,6 +959,7 @@
   "points.empty": "Ingen punkter — høyreklikk på kartet for å legge til.",
   "points.byDist": "Avstand",
   "points.byName": "Navn",
+  "points.sortToggle": "Sortering – trykk for å bytte",
   "points.notag": "(uten tagg)",
   "points.clear": "Tøm",
   "points.unsaved": "{n} ulagrede punkter — bruk «Lagre som liste…» for å beholde dem.",

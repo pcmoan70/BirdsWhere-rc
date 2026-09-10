@@ -14330,8 +14330,7 @@
       (chipsHtml ? '<div class="mp-chips">' + chipsHtml + "</div>" : "") +
       (unionPts.length > 1 ?
         '<div class="mp-sort"><span class="mp-sort-lbl">⇅</span>' +
-          '<button type="button" class="mp-sort-btn' + (mpState.mpSort() === "dist" ? " active" : "") + '" data-sort="dist">' + escapeHtml(t("points.byDist")) + "</button>" +
-          '<button type="button" class="mp-sort-btn' + (mpState.mpSort() === "name" ? " active" : "") + '" data-sort="name">' + escapeHtml(t("points.byName")) + "</button>" +
+          '<button type="button" class="mp-sort-btn active" title="' + escapeHtml(t("points.sortToggle")) + '">' + escapeHtml(t(mpState.mpSort() === "name" ? "points.byName" : "points.byDist")) + "</button>" +
         "</div>" : "") +
       '<div class="mp-list">' + listHtml + "</div>";
     // Wire interactions
@@ -14359,7 +14358,7 @@
     });
     panel.querySelectorAll(".mp-sort-btn").forEach(function (b) {
       b.addEventListener("click", function () {
-        mpState.setMpSort(this.getAttribute("data-sort") === "name" ? "name" : "dist");
+        mpState.setMpSort(mpState.mpSort() === "name" ? "dist" : "name");   // one button: shows the current order, flips it
         window.GeoState.save({ mapPointsSort: mpState.mpSort() });
         refreshMpPanel();
       });
@@ -16991,7 +16990,10 @@
       }
       var scil = e.target.closest ? e.target.closest(".sci-link") : null;
       if (scil) { e.preventDefault(); openFamilyMenu(scil.getAttribute("data-key"), e.clientX, e.clientY); return; }
-      // Close the dropdown popovers when clicking outside a panel/toggle.
+      // Close the dropdown popovers when clicking outside a panel/toggle. A target that is
+      // no longer in the document was re-rendered away by its own handler (e.g. a Points-panel
+      // sort/chip click that rebuilt the panel) — that was an inside click, not an outside one.
+      if (!document.body.contains(e.target)) return;
       if (!e.target.closest(".dd-panel") && !e.target.closest(".dd-toggle")) closeDropdowns();
     });
 
