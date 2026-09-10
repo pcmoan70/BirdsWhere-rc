@@ -1254,19 +1254,16 @@
     if (!navigator.geolocation) { setStatus(t("status.locateError")); return; }
     oneShotBusy = true;
     var b = crossBtn(); if (b) b.classList.add("cross-locating");
-    navigator.geolocation.getCurrentPosition(function (pos) {
+    sharedPosition(function (pos) {   // shares any request already in flight (one permission prompt)
       oneShotBusy = false;
       var b2 = crossBtn(); if (b2) b2.classList.remove("cross-locating");
+      if (!pos) { setStatus(t("status.locateError")); return; }
       if (!map || crossState !== 0) return;   // user switched to follow/read meanwhile
       var ll = L.latLng(pos.coords.latitude, pos.coords.longitude);
       if (posFixedMarker) { map.removeLayer(posFixedMarker); }
       posFixedMarker = L.marker(ll, { icon: livePosIcon("red"), interactive: false, keyboard: false, zIndexOffset: 1000 }).addTo(map);
       map.setView(ll, Math.max(map.getZoom() || 0, 14));
       if (["list", "barchart", "range"].indexOf(currentMode) >= 0) onMapClick({ latlng: ll });
-    }, function () {
-      oneShotBusy = false;
-      var b2 = crossBtn(); if (b2) b2.classList.remove("cross-locating");
-      setStatus(t("status.locateError"));
     }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000 });
   }
   function crossTap() {
@@ -5587,13 +5584,37 @@
     var acc = el.querySelector(".gps-wait-acc"); if (acc) acc.textContent = accM != null ? "\u00b1" + Math.round(accM) + " m" : "";
   }
   function gpsWaitHide() { var el = document.getElementById("gps-wait"); if (el) el.remove(); }
+  // ONE geolocation request at a time. iOS Safari raises a separate permission prompt
+  // for every outstanding request, so two boot-time callers (e.g. the ⟳ Here row of
+  // Fetch-on-open and the rarity poll, or a ?location=here launch plus either) asked
+  // the user twice. Concurrent callers now share the in-flight request — including a
+  // running waitForGoodFix watch, whose best fix they receive when it finishes.
+  var geoWaiters = null;   // callbacks waiting for the in-flight fix (null = nothing in flight)
+  var geoLastPos = null;   // { pos, at }: the newest fix this session — reused within a caller's maximumAge
+  function geoSettle(pos, err) {
+    if (pos) geoLastPos = { pos: pos, at: Date.now() };
+    var w = geoWaiters || []; geoWaiters = null; w.forEach(function (f) { try { f(pos, err); } catch (e) {} });
+  }
+  function sharedPosition(cb, opts) {
+    if (!navigator.geolocation) { cb(null, { code: 2 }); return; }
+    if (geoLastPos && opts && opts.maximumAge > 0 && Date.now() - geoLastPos.at <= opts.maximumAge) { cb(geoLastPos.pos, null); return; }   // a fresh fix — no new request (and no new prompt)
+    if (geoWaiters) { geoWaiters.push(cb); return; }
+    geoWaiters = [cb];
+    navigator.geolocation.getCurrentPosition(function (pos) { geoSettle(pos, null); }, function (err) { geoSettle(null, err); }, opts);
+  }
   function waitForGoodFix(onFix, onFail) {
     var best = null, done = false, wid = null, timer = null;
+    if (geoWaiters) {   // a request is already in flight — reuse its answer instead of prompting again
+      geoWaiters.push(function (pos) { if (pos) onFix(pos.coords.latitude, pos.coords.longitude); else onFail(); });
+      return;
+    }
+    geoWaiters = [];    // gate: callers arriving during the watch queue up here
     function finish() {
       if (done) return; done = true;
       if (wid !== null) navigator.geolocation.clearWatch(wid);
       clearTimeout(timer);
       gpsWaitHide();
+      geoSettle(best, best ? null : { code: 3 });
       if (best) onFix(best.coords.latitude, best.coords.longitude); else onFail();
     }
     gpsWaitShow(null);
@@ -18550,11 +18571,12 @@
   function getHereFix(cb) {
     var last = window.GeoState.get("hereFix", null);
     if (!navigator.geolocation) { cb(last); return; }
-    navigator.geolocation.getCurrentPosition(function (pos) {
+    sharedPosition(function (pos) {
+      if (!pos) { cb(last); return; }
       var fix = { lat: pos.coords.latitude, lon: pos.coords.longitude, at: Date.now() };
       window.GeoState.save({ hereFix: fix });
       cb(fix);
-    }, function () { cb(last); }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 120000 });
+    }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 120000 });
   }
   function hideStoredLocations() { var p = document.getElementById("stored-loc-panel"); if (p) p.style.display = "none"; if (storedLocFramesLayer) storedLocFramesLayer.clearLayers(); }   // drop the selection preview; fetched areas are remembered separately
   // Draw a square (the ± radius box that gets fetched) on the map for every
