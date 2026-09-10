@@ -5851,6 +5851,34 @@
                 '<div class="radius-row"><input type="range" id="recent-radius" min="0" max="18" step="1" /><span id="recent-radius-val" class="radius-val"></span></div>' +
                 '<p class="cu-hint" data-i18n="ctrl.recentradiusHint">How far around a clicked point or stored location each source is searched for recent observations.</p>' +
               '</div>' +
+              '<div class="ctrl-group" id="barchart-threshold-wrap" style="display:none">' +
+                '<label data-i18n="ctrl.bcthreshold">Probability range</label>' +
+                '<div id="prob-range">' +
+                  '<div class="pr-track"></div>' +
+                  '<input type="range" id="prob-min" min="0" max="100" step="1" value="0" />' +
+                  '<input type="range" id="prob-max" min="0" max="100" step="1" value="100" />' +
+                '</div>' +
+                '<div id="prob-range-vals"><span id="prob-min-val">0%</span> – <span id="prob-max-val">100%</span></div>' +
+                '<p class="cu-hint" data-i18n="ctrl.bcthresholdHint">Lower and upper model-probability bounds — species (and plotted observations) outside this range are hidden from the list and the map.</p>' +
+              '</div>' +
+              // The week is always the current week (no user override). The <select> stays
+              // as the app's internal week register — Range/Migration playback, the
+              // "week it was seen" jumps and share links still set it programmatically.
+              '<div class="ctrl-group" id="week-select-wrap" style="display:none">' +
+                '<select id="week-select" aria-hidden="true" tabindex="-1"></select>' +
+              '</div>' +
+              '<div class="ctrl-group" id="compare-wrap" style="display:none">' +
+                '<label for="compare-select" data-i18n="ctrl.compare">Compare to</label>' +
+                '<select id="compare-select">' +
+                  '<option value="" data-i18n="compare.none">\u2014 none \u2014</option>' +
+                  '<option value="prev" data-i18n="compare.prev">Previous week</option>' +
+                  '<option value="next" data-i18n="compare.next">Next week</option>' +
+                  '<option value="mean" data-i18n="compare.mean">Annual mean</option>' +
+                  '<option value="annualmax" data-i18n="compare.max">Annual max</option>' +
+                  '<option value="annualtop" selected data-i18n="compare.annualtop">Annual Top</option>' +
+                '</select>' +
+                '<p class="cu-hint" data-i18n="ctrl.compareHint">Adds a column to the species list comparing the current week with another week or the annual mean/peak, so you can see what’s arriving or at its best now.</p>' +
+              '</div>' +
               '<div class="ctrl-group" id="maptype-wrap">' +
                 '<label for="maptype-select" data-i18n="ctrl.basemap">Map type</label>' +
                 '<select id="maptype-select">' +
@@ -5879,34 +5907,6 @@
                   '<label class="ctrl-check hs-dots"><input type="checkbox" id="showdots-toggle" checked> <span data-i18n="ctrl.showDots">Show dots</span></label>' +
                 '</div>' +
                 '<p class="cu-hint" data-i18n="ctrl.hotspotHint">Shades the map by how much activity each area has — tap to cycle Off → species per area → distinct observers → total counts. A smooth, zoom-steady heat cloud; use “Show dots” to see the heatmap alone, the dots alone, or both.</p>' +
-              '</div>' +
-              '<div class="ctrl-group" id="barchart-threshold-wrap" style="display:none">' +
-                '<label data-i18n="ctrl.bcthreshold">Probability range</label>' +
-                '<div id="prob-range">' +
-                  '<div class="pr-track"></div>' +
-                  '<input type="range" id="prob-min" min="0" max="100" step="1" value="0" />' +
-                  '<input type="range" id="prob-max" min="0" max="100" step="1" value="100" />' +
-                '</div>' +
-                '<div id="prob-range-vals"><span id="prob-min-val">0%</span> – <span id="prob-max-val">100%</span></div>' +
-                '<p class="cu-hint" data-i18n="ctrl.bcthresholdHint">Lower and upper model-probability bounds — species (and plotted observations) outside this range are hidden from the list and the map.</p>' +
-              '</div>' +
-              // The week is always the current week (no user override). The <select> stays
-              // as the app's internal week register — Range/Migration playback, the
-              // "week it was seen" jumps and share links still set it programmatically.
-              '<div class="ctrl-group" id="week-select-wrap" style="display:none">' +
-                '<select id="week-select" aria-hidden="true" tabindex="-1"></select>' +
-              '</div>' +
-              '<div class="ctrl-group" id="compare-wrap" style="display:none">' +
-                '<label for="compare-select" data-i18n="ctrl.compare">Compare to</label>' +
-                '<select id="compare-select">' +
-                  '<option value="" data-i18n="compare.none">\u2014 none \u2014</option>' +
-                  '<option value="prev" data-i18n="compare.prev">Previous week</option>' +
-                  '<option value="next" data-i18n="compare.next">Next week</option>' +
-                  '<option value="mean" data-i18n="compare.mean">Annual mean</option>' +
-                  '<option value="annualmax" data-i18n="compare.max">Annual max</option>' +
-                  '<option value="annualtop" selected data-i18n="compare.annualtop">Annual Top</option>' +
-                '</select>' +
-                '<p class="cu-hint" data-i18n="ctrl.compareHint">Adds a column to the species list comparing the current week with another week or the annual mean/peak, so you can see what’s arriving or at its best now.</p>' +
               '</div>' +
               '<div class="settings-section" data-i18n="settings.secFetch">Fetching &amp; detections</div>' +
               '<div class="ctrl-group">' +
