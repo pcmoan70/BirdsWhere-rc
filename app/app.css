@@ -2096,6 +2096,21 @@ button.dd-name:hover { text-decoration: underline; }
 .settings-panel .ctrl-subrow { display: flex; align-items: center; gap: 8px; margin-top: 6px; padding-left: 4px; }
 .settings-panel .ctrl-subrow label { margin: 0; }
 .settings-panel .ctrl-subrow input[type="number"] { width: 4.5em; flex: 0 0 4.5em; box-sizing: border-box; }
+/* Aligned control column: every block control spans the panel's full width. */
+.settings-panel .ctrl-group:not(.ctrl-inline) > select,
+.settings-panel .ctrl-group:not(.ctrl-inline) > input[type="number"],
+.settings-panel .ctrl-group:not(.ctrl-inline) > input[type="text"],
+.settings-panel .ctrl-group:not(.ctrl-inline) > .btn,
+.settings-panel .ctrl-group > .radius-row,
+.settings-panel #prob-range { width: 100%; box-sizing: border-box; }
+/* Slider value on the label line (right-aligned) so the slider itself is full width. */
+.settings-panel .ctrl-label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.settings-panel .ctrl-label-row > label { margin-bottom: 4px; }
+.settings-panel .ctrl-label-row .radius-val { min-width: 0; }
+/* Thematic sections: each header + its groups is a .settings-block; every other one is tinted. */
+.settings-block { margin: 0 -4px 4px; padding: 0 6px 8px; border-radius: 10px; }
+.settings-block.tint { background: var(--brand-soft, #e3f0ec); }
+.settings-block .settings-section { border-top: none; margin: 4px 0 6px; padding-top: 9px; }
 /* Export/Import KML sit side by side, each half width. */
 .kml-btn-row { display: flex; gap: 8px; }
 .kml-btn-row > .btn { flex: 1 1 0; min-width: 0; }
@@ -2625,7 +2640,7 @@ button.dd-name:hover { text-decoration: underline; }
 /* ===== Two-sided probability range slider (analysis) ===== */
 #prob-range {
   position: relative;
-  width: 190px;
+  width: 190px;   /* the Settings panel widens it to 100% */
   height: 22px;
 }
 #prob-range .pr-track {
@@ -2674,7 +2689,7 @@ button.dd-name:hover { text-decoration: underline; }
 #prob-range-vals {
   font-size: var(--fs-s);
   color: var(--ink-muted);
-  margin-top: 2px;
+  margin-top: 0;
   font-variant-numeric: tabular-nums;
 }
 

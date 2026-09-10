@@ -5847,18 +5847,17 @@
                 '<p class="cu-hint" data-i18n="ctrl.groupHint">Limit the whole app — lists, Range, Richness and observation search — to one group: birds, mammals, amphibians, insects, plants or fungi.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
-                '<label for="recent-radius" data-i18n="ctrl.recentradius">Sightings radius</label>' +
-                '<div class="radius-row"><input type="range" id="recent-radius" min="0" max="18" step="1" /><span id="recent-radius-val" class="radius-val"></span></div>' +
+                '<div class="ctrl-label-row"><label for="recent-radius" data-i18n="ctrl.recentradius">Sightings radius</label><span id="recent-radius-val" class="radius-val"></span></div>' +
+                '<div class="radius-row"><input type="range" id="recent-radius" min="0" max="18" step="1" /></div>' +
                 '<p class="cu-hint" data-i18n="ctrl.recentradiusHint">How far around a clicked point or stored location each source is searched for recent observations.</p>' +
               '</div>' +
               '<div class="ctrl-group" id="barchart-threshold-wrap" style="display:none">' +
-                '<label data-i18n="ctrl.bcthreshold">Probability range</label>' +
+                '<div class="ctrl-label-row"><label data-i18n="ctrl.bcthreshold">Probability range</label><span id="prob-range-vals" class="radius-val"><span id="prob-min-val">0%</span> – <span id="prob-max-val">100%</span></span></div>' +
                 '<div id="prob-range">' +
                   '<div class="pr-track"></div>' +
                   '<input type="range" id="prob-min" min="0" max="100" step="1" value="0" />' +
                   '<input type="range" id="prob-max" min="0" max="100" step="1" value="100" />' +
                 '</div>' +
-                '<div id="prob-range-vals"><span id="prob-min-val">0%</span> – <span id="prob-max-val">100%</span></div>' +
                 '<p class="cu-hint" data-i18n="ctrl.bcthresholdHint">Lower and upper model-probability bounds — species (and plotted observations) outside this range are hidden from the list and the map.</p>' +
               '</div>' +
               // The week is always the current week (no user override). The <select> stays
@@ -15485,7 +15484,22 @@
     }
   }
 
+  // Settings: wrap every section header plus the groups that follow it in a
+  // .settings-block, alternately tinted (CSS) so the thematic sections stand out.
+  function groupSettingsSections() {
+    var panel = document.getElementById("settings-panel"); if (!panel) return;
+    var kids = Array.prototype.slice.call(panel.children), block = null, n = 0;
+    kids.forEach(function (el) {
+      if (el.classList.contains("settings-section")) {
+        block = document.createElement("div");
+        block.className = "settings-block" + ((n++ % 2) ? " tint" : "");
+        panel.insertBefore(block, el);
+      }
+      if (block) block.appendChild(el);
+    });
+  }
   function bindControls() {
+    groupSettingsSections();
     var modeEl = document.getElementById("mode-select");
     modeEl.addEventListener("change", function () {
       stopAnimation();
