@@ -779,6 +779,11 @@ on-device: computing a prediction sends your location nowhere.
 
 ---
 
+**Older browsers.** The bundled ONNX Runtime needs WebAssembly SIMD. Browsers without it — Safari
+before 16.4, i.e. macOS Catalina / older Macs and iOS < 16.4 — automatically get a non-SIMD fallback
+runtime (ONNX Runtime Web 1.18, about 10 MB, downloaded only in that case), so the model still runs,
+just slower.
+
 ## Run locally
 
 Static site — serve the `app/` folder with any static server (a server is required; the app uses

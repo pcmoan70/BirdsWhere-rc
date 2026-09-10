@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1679";
+var VERSION = "v1681";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• Older browsers (Safari before 16.4, e.g. on older Macs) could not start the model — “WebAssembly SIMD is not supported”. They now get a fallback runtime automatically. The How-it-works panel documents all ten map overlays, in every language.",
   "• iPhone: the app no longer asks for your location twice at start — all position requests now go through one shared request, and a fix from the last two minutes is reused.",
   "• Language: the picker now starts with an italic (System) entry that follows your device language (English when unsupported) — the default for everyone who never chose a language. The Radar (Migration Aloft) link in the point popup is now behind Settings → Experimental.",
   "• Map overlays: every row in the layers panel has a ? at the right — tap it for a full explanation of that overlay (what it shows, why it helps birding, how to use it, caveats). English for now.",
   "• Shortcut URLs take sortby=distance: the species list with the nearest observation of each species first, and species seen at the same spot ordered rarest first. The /f/ poster link now opens that view (3 km, last 21 days).",
-  "• Tapping a saved point on the map: the menu no longer offers “Show on map” and gains “Delete” — for a point that belongs to a list you are asked before it is removed from that list. Shared links now open straight on the map (no welcome screen, nothing fetched). Points panel: one Distance ⇄ Name sort button, and the panel stays open while you use it.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

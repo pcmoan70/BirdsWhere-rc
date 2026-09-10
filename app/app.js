@@ -6707,9 +6707,11 @@
   }
 
   // ---- Model & labels ------------------------------------------------------
+  var ortLegacy = false;   // true when the worker had to fall back to the non-SIMD ORT 1.18 build
   async function initWorker() {
     setStatus("Loading ONNX model\u2026");
-    worker = new Worker(new URL("inference-worker.js", SCRIPT_BASE).href);
+    // ?legacyort=1 on the page URL → force the non-SIMD ORT 1.18 fallback (testing the old-Safari path).
+    worker = new Worker(new URL("inference-worker.js" + (/[?&]legacyort=1/.test(location.search) ? "?legacyort=1" : ""), SCRIPT_BASE).href);
     worker.onerror = function (err) {
       console.error("Worker error:", err);
       // A fatal worker error (e.g. wasm OOM/abort) means no `infer` reply will ever
@@ -6721,7 +6723,7 @@
     await new Promise(function (resolve, reject) {
       worker.onmessage = function (e) {
         if (e.data.type === "init") {
-          if (e.data.ok) resolve();
+          if (e.data.ok) { ortLegacy = !!e.data.legacy; resolve(); }
           else reject(new Error(e.data.error || "Worker init failed"));
         }
       };

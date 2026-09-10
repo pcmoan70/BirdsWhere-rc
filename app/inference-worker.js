@@ -30,11 +30,32 @@
 // loads as a module on any host — some static hosts (incl. GitHub Pages) serve
 // .mjs as application/octet-stream, which fails strict module MIME checking.
 var ORT_BASE = new URL("vendor/ort/", self.location.href).href;
-importScripts(ORT_BASE + "ort.wasm.min.js");
-ort.env.wasm.wasmPaths = {
-  mjs: ORT_BASE + "ort-wasm-simd-threaded.mjs.js",
-  wasm: ORT_BASE + "ort-wasm-simd-threaded.wasm",
-};
+// ORT Web ≥ 1.19 ships SIMD-only WebAssembly. Browsers without WebAssembly SIMD
+// (Safari before 16.4, i.e. macOS Catalina and older Macs; iOS < 16.4) fail with
+// "no available backend found … WebAssembly SIMD is not supported". For those the
+// worker loads ORT Web 1.18.0 — the last release with a plain (non-SIMD) wasm build,
+// vendored under vendor/ort118/ and fetched only when needed (~10 MB, cached by the
+// service worker on first use). `?legacyort=1` on the worker URL forces it for testing.
+function wasmSimdSupported() {
+  try {
+    // A minimal module using a v128 instruction (i8x16.splat) — validates only with SIMD.
+    return WebAssembly.validate(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11]));
+  } catch (e) { return false; }
+}
+var ORT_LEGACY = /[?&]legacyort=1/.test(self.location.search || "") || !wasmSimdSupported();
+if (ORT_LEGACY) {
+  var ORT118_BASE = new URL("vendor/ort118/", self.location.href).href;
+  importScripts(ORT118_BASE + "ort.wasm.min.js");
+  ort.env.wasm.wasmPaths = ORT118_BASE;   // 1.18: a directory prefix → ort-wasm.wasm
+  ort.env.wasm.simd = false;              // the non-SIMD build is the only one shipped there
+  ort.env.wasm.numThreads = 1;            // (no threaded build shipped either)
+} else {
+  importScripts(ORT_BASE + "ort.wasm.min.js");
+  ort.env.wasm.wasmPaths = {
+    mjs: ORT_BASE + "ort-wasm-simd-threaded.mjs.js",
+    wasm: ORT_BASE + "ort-wasm-simd-threaded.wasm",
+  };
+}
 
 var session = null;
 
@@ -47,7 +68,7 @@ self.onmessage = async function (e) {
         executionProviders: ["wasm"],
         graphOptimizationLevel: "all",
       });
-      self.postMessage({ type: "init", ok: true });
+      self.postMessage({ type: "init", ok: true, legacy: ORT_LEGACY });
     } catch (err) {
       self.postMessage({ type: "init", ok: false, error: err.message });
     }

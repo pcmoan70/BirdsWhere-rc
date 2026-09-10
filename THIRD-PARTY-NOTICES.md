@@ -39,6 +39,11 @@ Files: `app/vendor/ort/**`
 Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License
 (full text in §3 below).
 
+### ONNX Runtime Web 1.18.0 (non-SIMD fallback) — MIT
+Files: `app/vendor/ort118/**` — loaded only by browsers without WebAssembly SIMD (Safari < 16.4).
+Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License
+(full text in §3 below).
+
 ### h3-js (Uber H3 bindings) — Apache License 2.0
 File: `app/vendor/h3-js.js`
 Copyright (c) Uber Technologies, Inc.
