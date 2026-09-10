@@ -27,6 +27,7 @@
       isSourceOff = AppSources.isSourceOff,
       setSourceOff = AppSources.setSourceOff,
       gbifDays = AppSources.gbifDays,
+      gbifTimeout = AppSources.gbifTimeout, setGbifTimeout = AppSources.setGbifTimeout,
       setGbifDays = AppSources.setGbifDays,
       gbifOff = AppSources.gbifOff,
       isGbifOff = AppSources.isGbifOff,
@@ -3074,8 +3075,6 @@
   // Per-source fetch timeout (seconds). A source still running after this is
   // aborted; whatever it had already paged is kept and its label turns red.
   // 0 = no timeout. Default 30 s.
-  function fetchTimeoutSec() { var n = +window.GeoState.get("fetchTimeoutSec", 120); return (n >= 0 && n <= 600) ? n : 120; }   // default 120 s (0 = no timeout)
-  function setFetchTimeoutSec(n) { window.GeoState.save({ fetchTimeoutSec: Math.max(0, Math.min(600, +n || 0)) }); allSightingsCache = {}; }
   // Human label for a radius in km — sub-kilometre shown in metres ("500 m").
   function radiusLabel(km) { var r = (km == null) ? recentRadiusKm() : km; return r < 1 ? Math.round(r * 1000) + " m" : r + " km"; }
   // Quasi-exponential slider stops for the fetch radius (km), 100 m → 150 km.
@@ -3416,10 +3415,10 @@
     laji: { account: "https://laji.fi/", key: "https://laji.fi/about/806" }
   };
   function srcInfo(id) {
-    if (id === "gbif") return { id: "gbif", name: "GBIF", url: "", days: gbifDays(), keyed: false, country: null, global: true, removable: false, isGbif: true };
+    if (id === "gbif") return { id: "gbif", name: "GBIF", url: "", days: gbifDays(), timeout: gbifTimeout(), keyed: false, country: null, global: true, removable: false, isGbif: true };
     var s = directSources().filter(function (x) { return x.id === id; })[0]; if (!s) return null;
     var d = DIRECT_BY_ID[id] || {};
-    return { id: id, name: s.name, url: s.url, days: s.days, keyed: !!d.keyed, country: d.country || null, global: false, removable: true, isGbif: false };
+    return { id: id, name: s.name, url: s.url, days: s.days, timeout: s.timeout, keyed: !!d.keyed, country: d.country || null, global: false, removable: true, isGbif: false };
   }
   function srcDescKey(info) { return "srcdesc." + (info.isGbif ? "gbif" : (DIRECT_BY_ID[info.id] ? info.id : "custom")); }
   // One-line "what is this source" blurb for the sources LIST. Falls back to "" for
@@ -3427,7 +3426,7 @@
   function srcShortKey(info) { return "srcshort." + (info.isGbif ? "gbif" : (DIRECT_BY_ID[info.id] ? info.id : "custom")); }
   function srcShortDesc(info) { var k = srcShortKey(info), s = t(k); return s === k ? "" : s; }
   function patchSource(id, field, value) {
-    saveDirectSources(directSources().map(function (s) { var o = { id: s.id, name: s.name, url: s.url, days: s.days }; if (s.id === id) o[field] = value; return o; }));
+    saveDirectSources(directSources().map(function (s) { var o = { id: s.id, name: s.name, url: s.url, days: s.days, timeout: s.timeout }; if (s.id === id) o[field] = value; return o; }));
   }
   // Probe a keyed source and paint ✓ / ✗ beside its key field (detail view).
   function runSrcKeyTest(id) {
@@ -3514,6 +3513,8 @@
         '<p class="cu-hint laji-req-msg"></p></div>';
     }
     h += '<div class="src-detail-field"><label>' + escapeHtml(t("sources.colDays")) + '</label><input type="number" class="src-days" min="1" max="' + (info.isGbif ? 92 : 365) + '" value="' + info.days + '" /></div>';
+    h += '<div class="src-detail-field"><label>' + escapeHtml(t("sources.colTimeout")) + '</label><input type="number" class="src-timeout-inp" min="0" max="600" step="1" value="' + (+info.timeout) + '" /></div>' +
+         '<p class="cu-hint">' + escapeHtml(t("sources.timeoutHint")) + "</p>";
     if (!info.isGbif) h += '<div class="src-detail-field"><label>' + escapeHtml(t("sources.colUrl")) + '</label><input type="text" class="src-url" value="' + escapeHtml(info.url) + '" autocomplete="off" spellcheck="false" /></div>';
     // BirdWeather-specific "is here" thresholds live with the source, not in Settings:
     // a species counts as present on a day only with ≥ N detections at ≥ confidence.
@@ -3553,6 +3554,7 @@
     });
     var urlInp = el.querySelector(".src-url"); if (urlInp) urlInp.addEventListener("change", function () { patchSource(id, "url", this.value.trim()); });
     var daysInp = el.querySelector(".src-days"); if (daysInp) daysInp.addEventListener("change", function () { var v = Math.max(1, Math.min(info.isGbif ? 92 : 365, +this.value || 1)); if (info.isGbif) setGbifDays(v); else patchSource(id, "days", v); });
+    var toInp = el.querySelector(".src-timeout-inp"); if (toInp) toInp.addEventListener("change", function () { var v = Math.max(0, Math.min(600, Math.round(+this.value) || 0)); this.value = String(v); if (info.isGbif) setGbifTimeout(v); else patchSource(id, "timeout", v); allSightingsCache = {}; });
     var keyInp = el.querySelector(".src-key");
     if (keyInp) {
       keyInp.addEventListener("input", function () { setDirectKey(id, this.value); allSightingsCache = {}; window.GeoState.touch(); });
@@ -3572,7 +3574,7 @@
     var del = el.querySelector(".src-del-detail");
     if (del) del.addEventListener("click", function () {
       if (DIRECT_BY_ID[id]) { var rem = window.GeoState.get("srcRemoved", []) || []; if (rem.indexOf(id) < 0) { rem.push(id); window.GeoState.save({ srcRemoved: rem }); } }
-      saveDirectSources(directSources().filter(function (s) { return s.id !== id; }).map(function (s) { return { id: s.id, name: s.name, url: s.url, days: s.days }; }));
+      saveDirectSources(directSources().filter(function (s) { return s.id !== id; }).map(function (s) { return { id: s.id, name: s.name, url: s.url, days: s.days, timeout: s.timeout }; }));
       srcDetailId = null; renderSourcesTable();
     });
   }
@@ -3927,11 +3929,13 @@
     return lines;
   }
   // Open Settings and highlight the Fetch-timeout field — the "increase timeout"
-  // action shown when a source was cut off by the fetch timeout.
-  function openSettingsToTimeout() {
-    closeDropdowns();
-    var p = document.getElementById("settings-panel"); if (p) p.style.display = "block";
-    var inp = document.getElementById("fetch-timeout");
+  // Action shown when a source was cut off by its fetch timeout: open that source's
+  // settings (Settings → Data sources → the source) and focus its Timeout field.
+  function openSourceTimeout(srcName) {
+    var hit = obsSources().filter(function (x) { return x.name === srcName; })[0];
+    openSourcesManager();
+    if (hit) { srcDetailId = hit.id; renderSourcesTable(); }
+    var inp = document.querySelector("#sources-modal .src-timeout-inp");
     if (inp) setTimeout(function () {
       try { inp.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) {}
       try { inp.focus({ preventScroll: true }); } catch (e2) { try { inp.focus(); } catch (e3) {} }
@@ -3951,7 +3955,7 @@
       action = { label: t("sources.manage"), handler: openSourcesManager };
     } else if ((timedOut || []).length) {
       msg += "\n\n" + t("fetch.timeoutHint");
-      action = { label: t("fetch.raiseTimeout"), handler: openSettingsToTimeout };
+      action = { label: t("fetch.raiseTimeout"), handler: function () { openSourceTimeout((timedOut || [])[0]); } };
     }
     modalAlert(msg, lines, action);
   }
@@ -4021,7 +4025,7 @@
   }
   function obsSources() {
     var list = [
-      { name: "GBIF", id: "gbif", country: null, enabled: function () { return !isSourceOff("gbif") && !urlSkipSrc.gbif; }, run: function (c) { var gd = c.days ? Math.min((window.AppSources && AppSources.GBIF_MAX_DAYS) || 92, c.days) : gbifDays(); return AppFetch.fetchGbifAll(c.lat, c.lon, c.dateBack(gd) + "," + c.d2, c.rkm, c.cc, c.signal, null, null, function (done, total, names) { obsSub["GBIF"] = { done: done, total: total, names: names }; obsRender(); }).then(AppNormalize.normGbif); } }
+      { name: "GBIF", id: "gbif", country: null, timeout: gbifTimeout(), enabled: function () { return !isSourceOff("gbif") && !urlSkipSrc.gbif; }, run: function (c) { var gd = c.days ? Math.min((window.AppSources && AppSources.GBIF_MAX_DAYS) || 92, c.days) : gbifDays(); return AppFetch.fetchGbifAll(c.lat, c.lon, c.dateBack(gd) + "," + c.d2, c.rkm, c.cc, c.signal, null, null, function (done, total, names) { obsSub["GBIF"] = { done: done, total: total, names: names }; obsRender(); }).then(AppNormalize.normGbif); } }
     ];
     directSources().forEach(function (s) {
       // eBird and BirdWeather are bird-only feeds (eBird is birds-only; BirdWeather
@@ -4031,7 +4035,7 @@
       // Enabled = just the on/off toggle. A keyed source with no key still runs
       // (and shows in the loading line), then fails — surfaced as a clear "API key
       // missing" line in the status strip (see splitFailed), not the failure popup.
-      list.push({ name: s.name, id: s.id, country: s.country, enabled: function () { return !isSourceOff(s.id) && !urlSkipSrc[s.id]; }, run: function (c) { return runDirectSource(s, c); } });
+      list.push({ name: s.name, id: s.id, country: s.country, timeout: s.timeout, enabled: function () { return !isSourceOff(s.id) && !urlSkipSrc[s.id]; }, run: function (c) { return runDirectSource(s, c); } });
     });
     return list;
   }
@@ -4186,12 +4190,12 @@
         // out. A QUERIED source that returns nothing still appears in bySrc as 0,
         // so "eBird 0" (queried, no data) is distinct from eBird being absent.
         if (!s.enabled() || (s.country && !AppGeo.countryMatch(lat, lon, s.country, rkm, cc))) return Promise.resolve({ name: s.name, recs: [], queried: false });
-        // Per-source timeout: abort the in-flight request after T s. The paged
-        // fetchers break and return whatever they had → partial records survive;
-        // a single-shot source aborts to empty. Either way the source's label is
-        // flagged red (timedOut) rather than a hard error.
+        // Per-source timeout (each source's own setting, default 120 s, 0 = none): abort the
+        // in-flight request after T s. The paged fetchers break and return whatever they had
+        // → partial records survive; a single-shot source aborts to empty. Either way the
+        // source's label is flagged red (timedOut) rather than a hard error.
         var ctrl = (typeof AbortController !== "undefined") ? new AbortController() : null;
-        var T = fetchTimeoutSec(), tmr = null, killed = false;
+        var T = (s.timeout != null) ? +s.timeout : 120, tmr = null, killed = false;
         if (ctrl) activeFetchCtrls.add(ctrl);   // registered so a map-clear can abort it
         if (ctrl && T > 0) tmr = setTimeout(function () { killed = true; try { ctrl.abort(); } catch (e) {} }, T * 1000);
         var cs = ctrl ? Object.assign({}, c, { signal: ctrl.signal }) : c;
@@ -4541,7 +4545,7 @@
         s.addEventListener("click", function () {
           var e = this.getAttribute("data-err"); if (!e) return;
           // A timed-out source → lead the user to raise the Fetch timeout; others show the plain reason.
-          if (this.classList.contains("src-timeout")) modalAlert(e + "\n\n" + t("fetch.timeoutHint"), null, { label: t("fetch.raiseTimeout"), handler: openSettingsToTimeout });
+          if (this.classList.contains("src-timeout")) { var nm = e.split(" — ")[0]; modalAlert(e + "\n\n" + t("fetch.timeoutHint"), null, { label: t("fetch.raiseTimeout"), handler: function () { openSourceTimeout(nm); } }); }
           else modalAlert(e);
         });
       });
@@ -5887,11 +5891,6 @@
                 '<p class="cu-hint" data-i18n="ctrl.compareHint">Adds a column to the species list comparing the current week with another week or the annual mean/peak, so you can see what’s arriving or at its best now.</p>' +
               '</div>' +
               '<div class="settings-section" data-i18n="settings.secFetch">Fetching &amp; detections</div>' +
-              '<div class="ctrl-group">' +
-                '<label for="fetch-timeout" data-i18n="ctrl.fetchTimeout">Fetch timeout (s)</label>' +
-                '<input id="fetch-timeout" type="number" min="0" max="600" step="1" />' +
-                '<p class="cu-hint" data-i18n="ctrl.fetchTimeoutHint">A source still fetching after this many seconds is stopped; the observations it already loaded are kept and its label turns red. 0 = no timeout.</p>' +
-              '</div>' +
               '<div class="ctrl-group">' +
                 '<label for="download-days" data-i18n="ctrl.downloadDays">Download — last N days</label>' +
                 '<input id="download-days" type="number" min="0" max="92" step="1" />' +
@@ -15917,7 +15916,6 @@
         if (document.getElementById("detlist-modal") && document.getElementById("detlist-modal").style.display === "flex" && typeof renderDetListModal === "function") renderDetListModal();
       });
     }
-    wireNumSetting("fetch-timeout", fetchTimeoutSec, 0, 600, 120, setFetchTimeoutSec, null);
     wireNumSetting("sight-ttl", sightTtlMin, 0, 10080, 0, function (v) { window.GeoState.save({ sightTtlMin: v }); }, null);
     var fooEl = document.getElementById("fetchonopen-toggle");
     var fooDaysWrap = document.getElementById("fetchonopen-days-wrap");

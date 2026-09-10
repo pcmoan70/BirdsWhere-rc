@@ -136,7 +136,8 @@ window.AppSources = (function () {
       var d = DIRECT_BY_ID[s.id] || {};
       var name = s.name || d.name || s.id;
       if (s.id === "laji" && name === "Laji.fi (FI)") name = "Laji";   // migrate the old default label to the short name
-      return { id: s.id, name: name, url: s.url || d.url || "", keyed: !!d.keyed, country: d.country || null, days: (s.days != null && +s.days > 0) ? +s.days : (d.days || 90) };
+      return { id: s.id, name: name, url: s.url || d.url || "", keyed: !!d.keyed, country: d.country || null, days: (s.days != null && +s.days > 0) ? +s.days : (d.days || 90),
+               timeout: (s.timeout != null && +s.timeout >= 0 && +s.timeout <= 600) ? +s.timeout : 120 };   // per-source fetch timeout (s), default 120, 0 = none
     });
   }
   function saveDirectSources(list) { window.GeoState.save({ directSources: list }); onConfigChange(); }
@@ -163,6 +164,9 @@ window.AppSources = (function () {
   // the historical 3-month behaviour.
   var GBIF_MAX_DAYS = 92;   // upper limit for GBIF's fetch window (≈ 3 months)
   function gbifDays() { var n = +window.GeoState.get("gbifDays", 90); return (n > 0) ? Math.min(GBIF_MAX_DAYS, n) : 90; }
+  // GBIF's own fetch timeout (s) — it isn't a direct source, so it gets its own key.
+  function gbifTimeout() { var n = +window.GeoState.get("gbifTimeout", 120); return (n >= 0 && n <= 600) ? n : 120; }
+  function setGbifTimeout(n) { window.GeoState.save({ gbifTimeout: Math.max(0, Math.min(600, +n || 0)) }); onConfigChange(); }
   function setGbifDays(n) { window.GeoState.save({ gbifDays: Math.max(1, Math.min(GBIF_MAX_DAYS, +n || 90)) }); onConfigChange(); }
   function gbifOff() { return window.GeoState.get("gbifOff", {}) || {}; }
   function isGbifOff(key) { return !!gbifOff()[key]; }
@@ -221,6 +225,8 @@ window.AppSources = (function () {
     setSourceOff: setSourceOff,
     gbifDays: gbifDays,
     setGbifDays: setGbifDays,
+    gbifTimeout: gbifTimeout,
+    setGbifTimeout: setGbifTimeout,
     gbifOff: gbifOff,
     isGbifOff: isGbifOff,
     setGbifOff: setGbifOff,

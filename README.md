@@ -269,7 +269,8 @@ plotted on the map like any other detections.
 
 Recent real-world sightings are fetched directly from third-party APIs, matched to the
 model's species, and merged — around a configurable **sightings radius**. Managed in
-**Settings → Data sources** (per-source *On* toggle, name, key, fetch-window days, endpoint);
+**Settings → Data sources** (per-source *On* toggle, name, key, fetch-window days, fetch timeout in
+seconds — default 120, `0` = none — and endpoint);
 failed or timed-out sources are flagged in the status line.
 
 **Direct sources**
@@ -307,7 +308,7 @@ code + dataset key or gbif.org URL).
 box for Recent/Historic mode (previewed as a live dashed square), and sets the default radius
 of newly saved locations.
 
-**Fetching & detections** settings include a **Fetch timeout**, a **Download — last N days**
+**Fetching & detections** settings include a **Download — last N days**
 window (how far back a normal fetch reaches, applied to every source — eBird stays capped at its
 30-day API limit, GBIF at ~92; `0` = each source's own default; Fetch on open keeps its own
 separate window), a **Reuse downloads (min)** window (reopening reuses a location's
