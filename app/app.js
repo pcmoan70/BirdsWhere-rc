@@ -6315,14 +6315,6 @@
           '<div class="offline-body">' +
             '<button type="button" id="offline-dl" class="btn ico-btn">' + ico("download") + '<span class="ico-label" data-i18n="ctrl.downloadView">Download map</span></button>' +
             '<p class="cu-hint" data-i18n="offline.hint">Saves the map area shown on screen — pan and zoom first (– shrinks this panel to see more of the map).</p>' +
-            '<div class="offline-zoom-row">' +
-              '<label for="offline-zoom" data-i18n="offline.maxzoom">Max zoom</label>' +
-              '<select id="offline-zoom">' +
-                '<option value="11">11 · regional</option><option value="13">13 · town</option>' +
-                '<option value="15">15 · street</option><option value="17">17 · detailed</option>' +
-                '<option value="19" selected>19 · maximum</option>' +
-              '</select>' +
-            '</div>' +
             '<div id="offline-list"></div>' +
           '</div>' +
         '</div></div>' +
@@ -16115,10 +16107,6 @@
       };
       rd.readAsArrayBuffer(f);   // read binary; branch on the ZIP magic (KMZ) then JSON vs KML text
     });
-    document.getElementById("offline-zoom").addEventListener("change", function () {
-      window.AppOffline.setMaxZoom(+this.value || 19);
-      window.GeoState.save({ offlineMaxZoom: window.AppOffline.maxZoom() });
-    });
     renderOfflineAreas();
     var syncFile = document.getElementById("sync-file");
     document.getElementById("sync-import").addEventListener("click", function () { syncFile.click(); });
@@ -21207,8 +21195,7 @@
 
     // H3 detail offset (-2..+2, 0 = auto), set via the on-map hexagon control.
     hiResFactor = Math.max(-2, Math.min(2, +window.GeoState.get("hiResOffset", 0) || 0));
-    window.AppOffline.setMaxZoom(Math.max(11, Math.min(19, +window.GeoState.get("offlineMaxZoom", 19) || 19)));
-    var ozEl = document.getElementById("offline-zoom"); if (ozEl) ozEl.value = String(window.AppOffline.maxZoom());
+    window.AppOffline.setMaxZoom(Math.max(11, Math.min(19, +window.GeoState.get("offlineMaxZoom", 19) || 19)));   // chosen in the Download map dialog
 
     // Probability range: restore the saved bounds (default 0–100 = no filter).
     (function () {

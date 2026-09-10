@@ -280,7 +280,7 @@ window.AppOffline = (function () {
     var tiles = offlineTileCount(bounds, zStart, zMax) * layers.length;
     var m = createModal({ boxClass: "area-dl", backdropClose: false });   // no backdrop close mid-download
     var box = m.box, close = m.close;
-    // The max-zoom is chosen IN the dialog (same ladder as the Settings option);
+    // The max-zoom is chosen IN the dialog (the only place it is set; remembered as the default);
     // levels below the current view zoom are pointless and left out.
     var Z_STEPS = [11, 13, 15, 17, 19];
     var zOpts = Z_STEPS.filter(function (z) { return z >= zStart && z <= baseMaxNative; });
@@ -311,10 +311,9 @@ window.AppOffline = (function () {
       zMax = Math.max(zStart, Math.min(baseMaxNative, +this.value || zMax));
       tiles = offlineTileCount(bounds, zStart, zMax) * layers.length;
       refreshEstimate();
-      // Remember as the new default (kept in sync with the Settings option).
+      // Remember as the new default for the next download.
       offlineMaxZoom = +this.value || offlineMaxZoom;
       window.GeoState.save({ offlineMaxZoom: offlineMaxZoom });
-      var oz = document.getElementById("offline-zoom"); if (oz) oz.value = String(offlineMaxZoom);
     });
     // Suggest the most specific place name at the view centre (locality, not
     // country) — unless the user starts typing their own.

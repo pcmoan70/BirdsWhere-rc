@@ -21,12 +21,12 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1657";
+var VERSION = "v1658";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
-  "• Offline maps: the ⬇ Download map button now lives in the Offline maps panel (opened from the map’s right-click / long-press menu) and is gone from that menu. The panel is tidier — one-line zoom row, two-line area rows with the zoom range, and it no longer stretches to the bottom.",
+  "• Offline maps: the ⬇ Download map button now lives in the Offline maps panel (opened from the map’s right-click / long-press menu) and is gone from that menu. The panel is tidier — the max-zoom choice now lives only in the Download map dialog, area rows show the zoom range on a second line, and the panel no longer stretches to the bottom.",
   "• The GBIF datasets manager (📚 Datasets…) has moved from Settings into the GBIF entry under Settings → Data sources. Settings buttons now name what they open (Data sources…, National databases…, Lists…) without a “Manage” verb.",
   "• The fetch timeout is now set per data source (Settings → Data sources → the source, default 120 s, 0 = none) instead of one global value in Settings. The ⏱ Increase timeout button now opens the timed-out source directly.",
   "• BirdsWhere now lives at thebirding.site. On the old github.io address a notice offers to move — and it takes your lists, settings and points along (the data travels inside the link, never via a server).",
