@@ -534,7 +534,7 @@
   "offline.empty": "Aucune zone hors ligne pour l’instant.",
   "offline.estimate": "≈ {n} tuiles · ~{mb} Mo",
   "offline.failed": "Impossible de télécharger « {name} » — vérifiez votre connexion et votre stockage.",
-  "offline.hint": "Utilisez le bouton ⬇ sur la carte pour télécharger la vue actuelle.",
+  "offline.hint": "Enregistre la zone de carte affichée à l'écran – déplacez et zoomez d'abord (– réduit ce panneau pour voir plus de carte).",
   "offline.manage": "⬇ Gérer les cartes hors ligne…",
   "offline.maps": "Cartes hors ligne",
   "offline.maxzoom": "Zoom maximal",

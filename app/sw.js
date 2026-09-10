@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1655";
+var VERSION = "v1656";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• The Offline maps panel has its own ⬇ Download map button again (the panel still said “use the ⬇ button on the map”, which went away in v1328) — it saves the area on screen; pan/zoom first, – shrinks the panel.",
   "• The GBIF datasets manager (📚 Datasets…) has moved from Settings into the GBIF entry under Settings → Data sources. Settings buttons now name what they open (Data sources…, National databases…, Lists…) without a “Manage” verb.",
   "• The fetch timeout is now set per data source (Settings → Data sources → the source, default 120 s, 0 = none) instead of one global value in Settings. The ⏱ Increase timeout button now opens the timed-out source directly.",
   "• BirdsWhere now lives at thebirding.site. On the old github.io address a notice offers to move — and it takes your lists, settings and points along (the data travels inside the link, never via a server).",
-  "• New installs start with eBird off as well (it needs your own key) — turn it on in Settings → Data sources once you have one.",
   "• BirdWeather (acoustic AI detections, slow to load) is now OFF for everyone — it had stayed on for anyone who had touched the source list before the v1582 default. Re-enable it any time in Settings → Data sources.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the

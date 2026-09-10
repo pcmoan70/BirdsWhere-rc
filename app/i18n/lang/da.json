@@ -533,7 +533,7 @@
   "offline.empty": "Ingen offlineområder endnu.",
   "offline.estimate": "≈ {n} fliser · ~{mb} MB",
   "offline.failed": "Kunne ikke downloade „{name}“ — kontrollér din forbindelse og lagerplads.",
-  "offline.hint": "Brug ⬇-knappen på kortet for at downloade den aktuelle visning.",
+  "offline.hint": "Gemmer det kortområde, der vises på skærmen – panorér og zoom først (– gør dette panel mindre, så mere af kortet ses).",
   "offline.manage": "⬇ Administrér offline kort…",
   "offline.maps": "Offline kort",
   "offline.maxzoom": "Maks. zoom",

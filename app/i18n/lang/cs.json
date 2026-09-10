@@ -533,7 +533,7 @@
   "offline.empty": "Zatím žádné offline oblasti.",
   "offline.estimate": "≈ {n} dlaždic · ~{mb} MB",
   "offline.failed": "Nepodařilo se stáhnout „{name}“ — zkontrolujte připojení a úložiště.",
-  "offline.hint": "Pro stažení aktuálního výřezu použijte tlačítko ⬇ na mapě.",
+  "offline.hint": "Uloží oblast mapy zobrazenou na obrazovce – nejprve mapu posuňte a přibližte (– zmenší tento panel, aby bylo vidět více mapy).",
   "offline.manage": "⬇ Spravovat offline mapy…",
   "offline.maps": "Offline mapy",
   "offline.maxzoom": "Max. přiblížení",

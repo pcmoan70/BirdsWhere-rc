@@ -533,7 +533,7 @@
   "offline.empty": "Brak obszarów offline.",
   "offline.estimate": "≈ {n} kafelków · ~{mb} MB",
   "offline.failed": "Nie można pobrać „{name}” — sprawdź połączenie i ilość miejsca.",
-  "offline.hint": "Użyj przycisku ⬇ na mapie, aby pobrać bieżący widok.",
+  "offline.hint": "Zapisuje obszar mapy widoczny na ekranie – najpierw przesuń i przybliż (– zmniejsza ten panel, by widzieć więcej mapy).",
   "offline.manage": "⬇ Zarządzaj mapami offline…",
   "offline.maps": "Mapy offline",
   "offline.maxzoom": "Maks. powiększenie",

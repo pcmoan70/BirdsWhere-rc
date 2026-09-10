@@ -533,7 +533,7 @@
   "offline.empty": "Neprisijungimo sričių dar nėra.",
   "offline.estimate": "≈ {n} plytelės · ~{mb} MB",
   "offline.failed": "Nepavyko atsisiųsti „{name}“ — patikrinkite ryšį ir atmintį.",
-  "offline.hint": "Norėdami atsisiųsti esamą vaizdą, naudokite ⬇ mygtuką žemėlapyje.",
+  "offline.hint": "Išsaugo ekrane rodomą žemėlapio sritį – pirmiausia pastumkite ir priartinkite (– sumažina šį skydelį, kad matytųsi daugiau žemėlapio).",
   "offline.manage": "⬇ Tvarkyti žemėlapius neprisijungus…",
   "offline.maps": "Žemėlapiai neprisijungus",
   "offline.maxzoom": "Didžiausias mastelis",

@@ -533,7 +533,7 @@
   "offline.empty": "Ei offline-alueita vielä.",
   "offline.estimate": "≈ {n} ruutua · ~{mb} MB",
   "offline.failed": "Alueen ”{name}” lataus epäonnistui — tarkista yhteytesi ja tallennustila.",
-  "offline.hint": "Lataa nykyinen näkymä kartan ⬇-painikkeella.",
+  "offline.hint": "Tallentaa näytöllä näkyvän kartta-alueen – siirrä ja zoomaa ensin (– pienentää tämän paneelin, jotta karttaa näkyy enemmän).",
   "offline.manage": "⬇ Hallinnoi offline-karttoja…",
   "offline.maps": "Offline-kartat",
   "offline.maxzoom": "Suurin zoomaus",

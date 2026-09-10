@@ -170,7 +170,7 @@
   "offline.empty": "Inga offlineområden ännu.",
   "offline.estimate": "≈ {n} rutor · ~{mb} MB",
   "offline.failed": "Kunde inte ladda ner ”{name}” — kontrollera anslutning och lagring.",
-  "offline.hint": "Använd ⬇-knappen på kartan för att ladda ner den aktuella vyn.",
+  "offline.hint": "Sparar kartområdet som visas på skärmen – panorera och zooma först (– krymper panelen så att mer av kartan syns).",
   "offline.manage": "⬇ Hantera offlinekartor…",
   "offline.maps": "Offlinekartor",
   "offline.maxzoom": "Max zoom",

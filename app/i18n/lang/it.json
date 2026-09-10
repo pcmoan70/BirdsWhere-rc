@@ -533,7 +533,7 @@
   "offline.empty": "Nessuna area offline.",
   "offline.estimate": "≈ {n} tile · ~{mb} MB",
   "offline.failed": "Impossibile scaricare «{name}» — controlla connessione e spazio di archiviazione.",
-  "offline.hint": "Usa il pulsante ⬇ sulla mappa per scaricare la vista attuale.",
+  "offline.hint": "Salva l'area di mappa visibile sullo schermo: sposta e ingrandisci prima (– riduce questo pannello per vedere più mappa).",
   "offline.manage": "⬇ Gestisci mappe offline…",
   "offline.maps": "Mappe offline",
   "offline.maxzoom": "Zoom massimo",

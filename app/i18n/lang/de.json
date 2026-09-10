@@ -533,7 +533,7 @@
   "offline.empty": "Noch keine Offline-Gebiete.",
   "offline.estimate": "≈ {n} Kacheln · ~{mb} MB",
   "offline.failed": "„{name}“ konnte nicht heruntergeladen werden — prüfe deine Verbindung und deinen Speicher.",
-  "offline.hint": "Nutze die Schaltfläche ⬇ auf der Karte, um die aktuelle Ansicht herunterzuladen.",
+  "offline.hint": "Speichert den auf dem Bildschirm gezeigten Kartenausschnitt – vorher verschieben und zoomen (– verkleinert dieses Panel, damit mehr Karte sichtbar ist).",
   "offline.manage": "⬇ Offline-Karten verwalten…",
   "offline.maps": "Offline-Karten",
   "offline.maxzoom": "Max. Zoom",

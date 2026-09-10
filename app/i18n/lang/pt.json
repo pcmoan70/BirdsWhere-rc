@@ -533,7 +533,7 @@
   "offline.empty": "Ainda não há áreas offline.",
   "offline.estimate": "≈ {n} mosaicos · ~{mb} MB",
   "offline.failed": "Não foi possível transferir “{name}” — verifique a ligação e o armazenamento.",
-  "offline.hint": "Use o botão ⬇ no mapa para transferir a vista atual.",
+  "offline.hint": "Guarda a área do mapa mostrada no ecrã – desloque e amplie primeiro (– reduz este painel para ver mais mapa).",
   "offline.manage": "⬇ Gerir mapas offline…",
   "offline.maps": "Mapas offline",
   "offline.maxzoom": "Zoom máximo",

@@ -6313,7 +6313,8 @@
           '<button type="button" id="offline-close" aria-label="Close">×</button>' +
           '<h3 data-i18n="offline.maps">Offline maps</h3>' +
           '<div class="offline-body">' +
-            '<p class="cu-hint" data-i18n="offline.hint">Use the ⬇ button on the map to download the current view.</p>' +
+            '<button type="button" id="offline-dl" class="btn ico-btn">' + ico("download") + '<span class="ico-label" data-i18n="ctrl.downloadView">Download map</span></button>' +
+            '<p class="cu-hint" data-i18n="offline.hint">Saves the map area shown on screen — pan and zoom first (– shrinks this panel to see more of the map).</p>' +
             '<div class="offline-zoom-row">' +
               '<label for="offline-zoom" data-i18n="ctrl.offlineZoom">Download max zoom</label>' +
               '<select id="offline-zoom">' +
@@ -15779,6 +15780,9 @@
       document.getElementById("offline-modal").addEventListener("click", function (e) { if (e.target === this) navClose("offline"); });
       // Minimize: collapse the panel to a small bar at the bottom; the map keeps
       // showing the coloured areas + their "×" delete handles (editing stays on).
+      // ⬇ in the panel: download the area currently on screen (same dialog as the
+      // map long-press menu's "Download map"); the finished download re-renders the list.
+      document.getElementById("offline-dl").addEventListener("click", function () { openAreaDialog(map.getBounds()); });
       document.getElementById("offline-min").addEventListener("click", function () {
         var min = document.getElementById("offline-box").classList.toggle("min");
         this.textContent = min ? "▴" : "–";

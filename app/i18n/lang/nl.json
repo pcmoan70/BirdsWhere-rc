@@ -533,7 +533,7 @@
   "offline.empty": "Nog geen offline gebieden.",
   "offline.estimate": "≈ {n} tegels · ~{mb} MB",
   "offline.failed": "Kon „{name}” niet downloaden — controleer je verbinding en opslag.",
-  "offline.hint": "Gebruik de ⬇-knop op de kaart om de huidige weergave te downloaden.",
+  "offline.hint": "Slaat het kaartgebied op dat op het scherm staat – eerst pannen en zoomen (– verkleint dit paneel zodat je meer kaart ziet).",
   "offline.manage": "⬇ Offline kaarten beheren…",
   "offline.maps": "Offline kaarten",
   "offline.maxzoom": "Maximale zoom",

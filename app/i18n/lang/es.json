@@ -533,7 +533,7 @@
   "offline.empty": "Aún no hay áreas sin conexión.",
   "offline.estimate": "≈ {n} teselas · ~{mb} MB",
   "offline.failed": "No se pudo descargar «{name}» — comprueba tu conexión y almacenamiento.",
-  "offline.hint": "Usa el botón ⬇ del mapa para descargar la vista actual.",
+  "offline.hint": "Guarda el área del mapa visible en pantalla: desplázate y haz zoom primero (– reduce este panel para ver más mapa).",
   "offline.manage": "⬇ Gestionar mapas sin conexión…",
   "offline.maps": "Mapas sin conexión",
   "offline.maxzoom": "Zoom máximo",

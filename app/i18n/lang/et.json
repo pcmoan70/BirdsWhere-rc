@@ -533,7 +533,7 @@
   "offline.empty": "Võrguühenduseta alasid veel pole.",
   "offline.estimate": "≈ {n} paani · ~{mb} MB",
   "offline.failed": "„{name}” allalaadimine ebaõnnestus — kontrolli ühendust ja salvestusruumi.",
-  "offline.hint": "Kasuta kaardil ⬇ nuppu praeguse vaate allalaadimiseks.",
+  "offline.hint": "Salvestab ekraanil näidatava kaardiala – enne liiguta ja suumi kaarti (– teeb selle paneeli väiksemaks, et kaarti rohkem näha).",
   "offline.manage": "⬇ Halda võrguühenduseta kaarte…",
   "offline.maps": "Võrguühenduseta kaardid",
   "offline.maxzoom": "Maksimaalne suum",

@@ -533,7 +533,7 @@
   "offline.empty": "Ingen offlineområder ennå.",
   "offline.estimate": "≈ {n} fliser · ~{mb} MB",
   "offline.failed": "Kunne ikke laste ned «{name}» — sjekk tilkoblingen og lagringsplassen din.",
-  "offline.hint": "Bruk ⬇-knappen på kartet for å laste ned den gjeldende visningen.",
+  "offline.hint": "Lagrer kartområdet som vises på skjermen – panorer og zoom først (– krymper dette panelet så mer av kartet vises).",
   "offline.manage": "⬇ Administrer offlinekart…",
   "offline.maps": "Offlinekart",
   "offline.maxzoom": "Maks zoom",
