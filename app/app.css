@@ -1223,6 +1223,9 @@ body {
   overflow-y: hidden;
   scrollbar-width: thin;
 }
+/* Full-screen on iPad/iPhone Safari: the browser's own large ✕ sits over the top-left
+   corner — clear it so the settings button (first in the row) can still be tapped. */
+body.fs-apple #site-header { padding-left: calc(64px + env(safe-area-inset-left)); }
 #site-header::-webkit-scrollbar { height: 4px; }
 #site-header::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.35); border-radius: 2px; }
 /* iPadOS/iOS ONLY: in fullscreen the OS overlays its own exit-fullscreen "×" in the top-LEFT corner,

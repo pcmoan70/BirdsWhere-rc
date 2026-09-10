@@ -7601,10 +7601,17 @@
         fsBtn.innerHTML = fsIconSvg();
         fsBtn.addEventListener("click", function (e) { e.preventDefault(); toggleFullscreen(); });
       }
-      document.addEventListener("fullscreenchange", function () {
+      // iPad/iPhone Safari draws its own large ✕ (exit full-screen) over the top-left
+      // corner, right where the settings (bird) button sits — while full-screen on an
+      // Apple touch device the header is pushed right so every control stays reachable.
+      var appleTouch = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+      function onFsChange() {
         var b = document.querySelector(".fs-toggle-btn"); if (b) b.innerHTML = fsIconSvg();
+        document.body.classList.toggle("fs-apple", appleTouch && isFullscreen());
         fitMapHeight();
-      });
+      }
+      document.addEventListener("fullscreenchange", onFsChange);
+      document.addEventListener("webkitfullscreenchange", onFsChange);   // Safari's name for it
     }
 
     // One leaflet-bar on the right, holding (top) a red × that clears all plotted
