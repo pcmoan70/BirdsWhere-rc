@@ -1,10 +1,10 @@
 {
- "_version": "v1663",
+ "_version": "v1664",
  "./": "330e1367fb998e71",
  "index.html": "330e1367fb998e71",
  "f/index.html": "07e657f91ca5ecb8",
  "sw-register.js": "f6dba3a3f498d30a",
- "app.js": "0ece9d19d0d6fa89",
+ "app.js": "463f0e2dbcac3a07",
  "rarity.js": "8bbf342e100c19cf",
  "offline-maps.js": "43c83970af4c6818",
  "points-lists.js": "2c129e5e2bea811c",

@@ -6563,7 +6563,18 @@
       fitMapHeight();
       requestAppVersion();
       showLastChange();
-      showPerfModal();
+      // What kind of open is this? A shared link (?lat=&lon= point, ?s=/#s= point list /
+      // detection set) goes straight to the map: no welcome splash, no restored
+      // previous view, and nothing fetched from the data servers.
+      var hasHere = false, plainOpen = true, hasLocParam = false, sharedOpen = false;
+      try {
+        var qp = new URLSearchParams(location.search);
+        hasHere = qp.has("here");
+        hasLocParam = !!parseSemiParams().location;
+        sharedOpen = qp.has("lat") || qp.has("lon") || qp.has("s") || /[#&]s=/.test(location.hash || "");
+        plainOpen = !(hasHere || sharedOpen || hasLocParam);
+      } catch (e) {}
+      if (!sharedOpen) showPerfModal();
       initOfflineIndicator();
       maybeShowMovedNotice();
       maybeImportMigrated();   // arriving from the old origin with #migrate=… → merge the carried data
@@ -6573,14 +6584,7 @@
       // (alongside the bell popup's own key hint).
       var bellEl = document.getElementById("rarity-bell");
       if (bellEl) bellEl.addEventListener("click", function () { maybeEbirdNudge(); });
-      var hasHere = false, plainOpen = true, hasLocParam = false;
-      try {
-        var qp = new URLSearchParams(location.search);
-        hasHere = qp.has("here");
-        hasLocParam = !!parseSemiParams().location;
-        plainOpen = !(qp.has("here") || qp.has("lat") || qp.has("lon") || qp.has("s") || hasLocParam);
-      } catch (e) {}
-      if (!hasHere && !hasLocParam) restoreSession();   // return to the view we left (reload-safe)
+      if (!hasHere && !hasLocParam && !sharedOpen) restoreSession();   // return to the view we left (reload-safe)
       if (hasLocParam) maybeUrlLocationParam();   // ?location=here;radius=…;show=…;sortby=… → geolocate + open list/map
       else maybeUrlAutoLocate();                  // ?here=1 → geolocate + open species list
       maybeOpenSharedPoint();   // ?lat=&lon= → a shared location: go there, drop the pin

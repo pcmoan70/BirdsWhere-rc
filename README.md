@@ -574,6 +574,10 @@ instead of 57×57), which survives print wear far better. Change the target by e
 
 ---
 
+Opening any shared link (a point, a point list, a detection set) goes **straight to the map**: no
+welcome splash, no restored previous view and nothing fetched from the observation servers — the
+shared payload is all that is shown.
+
 ## The species menu
 
 Right-click / long-press / tap any species name for a menu **led by the species name in bold**
