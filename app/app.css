@@ -2474,6 +2474,7 @@ button.dd-name:hover { text-decoration: underline; }
   cursor: pointer;
 }
 .settings-about::before { content: "\2139  "; }   /* ℹ */
+.settings-feedback { width: 100%; justify-content: center; margin: 2px 0 10px; }   /* "Message" — feedback form, top of Settings */
 .settings-about:hover { background: var(--surface-2); }
 /* Running version (+ last-change time), directly under "About & how it works". */
 .settings-version { padding: 0 6px 6px; font-size: var(--fs-s); color: var(--ink-muted); font-variant-numeric: tabular-nums; }
