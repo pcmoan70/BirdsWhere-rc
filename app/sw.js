@@ -21,7 +21,7 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1665";
+var VERSION = "v1666";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
@@ -364,7 +364,7 @@ self.addEventListener("fetch", function (event) {
   if (sameOrigin) {
     // Static, crawlable pages (about/…, robots.txt, sitemap.xml) are plain web pages, not
     // the app shell: never answer them with the cached index.html — leave them to the network.
-    if (/\/about\//.test(url.pathname) || /\/(robots\.txt|sitemap\.xml)$/.test(url.pathname)) return;
+    if (/\/about\//.test(url.pathname) || /\/(robots\.txt|sitemap\.xml|google[0-9a-f]+\.html)$/.test(url.pathname)) return;
     // (The Migration Aloft radar moved to its own repo/site — no /aloft/ path here now.)
     if (/\.(onnx|csv|wasm|mjs)$/.test(url.pathname) ||
         /\/vendor\//.test(url.pathname) ||
