@@ -15294,7 +15294,8 @@
     // Week applies in every mode (incl. Migration timeline, where it sets the
     // "current week" used by the Probability / Arrivals / Scatter tabs) — but not
     // in the date-range Historic mode.
-    document.getElementById("week-select-wrap").style.display = isHist ? "none" : "";
+    // (The week dropdown is gone — the week is always the current one; the hidden
+    // <select> only serves as the internal week register.)
     // The migration animation now runs from an on-map button (range/richness),
     // so keep the controls-bar play button out of the bar.
     document.getElementById("play-btn-wrap").style.display = "none";
