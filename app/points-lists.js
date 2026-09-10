@@ -865,7 +865,14 @@ window.AppPoints = (function () {
     // route and Add to list — plus the star / year / life / hide toggles when the
     // pin carries a species key. drmRenderMain shows only the rows that apply, so
     // a plain tagged point still gets "Navigate here" / "Add to route".
-    var d = { name: p.name || "", key: p.spKey || "", lat: p.lat, lon: p.lon, url: p.url || "", date: p.date || "", act: p.act || "", count: p.count, color: p.spColor || "" };
+    // Which saved list owns this pin (by object identity) — the menu's Delete removes it
+    // from that list, after asking. Points that never got an id get one now so the
+    // removal can address them.
+    var coll = null;
+    mpCollections.forEach(function (c) { if (!coll && (c.points || []).indexOf(p) >= 0) coll = c; });
+    if (coll && !p.id) { p.id = mpUid(); saveMapPoints(); }
+    var d = { name: p.name || "", key: p.spKey || "", lat: p.lat, lon: p.lon, url: p.url || "", date: p.date || "", act: p.act || "", count: p.count, color: p.spColor || "",
+              fromPin: true, listName: coll ? coll.name : "", mpId: coll ? p.id : "" };
     var ct = getMap().latLngToContainerPoint([p.lat, p.lon]), box = getMap().getContainer().getBoundingClientRect();
     showDetRowMenu(d, box.left + ct.x, box.top + ct.y, function () { renderMapPoints(); });
   }

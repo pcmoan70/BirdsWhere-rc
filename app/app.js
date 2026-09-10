@@ -9944,12 +9944,20 @@
     if (hasObs) {
       if (d.url) el.appendChild(drmBtn(t("det.openSource"), function () { closeDetRowMenu(); openExternal(d.url); }));
       if (hasLoc) {
-        el.appendChild(drmBtn(tLabel("detmenu.focusMap"), function () { focusPointOnMap(+d.lat, +d.lon); }, "pin"));   // green pin icon only (strip the 🎯 emoji)
+        if (!d.fromPin) el.appendChild(drmBtn(tLabel("detmenu.focusMap"), function () { focusPointOnMap(+d.lat, +d.lon); }, "pin"));   // green pin icon only (strip the 🎯 emoji); a map pin is already on the map
         el.appendChild(drmBtn(t("nav.here"), function () { closeDetRowMenu(); navigatePoints([{ lat: +d.lat, lon: +d.lon }]); }, "nav"));
         el.appendChild(drmBtn(tLabel("route.add"), function () { closeDetRowMenu(); addToRoute(+d.lat, +d.lon, name); }, "navplus"));
       }
       el.appendChild(drmBtn(tLabel("detmenu.addList"), function () { drmRenderLists(el, d); }, "dotsplus"));   // green dots+ icon only (strip the 📍 emoji)
-      if (d.mpId && d.listName) el.appendChild(drmBtn(t("detmenu.removeFromList"), function () { closeDetRowMenu(); removeListPoint(d.listName, d.mpId); redraw(); }, "block"));
+      if (d.mpId && d.listName) {
+        // Opened from a map pin: "Delete" — the pin belongs to a saved list, so confirm the
+        // removal from that list first. From a list row: the plain "Remove from list".
+        if (d.fromPin) el.appendChild(drmBtn(t("btn.delete"), function () {
+          closeDetRowMenu();
+          modalConfirm(t("points.deleteFromList", { name: name, list: d.listName })).then(function (ok) { if (ok) { removeListPoint(d.listName, d.mpId); redraw(); } });
+        }, "block"));
+        else el.appendChild(drmBtn(t("detmenu.removeFromList"), function () { closeDetRowMenu(); removeListPoint(d.listName, d.mpId); redraw(); }, "block"));
+      }
     }
     // 2) Information — learn about the species. Model species get the full set
     // (range/migration/distribution map); non-model species (plants/fungi extras)

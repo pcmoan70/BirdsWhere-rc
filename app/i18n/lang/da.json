@@ -939,6 +939,7 @@
   "points.export": "⬇ Gem",
   "points.delete": "Slet",
   "points.showOnMap": "Vis på kort",
+  "points.deleteFromList": "»{name}« hører til listen »{list}«. Slet det fra den liste?",
   "points.name": "Navn",
   "points.tags": "Tags",
   "points.tagsPh": "tag1, tag2, …",

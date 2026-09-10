@@ -939,6 +939,7 @@
   "points.export": "⬇ Opsl.",
   "points.delete": "Wissen",
   "points.showOnMap": "Op kaart tonen",
+  "points.deleteFromList": "“{name}” hoort bij de lijst “{list}”. Uit die lijst verwijderen?",
   "points.name": "Naam",
   "points.tags": "Tags",
   "points.tagsPh": "tag1, tag2, …",

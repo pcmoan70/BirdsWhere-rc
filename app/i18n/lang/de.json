@@ -939,6 +939,7 @@
   "points.export": "⬇ Speich.",
   "points.delete": "Löschen",
   "points.showOnMap": "Auf Karte zeigen",
+  "points.deleteFromList": "„{name}“ gehört zur Liste „{list}“. Aus dieser Liste löschen?",
   "points.name": "Name",
   "points.tags": "Tags",
   "points.tagsPh": "tag1, tag2, …",

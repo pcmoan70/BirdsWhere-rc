@@ -939,6 +939,7 @@
   "points.export": "⬇ Salv.",
   "points.delete": "Kustuta",
   "points.showOnMap": "Näita kaardil",
+  "points.deleteFromList": "„{name}“ kuulub nimekirja „{list}“. Kas kustutada see sellest nimekirjast?",
   "points.name": "Nimi",
   "points.tags": "Sildid",
   "points.tagsPh": "silt1, silt2, …",

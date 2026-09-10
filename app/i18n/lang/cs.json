@@ -939,6 +939,7 @@
   "points.export": "⬇ Uložit",
   "points.delete": "Smazat",
   "points.showOnMap": "Zobrazit na mapě",
+  "points.deleteFromList": "„{name}“ patří do seznamu „{list}“. Odstranit jej z tohoto seznamu?",
   "points.name": "Název",
   "points.tags": "Štítky",
   "points.tagsPh": "štítek1, štítek2, …",

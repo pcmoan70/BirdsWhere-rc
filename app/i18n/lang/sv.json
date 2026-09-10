@@ -707,6 +707,7 @@
   "points.export": "⬇ Spara",
   "points.delete": "Radera",
   "points.showOnMap": "Visa på karta",
+  "points.deleteFromList": "”{name}” hör till listan ”{list}”. Ta bort den från den listan?",
   "points.name": "Namn",
   "points.tags": "Etiketter",
   "points.tagsPh": "etikett1, etikett2, …",

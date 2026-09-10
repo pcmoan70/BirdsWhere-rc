@@ -939,6 +939,7 @@
   "points.export": "⬇ Lagre",
   "points.delete": "Slett",
   "points.showOnMap": "Vis på kart",
+  "points.deleteFromList": "«{name}» hører til listen «{list}». Slette det fra den listen?",
   "points.name": "Navn",
   "points.tags": "Tagger",
   "points.tagsPh": "tagg1, tagg2, …",

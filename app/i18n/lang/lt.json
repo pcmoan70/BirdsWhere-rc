@@ -939,6 +939,7 @@
   "points.export": "⬇ Saugoti",
   "points.delete": "Trinti",
   "points.showOnMap": "Rodyti žemėlapyje",
+  "points.deleteFromList": "„{name}“ priklauso sąrašui „{list}“. Pašalinti jį iš to sąrašo?",
   "points.name": "Pavadinimas",
   "points.tags": "Žymos",
   "points.tagsPh": "žyma1, žyma2, …",

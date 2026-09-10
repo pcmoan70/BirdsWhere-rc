@@ -794,6 +794,7 @@ window.GeoI18N = (function () {
         "points.export": "⬇ Save",
         "points.delete": "Delete",
         "points.showOnMap": "Show on map",
+        "points.deleteFromList": "“{name}” belongs to the list “{list}”. Delete it from that list?",
         "points.name": "Name",
         "points.tags": "Tags",
         "points.tagsPh": "tag1, tag2, …",

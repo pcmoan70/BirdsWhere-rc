@@ -939,6 +939,7 @@
   "points.export": "⬇ Salva",
   "points.delete": "Elimina",
   "points.showOnMap": "Mostra sulla mappa",
+  "points.deleteFromList": "«{name}» appartiene alla lista «{list}». Eliminarlo da quella lista?",
   "points.name": "Nome",
   "points.tags": "Tag",
   "points.tagsPh": "tag1, tag2, …",

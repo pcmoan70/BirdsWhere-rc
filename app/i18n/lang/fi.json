@@ -939,6 +939,7 @@
   "points.export": "⬇ Tall.",
   "points.delete": "Poista",
   "points.showOnMap": "Näytä kartalla",
+  "points.deleteFromList": "”{name}” kuuluu listaan ”{list}”. Poistetaanko se tästä listasta?",
   "points.name": "Nimi",
   "points.tags": "Tunnisteet",
   "points.tagsPh": "tunniste1, tunniste2, …",
