@@ -5827,10 +5827,13 @@
               // Feedback form, first thing in Settings (the delegated ".feedback-open" click handler opens it).
               '<div class="settings-toprow">' +
                 '<button type="button" class="btn ico-btn feedback-open settings-feedback">' + ico("mail") + '<span class="ico-label" data-i18n="feedback.send">Feedback</span></button>' +
-                '<a id="about-page-link" class="btn btn-light ico-btn settings-summary" href="about/" target="_blank" rel="noopener">' + ico("info") + '<span class="ico-label" data-i18n="settings.aboutPage">Summary ↗</span></a>' +
               '</div>' +
               '<p class="settings-intro" data-i18n="settings.appIntro">BirdsWhere shows where species live, migrate, and are being seen right now — the BirdNET habitat model runs entirely in your browser, overlaid with live observations from eBird, GBIF, iNaturalist and national databases.</p>' +
-              '<button type="button" id="about-open" class="settings-about" data-i18n="ctrl.about">About &amp; how it works</button>' +
+              // "About ↗" (the short web summary, in the UI language) beside "How it works" (the in-app panel).
+              '<div class="settings-aboutrow">' +
+                '<a class="settings-about about-page-link" href="about/" target="_blank" rel="noopener" data-i18n="settings.aboutPage">About ↗</a>' +
+                '<button type="button" id="about-open" class="settings-about" data-i18n="ctrl.about">How it works</button>' +
+              '</div>' +
               '<div id="settings-version" class="settings-version" style="display:none"></div>' +
               '<button type="button" id="settings-update" class="settings-update" style="display:none"></button>' +
               '<div id="settings-update-notes" class="cu-hint" style="display:none"></div>' +
@@ -6258,6 +6261,7 @@
           '<p class="perf-privacy" data-i18n="popup.privacy">Private by design: there is no account and no server of ours. Your searches, saved lists and settings stay on this device — nothing is sent anywhere except the direct requests to the observation sources you query.</p>' +
           '<p class="perf-feedback"><span data-i18n="popup.feedback"></span> <button type="button" class="feedback-open ico-btn">' + ico("mail") + '<span class="ico-label" data-i18n="feedback.send">Message</span></button></p>' +
           '<div class="install-row"><button type="button" id="install-info" class="btn btn-light ico-btn" hidden>' + ico("install") + '<span class="ico-label" data-i18n="install.app">Offline mode</span></button><div class="install-steps cu-hint" hidden></div></div>' +
+          '<p class="perf-about"><a class="about-page-link" href="about/" target="_blank" rel="noopener" data-i18n="settings.aboutPage">About ↗</a></p>' +
           '<div class="perf-version" id="perf-version" style="display:none"></div>' +
           '<button id="perf-modal-ok" class="btn" data-i18n="popup.ok">OK</button>' +
         '</div></div>' +
@@ -6951,7 +6955,10 @@
   var langUiReady = false, pendingLangUI = false;
   // Static "About BirdsWhere" pages exist for every full UI language (app/about/<code>/).
   var ABOUT_PAGE_LANGS = { cs: 1, da: 1, de: 1, es: 1, et: 1, fi: 1, fr: 1, it: 1, lt: 1, nl: 1, no: 1, pl: 1, pt: 1, sv: 1 };
-  function syncAboutLink() { var a = document.getElementById("about-page-link"); if (a) a.href = ABOUT_PAGE_LANGS[lang] ? "about/" + lang + "/" : "about/"; }
+  function syncAboutLink() {
+    var href = ABOUT_PAGE_LANGS[lang] ? "about/" + lang + "/" : "about/";
+    Array.prototype.forEach.call(document.querySelectorAll(".about-page-link"), function (a) { a.href = href; });
+  }
   function refreshLangUI() {
     if (!langUiReady) { pendingLangUI = true; return; }
     applyI18n();

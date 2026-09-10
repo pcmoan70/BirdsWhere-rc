@@ -2474,12 +2474,18 @@ button.dd-name:hover { text-decoration: underline; }
   cursor: pointer;
 }
 .settings-about::before { content: "\2139  "; }   /* ℹ */
-.settings-toprow { display: flex; gap: 8px; margin: 2px 0 10px; }   /* Feedback + Summary, top of Settings */
+.settings-toprow { display: flex; gap: 8px; margin: 2px 0 10px; }   /* Feedback, top of Settings */
 .settings-toprow > .btn { flex: 1 1 0; justify-content: center; }
-/* Both top buttons share the light bordered look (.feedback-open is otherwise a text link). */
+/* Bordered button look (.feedback-open is otherwise a text link). */
 .settings-toprow > .settings-feedback { background: var(--surface, #fff); border: 1px solid var(--border, #ccc); color: var(--ink); text-decoration: none; font-weight: 600; padding: 6px 9px; }
 .settings-toprow > .settings-feedback:hover { background: var(--surface-2, #f2f5f4); color: var(--ink); }
-.settings-summary { text-decoration: none; }
+/* "About ↗" (web summary) beside "How it works" (in-app panel), under the intro text. */
+.settings-aboutrow { display: flex; gap: 4px; }
+.settings-aboutrow > .settings-about { flex: 0 1 auto; width: auto; text-decoration: none; }
+.settings-aboutrow > a.settings-about::before { content: none; }
+.perf-about { margin: 2px 0 6px; }
+.perf-about a { color: var(--brand); font-weight: 600; text-decoration: none; }
+.perf-about a:hover { text-decoration: underline; }
 .settings-about:hover { background: var(--surface-2); }
 /* Running version (+ last-change time), directly under "About & how it works". */
 .settings-version { padding: 0 6px 6px; font-size: var(--fs-s); color: var(--ink-muted); font-variant-numeric: tabular-nums; }
