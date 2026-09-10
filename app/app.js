@@ -5948,12 +5948,12 @@
               '<div class="settings-section" data-i18n="settings.secData">Data sources</div>' +
               '<div class="ctrl-group" id="sources-wrap">' +
                 '<label data-i18n="sources.label">Data sources</label>' +
-                icoBtn("sources-open", "sources", "sources.manage", "Manage data sources…") +
+                icoBtn("sources-open", "sources", "sources.manage", "Data sources…") +
                 '<p class="cu-hint" data-i18n="sources.labelHint">Turn each observation source on or off and enter its API key. GBIF and iNaturalist need no key; eBird and the regional databases each take a free key.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label data-i18n="ctrl.customurls">National databases</label>' +
-                icoBtn("natdb-open", "globe", "natdb.manage", "Manage national databases…") +
+                icoBtn("natdb-open", "globe", "natdb.manage", "National databases…") +
                 '<p class="cu-hint" data-i18n="ctrl.customurlsSettingsHint">Manage the national and regional bird-site links shown in a clicked point’s popup — add, edit, hide or delete per country, or reset the defaults.</p>' +
               '</div>' +
               '<div class="settings-section" data-i18n="settings.secRarity">Rarity alerts</div>' +
@@ -6002,7 +6002,7 @@
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label data-i18n="lists.title">Administer lists</label>' +
-                icoBtn("lists-open", "list", "lists.manage", "Administer lists…") +
+                icoBtn("lists-open", "list", "lists.manage", "Lists…") +
                 '<p class="cu-hint" data-i18n="lists.titleHint">Open the managers for your saved species lists and observer lists — rename, edit members or delete.</p>' +
               '</div>' +
               '<div class="ctrl-group" id="sync-wrap">' +
