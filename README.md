@@ -822,7 +822,7 @@ alerts, lists, offline use — plus the data sources and the responsible-birding
 `tools/about-content.json` by `node tools/gen-about-pages.mjs` (edit the JSON, re-run, commit).
 `robots.txt` allows everything and points at `sitemap.xml` (root + all about pages); `index.html`
 carries a canonical URL, description, Open Graph tags and a `<noscript>` intro linking to the pages,
-and Settings has an **About BirdsWhere ↗** link in the current UI language. The service worker leaves
+and Settings opens with a **Summary ↗** button (next to Feedback) that opens the page in the current UI language. The service worker leaves
 `/about/`, `robots.txt` and `sitemap.xml` to the network so an installed app never swallows them.
 The RC channel is deployed with `noindex` on every page and without the crawler files, so only
 thebirding.site is indexed.

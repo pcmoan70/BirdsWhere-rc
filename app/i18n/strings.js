@@ -318,7 +318,7 @@ window.GeoI18N = (function () {
         "settings.secDisplay": "Display & language",
         "settings.secWhatsNew": "What’s new",
         "settings.qrShare": "Scan to open / share this app",
-        "settings.aboutPage": "About BirdsWhere ↗",
+        "settings.aboutPage": "Summary ↗",
         "group.all": "All groups",
         "group.aves": "Birds",
         "group.mammalia": "Mammals",

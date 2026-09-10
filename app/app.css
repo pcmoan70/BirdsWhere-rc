@@ -2474,7 +2474,12 @@ button.dd-name:hover { text-decoration: underline; }
   cursor: pointer;
 }
 .settings-about::before { content: "\2139  "; }   /* ℹ */
-.settings-feedback { width: 100%; justify-content: center; margin: 2px 0 10px; }   /* "Message" — feedback form, top of Settings */
+.settings-toprow { display: flex; gap: 8px; margin: 2px 0 10px; }   /* Feedback + Summary, top of Settings */
+.settings-toprow > .btn { flex: 1 1 0; justify-content: center; }
+/* Both top buttons share the light bordered look (.feedback-open is otherwise a text link). */
+.settings-toprow > .settings-feedback { background: var(--surface, #fff); border: 1px solid var(--border, #ccc); color: var(--ink); text-decoration: none; font-weight: 600; padding: 6px 9px; }
+.settings-toprow > .settings-feedback:hover { background: var(--surface-2, #f2f5f4); color: var(--ink); }
+.settings-summary { text-decoration: none; }
 .settings-about:hover { background: var(--surface-2); }
 /* Running version (+ last-change time), directly under "About & how it works". */
 .settings-version { padding: 0 6px 6px; font-size: var(--fs-s); color: var(--ink-muted); font-variant-numeric: tabular-nums; }
@@ -2494,8 +2499,6 @@ button.dd-name:hover { text-decoration: underline; }
 .app-qr { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 14px 0 6px; }
 .app-qr img { display: block; background: #fff; padding: 8px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
 .app-qr-cap { font-size: var(--fs-s); color: var(--ink); opacity: .7; text-align: center; }
-.app-about-link { font-size: var(--fs-s); color: var(--brand); text-decoration: none; }
-.app-about-link:hover { text-decoration: underline; }
 /* "Install for offline use" section in the About panel */
 #about-install { margin-top: 14px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); }
 #about-install h4 { margin: 0 0 6px; font-size: var(--fs-h); }

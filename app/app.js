@@ -5825,7 +5825,10 @@
             '<button type="button" id="settings-toggle" class="settings-icon-btn" aria-haspopup="true" aria-label="Settings" data-i18n-title="ctrl.settingsHold" title="Settings"></button>' +
             '<div id="settings-panel" class="dd-panel settings-panel" style="display:none">' +
               // Feedback form, first thing in Settings (the delegated ".feedback-open" click handler opens it).
-              '<button type="button" class="btn ico-btn feedback-open settings-feedback">' + ico("mail") + '<span class="ico-label" data-i18n="feedback.send">Feedback</span></button>' +
+              '<div class="settings-toprow">' +
+                '<button type="button" class="btn ico-btn feedback-open settings-feedback">' + ico("mail") + '<span class="ico-label" data-i18n="feedback.send">Feedback</span></button>' +
+                '<a id="about-page-link" class="btn btn-light ico-btn settings-summary" href="about/" target="_blank" rel="noopener">' + ico("info") + '<span class="ico-label" data-i18n="settings.aboutPage">Summary ↗</span></a>' +
+              '</div>' +
               '<p class="settings-intro" data-i18n="settings.appIntro">BirdsWhere shows where species live, migrate, and are being seen right now — the BirdNET habitat model runs entirely in your browser, overlaid with live observations from eBird, GBIF, iNaturalist and national databases.</p>' +
               '<button type="button" id="about-open" class="settings-about" data-i18n="ctrl.about">About &amp; how it works</button>' +
               '<div id="settings-version" class="settings-version" style="display:none"></div>' +
@@ -6066,8 +6069,7 @@
                 '<label class="ctrl-check"><input type="checkbox" id="experimental-toggle"> <span data-i18n="ctrl.experimental">Experimental features</span></label>' +
                 '<p class="cu-hint" data-i18n="ctrl.experimentalHint">Off (default). On: unlocks less-polished extras — currently the NBN Atlas link in the species menu; more may appear here over time.</p>' +
               '</div>' +
-              '<div class="app-qr"><img src="qr-app.svg" alt="" width="140" height="140" /><span class="app-qr-cap" data-i18n="settings.qrShare">Scan to open / share this app</span>' +
-                '<a id="about-page-link" class="app-about-link" href="about/" target="_blank" rel="noopener" data-i18n="settings.aboutPage">About BirdsWhere ↗</a></div>' +
+              '<div class="app-qr"><img src="qr-app.svg" alt="" width="140" height="140" /><span class="app-qr-cap" data-i18n="settings.qrShare">Scan to open / share this app</span></div>' +
               '<div class="settings-section" data-i18n="settings.secWhatsNew">What’s new</div>' +
               '<div id="whatsnew-list" class="whatsnew-list"></div>' +
             '</div>' +
