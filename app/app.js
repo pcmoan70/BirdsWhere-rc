@@ -6623,6 +6623,7 @@
       var bellEl = document.getElementById("rarity-bell");
       if (bellEl) bellEl.addEventListener("click", function () { maybeEbirdNudge(); });
       if (!hasHere && !hasLocParam && !sharedOpen) restoreSession();   // return to the view we left (reload-safe)
+      countPosterScan();   // ?from=poster (the /f/ QR link) → one anonymous tick on the scan counter
       if (hasLocParam) maybeUrlLocationParam();   // ?location=here;radius=…;show=…;sortby=… → geolocate + open list/map
       else maybeUrlAutoLocate();                  // ?here=1 → geolocate + open species list
       maybeOpenSharedPoint();   // ?lat=&lon= → a shared location: go there, drop the pin
@@ -15470,6 +15471,20 @@
     if (sv) { sv.textContent = parts.join(" · "); sv.style.display = parts.length ? "" : "none"; }
   }
 
+  // The printed QR poster forwards through /f/ with ?from=poster. Count that launch on the
+  // same anonymous hit counter the About footer uses for page visits — a number, nothing
+  // else: no position, no id, no cookie. Read it at
+  // https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fthebirding.site%2Ff (each view of that badge adds one).
+  var posterCounted = false;
+  function countPosterScan() {
+    try {
+      if (posterCounted || !/[?&;]from=poster(?:[&;]|$)/.test(location.search)) return;
+      posterCounted = true;
+      if (navigator.onLine === false) return;
+      var img = new Image();
+      img.src = "https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fthebirding.site%2Ff&label=poster%20scans&t=" + Date.now();
+    } catch (e) {}
+  }
   // One-time performance note shown over the page on load.
   function showPerfModal() {
     var m = document.getElementById("perf-modal");

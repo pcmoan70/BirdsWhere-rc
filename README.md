@@ -574,8 +574,12 @@ https://thebirding.site/f/
 
 **Short link for print** — `https://thebirding.site/f/` is a tiny redirect page
 (`app/f/index.html`, served by the service worker even offline) that forwards to
-`?location=here&radius=3&days=21&skip=ebird&show=list&sortby=distance` (the species list, nearest
-first, ties by rarity). Being 27 characters
+`?location=here&radius=3&days=21&skip=ebird&show=list&sortby=distance&from=poster` (the species list,
+nearest first, ties by rarity). The `from=poster` tag makes the app add one tick to an anonymous
+scan counter (the same hit-counter service as the About footer's page-visit badge — a number only,
+no position, id or cookie); read it at
+`https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fthebirding.site%2Ff` (each view of the
+badge adds one). Being 27 characters
 instead of ~120 it makes a much coarser QR code (33×33 modules at the highest error-correction level,
 instead of 57×57), which survives print wear far better. Change the target by editing that file.
 
