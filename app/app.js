@@ -20299,7 +20299,7 @@
       if (!sci) { if (none) none.style.display = ""; return; }
       spImageFor(sci).then(function (r) {
         if (!r || r.none) { if (none) none.style.display = ""; if (r && r.tmp) card._spgDone = false; return; }
-        var img = document.createElement("img"); img.alt = sci; img.loading = "lazy"; img.decoding = "async"; img.src = r.t;
+        var img = document.createElement("img"); img.alt = sci; img.decoding = "async"; img.src = r.t;   // gated by the observer already — load as soon as resolved
         img.addEventListener("error", function () { img.remove(); if (none) none.style.display = ""; });
         box.insertBefore(img, box.firstChild);
         if (cr) {
@@ -20309,11 +20309,15 @@
       });
     }
     var cards = rec.querySelectorAll(".spg-card");
+    // The first cards load at once (a first screen plus a little), the rest resolve as
+    // they come within two screens of the viewport while scrolling.
+    var SPG_PRELOAD = 8;
+    Array.prototype.forEach.call(cards, function (c, i) { if (i < SPG_PRELOAD) fill(c); });
     if (window.IntersectionObserver) {
       spGalleryObs = new IntersectionObserver(function (entries) {
         entries.forEach(function (en) { if (en.isIntersecting) { fill(en.target); spGalleryObs.unobserve(en.target); } });
-      }, { root: null, rootMargin: "400px 0px" });
-      Array.prototype.forEach.call(cards, function (c) { spGalleryObs.observe(c); });
+      }, { root: null, rootMargin: "1200px 0px" });
+      Array.prototype.forEach.call(cards, function (c, i) { if (i >= SPG_PRELOAD) spGalleryObs.observe(c); });
     } else Array.prototype.forEach.call(cards, fill);
   }
   function renderSpControls() {
