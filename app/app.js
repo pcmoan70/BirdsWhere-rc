@@ -14759,8 +14759,28 @@
   // Detailed explanation of one overlay (what it shows, why it helps, how to use it,
   // caveats) — opened from the ⓘ-style "?" badge at the right of its row. The texts are
   // English so far; other languages get the English one with a small note.
+  // While the help dialog is up, Leaflet's layers control must not fold away (its
+  // mouseleave / map-click collapse fires as the pointer moves onto the dialog): any
+  // collapse is undone at once, and after the dialog closes the panel is re-expanded
+  // so it stays open until the user closes it themselves (tap the map / move off it).
+  var ovlPinObs = null;
+  function pinOverlayCtrl(on) {
+    var c = overlayLayersCtrl; if (!c) return;
+    var el = c.getContainer();
+    if (on) {
+      try { c.expand(); } catch (e) {}
+      if (!ovlPinObs && window.MutationObserver) {
+        ovlPinObs = new MutationObserver(function () { if (!el.classList.contains("leaflet-control-layers-expanded")) { try { c.expand(); } catch (e) {} } });
+        ovlPinObs.observe(el, { attributes: true, attributeFilter: ["class"] });
+      }
+    } else {
+      if (ovlPinObs) { ovlPinObs.disconnect(); ovlPinObs = null; }
+      setTimeout(function () { try { c.expand(); } catch (e) {} }, 0);
+    }
+  }
   function showOverlayHelp(def) {
-    var m = createModal({ escClose: true, backdropClose: true, boxClass: "ovl-help-box" });
+    pinOverlayCtrl(true);
+    var m = createModal({ escClose: true, backdropClose: true, boxClass: "ovl-help-box", onClose: function () { pinOverlayCtrl(false); } });
     var html = t(def.key + "Help");
     var enOnly = (lang !== "en") && !window.GeoI18N.hasOwn(lang, def.key + "Help");
     m.box.innerHTML = '<div class="ui-modal-msg ovl-help-title">' + escapeHtml(t(def.key)) + "</div>" +
