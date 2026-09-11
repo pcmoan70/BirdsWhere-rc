@@ -1462,7 +1462,7 @@
   // Fetch-list layout: the model-prediction "table", or a detailed record layout.
   var spLayout = "table";
   var SP_LAYOUTS = [
-    ["table", "splay.table"], ["observation", "splay.observation"]
+    ["table", "splay.table"], ["observation", "splay.observation"], ["gallery", "splay.gallery"]
   ];
   function spRecordLayout() { return "date"; }   // the only record layout now is "Per observation" (date→observer→location)
   var menuKey = null, menuName = "", menuSci = "";  // species the menu targets
@@ -5705,6 +5705,7 @@
     var lay = (p.layout || "").toLowerCase();
     if (lay === "observation" || lay === "observations" || lay === "obs") spLayout = "observation";
     else if (lay === "table" || lay === "species") spLayout = "table";
+    else if (lay === "images" || lay === "gallery" || lay === "pictures") spLayout = "gallery";
     var sort = urlSortState(p.sortby);
     if (sort) {
       speciesListSort = sort;
@@ -19034,7 +19035,7 @@
     refreshGroupModeOptions: refreshGroupModeOptions, saveFamIndex: saveFamIndex,
     selectMapPoint: selectMapPoint, serializeVisibleDetPlot: serializeVisibleDetPlot,
     getSpLayout: function () { return spLayout; },
-    setSpLayout: function (v) { if (v === "table" || v === "observation") { spLayout = v; try { renderSpControls(); } catch (e) {} } },
+    setSpLayout: function (v) { if (v === "table" || v === "observation" || v === "gallery") { spLayout = v; try { renderSpControls(); } catch (e) {} } },
     getCurrentSpView: function () { return currentSpView; },
     getWeek: function () { return +document.getElementById("week-select").value || 0; },
     setWeek: function (w) { var sl = document.getElementById("week-select"); if (sl && +w >= 1 && +w <= 48 && +sl.value !== +w) { sl.value = +w; try { sl.dispatchEvent(new Event("change", { bubbles: true })); } catch (e) {} } },
@@ -20199,11 +20200,18 @@
   function renderSpBody() {
     var tbl = document.getElementById("species-list-table"), rec = document.getElementById("sp-records");
     if (!tbl || !rec) return;
-    if (spLayout === "table") {
+    if (spLayout === "table" || spLayout === "gallery") {
+      // The gallery is the table's rows as picture cards: run the table pipeline (filters,
+      // distances, sort) so the cards follow the same order, then swap the presentation.
       rec.style.display = "none"; tbl.style.display = "";
       applyAgeFilter();
       refreshSpDistCells();   // fresh distances before sorting by them
       if (speciesListSort.col) sortSpeciesList();
+      if (spLayout === "gallery") {
+        tbl.style.display = "none"; rec.style.display = "";
+        rec.innerHTML = buildSpGalleryHtml();
+        wireSpGallery(rec);
+      }
     } else {
       tbl.style.display = "none"; rec.style.display = "";
       var rows = collectVisibleDetections(null, false);   // honour the species selection / applied list (show filtered species only)
@@ -20211,6 +20219,102 @@
         : '<div class="dl-empty">' + escapeHtml(t("detlist.empty")) + "</div>";
       wireSpDetail(rec); fillObsSeasonCells(rec, rows);
     }
+  }
+  // ---- Species gallery ("Images" layout) ------------------------------------
+  // One card per visible species-table row, in the table's current order: the species'
+  // photo (the lead image of its Wikipedia article, resolved lazily as the card scrolls
+  // into view), the name (same .sp-link → species menu), scientific name, and the row's
+  // Total · Last seen · Distance · Probability. Every photo is credited to its
+  // Wikimedia Commons author and licence, linked to the file page.
+  var spImgCache = null;   // sci → { t: thumb url, a: artist, l: licence, f: file title } | { none: 1 }
+  function spImgStore() { if (!spImgCache) spImgCache = window.GeoState.get("spImages", {}) || {}; return spImgCache; }
+  function spImgRemember(sci, rec) {
+    var c = spImgStore(); c[sci] = rec;
+    var keys = Object.keys(c); if (keys.length > 800) keys.slice(0, keys.length - 800).forEach(function (k) { delete c[k]; });   // bounded
+    window.GeoState.save({ spImages: c });
+  }
+  function spImgFileFromUrl(u) {   // …/commons/thumb/a/ab/Name.jpg/320px-Name.jpg  or  …/commons/a/ab/Name.jpg  → "Name.jpg"
+    var m = /\/(?:thumb\/)?[0-9a-f]\/[0-9a-f]{2}\/([^\/?#]+)/.exec((u || "").split("?")[0]);
+    try { return m ? decodeURIComponent(m[1]) : ""; } catch (e) { return m ? m[1] : ""; }
+  }
+  // A display-size thumbnail URL from the summary's thumbnail: drop the tracking query,
+  // serve from upload.wikimedia.org (the canonical, cacheable host) at 500 px wide — one of
+  // Wikimedia's standard widths (20/40/60/120/250/330/500/960…); other widths are refused.
+  function spImgThumb(thumb) {
+    return thumb.split("?")[0].replace(/^https:\/\/thumb\.wikimedia\.org\//, "https://upload.wikimedia.org/").replace(/\/\d+px-/, "/500px-");
+  }
+  function spImageFor(sci) {
+    var c = spImgStore(); if (c[sci]) return Promise.resolve(c[sci]);
+    var title = encodeURIComponent(sci.trim().replace(/\s+/g, "_"));
+    return fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + title, { headers: { Accept: "application/json" } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        var thumb = j && j.thumbnail && j.thumbnail.source, orig = j && j.originalimage && j.originalimage.source;
+        if (!thumb || (j && j.type === "disambiguation")) { spImgRemember(sci, { none: 1 }); return { none: 1 }; }
+        var file = spImgFileFromUrl(orig || thumb);
+        var rec = { t: spImgThumb(thumb), f: file, a: "", l: "" };
+        // Author + licence from the file's metadata (Commons first, else the file may be local to en.wikipedia).
+        var q = "w/api.php?action=query&prop=imageinfo&iiprop=extmetadata&iiextmetadatafilter=Artist%7CLicenseShortName&format=json&origin=*&titles=File:" + encodeURIComponent(file);
+        function meta(host) {
+          return fetch("https://" + host + "/" + q).then(function (r) { return r.ok ? r.json() : null; }).then(function (m) {
+            var pages = m && m.query && m.query.pages, pg = pages && pages[Object.keys(pages)[0]];
+            var ii = pg && pg.imageinfo && pg.imageinfo[0] && pg.imageinfo[0].extmetadata;
+            if (!ii) return false;
+            rec.a = String((ii.Artist && ii.Artist.value) || "").replace(/<[^>]+>/g, "").trim().slice(0, 80);
+            rec.l = String((ii.LicenseShortName && ii.LicenseShortName.value) || "").trim();
+            rec.h = host; return true;
+          }).catch(function () { return false; });
+        }
+        return meta("commons.wikimedia.org").then(function (ok) { return ok ? true : meta("en.wikipedia.org"); })
+          .then(function () { spImgRemember(sci, rec); return rec; });
+      })
+      .catch(function () { return { none: 1, tmp: 1 }; });   // network trouble: not remembered, retried next time
+  }
+  function buildSpGalleryHtml() {
+    var tbody = document.getElementById("sp-tbody"); if (!tbody) return "";
+    var rows = Array.prototype.filter.call(tbody.children, function (tr) { return tr.style.display !== "none" && !tr.classList.contains("sp-detail-row"); });
+    if (!rows.length) return '<div class="dl-empty">' + escapeHtml(t("detlist.empty")) + "</div>";
+    var lbl = { total: t("th.total"), last: t("th.last"), dist: t("th.dist"), prob: t("th.prob") };
+    return '<div class="sp-gallery">' + rows.map(function (tr) {
+      var link = tr.querySelector(".sp-link"), sciTd = tr.querySelector("td.sci");
+      var sci = sciTd ? sciTd.textContent.trim() : (link ? link.getAttribute("data-sci") || "" : "");
+      var dot = tr.querySelector(".sp-cdot, .det-sw");
+      var nd = tr.querySelector(".det-nd"), last = tr.querySelector(".sp-last"), dist = tr.querySelector(".sp-dist"), prob = tr.querySelector(".prob-num");
+      function cell(label, el) { var v = el ? el.textContent.trim() : ""; return v ? '<span class="spg-m"><span class="spg-k">' + escapeHtml(label) + "</span> " + escapeHtml(v) + "</span>" : ""; }
+      return '<div class="spg-card" data-sci="' + escapeHtml(sci) + '">' +
+        '<div class="spg-img"><span class="spg-none" style="display:none">' + escapeHtml(t("spg.noImage")) + "</span></div>" +
+        '<div class="spg-name">' + (dot ? dot.outerHTML : "") + (link ? link.outerHTML : "") + "</div>" +
+        (sci ? '<div class="spg-sci">' + escapeHtml(sci) + "</div>" : "") +
+        '<div class="spg-meta">' + cell(lbl.total, nd) + cell(lbl.last, last) + cell(lbl.dist, dist) + cell(lbl.prob, prob) + "</div>" +
+        '<div class="spg-credit"></div>' +
+      "</div>";
+    }).join("") + "</div>";
+  }
+  var spGalleryObs = null;
+  function wireSpGallery(rec) {
+    if (spGalleryObs) { spGalleryObs.disconnect(); spGalleryObs = null; }
+    function fill(card) {
+      if (card._spgDone) return; card._spgDone = true;
+      var sci = card.getAttribute("data-sci"), box = card.querySelector(".spg-img"), none = card.querySelector(".spg-none"), cr = card.querySelector(".spg-credit");
+      if (!sci) { if (none) none.style.display = ""; return; }
+      spImageFor(sci).then(function (r) {
+        if (!r || r.none) { if (none) none.style.display = ""; if (r && r.tmp) card._spgDone = false; return; }
+        var img = document.createElement("img"); img.alt = sci; img.loading = "lazy"; img.decoding = "async"; img.src = r.t;
+        img.addEventListener("error", function () { img.remove(); if (none) none.style.display = ""; });
+        box.insertBefore(img, box.firstChild);
+        if (cr) {
+          var page = "https://" + (r.h || "commons.wikimedia.org") + "/wiki/File:" + encodeURIComponent((r.f || "").replace(/ /g, "_"));
+          cr.innerHTML = '<a href="' + escapeHtml(page) + '" target="_blank" rel="noopener">' + escapeHtml((r.a ? "© " + r.a : "Wikimedia Commons") + (r.l ? " · " + r.l : "")) + "</a>";
+        }
+      });
+    }
+    var cards = rec.querySelectorAll(".spg-card");
+    if (window.IntersectionObserver) {
+      spGalleryObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) { fill(en.target); spGalleryObs.unobserve(en.target); } });
+      }, { root: null, rootMargin: "400px 0px" });
+      Array.prototype.forEach.call(cards, function (c) { spGalleryObs.observe(c); });
+    } else Array.prototype.forEach.call(cards, fill);
   }
   function renderSpControls() {
     var ctrls = document.getElementById("sp-controls");
@@ -20236,7 +20340,7 @@
     // record layouts; the prediction table keeps its own flag columns + age cycle.
     var mb = document.getElementById("sp-missing-btn");
     if (mb) { mb.classList.toggle("on", spShowMissing); mb.style.display = spLayout === "table" ? "" : "none"; }   // predictions only exist in the table layout
-    if (spLayout === "table") {
+    if (spLayout === "table" || spLayout === "gallery") {
       // Column-header panels (Species / Total / Last / Prob) open inline in
       // #sp-filters-wrap, between the header and the first rows. No toggle button.
       var bar = document.getElementById("sp-filters-bar"); if (bar) bar.innerHTML = "";

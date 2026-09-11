@@ -456,6 +456,8 @@
   "detlist.byTime": "Etter dato",
   "splay.table": "Artsliste",
   "splay.observation": "Observasjonsliste",
+  "splay.gallery": "Bilder",
+  "spg.noImage": "Ingen bilde",
   "splay.species": "Per art",
   "splay.count": "Etter antall",
   "splay.rarity": "Etter sjeldenhet",

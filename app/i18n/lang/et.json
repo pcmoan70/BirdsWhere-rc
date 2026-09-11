@@ -456,6 +456,8 @@
   "detlist.byTime": "Kuupäeva järgi",
   "splay.table": "Liikide loend",
   "splay.observation": "Vaatluste loend",
+  "splay.gallery": "Pildid",
+  "spg.noImage": "Pilt puudub",
   "splay.species": "Liikide kaupa",
   "splay.count": "Arvu järgi",
   "splay.rarity": "Harulduse järgi",

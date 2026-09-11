@@ -456,6 +456,8 @@
   "detlist.byTime": "Par date",
   "splay.table": "Liste d’espèces",
   "splay.observation": "Liste d’observations",
+  "splay.gallery": "Images",
+  "spg.noImage": "Pas d'image",
   "splay.species": "Par espèce",
   "splay.count": "Par nombre",
   "splay.rarity": "Par rareté",

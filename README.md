@@ -183,6 +183,13 @@ prediction at that point:
 
 ## Recent Observations (species list)
 
+The fetch can be shown three ways (layout dropdown above the list): the ranked **Species list** table,
+the **Observation list** (one row per record) and **Images** — a gallery with one card per species in
+the table's current order: photo, name, scientific name, Total, Last seen, Distance and Probability.
+Photos are the lead image of the species' Wikipedia article, loaded from Wikimedia Commons as cards
+scroll into view (nothing bundled or stored beyond the browser cache) and credited under each picture
+to their author and licence, linked to the Commons file page. The name opens the usual species menu.
+
 Click the map in **Recent** mode for the predicted species at that point, ranked by
 probability. Options:
 
@@ -531,8 +538,9 @@ another app. Options are `;`- or `&`-separated `key=value` pairs.
   sources are not changed.
 - **`show`** — `map` (default: land on the map with the dots dropping in as they load) or `list` (open
   the ranked list page directly).
-- **`layout`** — with `show=list`: `table` (default, the ranked species table) or `observation` (the
-  *By observation* layout — one row per record, grouped by day and observer).
+- **`layout`** — with `show=list`: `table` (default, the ranked species table), `observation` (the
+  *By observation* layout — one row per record, grouped by day and observer) or `images` (the
+  picture gallery, one card per species).
 - **`sortby`** — `rarity_increasing` (default; most likely / commonest species first),
   `rarity_decreasing` (rarest first), `time_recent` (most recently observed first) or `distance`
   (nearest observation of each species first, equal distances ordered by rarity); applies to both

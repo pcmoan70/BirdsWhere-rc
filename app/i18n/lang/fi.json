@@ -456,6 +456,8 @@
   "detlist.byTime": "Päivämäärän mukaan",
   "splay.table": "Lajilista",
   "splay.observation": "Havaintoluettelo",
+  "splay.gallery": "Kuvat",
+  "spg.noImage": "Ei kuvaa",
   "splay.species": "Lajeittain",
   "splay.count": "Määrän mukaan",
   "splay.rarity": "Harvinaisuuden mukaan",
