@@ -1215,6 +1215,7 @@
   "popup.feedback": "Feedback und Kommentare sind willkommen unter:",
   "feedback.send": "Feedback",
   "feedback.title": "Feedback",
+  "feedback.intro": "Das Team – ein Mensch und eine KI – freut sich über alles: Ideen für neue Funktionen, Hinweise auf Datenquellen, die wir noch nicht nutzen, Ideen zur Vorhersagemodellierung, Fehlerberichte, Probleme mit der Bedienung, Lob …",
   "feedback.msgPh": "Ihre Nachricht…",
   "feedback.emailPh": "Ihre E-Mail (optional, für eine Antwort)",
   "feedback.cancel": "Abbrechen",

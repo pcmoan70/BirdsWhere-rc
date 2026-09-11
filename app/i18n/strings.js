@@ -162,6 +162,7 @@ window.GeoI18N = (function () {
         "install.done": "App installed ✓",
         "feedback.send": "Feedback",
         "feedback.title": "Feedback",
+        "feedback.intro": "The team — one human and one AI — welcomes anything: ideas for new functions, tips about data sources we don't use yet, ideas for predictive modelling, bug reports, usability issues, praise…",
         "feedback.msgPh": "Your message…",
         "feedback.emailPh": "Your email (optional, for a reply)",
         "feedback.cancel": "Cancel",

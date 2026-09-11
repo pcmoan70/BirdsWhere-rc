@@ -1215,6 +1215,7 @@
   "popup.feedback": "Vos retours et commentaires sont les bienvenus à :",
   "feedback.send": "Commentaires",
   "feedback.title": "Commentaires",
+  "feedback.intro": "L'équipe — un humain et une IA — accueille tout avec plaisir : idées de nouvelles fonctions, pistes de sources de données que nous n'utilisons pas encore, idées de modélisation prédictive, signalements de bugs, problèmes d'ergonomie, compliments…",
   "feedback.msgPh": "Votre message…",
   "feedback.emailPh": "Votre e-mail (facultatif, pour une réponse)",
   "feedback.cancel": "Annuler",

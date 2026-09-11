@@ -2561,6 +2561,7 @@ button.dd-name:hover { text-decoration: underline; }
   box-shadow: var(--shadow-md, 0 6px 24px rgba(0,0,0,.35));
 }
 #feedback-box h3 { margin: 0 28px 12px 0; font-size: var(--fs-h); color: var(--brand-deep); }
+#feedback-box .feedback-intro { margin: -4px 0 12px; font-size: var(--fs-s); line-height: 1.4; color: var(--ink-muted); }
 /* One-tap thumbs row above the message box. */
 .feedback-quick { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .feedback-quick-lbl { flex: 1 1 auto; font-size: var(--fs-s); color: var(--ink-muted); }

@@ -1215,6 +1215,7 @@
   "popup.feedback": "Tagasiside ja kommentaarid on teretulnud aadressil:",
   "feedback.send": "Tagasiside",
   "feedback.title": "Tagasiside",
+  "feedback.intro": "Meeskond — üks inimene ja üks tehisaru — võtab hea meelega vastu kõike: ideid uute funktsioonide kohta, vihjeid andmeallikatest, mida me veel ei kasuta, ideid ennustava modelleerimise kohta, veateateid, kasutusmugavuse probleeme, kiitust…",
   "feedback.msgPh": "Sinu sõnum…",
   "feedback.emailPh": "Sinu e-post (valikuline, vastamiseks)",
   "feedback.cancel": "Tühista",

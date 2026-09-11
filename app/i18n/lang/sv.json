@@ -236,6 +236,7 @@
   "install.done": "Appen är installerad ✓",
   "feedback.send": "Återkoppling",
   "feedback.title": "Återkoppling",
+  "feedback.intro": "Teamet — en människa och en AI — tar gärna emot allt: idéer om nya funktioner, tips om datakällor vi inte använder ännu, idéer om prediktiv modellering, felrapporter, användbarhetsproblem, beröm …",
   "feedback.msgPh": "Ditt meddelande…",
   "feedback.emailPh": "Din e-post (valfritt, för svar)",
   "feedback.cancel": "Avbryt",

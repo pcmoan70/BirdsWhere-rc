@@ -6289,6 +6289,7 @@
         '<div id="feedback-modal" style="display:none"><div id="feedback-box">' +
           '<button type="button" id="feedback-close" aria-label="Close">×</button>' +
           '<h3 data-i18n="feedback.title">Feedback</h3>' +
+          '<p class="feedback-intro" data-i18n="feedback.intro">The team — one human and one AI — welcomes anything: ideas for new functions, tips about data sources we don\'t use yet, ideas for predictive modelling, bug reports, usability issues, praise…</p>' +
           // One-tap thumbs: sends straight away (with whatever is typed below, if anything).
           '<div class="feedback-quick"><span class="feedback-quick-lbl" data-i18n="feedback.quick">Quick feedback</span>' +
             '<button type="button" class="feedback-thumb" data-thumb="up" data-i18n-title="feedback.thumbsUp" title="Works well" aria-label="Works well">👍</button>' +

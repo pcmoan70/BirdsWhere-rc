@@ -1215,6 +1215,7 @@
   "popup.feedback": "Atsiliepimų ir komentarų laukiame adresu:",
   "feedback.send": "Atsiliepimas",
   "feedback.title": "Atsiliepimas",
+  "feedback.intro": "Komanda — vienas žmogus ir vienas DI — mielai priims viską: idėjas naujoms funkcijoms, patarimus apie duomenų šaltinius, kurių dar nenaudojame, idėjas prognozavimo modeliavimui, pranešimus apie klaidas, patogumo problemas, pagyrimus…",
   "feedback.msgPh": "Jūsų žinutė…",
   "feedback.emailPh": "Jūsų el. paštas (neprivaloma, atsakymui)",
   "feedback.cancel": "Atšaukti",

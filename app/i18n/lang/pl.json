@@ -1215,6 +1215,7 @@
   "popup.feedback": "Opinie i komentarze są mile widziane pod adresem:",
   "feedback.send": "Opinia",
   "feedback.title": "Opinia",
+  "feedback.intro": "Zespół — jeden człowiek i jedna SI — chętnie przyjmie wszystko: pomysły na nowe funkcje, wskazówki o źródłach danych, z których jeszcze nie korzystamy, pomysły na modelowanie predykcyjne, zgłoszenia błędów, problemy z użytecznością, pochwały…",
   "feedback.msgPh": "Twoja wiadomość…",
   "feedback.emailPh": "Twój e-mail (opcjonalnie, do odpowiedzi)",
   "feedback.cancel": "Anuluj",

@@ -1215,6 +1215,7 @@
   "popup.feedback": "Palautetta ja kommentteja otetaan vastaan osoitteessa:",
   "feedback.send": "Palaute",
   "feedback.title": "Palaute",
+  "feedback.intro": "Tiimi — yksi ihminen ja yksi tekoäly — ottaa mielellään vastaan kaiken: ideoita uusista toiminnoista, vinkkejä tietolähteistä, joita emme vielä käytä, ideoita ennustavaan mallinnukseen, virheilmoituksia, käytettävyysongelmia, kehuja…",
   "feedback.msgPh": "Viestisi…",
   "feedback.emailPh": "Sähköpostisi (valinnainen, vastausta varten)",
   "feedback.cancel": "Peruuta",
