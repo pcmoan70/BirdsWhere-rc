@@ -2561,6 +2561,13 @@ button.dd-name:hover { text-decoration: underline; }
   box-shadow: var(--shadow-md, 0 6px 24px rgba(0,0,0,.35));
 }
 #feedback-box h3 { margin: 0 28px 12px 0; font-size: var(--fs-h); color: var(--brand-deep); }
+/* One-tap thumbs row above the message box. */
+.feedback-quick { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.feedback-quick-lbl { flex: 1 1 auto; font-size: var(--fs-s); color: var(--ink-muted); }
+.feedback-thumb { width: 46px; height: 40px; border: 1px solid var(--border, #ccc); border-radius: 9px; background: var(--surface, #fff); font-size: 22px; line-height: 1; cursor: pointer; }
+.feedback-thumb:hover { background: var(--surface-2, #f2f5f4); }
+.feedback-thumb.chosen { border-color: var(--brand); box-shadow: 0 0 0 2px var(--brand-soft, #e3f0ec); }
+.feedback-thumb[disabled] { opacity: .6; cursor: default; }
 #feedback-close {
   position: absolute; top: 10px; right: 12px; border: none; background: transparent;
   cursor: pointer; font-size: var(--fs-glyph); line-height: 1; color: var(--ink-muted);
