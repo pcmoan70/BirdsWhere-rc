@@ -1225,6 +1225,7 @@
   "feedback.sendFail": "Lähetys ei onnistunut nyt — yritä myöhemmin uudelleen.",
   "feedback.empty": "Kirjoita ensin viesti.",
   "feedback.unavailable": "Palaute ei ole juuri nyt käytettävissä (offline tai ei määritetty).",
+  "feedback.limit": "Olet lähettänyt 3 viestiä viimeisen 24 tunnin aikana — seuraavan voi lähettää {t} jälkeen.",
   "feedback.quick": "Pikapalaute",
   "feedback.thumbsUp": "Toimii hyvin",
   "feedback.thumbsDown": "Jokin ei toimi",

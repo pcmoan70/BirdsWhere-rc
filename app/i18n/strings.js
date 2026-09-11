@@ -172,6 +172,7 @@ window.GeoI18N = (function () {
         "feedback.sendFail": "Couldn’t send right now — please try again later.",
         "feedback.empty": "Please write a message first.",
         "feedback.unavailable": "Feedback isn’t available right now (offline or not configured).",
+        "feedback.limit": "You’ve sent 3 messages in the last 24 hours — the next one can go after {t}.",
         "feedback.quick": "Quick feedback",
         "feedback.thumbsUp": "Works well",
         "feedback.thumbsDown": "Something’s off",

@@ -1225,6 +1225,7 @@
   "feedback.sendFail": "Kunne ikke sende nå — prøv igjen senere.",
   "feedback.empty": "Skriv en melding først.",
   "feedback.unavailable": "Tilbakemelding er ikke tilgjengelig nå (frakoblet eller ikke konfigurert).",
+  "feedback.limit": "Du har sendt 3 meldinger de siste 24 timene — den neste kan sendes etter {t}.",
   "feedback.quick": "Rask tilbakemelding",
   "feedback.thumbsUp": "Fungerer bra",
   "feedback.thumbsDown": "Noe fungerer ikke",

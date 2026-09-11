@@ -1225,6 +1225,7 @@
   "feedback.sendFail": "Impossibile inviare ora — riprova più tardi.",
   "feedback.empty": "Scrivi prima un messaggio.",
   "feedback.unavailable": "Il feedback non è disponibile al momento (offline o non configurato).",
+  "feedback.limit": "Hai inviato 3 messaggi nelle ultime 24 ore: il prossimo potrà partire dopo le {t}.",
   "feedback.quick": "Feedback rapido",
   "feedback.thumbsUp": "Funziona bene",
   "feedback.thumbsDown": "Qualcosa non va",

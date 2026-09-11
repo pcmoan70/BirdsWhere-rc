@@ -6294,8 +6294,9 @@
           '<div class="feedback-quick"><span class="feedback-quick-lbl" data-i18n="feedback.quick">Quick feedback</span>' +
             '<button type="button" class="feedback-thumb" data-thumb="up" data-i18n-title="feedback.thumbsUp" title="Works well" aria-label="Works well">👍</button>' +
             '<button type="button" class="feedback-thumb" data-thumb="down" data-i18n-title="feedback.thumbsDown" title="Something’s off" aria-label="Something’s off">👎</button></div>' +
-          '<textarea id="feedback-msg" rows="5" data-i18n-ph="feedback.msgPh" placeholder="Your message…"></textarea>' +
-          '<input type="email" id="feedback-email" autocomplete="email" data-i18n-ph="feedback.emailPh" placeholder="Your email (optional, for a reply)" />' +
+          '<textarea id="feedback-msg" rows="5" maxlength="2000" data-i18n-ph="feedback.msgPh" placeholder="Your message…"></textarea>' +
+          '<input type="email" id="feedback-email" maxlength="120" autocomplete="email" data-i18n-ph="feedback.emailPh" placeholder="Your email (optional, for a reply)" />' +
+          '<input type="text" id="feedback-web" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" />' +
           '<div id="feedback-status" class="cu-hint"></div>' +
           '<div class="feedback-actions">' +
             '<button type="button" id="feedback-cancel" class="btn btn-light" data-i18n="feedback.cancel">Cancel</button>' +
@@ -15586,9 +15587,29 @@
   var EMAILJS_PUBLIC_KEY = "-5S2PctOrxEViV5Pf";
   var EMAILJS_SERVICE_ID = "service_1wr4am1";
   var EMAILJS_TEMPLATE_ID = "template_2qq926a";
+  // Sending is capped per device: 3 messages per rolling 24 h (timestamps in GeoState).
+  // Casual spam and accidental repeats stop here; the EmailJS quota and its dashboard
+  // rules (allowed domains, rate limit) are the real backstop against scripted abuse.
+  var FEEDBACK_MAX = 3, FEEDBACK_WINDOW_MS = 24 * 3600 * 1000;
+  function feedbackRecent() {
+    var now = Date.now();
+    return (window.GeoState.get("feedbackSent", []) || []).filter(function (t0) { return now - t0 < FEEDBACK_WINDOW_MS; });
+  }
+  function feedbackBlockedUntil() {   // 0 = allowed now, else the time the oldest send in the window expires
+    var r = feedbackRecent();
+    return r.length >= FEEDBACK_MAX ? Math.min.apply(null, r) + FEEDBACK_WINDOW_MS : 0;
+  }
+  function feedbackSyncLimit(quiet) {   // quiet: disable the controls but leave the status line (e.g. the "sent" thanks) alone
+    var until = feedbackBlockedUntil(), st = document.getElementById("feedback-status");
+    var ctl = document.querySelectorAll("#feedback-send, .feedback-thumb");
+    Array.prototype.forEach.call(ctl, function (b) { b.disabled = !!until; });
+    if (until && st && !quiet) st.textContent = t("feedback.limit", { t: new Date(until).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) });
+    return !!until;
+  }
   function openFeedback() {
     closeDropdowns();
     var st = document.getElementById("feedback-status"); if (st) st.textContent = "";
+    feedbackSyncLimit();
     document.getElementById("feedback-modal").style.display = "flex";
     navOpen("feedback", hideFeedback);
     var ta = document.getElementById("feedback-msg"); if (ta) ta.focus();
@@ -15604,6 +15625,8 @@
       var ctx = (appVersion || "") + " · " + lang + " · " + (navigator.userAgent || "").slice(0, 160);
       msg = (thumb === "up" ? "👍 Thumbs up" : "👎 Thumbs down") + (msg ? "\n\n" + msg : "") + "\n\n— " + ctx;
     } else if (!msg) { st.textContent = t("feedback.empty"); return; }
+    var hp = document.getElementById("feedback-web"); if (hp && hp.value) { st.textContent = t("feedback.sent"); return; }   // honeypot filled → a bot; pretend success, send nothing
+    if (feedbackSyncLimit()) return;   // over the per-device cap → note shown, controls disabled
     if (!window.emailjs || !EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
       st.textContent = t("feedback.unavailable"); return;
     }
@@ -15615,12 +15638,13 @@
       { message: msg, reply_to: email, from_name: email || "anonymous" },
       { publicKey: EMAILJS_PUBLIC_KEY })
       .then(function () {
+        window.GeoState.save({ feedbackSent: feedbackRecent().concat([Date.now()]) });   // count it against the daily cap
         st.textContent = t("feedback.sent");
         document.getElementById("feedback-msg").value = "";
         setTimeout(function () { navClose("feedback"); }, 1200);
       })
       .catch(function () { st.textContent = t("feedback.sendFail"); })
-      .then(function () { btn.disabled = false; Array.prototype.forEach.call(thumbs, function (b) { b.disabled = false; b.classList.remove("chosen"); }); });
+      .then(function () { btn.disabled = false; Array.prototype.forEach.call(thumbs, function (b) { b.disabled = false; b.classList.remove("chosen"); }); feedbackSyncLimit(true); });
   }
 
   // In Species List mode the CSV button sits next to the "＋ Checklist" button;

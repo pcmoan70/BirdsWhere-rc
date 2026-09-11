@@ -1225,6 +1225,7 @@
   "feedback.sendFail": "Kon nu niet verzenden — probeer het later opnieuw.",
   "feedback.empty": "Schrijf eerst een bericht.",
   "feedback.unavailable": "Feedback is nu niet beschikbaar (offline of niet geconfigureerd).",
+  "feedback.limit": "Je hebt de afgelopen 24 uur 3 berichten gestuurd — het volgende kan na {t}.",
   "feedback.quick": "Snelle feedback",
   "feedback.thumbsUp": "Werkt goed",
   "feedback.thumbsDown": "Er klopt iets niet",

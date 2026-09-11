@@ -764,6 +764,12 @@ no direction can delete data on the other device.
 
 ---
 
+**Feedback form abuse limits.** Sending (messages and 👍/👎) is capped at 3 per device per rolling
+24 h with a note saying when the next can go; the message is limited to 2,000 characters and a
+hidden honeypot field silently drops bot submissions. These are device-side guards — the EmailJS
+account's own limits (monthly quota, allowed-domain list and rate limit in its dashboard) are the
+backstop against scripted use of the public key.
+
 ## Your data & privacy
 
 Everything you create — saved **points**, **lists / trips**, **field checklists** (and attached

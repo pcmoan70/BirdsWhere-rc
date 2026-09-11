@@ -1225,6 +1225,7 @@
   "feedback.sendFail": "Teď se nepodařilo odeslat — zkuste to později.",
   "feedback.empty": "Nejprve napište zprávu.",
   "feedback.unavailable": "Zpětná vazba teď není dostupná (offline nebo nenastaveno).",
+  "feedback.limit": "Za posledních 24 hodin jste odeslali 3 zprávy — další lze odeslat po {t}.",
   "feedback.quick": "Rychlá zpětná vazba",
   "feedback.thumbsUp": "Funguje dobře",
   "feedback.thumbsDown": "Něco nefunguje",

@@ -1225,6 +1225,7 @@
   "feedback.sendFail": "Praegu ei õnnestunud saata — proovi hiljem uuesti.",
   "feedback.empty": "Kirjuta esmalt sõnum.",
   "feedback.unavailable": "Tagasiside pole praegu saadaval (võrguühenduseta või seadistamata).",
+  "feedback.limit": "Oled viimase 24 tunni jooksul saatnud 3 sõnumit — järgmise saab saata pärast {t}.",
   "feedback.quick": "Kiire tagasiside",
   "feedback.thumbsUp": "Töötab hästi",
   "feedback.thumbsDown": "Midagi on valesti",
