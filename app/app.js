@@ -8344,11 +8344,13 @@
   function isObsTag(n) { return !!OBS_TAGS[String(n || "").trim().toLowerCase()]; }
   function detObsSplit(s) { return String(s || "").split(/\s*[|;]\s*/).map(function (x) { return x.trim(); }).filter(Boolean); }
   function detObsRealNames(s) { return detObsSplit(s).filter(function (n) { return !isObsTag(n); }); }   // single names, tags removed
-  function setDetObsFilter(set) {
+  var detObsRestored = false;   // true while the filter is the one restored from storage (not chosen this session)
+  function setDetObsFilter(set, restored) {
     // null = all observers; an empty Set = "None" (show nothing) — a deliberate,
     // useful base state for then ticking just a few. A Set holding only "" is the
     // "(no observer)" bucket.
     detObsFilter = set || null; detObsNames = []; detObsAllowNone = false;
+    detObsRestored = !!restored && !!detObsFilter;
     if (detObsFilter) detObsFilter.forEach(function (n) { if (n) detObsNames.push(n); else detObsAllowNone = true; });
   }
   // A remembered observer filter whose SELECTED names aren't among the currently-
@@ -8358,10 +8360,15 @@
   // base for building a few-observer selection.
   function reconcileObsFilter() {
     if (!detObsFilter || !detObsFilter.size) return false;   // null = all, empty = intentional None → leave both
+    if (!detObsRestored) return false;   // chosen in this session (a ticked list, a checkbox) → the user's call, even if nothing matches yet
     if (!Object.keys(detPlot).length) return false;   // nothing plotted → keep the filter (clearing the map keeps filters; a fetch may be incoming)
     var ob = detAllObservers(), present = detObsAllowNone && ob.hasNone;
-    for (var i = 0; !present && i < detObsNames.length; i++) if (ob.names.indexOf(detObsNames[i]) >= 0) present = true;
-    if (present) return false;
+    // Same substring semantics as detObsPasses: a list entry may be a joined "A | B" string.
+    for (var i = 0; !present && i < detObsNames.length; i++) {
+      var nm = detObsNames[i];
+      for (var j = 0; j < ob.names.length; j++) if (ob.names[j].indexOf(nm) >= 0 || nm.indexOf(ob.names[j]) >= 0) { present = true; break; }
+    }
+    if (present) { detObsRestored = false; return false; }   // it fits the plotted data → treat as confirmed
     setDetObsFilter(null); saveLegendState(); return true;
   }
   function detObsPasses(r) {
@@ -11721,7 +11728,7 @@
     detYearFilter = stSaved(ls.yearFilter, -1);
     detLifeFilter = stSaved(ls.lifeFilter, -1);
     detAlertFilter = stSaved(ls.alertFilter, 0);
-    setDetObsFilter(Array.isArray(ls.obsFilter) ? new Set(ls.obsFilter) : null);
+    setDetObsFilter(Array.isArray(ls.obsFilter) ? new Set(ls.obsFilter) : null, true);   // restored → may be healed if stale
     setDetLocFilter(Array.isArray(ls.locFilter) ? new Set(ls.locFilter) : null);
     detSrcFilter = (Array.isArray(ls.srcFilter) && ls.srcFilter.length) ? new Set(ls.srcFilter) : null;
     // Heal a stale source filter (none of its sources plotted) so it can't blank the map.
@@ -12275,7 +12282,7 @@
     // individual-observer checklist below.
     var oLists = getObserverLists(), head;
     if (oLists.length) {
-      head = '<details class="det-obslists-dd"' + (obsListsDdOpen ? " open" : "") + '><summary>' + escapeHtml(obsFilterLabel()) + "</summary>" +
+      head = '<details class="det-obslists-dd"' + (obsListsDdOpen ? " open" : "") + '><summary>' + escapeHtml(t("obs.lists") + ": " + obsFilterLabel()) + "</summary>" +
         '<div class="det-obslists-menu">' + oLists.map(function (L, i) {
           return '<label class="sp-list-row"><input type="checkbox" class="det-obslist-tick" data-i="' + i + '"' + (obsListTicked(L) ? " checked" : "") + " /> <span class=\"sp-list-nm\">" + escapeHtml(L.name) + '</span> <span class="sp-list-n">(' + ((L.observers || []).length) + ")</span></label>";
         }).join("") + "</div></details>";
