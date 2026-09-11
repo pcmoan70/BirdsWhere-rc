@@ -28,7 +28,7 @@ layered on top are the real sightings.
 
 | Use case | How BirdsWhere helps |
 |---|---|
-| **"Where should I go birding today?"** | Fetch live observations around you (or all your stored locations at once), sort the list by **probability low→high** so the locally-rarest finds top it, check the **Dist** column, and browse **eBird hotspots** and OSM **view points** (hides, towers & viewpoints) on the map. |
+| **"Where should I go birding today?"** | Fetch live observations around you (or all your stored locations at once), sort the list by **probability low→high** so the locally-rarest finds top it, check the **Dist** column, and browse **eBird hotspots** and OSM **viewpoints** (hides, towers & viewpoints) on the map. |
 | **"What's arriving this week?"** | **Migration mode**: per-point arrival/departure heatmaps, phenology timelines and a scatter of *arrival × probability*. The **Season** column (↑ arriving · ● peak · ↓ leaving) puts the same signal in every species list. |
 | **Chasing / studying one species** | Its **Range map** animated across 48 weeks, **"More of these"** (recent sightings within 50 km from eBird/GBIF/iNaturalist), Macaulay photos matched to the season, Xeno-canto audio, Wikipedia — all from one tap on any species name. |
 | **Planning a trip** | **Historic mode** shows what was seen there in your travel months in previous years; premade **taxonomic groups** and saved species lists focus the view; build a **route** of stops (hides, points, spots) and open it in Google Maps; **download offline maps** for the areas you'll bird without signal. |
@@ -102,7 +102,7 @@ map dots and the observation fetch. The model covers birds/mammals/amphibians/in
 to Natura 2000), **Land cover** (CORINE / Copernicus-EEA — habitat backdrop, Europe/EEA, with a
 colour-coded class legend in the lower-right while it's on),
 **GBIF occurrence density** (*Experimental* — enable in Settings; a seasonal heatmap of where records concentrate),
-**OSM protected areas**, **View points** (a **bundled worldwide snapshot** of 71k+ OSM bird hides, bird-watching towers and birdwatching
+**OSM protected areas**, **Viewpoints** (a **bundled worldwide snapshot** of 71k+ OSM bird hides, bird-watching towers and birdwatching
 viewpoints — incl. towers/viewpoints validated by proximity to an eBird hotspot — served from the
 app's own origin as small on-demand tiles, cached for offline; no live Overpass involved. Tap a
 marker for its name, type, coordinates and any OSM details it carries — operator, access, wheelchair,
@@ -143,7 +143,7 @@ holding a button:
 | the **collapsed legend pill** | pan/zoom to frame **all fetched points** |
 | the **rarity bell 🔔** | poll eBird's notable sightings at all 🔔 locations right now |
 | the **✓ update** button (right of the map) | its two settings — how many **overlap days** to re-fetch before each area's last fetch (default 2) and **only areas in view** |
-| the **View points**, **Best sites** or **eBird hotspots** row in the overlays menu | that layer's settings: the zoom from which its icons appear, how many are shown at once, and for Best sites the **site detail level** (Auto / 500 m / 25 km / 75 km) + the chart's AI-model cutoff |
+| the **Viewpoints**, **Best sites** or **eBird hotspots** row in the overlays menu | that layer's settings: the zoom from which its icons appear, how many are shown at once, and for Best sites the **site detail level** (Auto / 500 m / 25 km / 75 km) + the chart's AI-model cutoff |
 
 ---
 
@@ -848,7 +848,7 @@ app/
   rarity.js             eBird rarity alerts: poll loop, feed, bell, panel (AppRarity)
   offline-maps.js       Offline map areas: download / manage / prompt (AppOffline)
   points-lists.js       Map points, saved lists, KML/GeoJSON, routes (AppPoints)
-  site-overlays.js      View points / best sites / eBird hotspots layers (AppSites)
+  site-overlays.js      Viewpoints / best sites / eBird hotspots layers (AppSites)
   share-links.js        Shareable links: encode, share, import (AppShare)
   field-checklist.js    Field checklist: live entry, review, eBird/CSV/PDF (AppField)
   sources.js            Data-source registry + enabled/keys config (AppSources)

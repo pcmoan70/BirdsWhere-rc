@@ -6069,7 +6069,7 @@
                   '<button type="button" class="clear-cache-btn" data-clear="range"><span class="clear-lbl" data-i18n="clear.range">Range maps</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="overlays"><span class="clear-lbl" data-i18n="clear.overlays">Overlays</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="hotspots"><span class="clear-lbl" data-i18n="clear.hotspots">eBird hotspots</span><span class="clear-cnt"></span></button>' +
-                  '<button type="button" class="clear-cache-btn" data-clear="birds"><span class="clear-lbl" data-i18n="clear.birds">View points</span><span class="clear-cnt"></span></button>' +
+                  '<button type="button" class="clear-cache-btn" data-clear="birds"><span class="clear-lbl" data-i18n="clear.birds">Viewpoints</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="best"><span class="clear-lbl" data-i18n="clear.best">Best sites</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="names"><span class="clear-lbl" data-i18n="clear.names">Species names (iNat)</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="offline"><span class="clear-lbl" data-i18n="clear.offline">Offline areas</span><span class="clear-cnt"></span></button>' +
@@ -7992,7 +7992,7 @@
   var GBIF_ATTR = 'Occurrence density &copy; <a href="https://www.gbif.org" target="_blank" rel="noopener">GBIF.org</a>';
   var OSM_PA_ATTR = 'Protected areas &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors';
   var EBIRD_HS_ATTR = 'Hotspots &copy; <a href="https://ebird.org" target="_blank" rel="noopener">eBird</a> / Cornell Lab';
-  var BIRD_SPOTS_ATTR = 'View points &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors';
+  var BIRD_SPOTS_ATTR = 'Viewpoints &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors';
   // CORINE Land Cover 2018 (EEA/Copernicus) — Europe/EEA coverage incl. Norway. Layer 1 =
   // the pre-rendered raster (clean filled land cover); same ArcGIS server family as Natura 2000.
   var CLC2018_EXPORT = "https://image.discomap.eea.europa.eu/arcgis/rest/services/Corine/CLC2018_WM/MapServer/export";
