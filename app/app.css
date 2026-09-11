@@ -2905,7 +2905,8 @@ table.chk-table .chk-text { min-width: 100px; }
 /* Visit counter (footer) */
 /* About-panel footer: visit counter + "Last change" timestamp side by side */
 #about-footer { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--md-default-fg-color--lightest, #eee); }
-#about-footer #visit-counter { padding: 0; }
+#about-footer #visit-counter, #about-footer #poster-counter { padding: 0; }
+#about-footer #poster-counter:empty { display: none; }
 #about-footer #last-change { padding: 0; }
 #visit-counter img { height: 20px; vertical-align: middle; }
 

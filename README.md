@@ -579,7 +579,8 @@ nearest first, ties by rarity). The `from=poster` tag makes the app add one tick
 scan counter (the same hit-counter service as the About footer's page-visit badge — a number only,
 no position, id or cookie); read it at
 `https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fthebirding.site%2Ff` (each view of the
-badge adds one), or run `python3 tools/counts.py` for both the page-visit and poster-scan totals. Being 27 characters
+badge adds one), run `python3 tools/counts.py` for both totals, or open How it works — its footer
+shows the poster-scans badge (orange) next to the page-visits one (fetched once per app session). Being 27 characters
 instead of ~120 it makes a much coarser QR code (33×33 modules at the highest error-correction level,
 instead of 57×57), which survives print wear far better. Change the target by editing that file.
 

@@ -7114,6 +7114,7 @@
   // "Last change" timestamp. Rebuilt on language change and when the timestamp
   // resolves, so both survive re-renders.
   var lastChangeText = "";
+  var posterBadgeImg = null;   // the poster-scan badge <img>, fetched once per page load (see renderAboutBody)
   function renderAboutBody() {
     var about = document.getElementById("about-body");
     if (!about) return;
@@ -7128,8 +7129,22 @@
       '<div id="about-credits">' + t("about.creditsHtml") + "</div>" +
       '<div id="about-footer">' +
         '<div id="visit-counter"><img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fthebirding.site&label=page%20visits&labelColor=%230f1b24&countColor=%232f6f4f" alt="page visits" /></div>' +
+        '<div id="poster-counter"></div>' +
         (lastChangeText ? '<div id="last-change">' + escapeHtml(t("footer.lastchange", { t: lastChangeText })) + "</div>" : "") +
       "</div>";
+    // Poster-scan badge next to the page-visit one. The badge service counts every fetch and
+    // forbids caching, so the image element is created ONCE per page load and re-attached on
+    // later renders (no refetch) — one extra tick per app session that opens this panel, not
+    // one per view; never from a local dev server.
+    var pc = document.getElementById("poster-counter");
+    if (pc) {
+      if (!posterBadgeImg && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+        posterBadgeImg = new Image();
+        posterBadgeImg.alt = "poster scans";
+        posterBadgeImg.src = "https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fthebirding.site%2Ff&label=poster%20scans&labelColor=%230f1b24&countColor=%23e8801f";
+      }
+      if (posterBadgeImg) pc.appendChild(posterBadgeImg);
+    }
     // Localize the embedded [data-i18n] bits (e.g. the feedback button), scoped
     // to the About body — NOT applyI18n(), which calls back here (infinite loop).
     var i18nEls = about.querySelectorAll("[data-i18n]");
