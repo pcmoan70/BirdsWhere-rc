@@ -2458,7 +2458,14 @@
     // date-range panel (Historic observations) reappears after a round-trip
     // through a full-screen species page.
     updateModeVisibility();
-    if (map) map.invalidateSize();
+    // The visible height may have changed while the page was open — iOS Safari's toolbar
+    // collapsing or expanding, the keyboard, a rotation — and a refit made behind a fixed
+    // page can measure the map's top wrongly. A stale, too-tall map puts its bottom-right
+    // buttons (locate, search) below the screen edge, so refit now that the map is in
+    // front, and once more after the browser chrome has settled.
+    try { window.scrollTo(0, 0); } catch (e) {}
+    syncHeaderHeight(); fitMapHeight();
+    setTimeout(function () { try { window.scrollTo(0, 0); } catch (e) {} fitMapHeight(); }, 250);
   }
 
   // Wikipedia article (chosen language) for a species; scientific name is the
@@ -6560,11 +6567,24 @@
       // always firing window resize — refit from visualViewport too (debounced).
       if (window.visualViewport) {
         var vvT = null;
-        window.visualViewport.addEventListener("resize", function () {
-          clearTimeout(vvT);
-          vvT = setTimeout(function () { syncHeaderHeight(); fitMapHeight(); updateHdrHisto(); }, 150);
-        });
+        function vvRefit() { clearTimeout(vvT); vvT = setTimeout(function () { syncHeaderHeight(); fitMapHeight(); updateHdrHisto(); }, 150); }
+        window.visualViewport.addEventListener("resize", vvRefit);
+        window.visualViewport.addEventListener("scroll", vvRefit);   // iOS: the toolbar animating in/out moves the visual viewport without a resize
       }
+      // Back from another app / tab (bfcache restore or focus): the chrome may differ.
+      window.addEventListener("pageshow", function () { syncHeaderHeight(); fitMapHeight(); });
+      // Watchdog (mobile): whatever moved the visible edge — a toolbar animation that fired
+      // no event, a keyboard, a stray page scroll — if the map's bottom (its locate/search
+      // buttons live there) has slipped below the visual viewport, refit. Cheap: one
+      // getBoundingClientRect every 1.5 s, only while the map view is showing.
+      setInterval(function () {
+        if (document.visibilityState !== "visible" || (typeof onListView === "function" && onListView())) return;
+        var el = document.getElementById("app-map"); if (!el || el.offsetParent === null) return;
+        var vh = Math.round((window.visualViewport && window.visualViewport.height) || window.innerHeight);
+        var hs = document.getElementById("histo-strip"), last = (hs && hs.style.display !== "none") ? hs : el;
+        var over = last.getBoundingClientRect().bottom - vh;
+        if (over > 4 || over < -60 || (window.scrollY || 0) > 2) { try { window.scrollTo(0, 0); } catch (e) {} syncHeaderHeight(); fitMapHeight(); }
+      }, 1500);
       // Rotation settles layout LATE on phones, and can leave a page scroll offset that
       // skews the map-top measurement (making the map taller than the screen — bottom +
       // legend cut off). Refit again well after the turn, resetting any stray scroll
@@ -7512,6 +7532,16 @@
     psPanel.style.display = "none";
     psPanel.innerHTML = '<input id="place-search" type="text" autocomplete="off" data-i18n-ph="ph.place" placeholder="' + escapeHtml(t("ph.place")) + '" />' +
       '<div id="place-results"></div>';
+    // iOS Safari scrolls the page to bring a focused input above its keyboard and can
+    // leave that scroll (and a keyboard-sized map) behind when the keyboard goes — the
+    // map's bottom-right buttons then sit off-screen. Put the page back the moment the
+    // box loses focus, and again after the keyboard's dismiss animation.
+    (function () {
+      var inp = psPanel.querySelector("#place-search"); if (!inp) return;
+      inp.addEventListener("blur", function () {
+        [0, 400].forEach(function (ms) { setTimeout(function () { try { window.scrollTo(0, 0); } catch (e) {} syncHeaderHeight(); fitMapHeight(); }, ms); });
+      });
+    })();
     function togglePlaceSearch() {
       var btn = document.querySelector(".place-search-btn");
       var wrap = document.getElementById("map-wrap");
