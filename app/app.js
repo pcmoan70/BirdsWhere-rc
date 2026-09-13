@@ -355,6 +355,25 @@
   // Stretch the map from its current top down to the bottom of the viewport so
   // it uses the full screen height (overrides the CSS aspect-ratio sizing). The
   // top is read live, so it adapts to the controls bar wrapping or mode changes.
+  // The height the map should fill down to. 100dvh (dynamic viewport height) follows the
+  // browser toolbar as it collapses/expands but is NOT reduced by the on-screen keyboard or
+  // a permission sheet — exactly right for the map: those are transient overlays, and on
+  // iPhone Chrome the visual viewport stayed small after they went, leaving a short map
+  // with dead space below. Measured through a probe element; older browsers without dvh
+  // fall back to the visual viewport / innerHeight as before.
+  var dvhProbe = null;
+  function viewportHeightPx() {
+    try {
+      if (!dvhProbe) {
+        dvhProbe = document.createElement("div");
+        dvhProbe.style.cssText = "position:fixed;left:0;top:0;width:0;height:100dvh;visibility:hidden;pointer-events:none";
+        document.body.appendChild(dvhProbe);
+      }
+      var h = dvhProbe.offsetHeight;
+      if (h > 100 && dvhProbe.style.height === "100dvh") return h;   // dvh understood (an unsupported unit leaves height empty → 0)
+    } catch (e) {}
+    return Math.round((window.visualViewport && window.visualViewport.height) || window.innerHeight);
+  }
   function fitMapHeight() {
     var el = document.getElementById("app-map");
     if (!el || el.offsetParent === null) return;   // not visible yet
@@ -375,7 +394,7 @@
     // area behind the browser chrome). The 320px floor only applies when the screen
     // is tall enough for it — in a short mobile-LANDSCAPE viewport it used to force
     // the map taller than the screen, pushing its bottom (and the legend) out of view.
-    var vh = Math.round((window.visualViewport && window.visualViewport.height) || window.innerHeight);
+    var vh = viewportHeightPx();
     var hs = document.getElementById("histo-strip");
     var stripH = (hs && hs.style.display !== "none") ? hs.offsetHeight : 0;   // the histogram strip sits under the map
     el.style.height = Math.max(160, Math.round(vh - top - stripH - 8)) + "px";   // floor 160 (was 320 — taller than a landscape phone)
@@ -6579,8 +6598,9 @@
       // getBoundingClientRect every 1.5 s, only while the map view is showing.
       setInterval(function () {
         if (document.visibilityState !== "visible" || (typeof onListView === "function" && onListView())) return;
+        var ae = document.activeElement; if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return;   // keyboard up: leave the page alone
         var el = document.getElementById("app-map"); if (!el || el.offsetParent === null) return;
-        var vh = Math.round((window.visualViewport && window.visualViewport.height) || window.innerHeight);
+        var vh = viewportHeightPx();
         var hs = document.getElementById("histo-strip"), last = (hs && hs.style.display !== "none") ? hs : el;
         var over = last.getBoundingClientRect().bottom - vh;
         if (over > 4 || over < -60 || (window.scrollY || 0) > 2) { try { window.scrollTo(0, 0); } catch (e) {} syncHeaderHeight(); fitMapHeight(); }
