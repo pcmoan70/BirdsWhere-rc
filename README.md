@@ -112,7 +112,10 @@ each with its full 53-week profile, at **three detail levels**: single sites · 
 regions (each level pools the one below it), following the map zoom by default or pinned in the
 overlay's ⚙. Blue dots count species per
 visit for the current week; tap one for its year chart — species/visit with an upper-estimate trend,
-observed species with a thin red observers line, the species turnover, and — with *Experimental
+observed species with a thin red observers line, the species **turnover** (green bars up = species
+newly arrived that week, rust bars down = species gone since the week before; tall both ways marks a
+migration site, flat a resident one — the card's stat gives the year's total species ÷ a typical
+week's species, 1 = the same birds all year), and — with *Experimental
 features* on — the AI model's own year profile for the spot), and
 **eBird hotspots** (clickable — each opens a popup
 with an eBird link and *Navigate*; needs the eBird key). All are streamed from the providers;
