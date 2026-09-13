@@ -585,7 +585,7 @@ https://thebirding.site/f/
 
 **Short link for print** — `https://thebirding.site/f/` is a tiny redirect page
 (`app/f/index.html`, served by the service worker even offline) that forwards to
-`?location=here&radius=3&days=21&skip=ebird&show=list&sortby=distance&layout=images&from=poster` (the
+`?location=here&radius=3&days=90&skip=ebird&show=list&sortby=distance&layout=images&from=poster` (the
 Images gallery, nearest first, ties by rarity). The `from=poster` tag makes the app add one tick to an anonymous
 scan counter (the same hit-counter service as the About footer's page-visit badge — a number only,
 no position, id or cookie); read it at
