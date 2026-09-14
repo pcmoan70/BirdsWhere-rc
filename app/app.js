@@ -80,7 +80,7 @@
   var TAX_URL = "taxonomy-base.csv";        // species_code + English name + class (split from taxonomy.csv)
   var TAX_NAMES_BASE = "i18n/names/";       // per-language name packs, line-aligned to taxonomy-base.csv rows
   var CONFUSION_URL = "confusion.csv";      // per-bird look-alike (confusion) partner codes; fetched on first use
-  var CONFUSION_REV = 11;                     // bump when confusion.csv changes — busts the runtime (cache-first) copy
+  var CONFUSION_REV = 12;                     // bump when confusion.csv changes — busts the runtime (cache-first) copy
   var TRAITS_URL = "species-traits.json";   // per-species characteristics (AVONET morphology/ecology + HBW colour)
   var TRAITS_REV = 2;                        // bump when species-traits.json changes
 
@@ -7006,7 +7006,33 @@
   function refreshSpeciesNames() {
     if (typeof refreshChecklists === "function") refreshChecklists();
     if (typeof refreshDetections === "function") refreshDetections();
-    if (typeof refreshCurrentView === "function") refreshCurrentView();
+    // The open species list is relabelled IN PLACE. refreshCurrentView() would run
+    // renderSpeciesList — a full re-render that re-fires the observation fetch and, in
+    // the map-first flow, closes the list page; every later refresh then saw a hidden
+    // panel and skipped, which is why a language change left "[English]" names behind.
+    if (speciesPanelPopulated() && document.getElementById("species-panel").style.display !== "none") relabelSpeciesList();
+    else if (onListView() && typeof renderPlottedObsPage === "function") renderPlottedObsPage();   // the no-point "By observation" page
+    else if (currentSpView && currentSpView.mode === "country" && document.getElementById("species-panel").style.display !== "none") renderSpeciesInCountry(currentSpView.lat, currentSpView.lon);
+    if (currentMode === "barchart" && analysisData) renderActiveTab();
+    else if ((currentMode === "range" || currentMode === "richness") && cachedRender) showCachedWeek();
+    if (document.getElementById("field-page").style.display === "flex") renderFieldList();
+  }
+  // Rewrite each species row's name (+ its sort key) and second name in the current
+  // language(s), then rebuild the layout body — expanded sub-rows, gallery cards or
+  // observation rows — through renderSpControls (header labels + filters + renderSpBody).
+  function relabelSpeciesList() {
+    var tbody = document.getElementById("sp-tbody"); if (!tbody) return;
+    Array.prototype.forEach.call(tbody.children, function (tr) {
+      var link = tr.querySelector(".sp-link[data-key]"); if (!link) return;
+      var lbl = labelsByKey[link.getAttribute("data-key")]; if (!lbl) return;
+      var nm = speciesName(lbl);
+      for (var n = link.lastChild; n; n = n.previousSibling) if (n.nodeType === 3) { n.nodeValue = nm; break; }   // the name text (after any ★)
+      link.setAttribute("data-name", nm);
+      tr.setAttribute("data-name", nm.toLowerCase());
+      var n2 = tr.querySelector("td.name2"); if (n2) n2.textContent = secondLang ? secondName(lbl) : "";
+    });
+    var tbl = document.getElementById("species-list-table"); if (tbl) tbl.classList.toggle("has-name2", !!secondLang);   // the column shows only with a second language
+    renderSpControls();
   }
   // The model's bundled taxonomy mislabels brnowl (Tyto alba — the Western/European Barn
   // Owl) with the AMERICAN Barn Owl's names in every language, identical to the real
@@ -7118,9 +7144,9 @@
     if (typeof refreshDetections === "function") refreshDetections();   // re-localize plotted "Show in map" species names + legend
     if (typeof relabelOverlays === "function") relabelOverlays();   // re-translate the map-overlays layer control
     if (typeof renderClcLegend === "function") renderClcLegend();   // re-translate the CORINE land-cover legend
-    refreshCurrentView();   // re-render species names in the active panel
+    refreshSpeciesNames();   // relabel species names in the active panel (in place — no re-fetch)
     // Species names for the new language come from an on-demand pack; until it
-    // arrives everything above showed [English] fallbacks — re-render on merge.
+    // arrives everything above showed [English] fallbacks — relabel again on merge.
     ensureLangNames(langTaxCol).then(function (loaded) { if (loaded) refreshSpeciesNames(); });
   }
 
@@ -15934,9 +15960,10 @@
     document.getElementById("secondlang-select").addEventListener("change", function () {
       var v = this.value;
       window.GeoState.save({ secondLang: v });
-      // Re-render only once the language's name pack is on the device — a rendered-but-
-      // hidden list (map-first) is rebuilt too, so opening it later shows the new column.
-      setSecondLang(v).then(function () { rerenderPointList(); });
+      // Relabel once the language's name pack is on the device (setSecondLang does it
+      // when the pack has just arrived; do it here when it was already loaded). In place —
+      // a full re-render would re-fetch and, map-first, close an open list page.
+      setSecondLang(v).then(function (loaded) { if (!loaded) refreshSpeciesNames(); });
     });
 
     // Scientific-name column toggle — pure CSS show/hide on the live table,
@@ -20417,6 +20444,8 @@
     var tbl = document.getElementById("species-list-table"), rec = document.getElementById("sp-records");
     if (!tbl || !rec) return;
     hideLocHoverMap();   // the hovered place name is about to be re-rendered away
+    hideSpgTip();
+    wireYearProbTips(document.getElementById("species-panel"));   // once; delegated, so re-renders need nothing
     if (spLayout === "table" || spLayout === "gallery") {
       // The gallery is the table's rows as picture cards: run the table pipeline (filters,
       // distances, sort) so the cards follow the same order, then swap the presentation.
@@ -20554,9 +20583,41 @@
   // Hover preview of a species' 48-week probability at the fetch point — the Timeline
   // tab's bars (same colours; current week outlined black, the Last-seen week blue),
   // from the point's cached 48-week prediction (predictAllWeeks, shared with the Season
-  // column). Hover-capable devices only; tapping the Probability opens the full view.
+  // column). Shown over every probability-derived cell of the list views — the table's
+  // Probability / Season / comparison (Annual Top, % of max, Δ) cells, the observation
+  // rows' Probability / Season / Yr-peak cells, and the gallery card's Probability.
+  // Hover-capable devices only; tapping the gallery Probability opens the full view.
   var spgTipEl = null, spgTipKey = "";
   function hideSpgTip() { spgTipKey = ""; if (spgTipEl) spgTipEl.style.display = "none"; }
+  var YEAR_TIP_CELLS = ".prob-cell, .sp-season, .sp-ytop, .cmp-bar-cell, .delta-up, .delta-down, .delta-flat, .spg-prob";
+  // The species + last-seen date a hovered cell belongs to: the cell's own data-key
+  // (Season / Yr-peak cells), else its row's or card's (observation rows, gallery cards
+  // carry data-key), else the table row's species link.
+  function yearTipTarget(cell) {
+    var h = cell.closest("[data-key]"), key = h ? h.getAttribute("data-key") : "";
+    var tr = cell.closest("tr");
+    if (!key && tr) { var l = tr.querySelector(".sp-link[data-key]"); key = l ? l.getAttribute("data-key") : ""; }
+    var dh = cell.closest("[data-date]"), date = dh ? dh.getAttribute("data-date") : "";
+    if (!date && tr) { var dc = tr.querySelector(".dl-date-click[data-date]"); date = dc ? dc.getAttribute("data-date") : ""; }
+    return key ? { key: key, date: date || "" } : null;
+  }
+  function wireYearProbTips(panel) {
+    if (!panel || panel._yearTipWired) return;
+    panel._yearTipWired = true;
+    if (window.matchMedia && !window.matchMedia("(hover: hover)").matches) return;   // touch: no hover
+    panel.addEventListener("mouseover", function (e) {
+      var c = e.target.closest && e.target.closest(YEAR_TIP_CELLS); if (!c) return;
+      var tg = yearTipTarget(c); if (!tg) { hideSpgTip(); return; }
+      showSpgProbTip(c, tg.key, tg.date);
+    });
+    panel.addEventListener("mouseout", function (e) {
+      var c = e.target.closest && e.target.closest(YEAR_TIP_CELLS); if (!c) return;
+      var to = e.relatedTarget; if (to && to.closest && to.closest(YEAR_TIP_CELLS) === c) return;
+      hideSpgTip();
+    });
+    window.addEventListener("scroll", hideSpgTip, true);
+    document.addEventListener("mousedown", hideSpgTip, true);
+  }
   function spgYearBarsHtml(probs, curWeek, detWeek) {
     var mx = 0, w; for (w = 0; w < 48; w++) if (probs[w] > mx) mx = probs[w];
     if (mx < 0.01) mx = 0.01;
@@ -20571,6 +20632,7 @@
   }
   function showSpgProbTip(el, key, dateStr) {
     var lbl = labelsByKey[key]; if (!lbl || !currentSpView || !isFinite(+currentSpView.lat)) return;
+    if (currentSpView.mode !== "point" && currentSpView.mode !== "historic") return;   // a country list has no single point
     spgTipKey = key;
     predictAllWeeks(+currentSpView.lat, +currentSpView.lon).then(function (cell) {
       if (spgTipKey !== key || !el.isConnected) return;   // moved on before the model answered
@@ -20601,19 +20663,6 @@
         }
         if (e.target.closest(".spg-prob")) { e.preventDefault(); hideSpgTip(); showSpeciesMigration(key, date); }
       });
-      if (!window.matchMedia || window.matchMedia("(hover: hover)").matches) {
-        rec.addEventListener("mouseover", function (e) {
-          var p = e.target.closest && e.target.closest(".spg-prob"); if (!p) return;
-          var card = p.closest(".spg-card");
-          showSpgProbTip(p, card.getAttribute("data-key"), card.getAttribute("data-date") || "");
-        });
-        rec.addEventListener("mouseout", function (e) {
-          var p = e.target.closest && e.target.closest(".spg-prob"); if (!p) return;
-          var to = e.relatedTarget; if (to && to.closest && to.closest(".spg-prob") === p) return;
-          hideSpgTip();
-        });
-        window.addEventListener("scroll", hideSpgTip, true);
-      }
     }
     function fill(card) {
       if (card._spgDone) return; card._spgDone = true;

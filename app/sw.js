@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1704";
+var VERSION = "v1705";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• Hover any probability, Season or Annual-top number in the species list or observation list for the species’ year curve at that point. Changing the language now relabels the open list right away. Look-alike (confusion) lists added for 266 recently split species, e.g. the Hudsonian Whimbrel.",
   "• The ‹ button on the Migration and Species-distribution views now takes you back to where you came from — the species list, the checklist or the previous analysis — instead of always to the map (the browser Back does the same).",
   "• Species menu: a new “Confusion species (images)” entry shows the look-alikes as photo cards — the bird itself first, then the most likely confusions left to right — with Match, misID, Here and Score under each picture; tap a card to compare the two birds.",
   "• Images layout: tap a bird’s photo for its Macaulay Library pictures around the month it was last seen, tap the Probability for the Migration view (hover it on a computer for the year curve), and use the ☰ button to jump to the species’ records in the table. The scientific name follows the name in parentheses and opens the Family menu. Photos are now kept on the device (Settings → Storage → Species photos shows the size and clears them). Also fixed: an expanded record list no longer collapses when you return from the map to the list.",
   "• New Images layout for the species list: pick “Images” in the layout dropdown for a card per species — photo, name, Total, Last seen, Distance and Probability — in the list’s current order. Photos come from Wikipedia / Wikimedia Commons and are credited to their author under each picture.",
-  "• Older browsers (Safari before 16.4, e.g. on older Macs) could not start the model — “WebAssembly SIMD is not supported”. They now get a fallback runtime automatically. The How-it-works panel documents all ten map overlays, in every language.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
