@@ -210,9 +210,10 @@ week outlined, the last-seen week in blue). The same hover chart appears over ev
 number in the list views — the table's Probability, Season and comparison cells (Annual Top, % of max,
 Δ), and the observation rows' Probability, Season and Yr-peak cells. The **?** button (the same
 "show predicted species" toggle as the table's) adds the model's commonest species for the point,
-interleaved with the observed ones and ranked commonest first — predicted cards are dashed and
-labelled, and their photos load as you scroll; the button reads **!** while on, and tapping it returns
-to the observed species in the previous order. Downloaded photos are kept in their own on-device cache
+interleaved with the observed ones and ranked commonest first (probability ↓ — in the table too, with
+the arrow on the Probability header) — predicted cards are dashed and labelled, and their photos load
+as you scroll; the button reads **!** while on, and tapping it returns to the observed species in the
+previous order (a sort you picked meanwhile is kept). Downloaded photos are kept in their own on-device cache
 (cache-first, survives app updates, capped at 1500) — see **Settings → Storage → Species photos** for
 the count and size, and to clear them.
 

@@ -2106,9 +2106,7 @@
     if (spExpanded[key]) delete spExpanded[key]; else spExpanded[key] = 1;
     refreshSpExpansions();
   }
-  // `override` (optional {col, dir}) sorts by that instead of speciesListSort — the Images
-  // layout's [?] mode ranks commonest-first ({col: ""}) without touching the user's sort.
-  function sortSpeciesList(override) {
+  function sortSpeciesList() {
     var tbody = document.getElementById("sp-tbody");
     if (!tbody) return;
     var agg = tbody._sightingsAgg || {};
@@ -2118,8 +2116,7 @@
     var all = Array.prototype.slice.call(tbody.children);
     var extras = all.filter(function (tr) { return tr.classList.contains("sp-extra"); });
     var rows = all.filter(function (tr) { return !tr.classList.contains("sp-extra"); });
-    var sortSpec = override || speciesListSort;
-    var col = sortSpec.col;   // "" = sort OFF → natural ranking (model probability, desc)
+    var col = speciesListSort.col;   // "" = sort OFF → natural ranking (model probability, desc)
     rows.sort(function (a, b) {
       var ka, kb;
       if (!col) return (+b.getAttribute("data-prob") || 0) - (+a.getAttribute("data-prob") || 0);
@@ -2178,7 +2175,7 @@
         kb = (agg[keyB] && agg[keyB].count) || 0;
       }
       var cmp = ka < kb ? -1 : ka > kb ? 1 : 0;
-      return sortSpec.dir === "asc" ? cmp : -cmp;
+      return speciesListSort.dir === "asc" ? cmp : -cmp;
     });
     var frag = document.createDocumentFragment();
     rows.forEach(function (tr) { frag.appendChild(tr); });
@@ -17322,9 +17319,20 @@
     var spFilterBtn = document.getElementById("sp-filter-btn");
     if (spFilterBtn) spFilterBtn.addEventListener("click", function (e) { e.stopPropagation(); openAllFiltersPane(); });
     var spMissingBtn = document.getElementById("sp-missing-btn");
+    // [?] also ranks the list commonest first (probability ↓) — in the table and the Images
+    // layout alike — and [!] brings the previous sort back (unless the user re-sorted meanwhile).
+    var spSortBeforeMissing = null;
     if (spMissingBtn) spMissingBtn.addEventListener("click", function (e) {
       e.stopPropagation();
       spShowMissing = !spShowMissing; window.GeoState.save({ spShowMissing: spShowMissing });
+      if (spShowMissing) {
+        spSortBeforeMissing = { col: speciesListSort.col, dir: speciesListSort.dir };
+        speciesListSort = { col: "prob", dir: "desc" };
+      } else if (spSortBeforeMissing) {
+        if (speciesListSort.col === "prob" && speciesListSort.dir === "desc") speciesListSort = spSortBeforeMissing;
+        spSortBeforeMissing = null;
+      }
+      updateSortIndicators();
       renderSpControls();   // relabels the button ("?" ↔ "!") and rebuilds the body (table rows / Images cards)
     });
     var vtBtn = document.getElementById("viewtoggle-btn");
@@ -20499,10 +20507,7 @@
       rec.style.display = "none"; tbl.style.display = "";
       applyAgeFilter();
       refreshSpDistCells();   // fresh distances before sorting by them
-      // Images + [?]: the model's commonest species for the point, interleaved with the
-      // observed ones, commonest first — regardless of the table's sort (restored on [!]).
-      if (spLayout === "gallery" && spShowMissing) sortSpeciesList({ col: "", dir: "" });
-      else if (speciesListSort.col) sortSpeciesList();
+      if (speciesListSort.col) sortSpeciesList();   // [?] sets probability ↓ (commonest first) in both layouts
       if (spLayout === "gallery") {
         tbl.style.display = "none"; rec.style.display = "";
         rec.innerHTML = buildSpGalleryHtml();

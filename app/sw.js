@@ -21,12 +21,12 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1710";
+var VERSION = "v1711";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
-  "• Images layout: the ? button adds the model’s commonest birds for the spot, mixed with the ones observed and ranked commonest first (predicted cards are dashed and labelled); it turns into ! — tap to go back to the observed birds.",
+  "• The ? button (species list and Images) adds the model’s commonest birds for the spot, mixed with the ones observed and ranked commonest first (predicted cards are dashed and labelled); it turns into ! — tap to go back to the observed birds in your previous order.",
   "• A QR-poster (or any shortcut) launch now runs once: reopening the phone later brings back the list you had, without asking for your location or fetching again.",
   "• Confusion species: the Match score now drops sharply for a big size difference or a different family (real confusions people report still count in full), and look-alike lists were added for 266 recently split species, e.g. the Hudsonian Whimbrel. Hover any probability, Season or Annual-top number in the lists for the species’ year curve; changing the language now relabels the open list right away.",
   "• The ‹ button on the Migration and Species-distribution views now takes you back to where you came from — the species list, the checklist or the previous analysis — instead of always to the map (the browser Back does the same).",
