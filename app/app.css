@@ -2487,8 +2487,8 @@ button.dd-name:hover { text-decoration: underline; }
 .settings-aboutrow > .settings-about { flex: 0 1 auto; width: auto; text-decoration: none; }
 .settings-aboutrow > a.settings-about::before { content: none; }
 .perf-about { margin: 2px 0 6px; }
-.perf-about a { color: var(--brand); font-weight: 600; text-decoration: none; }
-.perf-about a:hover { text-decoration: underline; }
+.perf-about a, a.perf-about { color: var(--brand); font-weight: 600; text-decoration: none; }
+.perf-about a:hover, a.perf-about:hover { text-decoration: underline; }
 .settings-about:hover { background: var(--surface-2); }
 /* Running version (+ last-change time), directly under "About & how it works". */
 .settings-version { padding: 0 6px 6px; font-size: var(--fs-s); color: var(--ink-muted); font-variant-numeric: tabular-nums; }
@@ -4434,6 +4434,7 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 /* Welcome popup buttons (Cancel appears only on a shortcut / QR launch — the popup is then a
    consent gate: nothing loads, locates or fetches until OK). */
 .perf-btns { display: flex; gap: 12px; align-items: stretch; }
-.perf-btns .btn { flex: 1 1 0; min-width: 0; margin: 0; padding: 11px 14px; box-sizing: border-box; line-height: 1.2; text-align: center; }   /* equal width + height, side by side (OK alone fills the row) */
+.perf-btns .perf-about { flex: 0 0 auto; align-self: center; margin: 0 auto 0 0; padding: 0 4px; }   /* About ↗ at the left of the button row */
+.perf-btns .btn { flex: 1 1 0; min-width: 0; max-width: 46%; margin: 0; padding: 11px 14px; box-sizing: border-box; line-height: 1.2; text-align: center; }   /* Cancel + OK equal, to the right */
 .launch-cancelled { margin: 12px 0; }
 

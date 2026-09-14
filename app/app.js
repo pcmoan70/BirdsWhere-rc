@@ -6421,9 +6421,9 @@
           '<p class="perf-keys" data-i18n="popup.keysTip"></p>' +
           '<p class="perf-feedback"><span data-i18n="popup.feedback"></span> <button type="button" class="feedback-open ico-btn">' + ico("mail") + '<span class="ico-label" data-i18n="feedback.send">Message</span></button></p>' +
           '<div class="install-row"><button type="button" id="install-info" class="btn btn-light ico-btn" hidden>' + ico("install") + '<span class="ico-label" data-i18n="install.app">Offline mode</span></button><div class="install-steps cu-hint" hidden></div></div>' +
-          '<p class="perf-about"><a class="about-page-link" href="about/" target="_blank" rel="noopener" data-i18n="settings.aboutPage">About ↗</a></p>' +
           '<div class="perf-version" id="perf-version" style="display:none"></div>' +
-          '<div class="perf-btns"><button id="perf-modal-cancel" class="btn btn-light" data-i18n="btn.cancel" hidden>Cancel</button>' +
+          '<div class="perf-btns"><a class="perf-about about-page-link" href="about/" target="_blank" rel="noopener" data-i18n="settings.aboutPage">About ↗</a>' +
+          '<button id="perf-modal-cancel" class="btn btn-light" data-i18n="btn.cancel" hidden>Cancel</button>' +
           '<button id="perf-modal-ok" class="btn" data-i18n="popup.ok">OK</button></div>' +
         '</div></div>' +
         '<div id="feedback-modal" style="display:none"><div id="feedback-box">' +
