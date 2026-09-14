@@ -1479,10 +1479,15 @@
   // name or # column header overrides it and toggles asc/desc.
   var speciesListSort = { col: "prob", dir: "asc" };   // default: probability low → high (rarest-here first); "" = natural ranking
   // Fetch-list layout: the model-prediction "table", or a detailed record layout.
-  var spLayout = "table";
+  // Remembered (GeoState) when picked in the dropdown; a URL/share-link layout applies
+  // to that visit only. Default: table.
   var SP_LAYOUTS = [
     ["table", "splay.table"], ["observation", "splay.observation"], ["gallery", "splay.gallery"]
   ];
+  var spLayout = (function () {
+    var v = window.GeoState.get("spLayout", "table");
+    return SP_LAYOUTS.some(function (o) { return o[0] === v; }) ? v : "table";
+  })();
   function spRecordLayout() { return "date"; }   // the only record layout now is "Per observation" (date→observer→location)
   var menuKey = null, menuName = "", menuSci = "";  // species the menu targets
 
@@ -17170,7 +17175,7 @@
     });
     document.getElementById("sp-pdf-btn").addEventListener("click", exportSpeciesPdf);
     var spLayoutSel = document.getElementById("sp-layout");
-    if (spLayoutSel) spLayoutSel.addEventListener("change", function () { spLayout = this.value; renderSpControls(); });
+    if (spLayoutSel) spLayoutSel.addEventListener("change", function () { spLayout = this.value; window.GeoState.save({ spLayout: spLayout }); renderSpControls(); });
     // Funnel → the single "all filters" pane (both list layouts). Sorting still happens
     // by clicking a column name; the pane keeps a full copy of the sort + every filter.
     var spFilterBtn = document.getElementById("sp-filter-btn");

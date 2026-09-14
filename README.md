@@ -186,7 +186,8 @@ prediction at that point:
 
 ## Recent Observations (species list)
 
-The fetch can be shown three ways (layout dropdown above the list): the ranked **Species list** table,
+The fetch can be shown three ways (layout dropdown above the list — the choice is remembered on the
+device; a `layout=` link parameter applies to that visit only): the ranked **Species list** table,
 the **Observation list** (one row per record) and **Images** — a gallery with one card per species in
 the table's current order: photo, name with the scientific name in parentheses, Total, Last seen,
 Distance and Probability. Photos are the lead image of the species' Wikipedia article, loaded from
