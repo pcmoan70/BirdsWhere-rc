@@ -180,6 +180,12 @@ prediction at that point:
 - **Annual Top** — a running total of arrival scores; the part of the year each species is most present.
 - **Scatter** — the top-N species plotted as *(arrival, probability)*, with a sortable table.
 
+**‹ returns to where you came from.** Migration and Species distribution can be opened from another
+full view — the species list (a card's Probability, or the species menu), the checklist page, the
+Location analysis page itself, or Range mode. The page's **‹** button (and the browser Back) then
+returns to that view, chaining as deep as you went (list → Migration → distribution → ‹ → ‹ → ‹ lands
+back on the map); ‹ goes straight to the map only when the page was opened from the map.
+
 **Top N** and **Rank by** (Arrivals / Probability / Both) tune which species are shown.
 
 ---

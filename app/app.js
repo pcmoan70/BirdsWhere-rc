@@ -2461,6 +2461,60 @@
     if (!navStack.length) return;
     var top = navStack.pop();
     try { top.close(); } catch (e) {}
+    if (top.id === "page") popViewBack();   // a page opened from another view: Back returns there
+  }
+  // With the Mode dropdown gone, leaving a mode's page returns to Recent (the map).
+  function exitToRecentMode() {
+    if (!viewRestoring) viewBackStack.length = 0;   // an explicit "to the map" ends the chain of previous views
+    var sel = document.getElementById("mode-select");
+    if (sel && sel.value !== "list") { sel.value = "list"; sel.dispatchEvent(new Event("change", { bubbles: true })); }
+  }
+  // ---- Back to the PREVIOUS view -------------------------------------------
+  // Migration and Species distribution can be opened from another full view (the
+  // species list, the checklist page, the analysis page, or Range mode). Opening one
+  // pushes a restorer for the view being left; the page's ‹ button (and the browser
+  // Back) pops it — so ‹ returns to where you came from, and only to the map when
+  // nothing is left. Each restorer carries its kind so re-opening the same view
+  // (Migration for another species from the Migration page) pushes nothing.
+  var viewBackStack = [], viewRestoring = false;
+  function currentViewRestorer() {
+    var fp = document.getElementById("field-page");
+    if (fp && fp.style.display !== "none") return { kind: "field", go: reshowFieldPage };
+    var sp = document.getElementById("species-panel");
+    if (sp && sp.classList.contains("as-page") && sp.style.display !== "none") return { kind: "list", go: function () { exitToRecentMode(); showListView(); } };
+    var bc = document.getElementById("barchart-panel");
+    if (bc && bc.classList.contains("as-page") && bc.style.display !== "none") return { kind: "migration", go: reshowAnalysisPage };
+    if (currentMode === "range") {
+      var k = (document.getElementById("species-search") || {}).dataset; k = k && k.selectedKey;
+      if (k) return { kind: "range", go: function () { showSpeciesRange(k); } };
+    }
+    return null;
+  }
+  function pushViewBack(back, kind) { if (back && !viewRestoring && back.kind !== kind) viewBackStack.push(back); }
+  // Pop and run the previous view's restorer; returns false when there was none.
+  function popViewBack() {
+    var r = viewBackStack.pop(); if (!r) return false;
+    viewRestoring = true;
+    try { r.go(); } catch (e) {} finally { viewRestoring = false; }
+    return true;
+  }
+  function reshowAnalysisPage() {
+    if (!analysisData) { exitToRecentMode(); return; }
+    var modeEl = document.getElementById("mode-select");
+    if (modeEl.value !== "barchart") { modeEl.value = "barchart"; modeEl.dispatchEvent(new Event("change", { bubbles: true })); }
+    setPointMarker(analysisData.lat, analysisData.lon);   // the mode change dropped the pin
+    saveSession({ mode: "barchart", page: "migration", lat: analysisData.lat, lon: analysisData.lon });
+    var bc = document.getElementById("barchart-panel");
+    bc.classList.add("as-page"); bc.style.display = "block";
+    navOpen("page", closeAnyFullPage);
+    updateAnalysisControls(); renderActiveTab();
+  }
+  function reshowFieldPage() {
+    var fp = document.getElementById("field-page"); if (!fp) return;
+    exitToRecentMode();   // the checklist page sits over Recent mode, as when opened normally
+    fp.style.display = "flex";
+    navOpen("page", closeAnyFullPage);
+    try { window.AppField.renderFieldList(); } catch (e) {}
   }
   // Hide whichever full-screen page (species list / migration / checklist) is
   // open and return to the map. Used as the registered close for the "page" slot.
@@ -11457,6 +11511,7 @@
   }
   function goToMapView() {
     if (!viewToggleAvail()) return;
+    viewBackStack.length = 0;   // an explicit "to the map" ends the chain of previous views
     if (onListView()) navClose("page");   // close the list page (hides the panel + rewinds Back)
     // Per-point list: (re)plot its sightings — but NOT if the red × purged the map
     // after this list's fetch (same generation guard the partial-plot path uses):
@@ -16944,17 +16999,12 @@
       fcMergeEntries(ids); renderEntryEdit();
     });
 
-    // Back from the full-screen Species-List page to the map.
-    document.getElementById("sp-back").addEventListener("click", function () { navClose("page"); });
-    // Back from the full-screen Migration analysis page to the map.
-    // With the Mode dropdown gone, leaving a mode's page returns to Recent.
-    function exitToRecentMode() {
-      var sel = document.getElementById("mode-select");
-      if (sel && sel.value !== "list") { sel.value = "list"; sel.dispatchEvent(new Event("change", { bubbles: true })); }
-    }
-    document.getElementById("bc-back").addEventListener("click", function () { navClose("page"); exitToRecentMode(); });
+    // ‹ on the full-screen pages: back to the view the page was opened from (see
+    // viewBackStack), else to the map.
+    document.getElementById("sp-back").addEventListener("click", function () { navClose("page"); popViewBack(); });
+    document.getElementById("bc-back").addEventListener("click", function () { navClose("page"); if (!popViewBack()) exitToRecentMode(); });
     var rb = document.getElementById("range-back");
-    if (rb) rb.addEventListener("click", exitToRecentMode);
+    if (rb) rb.addEventListener("click", function () { if (!popViewBack()) exitToRecentMode(); });
 
     document.getElementById("an-filter").addEventListener("input", function () { renderActiveTab(); });
     document.getElementById("an-topn").addEventListener("input", function () {
@@ -17592,9 +17642,11 @@
   }
   function showSpeciesRange(key, dateStr) {
     if (!labelsByKey[key]) return;
+    var back = currentViewRestorer();   // where ‹ should return to
     setWeekFromDate(dateStr);   // the map shows the distribution for the observation's week
     var modeEl = document.getElementById("mode-select");
     if (modeEl.value !== "range") { modeEl.value = "range"; modeEl.dispatchEvent(new Event("change", { bubbles: true })); }
+    pushViewBack(back, "range");
     var ep = document.getElementById("entry-page"); if (ep) ep.style.display = "none";
     selectSpecies(key);
     if (map) map.invalidateSize();
@@ -17615,10 +17667,12 @@
   function showSpeciesMigration(key, dateStr) {
     var lbl = labelsByKey[key];
     if (!lbl) return;
+    var back = currentViewRestorer();   // where ‹ should return to
     var detWeek = dateStr ? (weekOfDate(dateStr) || 0) : 0;   // mark the detection week on the timeline
     var pt = migrationPoint();
     var modeEl = document.getElementById("mode-select");
     if (modeEl.value !== "barchart") { modeEl.value = "barchart"; modeEl.dispatchEvent(new Event("change", { bubbles: true })); }
+    pushViewBack(back, "migration");
     analysisTab = "timeline";
     window.GeoState.save({ analysisTab: analysisTab });
     document.getElementById("an-filter").value = speciesName(lbl);
