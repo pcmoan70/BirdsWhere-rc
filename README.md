@@ -194,7 +194,13 @@ Wikimedia Commons as cards scroll into view (nothing bundled or stored beyond th
 credited under each picture to their author and licence, linked to the Commons file page. The name
 opens the usual species menu and the scientific name the Family menu, as in the table; the small **☰**
 button on a card jumps to that species' record sub-list in the Species list table (expanded, scrolled
-into view).
+into view). Tapping a bird's **photo** opens its **Macaulay Library** catalogue narrowed to the month
+it was last seen (±1 month — the same link as the species menu's *Photos*); tapping the
+**Probability** opens the **Migration** view (Location analysis → Timeline) for that species, and on
+a mouse device hovering it previews the same 48-week probability bars at the fetch point (current
+week outlined, the last-seen week in blue). Downloaded photos are kept in their own on-device cache
+(cache-first, survives app updates, capped at 1500) — see **Settings → Storage → Species photos** for
+the count and size, and to clear them.
 
 Click the map in **Recent** mode for the predicted species at that point, ranked by
 probability. Options:
@@ -727,8 +733,8 @@ an **eBird Record Format CSV** ready for [ebird.org/import](https://ebird.org/im
 Installable as a Progressive Web App. A **service worker** serves the app shell **cache-first**
 (once installed, code runs from the device and isn't re-downloaded while online — fresh code
 arrives only when the app's `VERSION` is bumped on deploy, after a full reload), with the model /
-labels / taxonomy / vendor libraries cache-first too, and map tiles + computed range data in a
-size-capped pool.
+labels / taxonomy / vendor libraries cache-first too, map tiles + computed range data in a
+size-capped pool, and the species photos of the Images layout in a capped cache of their own.
 
 **Updates never interrupt you**: when a new version is ready a small **red badge** appears on the
 Settings gear and a *Reload to update* button lights up inside Settings — you reload when you

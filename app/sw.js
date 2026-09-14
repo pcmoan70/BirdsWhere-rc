@@ -21,12 +21,12 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1698";
+var VERSION = "v1699";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
-  "• Images layout: every species card now has a small ☰ button that jumps to that species’ records in the Species list table; the scientific name follows the name in parentheses and, as in the table, opens the Family menu. Also fixed: an expanded record list no longer collapses when you return from the map to the list.",
+  "• Images layout: tap a bird’s photo for its Macaulay Library pictures around the month it was last seen, tap the Probability for the Migration view (hover it on a computer for the year curve), and use the ☰ button to jump to the species’ records in the table. The scientific name follows the name in parentheses and opens the Family menu. Photos are now kept on the device (Settings → Storage → Species photos shows the size and clears them). Also fixed: an expanded record list no longer collapses when you return from the map to the list.",
   "• New Images layout for the species list: pick “Images” in the layout dropdown for a card per species — photo, name, Total, Last seen, Distance and Probability — in the list’s current order. Photos come from Wikipedia / Wikimedia Commons and are credited to their author under each picture.",
   "• Older browsers (Safari before 16.4, e.g. on older Macs) could not start the model — “WebAssembly SIMD is not supported”. They now get a fallback runtime automatically. The How-it-works panel documents all ten map overlays, in every language.",
   "• iPhone: the app no longer asks for your location twice at start — all position requests now go through one shared request, and a fix from the last two minutes is reused.",
@@ -51,6 +51,12 @@ var DATA_CACHE = RC_TAG + "data-" + DATA_REV;    // model / labels / taxonomy / 
 // range cache into this same cache (see MAP_POOL_CACHE in app.js), so it isn't
 // wiped on a deploy and both compete for the same space.
 var TILE_CACHE = "map-pool";            // map tiles + computed range data
+// Species photos (the Images layout's Wikimedia thumbnails): version-independent
+// and cache-first — a photo is downloaded once and then served from the device,
+// surviving app updates; FIFO-capped by count (~40 KB per 500 px thumbnail).
+// Cleared from Settings → Storage → "Species photos".
+var IMG_CACHE = "species-images";
+var IMG_CAP = 1500;
 var API_CACHE = RC_TAG + "api-" + VERSION;       // geocode / overpass / species lookups
 var META_CACHE = "meta-config";         // version-independent: holds the user's cache-cap setting
 var DEFAULT_MAX_TILES = 11000;          // fallback LRU tile cap before the app pushes its setting
@@ -320,7 +326,7 @@ function reload(url) {
 }
 
 self.addEventListener("activate", function (event) {
-  var keep = [SHELL_CACHE, DATA_CACHE, TILE_CACHE, API_CACHE, META_CACHE];
+  var keep = [SHELL_CACHE, DATA_CACHE, TILE_CACHE, API_CACHE, META_CACHE, IMG_CACHE];
   event.waitUntil(
     caches
       .keys()
@@ -355,6 +361,10 @@ self.addEventListener("fetch", function (event) {
     // position-specific JSON — don't let them fill (and evict) the tile cache.
     if (/\/(identify|query|find)/i.test(url.pathname)) return;
     event.respondWith(tileResponse(req));
+    return;
+  }
+  if (url.hostname === "upload.wikimedia.org") {   // species photo bytes (the lookups on wikipedia/commons stay API)
+    event.respondWith(cacheFirstCapped(req, IMG_CACHE, IMG_CAP));
     return;
   }
   if (API_HOSTS.test(url.hostname)) {
