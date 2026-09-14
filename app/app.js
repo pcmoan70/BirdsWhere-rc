@@ -7257,7 +7257,22 @@
   // "Last change" timestamp. Rebuilt on language change and when the timestamp
   // resolves, so both survive re-renders.
   var lastChangeText = "";
-  var posterBadgeImg = null;   // the poster-scan badge <img>, fetched once per page load (see renderAboutBody)
+  // The page-visit badge: ONE fetch per app open (the badge service counts every fetch and
+  // forbids caching; the About body re-renders several times per boot, which used to add
+  // 4–7 "visits" per session). The same <img> is re-attached on every render; never
+  // fetched from a local dev server.
+  // Both hit counters are for the live site only: the RC channel and local dev servers
+  // must not add to them (the badge path is the production URL either way).
+  function countersLive() { return location.hostname === "thebirding.site"; }
+  var pageVisitImg = null;
+  function pageVisitBadge() {
+    if (!pageVisitImg && countersLive()) {
+      pageVisitImg = new Image();
+      pageVisitImg.alt = "page visits";
+      pageVisitImg.src = "https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fthebirding.site&label=page%20visits&labelColor=%230f1b24&countColor=%232f6f4f";
+    }
+    return pageVisitImg;
+  }
   function renderAboutBody() {
     var about = document.getElementById("about-body");
     if (!about) return;
@@ -7271,23 +7286,14 @@
       // the repository. English text falls through for untranslated languages.
       '<div id="about-credits">' + t("about.creditsHtml") + "</div>" +
       '<div id="about-footer">' +
-        '<div id="visit-counter"><img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fthebirding.site&label=page%20visits&labelColor=%230f1b24&countColor=%232f6f4f" alt="page visits" /></div>' +
-        '<div id="poster-counter"></div>' +
+        '<div id="visit-counter"></div>' +
         (lastChangeText ? '<div id="last-change">' + escapeHtml(t("footer.lastchange", { t: lastChangeText })) + "</div>" : "") +
       "</div>";
-    // Poster-scan badge next to the page-visit one. The badge service counts every fetch and
-    // forbids caching, so the image element is created ONCE per page load and re-attached on
-    // later renders (no refetch) — one extra tick per app session that opens this panel, not
-    // one per view; never from a local dev server.
-    var pc = document.getElementById("poster-counter");
-    if (pc) {
-      if (!posterBadgeImg && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
-        posterBadgeImg = new Image();
-        posterBadgeImg.alt = "poster scans";
-        posterBadgeImg.src = "https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fthebirding.site%2Ff&label=poster%20scans&labelColor=%230f1b24&countColor=%23e8801f";
-      }
-      if (posterBadgeImg) pc.appendChild(posterBadgeImg);
-    }
+    var vc = document.getElementById("visit-counter"), vimg = pageVisitBadge();
+    if (vc && vimg) vc.appendChild(vimg);
+    // No poster-scan badge here: the badge service has no read-only endpoint (every fetch
+    // of a badge adds one), so showing it would count every How-it-works view as a scan.
+    // The scan count is read with tools/counts.py (see countPosterScan).
     // Localize the embedded [data-i18n] bits (e.g. the feedback button), scoped
     // to the About body — NOT applyI18n(), which calls back here (infinite loop).
     var i18nEls = about.querySelectorAll("[data-i18n]");
@@ -15760,7 +15766,14 @@
     try {
       if (posterCounted || !/[?&;]from=poster(?:[&;]|$)/.test(location.search)) return;
       posterCounted = true;
-      if (navigator.onLine === false) return;
+      // Drop the tag from the address bar at once (the other parameters stay, so the
+      // shortcut still opens as intended): a reload, a restored tab or a home-screen
+      // shortcut saved from this page must not count as another scan.
+      try {
+        var q = location.search.replace(/([?&;])from=poster(?=[&;]|$)/, "$1").replace(/[?&;]+$/, "").replace(/^([?])[&;]+/, "$1");
+        history.replaceState(history.state, "", location.pathname + (q === "?" ? "" : q) + location.hash);
+      } catch (e) {}
+      if (navigator.onLine === false || !countersLive()) return;   // RC / local runs never count
       var img = new Image();
       img.src = "https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fthebirding.site%2Ff&label=poster%20scans&t=" + Date.now();
     } catch (e) {}
