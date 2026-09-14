@@ -5649,7 +5649,7 @@
   // home-screen shortcut saved from that page is then a normal app open, which restores
   // the session as you left it instead of re-running the shortcut (new location prompt,
   // new fetch). Dev flags (nosw, legacyort) and shared-link parameters stay.
-  var SHORTCUT_PARAMS = ["location", "here", "radius", "days", "skip", "show", "sortby", "layout", "from"];
+  var SHORTCUT_PARAMS = ["location", "here", "radius", "days", "skip", "show", "sortby", "layout", "from", "go"];
   function stripShortcutParams() {
     try {
       var keep = (location.search || "").replace(/^\?/, "").split(/[&;]/).filter(function (kv) {
@@ -15806,9 +15806,10 @@
     if (sv) { sv.textContent = parts.join(" · "); sv.style.display = parts.length ? "" : "none"; }
   }
 
-  // The printed QR poster forwards through /f/ with ?from=poster. Count that launch on the
-  // anonymous Abacus counter (see counterHit) — a number, nothing else: no position, no
-  // id, no cookie. Read it with tools/counts.py or in the How-it-works footer (read-only).
+  // A ?from=poster launch counts on the anonymous Abacus poster-scan counter (see counterHit)
+  // — a number, nothing else: no position, no id, no cookie. The /f/ poster page now counts
+  // the scan itself and forwards with go=1 (no from=poster), so this only serves links that
+  // still carry the tag. Read it with tools/counts.py or the How-it-works footer (read-only).
   var posterCounted = false;
   function countPosterScan() {
     try {
@@ -15825,7 +15826,9 @@
   // shown before anything heavy happens (see init). OK → the load goes on (and the
   // service worker may register: "birdswhere:launch-ok"); Cancel → showLaunchCancelled.
   var launchGated = false;
-  function isShortcutLaunch() { return /[?&;](location|here)=/i.test(location.search || ""); }
+  // go=1: the user already chose Continue on the /f/ poster page (its own Cancel/Continue,
+  // before even the app's scripts load) — don't ask twice.
+  function isShortcutLaunch() { return /[?&;](location|here)=/i.test(location.search || "") && !/[?&;]go=1(?:[&;]|$)/.test(location.search || ""); }
   // Localise one subtree now (applyI18n runs over the whole page only after the load).
   function localizeSubtree(root) {
     Array.prototype.forEach.call(root.querySelectorAll("[data-i18n]"), function (el) {

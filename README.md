@@ -576,6 +576,7 @@ the link's `layout` as its default. (Shared-link parameters `lat`/`lon`/`s` are 
   sources are not changed.
 - **`show`** — `map` (default: land on the map with the dots dropping in as they load) or `list` (open
   the ranked list page directly).
+- **`go`** — `1` skips the app's Cancel / OK question (used by the `/f/` poster page, which asks itself).
 - **`layout`** — with `show=list`: `table` (default, the ranked species table), `observation` (the
   *By observation* layout — one row per record, grouped by day and observer) or `images` (the
   picture gallery, one card per species).
@@ -619,14 +620,15 @@ https://thebirding.site/f/
 ```
 
 **Short link for print** — `https://thebirding.site/f/` is a tiny redirect page
-(`app/f/index.html`, served by the service worker even offline) that forwards to
-`?location=here&radius=3&days=90&skip=ebird&show=list&sortby=distance&layout=images&from=poster` (the
-Images gallery, nearest first, ties by rarity). Like every shortcut launch it asks first (welcome popup with
-Cancel / OK before anything loads, locates or fetches). The `from=poster` tag makes the app add one tick to an anonymous
+(`app/f/index.html`, served by the service worker even offline). It is a tiny self-contained page — no
+app scripts — that **asks first**: *Fortsett · Continue* opens
+`?location=here&radius=3&days=90&skip=ebird&show=list&sortby=distance&layout=images&go=1` (the Images
+gallery, nearest first, ties by rarity; `go=1` = already confirmed, so the app does not ask again), and
+*Avbryt · Cancel* loads nothing at all (a *Continue anyway* link stays). The page itself adds one tick to an anonymous
 **poster-scans** counter (Abacus, `abacus.jasoncameron.dev`, namespace `thebirding.site` — a number
 only, no position, id or cookie; a **page-visits** counter ticks once per app open the same way), then
-strips the tag from the address bar so a reload, a restored tab or a home-screen shortcut saved from
-that page never counts again. Nothing else touches the counter: the How it works footer shows both
+the app strips the shortcut parameters from the address bar so a reload, a restored tab or a home-screen
+shortcut saved from that page never runs the shortcut again. Nothing else touches the counter: the How it works footer shows both
 numbers as tiles through Abacus's **read-only** `/get`, and `python3 tools/counts.py` prints them the
 same way. Live site only — RC and local runs never count. (Seeded 2026-09-14 from the previous badge
 counter's totals, which also ticked on every display.) Being 27 characters

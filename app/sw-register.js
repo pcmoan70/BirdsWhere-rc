@@ -191,7 +191,8 @@ if ("serviceWorker" in navigator) {
       console.warn("Service worker registration failed:", e);
     });
     }
-    if (/[?&;](location|here)=/i.test(location.search) && !window.__launchOk) window.addEventListener("birdswhere:launch-ok", registerSw, { once: true });
+    // go=1 = the user already chose Continue on the /f/ poster page → no gate, register now.
+    if (/[?&;](location|here)=/i.test(location.search) && !/[?&;]go=1(?:[&;]|$)/.test(location.search) && !window.__launchOk) window.addEventListener("birdswhere:launch-ok", registerSw, { once: true });
     else registerSw();
   });
 }

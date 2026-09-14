@@ -5,13 +5,61 @@
   <title>BirdsWhere – Fugler å se?</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#0b3a3a" />
   <link rel="icon" href="../icon.svg" type="image/svg+xml" />
-  <!-- Short link for the printed QR poster ("Fugler å se?"): a compact URL scans with far
-       fewer, larger modules than the full shortcut it forwards to. Keep the target in step
-       with the poster (tools/… birdqr) — the parameters are documented in README → Shortcut URLs. -->
-  <meta http-equiv="refresh" content="0;url=../?location=here&amp;radius=3&amp;days=90&amp;skip=ebird&amp;show=list&amp;sortby=distance&amp;layout=images&amp;from=poster" />
+  <!-- Short link for the printed QR poster ("Fugler å se?"): a compact URL scans with far fewer,
+       larger modules than the full shortcut. This page is deliberately tiny and self-contained
+       (no app scripts): it asks FIRST — Continue loads the app with the poster shortcut (the app
+       then locates you and fetches the nearest sightings); Cancel loads nothing at all. Keep the
+       target in step with the poster (tools/… birdqr) — the parameters are documented in
+       README → Shortcut URLs. go=1 tells the app the user already said OK here. -->
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #e9f0ee; color: #16302b; font: 17px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    main { width: min(92vw, 420px); background: #fff; border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,.18); padding: 22px 22px 18px; box-sizing: border-box; text-align: center; }
+    img { width: 56px; height: 56px; border-radius: 12px; }
+    h1 { font-size: 1.35rem; margin: 10px 0 6px; color: #0b3a3a; }
+    p { margin: 0 0 10px; }
+    .en { color: #5b6f69; font-size: .95rem; }
+    .btns { display: flex; gap: 12px; justify-content: center; margin-top: 18px; }
+    .btn { flex: 1 1 0; padding: 12px 10px; border-radius: 10px; font: inherit; font-weight: 700; cursor: pointer; text-decoration: none; text-align: center; }
+    .ok { background: #2e8b74; color: #fff; border: 2px solid #2e8b74; }
+    .cancel { background: #fff; color: #16302b; border: 2px solid #c9d4d0; }
+    .note { font-size: .82rem; color: #5b6f69; margin-top: 14px; }
+    #done { display: none; }
+  </style>
 </head>
-<body style="font-family: system-ui, sans-serif; padding: 2rem; color: #16302b">
-  <p><a href="../?location=here&amp;radius=3&amp;days=90&amp;skip=ebird&amp;show=list&amp;sortby=distance&amp;layout=images&amp;from=poster">BirdsWhere – Fugler å se?</a></p>
+<body>
+  <main>
+    <img src="../icon-192.png" alt="" width="56" height="56" />
+    <div id="ask">
+      <h1>Fugler å se her?</h1>
+      <p>BirdsWhere viser hvilke fugler som er sett i nærheten de siste ukene – som bilder, nærmeste først.</p>
+      <p class="en">BirdsWhere shows which birds have been seen nearby in recent weeks – as pictures, nearest first.</p>
+      <div class="btns">
+        <button type="button" class="btn cancel" id="cancel">Avbryt · Cancel</button>
+        <a class="btn ok" id="go" href="../?location=here&amp;radius=3&amp;days=90&amp;skip=ebird&amp;show=list&amp;sortby=distance&amp;layout=images&amp;go=1">Fortsett · Continue</a>
+      </div>
+      <p class="note">Fortsett spør om posisjonen din og henter observasjoner. Ingenting lastes før du trykker.<br />Continue asks for your location and fetches sightings. Nothing loads until you tap.</p>
+    </div>
+    <div id="done">
+      <h1>Ingenting lastet</h1>
+      <p class="en">Nothing was loaded.</p>
+      <div class="btns"><a class="btn ok" href="../?location=here&amp;radius=3&amp;days=90&amp;skip=ebird&amp;show=list&amp;sortby=distance&amp;layout=images&amp;go=1">Fortsett likevel · Continue anyway</a></div>
+    </div>
+  </main>
+  <script>
+    (function () {
+      document.getElementById("cancel").addEventListener("click", function () {
+        document.getElementById("ask").style.display = "none";
+        document.getElementById("done").style.display = "block";
+      });
+      // One anonymous tick on the poster-scan counter (a number only — no position, id or cookie),
+      // live site only; counted here so a scan counts whether or not the app is then loaded.
+      if (location.hostname === "thebirding.site" && navigator.onLine !== false) {
+        try { fetch("https://abacus.jasoncameron.dev/hit/thebirding.site/poster-scans", { mode: "cors", cache: "no-store", keepalive: true }).catch(function () {}); } catch (e) {}
+      }
+    })();
+  </script>
 </body>
 </html>
