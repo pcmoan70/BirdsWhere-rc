@@ -1995,12 +1995,25 @@
     clearTimeout(locHoverTimer);
     if (locHoverEl) locHoverEl.style.display = "none";
   }
+  // The hovered name only fires mouseleave while it is still in the document: a
+  // re-render under a resting pointer (layout switch, filter, sort, page close) removes
+  // it and would leave the preview up. Re-renders call hideLocHoverMap() directly; this
+  // pointer-move fallback catches everything else — the preview goes as soon as the
+  // pointer is over anything that is not a place name.
+  function hideLocHoverMapIfStray(e) {
+    if (!locHoverEl || locHoverEl.style.display === "none") return;
+    var t = e.target;
+    if (t && t.closest && t.closest(".sp-loc-click, [data-lhm]")) return;
+    hideLocHoverMap();
+  }
+  document.addEventListener("mouseover", hideLocHoverMapIfStray, true);
   // Hover (hover-capable pointers only — the schedule itself gates on that) on
   // ANY element carrying a position → the ~4 km × 4 km preview map. `getLL`
   // extracts {lat, lon} from the element at hover time.
   function wireLocHover(el, getLL) {
     if (el._lhmWired) return;
     el._lhmWired = true;
+    el.setAttribute("data-lhm", "1");   // recognised by the pointer-move fallback in hideLocHoverMapIfStray
     el.addEventListener("mouseenter", function (e) {
       var c = getLL(this);
       if (c && isFinite(+c.lat) && isFinite(+c.lon)) scheduleLocHoverMap(+c.lat, +c.lon, e.clientX, e.clientY);
@@ -2519,6 +2532,7 @@
   // Hide whichever full-screen page (species list / migration / checklist) is
   // open and return to the map. Used as the registered close for the "page" slot.
   function closeAnyFullPage() {
+    try { hideLocHoverMap(); } catch (e) {}   // a place-name preview belongs to the page being closed
     var fp = document.getElementById("field-page");
     if (fp && fp.style.display !== "none") {
       if (typeof hideFcPicker === "function") hideFcPicker();
@@ -20402,6 +20416,7 @@
   function renderSpBody() {
     var tbl = document.getElementById("species-list-table"), rec = document.getElementById("sp-records");
     if (!tbl || !rec) return;
+    hideLocHoverMap();   // the hovered place name is about to be re-rendered away
     if (spLayout === "table" || spLayout === "gallery") {
       // The gallery is the table's rows as picture cards: run the table pipeline (filters,
       // distances, sort) so the cards follow the same order, then swap the presentation.
