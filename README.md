@@ -548,6 +548,9 @@ view**.
 Open the app straight onto a point's observations — handy as a home-screen bookmark or a link from
 another app. Options are `;`- or `&`-separated `key=value` pairs.
 
+The welcome popup also recommends a free eBird account (API key) and an account with the national bird
+database for much better coverage (Settings → Data sources).
+
 A shortcut launch **asks first**: the welcome popup appears at once — before the model, labels and
 taxonomy download, before the service worker precaches them, and before any location request or
 observation fetch — with **Cancel** and **OK**. OK starts the load and then the shortcut; Cancel ends

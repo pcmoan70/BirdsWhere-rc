@@ -3008,6 +3008,8 @@ table.chk-table .chk-text { min-width: 100px; }
   display: flex; gap: 7px;
 }
 #perf-modal-box .perf-privacy::before { content: "\1F512"; flex: none; }
+#perf-modal-box .perf-keys { display: flex; gap: 6px; align-items: flex-start; text-align: left; font-size: var(--fs-s); line-height: 1.4; color: var(--ink-muted); margin: 0 0 14px; }
+#perf-modal-box .perf-keys::before { content: "\1F511"; flex: none; }
 /* "This map only shows what others reported…" — a gently highlighted call to
    contribute your own sightings via a national/international service. */
 #perf-modal-box .perf-report-note {

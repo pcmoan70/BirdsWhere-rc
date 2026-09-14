@@ -1217,6 +1217,7 @@
   "popup.title": "BirdsWhere",
   "popup.desc": "Pažiūrėkite, kur paukščiai stebimi dabar ir kur jų tikėtis: tiesioginiai stebėjimai iš eBird, GBIF, iNaturalist ir nacionalinių duomenų bazių viename žemėlapyje, taip pat sąrašas rūšių, kurių galima tikėtis bet kurioje vietoje bet kurią metų savaitę.",
   "popup.privacy": "Privatumas iš principo: jokios paskyros, jokio serverio. Jūsų paieškos, sąrašai ir nustatymai lieka šiame įrenginyje.",
+  "popup.keysTip": "Patarimas: nemokama eBird paskyra (API raktas) ir paskyra jūsų nacionalinėje paukščių duomenų bazėje suteikia daug geresnę aprėptį – nustatykite jas skiltyje Nustatymai → Duomenų šaltiniai.",
   "popup.reportNote": "Šis žemėlapis rodo tik tai, ką kiti kruopščiai užregistravo. Norėdami dalytis savo stebėjimais, užsiregistruokite nacionalinėje (Artportalen.se, Artsobservasjoner.no …) ar tarptautinėje tarnyboje (eBird.org, Observation.org …).",
   "popup.perf": "Geriausiai patirčiai pridėkite savo nemokamą eBird API raktą Nustatymuose – jis prideda eBird stebėjimus ir stebėtojų vardus. GBIF ir iNaturalist įtraukti pagal numatytuosius nustatymus.",
   "popup.histNote": "Istorinių įrašų gavimas iš GBIF gali būti lėtas; naujausi stebėjimai įkeliami greitai.",

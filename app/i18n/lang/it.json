@@ -1217,6 +1217,7 @@
   "popup.title": "BirdsWhere",
   "popup.desc": "Guarda dove vengono avvistati gli uccelli in questo momento e dove aspettarseli: osservazioni in tempo reale da eBird, GBIF, iNaturalist e database nazionali su un'unica mappa, più l'elenco delle specie da attendersi in qualsiasi punto, in qualsiasi settimana dell'anno.",
   "popup.privacy": "Privato per design: nessun account, nessun server. Le tue ricerche, liste e impostazioni restano su questo dispositivo.",
+  "popup.keysTip": "Suggerimento: un account eBird gratuito (chiave API) e un account presso la banca dati ornitologica nazionale danno una copertura molto migliore: impostali in Impostazioni → Fonti dati.",
   "popup.reportNote": "Questa mappa mostra solo ciò che altri hanno segnalato con cura. Per condividere le tue osservazioni, iscriviti a un servizio nazionale (Artportalen.se, Artsobservasjoner.no …) o internazionale (eBird.org, Observation.org …).",
   "popup.perf": "Per la migliore esperienza, aggiungi la tua chiave API eBird gratuita nelle Impostazioni: aggiunge le osservazioni eBird e i nomi degli osservatori. GBIF e iNaturalist sono inclusi per impostazione predefinita.",
   "popup.histNote": "Il recupero dei dati storici da GBIF può essere lento; le osservazioni recenti si caricano in fretta.",

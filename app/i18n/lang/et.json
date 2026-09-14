@@ -1217,6 +1217,7 @@
   "popup.title": "BirdsWhere",
   "popup.desc": "Vaata, kus linde praegu nähakse ja kus neid oodata: reaalajas vaatlused eBirdist, GBIF-ist, iNaturalistist ja riiklikest andmebaasidest ühel kaardil, lisaks nimekiri liikidest, keda võib oodata mis tahes kohas mis tahes aasta nädalal.",
   "popup.privacy": "Privaatne juba oma olemuselt: pole kontot ega serverit. Sinu otsingud, loendid ja seaded jäävad sellesse seadmesse.",
+  "popup.keysTip": "Vihje: tasuta eBirdi konto (API-võti) ja konto sinu riiklikus linnuandmebaasis annavad palju parema katvuse – seadista need jaotises Seaded → Andmeallikad.",
   "popup.reportNote": "See kaart näitab ainult seda, mida teised on hoolikalt teatanud. Oma vaatluste jagamiseks registreeru riiklikus teenuses (Artportalen.se, Artsobservasjoner.no …) või rahvusvahelises (eBird.org, Observation.org …).",
   "popup.perf": "Parima kogemuse saamiseks lisage oma tasuta eBirdi API-võti Seadetes – see lisab eBirdi vaatlused ja vaatlejate nimed. GBIF ja iNaturalist on vaikimisi kaasatud.",
   "popup.histNote": "Ajalooliste vaatluste laadimine GBIF-ist võib olla aeglane; hiljutised vaatlused laaditakse kiiresti.",

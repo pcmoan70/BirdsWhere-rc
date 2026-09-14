@@ -1217,6 +1217,7 @@
   "popup.title": "BirdsWhere",
   "popup.desc": "Podívejte se, kde jsou ptáci pozorováni právě teď a kde je čekat: živá pozorování z eBird, GBIF, iNaturalist a národních databází na jedné mapě, plus seznam druhů, které lze očekávat na libovolném místě v libovolném týdnu roku.",
   "popup.privacy": "Soukromí od základu: žádný účet, žádný server. Vaše vyhledávání, seznamy a nastavení zůstávají v tomto zařízení.",
+  "popup.keysTip": "Tip: bezplatný účet eBird (klíč API) a účet u vaší národní databáze pozorování dávají mnohem lepší pokrytí – nastavte je v Nastavení → Zdroje dat.",
   "popup.reportNote": "Tato mapa zobrazuje jen to, co ostatní pečlivě nahlásili. Chcete-li sdílet vlastní pozorování, zaregistrujte se u národní služby (Artportalen.se, Artsobservasjoner.no …) nebo mezinárodní (eBird.org, Observation.org …).",
   "popup.perf": "Pro nejlepší zážitek přidejte svůj bezplatný klíč API eBird v Nastavení – přidá pozorování z eBird a jména pozorovatelů. GBIF a iNaturalist jsou zahrnuty ve výchozím nastavení.",
   "popup.histNote": "Načítání historických záznamů z GBIF může být pomalé; nedávná pozorování se načtou rychle.",

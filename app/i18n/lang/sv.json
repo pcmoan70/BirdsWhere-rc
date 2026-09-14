@@ -1222,6 +1222,7 @@
   "popup.title": "BirdsWhere",
   "popup.desc": "Se var fåglar ses just nu och var du kan vänta dig att hitta dem: realtidsobservationer från eBird, GBIF, iNaturalist och nationella databaser på en karta, plus en lista över de arter du kan förvänta dig på valfri plats under valfri vecka på året.",
   "popup.privacy": "Privat i grunden: inget konto, ingen server. Dina sökningar, listor och inställningar stannar på den här enheten.",
+  "popup.keysTip": "Tips: ett gratis eBird-konto (API-nyckel) och ett konto hos din nationella fågeldatabas ger mycket bättre täckning – ställ in dem under Inställningar → Datakällor.",
   "popup.reportNote": "Kartan visar bara det som andra noggrant har rapporterat. Vill du dela dina egna fynd? Registrera dig gärna hos en nationell tjänst (Artportalen.se, Artsobservasjoner.no …) eller en internationell (eBird.org, Observation.org …).",
   "popup.keysShort": "Hämtning av data från vissa källor kräver gratis nycklar — se Inställningar → Datakällor.",
   "popup.perf": "För bästa upplevelse, lägg till din kostnadsfria eBird API-nyckel i Inställningar – den lägger till eBird-observationer och observatörsnamn. GBIF och iNaturalist ingår som standard.",

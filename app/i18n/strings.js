@@ -1384,6 +1384,7 @@ window.GeoI18N = (function () {
         "popup.title": "BirdsWhere",
         "popup.desc": "See where birds are being seen right now and where to expect them: live observations from eBird, GBIF, iNaturalist and national databases on one map, plus a list of the species to expect at any spot for any week of the year.",
         "popup.privacy": "Private by design: no account, no server. Your searches, lists and settings stay on this device.",
+        "popup.keysTip": "Tip: a free eBird account (API key) and an account with your national bird database give much better coverage \u2014 set them under Settings \u2192 Data sources.",
         "popup.reportNote": "This map only shows what other observers have carefully reported. To share your own sightings, consider registering with a national service (Artportalen.se, Artsobservasjoner.no …) or an international one (eBird.org, Observation.org …).",
         "popup.keysShort": "Fetching data from some sources requires free keys — see Settings → Data sources.",
         "popup.perf": "For the best experience, add your free eBird API key in Settings — it adds live eBird observations and observer names. GBIF and iNaturalist are included by default.",

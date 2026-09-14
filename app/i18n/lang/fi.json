@@ -1217,6 +1217,7 @@
   "popup.title": "BirdsWhere",
   "popup.desc": "Katso, missä lintuja nähdään juuri nyt ja missä niitä voi odottaa: reaaliaikaiset havainnot eBirdistä, GBIF:stä, iNaturalistista ja kansallisista tietokannoista yhdellä kartalla sekä lista lajeista, joita voi odottaa missä tahansa paikassa minä tahansa vuoden viikkona.",
   "popup.privacy": "Yksityinen lähtökohtaisesti: ei tiliä, ei palvelinta. Hakusi, listasi ja asetuksesi pysyvät tällä laitteella.",
+  "popup.keysTip": "Vinkki: ilmainen eBird-tili (API-avain) ja tili kansalliseen lintutietokantaan antavat paljon paremman kattavuuden – aseta ne kohdassa Asetukset → Tietolähteet.",
   "popup.reportNote": "Tämä kartta näyttää vain sen, minkä muut ovat huolellisesti raportoineet. Jaa omat havaintosi rekisteröitymällä kansalliseen palveluun (Artportalen.se, Artsobservasjoner.no …) tai kansainväliseen (eBird.org, Observation.org …).",
   "popup.perf": "Parhaan kokemuksen saat lisäämällä ilmaisen eBird API-avaimesi Asetuksiin – se lisää eBird-havainnot ja havainnoitsijoiden nimet. GBIF ja iNaturalist sisältyvät oletuksena.",
   "popup.histNote": "Historiatietojen hakeminen GBIF:stä voi olla hidasta; tuoreet havainnot latautuvat nopeasti.",
