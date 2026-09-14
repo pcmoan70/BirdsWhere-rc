@@ -10004,8 +10004,10 @@
     if (!arr.length) { wait.textContent = t("confusion.noneHere"); positionAnchoredMenu(el, x, y); return; }
     if (wait.parentNode) wait.parentNode.removeChild(wait);
     var L = { match: t("confusion.colScore"), misid: t("confusion.colMisid"), here: t("confusion.colHere"), score: t("confusion.colCombined") };
-    function row(cls, label, txt, pct, color, tip) {
-      return '<div class="cfi-row ' + cls + '" title="' + escapeHtml(tip) + '"><i class="cfi-bar" style="width:' + Math.max(0, Math.min(100, pct)).toFixed(0) + '%' + (color ? ";background:" + color : "") + '"></i>' +
+    // Each metric row carries data-hintkey → the wrapped hover tooltip the table headers
+    // use (a native title can't wrap these explanations); phones have the legend below.
+    function row(cls, label, txt, pct, color, tipKey) {
+      return '<div class="cfi-row ' + cls + '" data-hintkey="' + tipKey + '"><i class="cfi-bar" style="width:' + Math.max(0, Math.min(100, pct)).toFixed(0) + '%' + (color ? ";background:" + color : "") + '"></i>' +
         '<span class="cfi-k">' + escapeHtml(label) + '</span><span class="cfi-v">' + escapeHtml(txt) + "</span></div>";
     }
     function pctTxt(p) { var v = p * 100; return v >= 0.5 ? Math.round(v) + "%" : "<1%"; }
@@ -10017,10 +10019,10 @@
         '<div class="cfi-name">' + (isBase ? '<span class="cfi-tag">' + escapeHtml(t("confusion.base")) + "</span>" : "") + escapeHtml(nm) + "</div>" +
         '<div class="cfi-sci">' + escapeHtml(m.sci) + "</div>" +
         '<div class="cfi-stats">' +
-          row("cfi-match", L.match, isBase ? "—" : String(Math.round(w.w * 100)), isBase ? 0 : w.w * 100, "", t("confusion.tipMatch")) +
-          row("cfi-misid", L.misid, (!isBase && w.mid > 0) ? w.mid + "%" : "—", (!isBase && w.mid > 0) ? Math.max(6, w.mid) : 0, "", t("confusion.tipMisid")) +
-          row("cfi-here", L.here, here >= 0 ? pctTxt(here) : "—", here >= 0 ? Math.max(4, here * 100) : 0, here >= 0 ? probHueColor(here) : "", t("confusion.tipHere")) +
-          row("cfi-score", L.score, sv >= 0 ? (sv >= 0.5 ? String(Math.round(sv)) : (sv > 0 ? "<1" : "0")) : "—", sv >= 0 ? Math.max(2, sv) : 0, sv >= 0 ? probHueColor(sv / 100) : "", t("confusion.tipScore")) +
+          row("cfi-match", L.match, isBase ? "—" : String(Math.round(w.w * 100)), isBase ? 0 : w.w * 100, "", "confusion.tipMatch") +
+          row("cfi-misid", L.misid, (!isBase && w.mid > 0) ? w.mid + "%" : "—", (!isBase && w.mid > 0) ? Math.max(6, w.mid) : 0, "", "confusion.tipMisid") +
+          row("cfi-here", L.here, here >= 0 ? pctTxt(here) : "—", here >= 0 ? Math.max(4, here * 100) : 0, here >= 0 ? probHueColor(here) : "", "confusion.tipHere") +
+          row("cfi-score", L.score, sv >= 0 ? (sv >= 0.5 ? String(Math.round(sv)) : (sv > 0 ? "<1" : "0")) : "—", sv >= 0 ? Math.max(2, sv) : 0, sv >= 0 ? probHueColor(sv / 100) : "", "confusion.tipScore") +
         "</div>" +
         '<div class="spg-credit"></div>' +
       "</div>";

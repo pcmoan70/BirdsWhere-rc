@@ -2599,7 +2599,7 @@ button.dd-name:hover { text-decoration: underline; }
 /* Small tight popup shown on hovering a species name: scientific name (italic) and,
    on a second line, the 2nd-language name. */
 .sp-hovertip {
-  position: fixed; z-index: 6000; pointer-events: none;
+  position: fixed; z-index: 9000; pointer-events: none;   /* above the anchored menus (8000): names inside them get the tooltip too */
   background: var(--ink, #1b1b1b); color: #fff;
   padding: 4px 8px; border-radius: 6px; box-shadow: 0 3px 10px rgba(0,0,0,.3);
   font-size: var(--fs-s); line-height: 1.32; white-space: nowrap; max-width: 72vw; overflow: hidden; text-overflow: ellipsis;
@@ -2611,7 +2611,7 @@ button.dd-name:hover { text-decoration: underline; }
 @keyframes stale-pulse { 0%, 100% { opacity: 0.75; } 50% { opacity: 0.25; } }
 /* Column-header explanation tooltip — like .sp-hovertip but WRAPPING (long texts). */
 .col-hovertip {
-  position: fixed; z-index: 6000; pointer-events: none;
+  position: fixed; z-index: 9000; pointer-events: none;   /* above the anchored menus (8000), e.g. the confusion-images metric rows */
   background: var(--ink, #1b1b1b); color: #fff;
   padding: 6px 9px; border-radius: 6px; box-shadow: 0 3px 10px rgba(0,0,0,.3);
   font-size: var(--fs-s); line-height: 1.35; white-space: normal; max-width: 280px;
@@ -4407,6 +4407,8 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .cfi-row.cfi-misid .cfi-bar { background: #8a63d2; opacity: .30; }                                                                      /* misID: violet (as the table) */
 .cfi-row span { position: relative; }
 .cfi-k { color: var(--ink-muted, #777); }
+.cfi-row[data-hintkey] { cursor: help; }                                            /* hover = the metric's explanation (wrapped tooltip) */
+.cfi-row[data-hintkey] .cfi-k { text-decoration: underline dotted 1px; text-underline-offset: 2px; }
 .cfi-v { font-variant-numeric: tabular-nums; }
 .cfi-card .spg-credit { padding: 2px 7px 6px; }
 @media (max-width: 400px) { .cfi-card { flex-basis: calc(50% - 4px); width: calc(50% - 4px); } }   /* two per row on narrow phones */
