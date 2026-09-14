@@ -46,7 +46,7 @@
   "settings.updateApplying": "Opdaterer…",
   "inat.colName": "Navn",
   "inat.starHint": "* = appens egne navnefiler på denne enhed dækker også dette sprog",
-  "confusion.tipMatch": "Hvor meget de to fugle ligner hinanden: en samlet score (0–100) ud fra morfologi — AVONET-form, størrelse, økologisk niche og slægt — og fjerdragtsfarve, kombineret med hvor ofte de faktisk forveksles med hinanden.",
+  "confusion.tipMatch": "Hvor meget de to fugle ligner hinanden: en samlet score (0–100) ud fra morfologi — AVONET-form, størrelse, økologisk niche og slægt — og fjerdragtsfarve, kombineret med hvor ofte de faktisk forveksles med hinanden. En stor størrelsesforskel eller en anden familie sænker scoren kraftigt (kun reelle forvekslinger overlever det).",
   "confusion.tipMisid": "Reelle forvekslinger blandt mennesker fra iNaturalist: denne forvekslingsarts andel (%) af alle registrerede fejlbestemmelser af basisarten. “—” betyder, at iNaturalist ikke har forvekslingsdata for parret.",
   "confusion.tipHere": "AI-modellens sandsynlighed for, at denne forvekslingsart forekommer på netop det sted og i den uge, du ser på — så arter, der ikke findes her, rykker ned på listen.",
   "confusion.legend": "{match}: hvor ens de to fugle ser ud (form, størrelse, farve, 0–100) · {misid}: andel af reelle fejlbestemmelser på iNaturalist · {here}: AI-modellens sandsynlighed for at forvekslingsarten er her denne uge · {score}: samlet chance for at forveksle den her = (0,25 × {match} + 0,75 × {misid}) × {here}",

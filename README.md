@@ -681,6 +681,12 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
 4. **Ecological niche** (0.09) — matching habitat / trophic niche / primary lifestyle.
 5. **Genus** (0.15) — a same-genus boost.
 
+Two **gates** then scale everything inferred from morphology, colour and taxonomy: a **major size
+difference** (about 1.4× in linear size or 3× in body mass halves it; 2× / 9× cuts it to a fifth) and a
+**different family** (keeps about a third). Real iNaturalist confusions are never gated, so a
+Sparrowhawk still lists the Goshawk (Match 55, misID 75 %), while a Goldcrest's leaf-warbler
+"look-alikes" fall from ~58 to ~18.
+
 A **plumage-colour** score is then averaged in (≈ half the final Match): per-sex RGB histograms
 (6×6×6 = 216 bins) from the HBW-RGB illustration dataset, matched separately for male and female so a
 look-alike must resemble the bird in both plumages. Pairs iNaturalist has no confusion data for fall

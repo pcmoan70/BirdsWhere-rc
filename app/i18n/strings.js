@@ -493,7 +493,7 @@ window.GeoI18N = (function () {
         "confusion.colHere": "Here",
         "confusion.colCombined": "Score",
         "confusion.colMisid": "misID",
-        "confusion.tipMatch": "How alike the two birds are: a fused score (0–100) from morphology — AVONET shape, size, ecological niche and genus — and plumage colour, blended with how often they're actually mistaken for each other.",
+        "confusion.tipMatch": "How alike the two birds are: a fused score (0–100) from morphology — AVONET shape, size, ecological niche and genus — and plumage colour, blended with how often they're actually mistaken for each other. A big size difference or a different family cuts the score sharply (only real confusions survive it).",
         "confusion.tipMisid": "Real human confusion from iNaturalist: this look-alike's share (%) of all the base bird's recorded misidentifications. “—” means iNaturalist has no confusion data for the pair.",
         "confusion.tipHere": "The AI model's probability that this look-alike occurs at the exact location and week you're viewing — so species that aren't around here drop down the list.",
         "confusion.legend": "{match}: how alike the two birds look (shape, size, colour, 0–100) · {misid}: share of real misidentifications on iNaturalist · {here}: the AI model's chance this look-alike is present here this week · {score}: overall chance of mistaking it here = (0.25 × {match} + 0.75 × {misid}) × {here}",
