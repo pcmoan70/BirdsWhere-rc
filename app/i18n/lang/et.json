@@ -1220,6 +1220,8 @@
   "popup.perf": "Parima kogemuse saamiseks lisage oma tasuta eBirdi API-võti Seadetes – see lisab eBirdi vaatlused ja vaatlejate nimed. GBIF ja iNaturalist on vaikimisi kaasatud.",
   "popup.histNote": "Ajalooliste vaatluste laadimine GBIF-ist võib olla aeglane; hiljutised vaatlused laaditakse kiiresti.",
   "popup.ok": "OK",
+  "popup.cancelled": "BirdsWhere jäi laadimata.",
+  "popup.loadNow": "Laadi nüüd",
   "btn.cancel": "Tühista",
   "popup.feedback": "Tagasiside ja kommentaarid on teretulnud aadressil:",
   "feedback.send": "Tagasiside",

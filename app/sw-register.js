@@ -128,6 +128,12 @@ if ("serviceWorker" in navigator) {
       if (SWUpdate.bannerEnabled) showUpdateBar(worker);
     }
 
+    // A shortcut launch (the QR poster's ?location=… / ?here=1) asks the user first:
+    // app.js shows its welcome popup before anything downloads. The worker's first
+    // install precaches the model and data (~10 MB), so registration waits for the OK
+    // (window event "birdswhere:launch-ok"; window.__launchOk covers an OK that came
+    // before this load event). Cancel → never registered, nothing downloaded.
+    function registerSw() {
     // updateViaCache:"none" → the browser always fetches sw.js straight from the
     // network on an update check, so a new deploy is noticed promptly.
     navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(function (reg) {
@@ -184,5 +190,8 @@ if ("serviceWorker" in navigator) {
     }).catch(function (e) {
       console.warn("Service worker registration failed:", e);
     });
+    }
+    if (/[?&;](location|here)=/i.test(location.search) && !window.__launchOk) window.addEventListener("birdswhere:launch-ok", registerSw, { once: true });
+    else registerSw();
   });
 }

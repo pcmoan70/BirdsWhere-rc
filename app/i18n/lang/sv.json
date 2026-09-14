@@ -1229,6 +1229,8 @@
   "sources.bwHint": "En art räknas som ”här” en viss dag endast med minst så här många BirdNET-fynd vid eller över säkerhetströskeln. Högre = färre felaktiga ljud-ID:n.",
   "popup.histNote": "Att hämta historiska fynd från GBIF kan vara långsamt; aktuella observationer laddas snabbt.",
   "popup.ok": "OK",
+  "popup.cancelled": "BirdsWhere laddades inte.",
+  "popup.loadNow": "Ladda nu",
   "btn.cancel": "Avbryt",
   "popup.feedback": "Feedback och kommentarer mottas gärna på:",
   "basemap.dark": "Mörk",

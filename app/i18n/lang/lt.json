@@ -1220,6 +1220,8 @@
   "popup.perf": "Geriausiai patirčiai pridėkite savo nemokamą eBird API raktą Nustatymuose – jis prideda eBird stebėjimus ir stebėtojų vardus. GBIF ir iNaturalist įtraukti pagal numatytuosius nustatymus.",
   "popup.histNote": "Istorinių įrašų gavimas iš GBIF gali būti lėtas; naujausi stebėjimai įkeliami greitai.",
   "popup.ok": "Gerai",
+  "popup.cancelled": "BirdsWhere neįkelta.",
+  "popup.loadNow": "Įkelti dabar",
   "btn.cancel": "Atšaukti",
   "popup.feedback": "Atsiliepimų ir komentarų laukiame adresu:",
   "feedback.send": "Atsiliepimas",

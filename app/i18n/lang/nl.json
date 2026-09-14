@@ -1220,6 +1220,8 @@
   "popup.perf": "Voeg voor de beste ervaring je gratis eBird API-sleutel toe bij Instellingen — dit voegt eBird-waarnemingen en waarnemernamen toe. GBIF en iNaturalist zijn standaard inbegrepen.",
   "popup.histNote": "Het ophalen van historische waarnemingen uit GBIF kan traag zijn; recente waarnemingen laden snel.",
   "popup.ok": "OK",
+  "popup.cancelled": "BirdsWhere is niet geladen.",
+  "popup.loadNow": "Nu laden",
   "btn.cancel": "Annuleren",
   "popup.feedback": "Feedback en opmerkingen zijn welkom op:",
   "feedback.send": "Feedback",

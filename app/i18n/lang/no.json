@@ -1220,6 +1220,8 @@
   "popup.perf": "For best opplevelse, legg til din gratis eBird API-nøkkel i Innstillinger – den legger til eBird-observasjoner og observatørnavn. GBIF og iNaturalist er inkludert som standard.",
   "popup.histNote": "Å hente historiske funn fra GBIF kan være tregt; nylige observasjoner lastes raskt.",
   "popup.ok": "OK",
+  "popup.cancelled": "BirdsWhere ble ikke lastet.",
+  "popup.loadNow": "Last nå",
   "btn.cancel": "Avbryt",
   "popup.feedback": "Tilbakemeldinger og kommentarer mottas gjerne på:",
   "feedback.send": "Tilbakemelding",

@@ -1391,6 +1391,8 @@ window.GeoI18N = (function () {
         "sources.bwHint": "A species counts as “here” on a day only with at least this many BirdNET detections at or above the confidence threshold. Higher = fewer false acoustic IDs.",
         "popup.histNote": "Fetching historic records from GBIF can be slow; recent observations load quickly.",
         "popup.ok": "OK",
+        "popup.cancelled": "BirdsWhere was not loaded.",
+        "popup.loadNow": "Load now",
         "btn.cancel": "Cancel",
         "popup.feedback": "Feedback and comments are welcome at:",
         "basemap.dark": "Dark",

@@ -1220,6 +1220,8 @@
   "popup.perf": "Pro nejlepší zážitek přidejte svůj bezplatný klíč API eBird v Nastavení – přidá pozorování z eBird a jména pozorovatelů. GBIF a iNaturalist jsou zahrnuty ve výchozím nastavení.",
   "popup.histNote": "Načítání historických záznamů z GBIF může být pomalé; nedávná pozorování se načtou rychle.",
   "popup.ok": "OK",
+  "popup.cancelled": "BirdsWhere nebyl načten.",
+  "popup.loadNow": "Načíst nyní",
   "btn.cancel": "Zrušit",
   "popup.feedback": "Zpětnou vazbu a komentáře uvítáme na:",
   "feedback.send": "Zpětná vazba",

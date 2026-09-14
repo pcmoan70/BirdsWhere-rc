@@ -1220,6 +1220,8 @@
   "popup.perf": "Für das beste Erlebnis fügen Sie Ihren kostenlosen eBird-API-Schlüssel in den Einstellungen hinzu – er ergänzt eBird-Beobachtungen und Beobachternamen. GBIF und iNaturalist sind standardmäßig enthalten.",
   "popup.histNote": "Das Abrufen historischer Nachweise von GBIF kann langsam sein; aktuelle Beobachtungen laden schnell.",
   "popup.ok": "OK",
+  "popup.cancelled": "BirdsWhere wurde nicht geladen.",
+  "popup.loadNow": "Jetzt laden",
   "btn.cancel": "Abbrechen",
   "popup.feedback": "Feedback und Kommentare sind willkommen unter:",
   "feedback.send": "Feedback",

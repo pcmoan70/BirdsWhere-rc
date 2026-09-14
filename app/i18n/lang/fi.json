@@ -1220,6 +1220,8 @@
   "popup.perf": "Parhaan kokemuksen saat lisäämällä ilmaisen eBird API-avaimesi Asetuksiin – se lisää eBird-havainnot ja havainnoitsijoiden nimet. GBIF ja iNaturalist sisältyvät oletuksena.",
   "popup.histNote": "Historiatietojen hakeminen GBIF:stä voi olla hidasta; tuoreet havainnot latautuvat nopeasti.",
   "popup.ok": "OK",
+  "popup.cancelled": "BirdsWhereä ei ladattu.",
+  "popup.loadNow": "Lataa nyt",
   "btn.cancel": "Peruuta",
   "popup.feedback": "Palautetta ja kommentteja otetaan vastaan osoitteessa:",
   "feedback.send": "Palaute",

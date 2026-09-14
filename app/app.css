@@ -4423,3 +4423,10 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .spg-credit { padding: 0 8px 6px; font-size: 10px; line-height: 1.3; color: var(--ink-faint, #9aa5a1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-height: 12px; }
 .spg-credit a { color: inherit; text-decoration: none; }
 .spg-credit a:hover { text-decoration: underline; }
+
+/* Welcome popup buttons (Cancel appears only on a shortcut / QR launch — the popup is then a
+   consent gate: nothing loads, locates or fetches until OK). */
+.perf-btns { display: flex; gap: 10px; justify-content: flex-end; align-items: center; }
+#perf-modal-ok { margin: 0; }
+.launch-cancelled { margin: 12px 0; }
+
