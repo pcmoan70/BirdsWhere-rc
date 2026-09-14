@@ -11351,7 +11351,10 @@
     });
     applyAgeFilter();   // baseline: the filters (and the [?] predicted rows) decide first
     var shown = 0;
-    Array.prototype.forEach.call(tbody.querySelectorAll("tr"), function (tr) {
+    // Species rows only (direct children): querySelectorAll("tr") would also reach the
+    // rows INSIDE an expanded record sub-list and hide them (an open row with an empty,
+    // collapsed sub-list after Map → List).
+    Array.prototype.forEach.call(tbody.children, function (tr) {
       if (tr.classList.contains("sp-detail-row")) return;
       if (tr.style.display === "none") return;   // already out by a filter
       var key, sl = tr.querySelector(".sp-link");
@@ -20273,9 +20276,11 @@
   // ---- Species gallery ("Images" layout) ------------------------------------
   // One card per visible species-table row, in the table's current order: the species'
   // photo (the lead image of its Wikipedia article, resolved lazily as the card scrolls
-  // into view), the name (same .sp-link → species menu), scientific name, and the row's
-  // Total · Last seen · Distance · Probability. Every photo is credited to its
-  // Wikimedia Commons author and licence, linked to the file page.
+  // into view), the name (same .sp-link → species menu) with the scientific name in
+  // parentheses after it, the row's Total · Last seen · Distance · Probability, and —
+  // when the species has records — a ☰ button that jumps to its record sub-list in the
+  // Table layout. Every photo is credited to its Wikimedia Commons author and licence,
+  // linked to the file page.
   var spImgCache = null;   // sci → { t: thumb url, a: artist, l: licence, f: file title } | { none: 1 }
   function spImgStore() { if (!spImgCache) spImgCache = window.GeoState.get("spImages", {}) || {}; return spImgCache; }
   function spImgRemember(sci, rec) {
@@ -20330,19 +20335,38 @@
       var sci = sciTd ? sciTd.textContent.trim() : (link ? link.getAttribute("data-sci") || "" : "");
       var dot = tr.querySelector(".sp-cdot, .det-sw");
       var nd = tr.querySelector(".det-nd"), last = tr.querySelector(".sp-last"), dist = tr.querySelector(".sp-dist"), prob = tr.querySelector(".prob-num");
+      var key = link ? link.getAttribute("data-key") || "" : "";
+      var subBtn = (key && tr.classList.contains("sp-has-det"))   // only rows with records have a sub-list to open
+        ? '<button type="button" class="spg-sub" data-key="' + escapeHtml(key) + '" title="' + escapeHtml(t("spg.records")) + '" aria-label="' + escapeHtml(t("spg.records")) + '">\u2630</button>' : "";
+      var showSci = sci && !(link && link.textContent.trim() === sci);   // no "(sci)" when the name already IS the sci
       function cell(label, el) { var v = el ? el.textContent.trim() : ""; return v ? '<span class="spg-m"><span class="spg-k">' + escapeHtml(label) + "</span> " + escapeHtml(v) + "</span>" : ""; }
       return '<div class="spg-card" data-sci="' + escapeHtml(sci) + '">' +
         '<div class="spg-img"><span class="spg-none" style="display:none">' + escapeHtml(t("spg.noImage")) + "</span></div>" +
-        '<div class="spg-name">' + (dot ? dot.outerHTML : "") + (link ? link.outerHTML : "") + "</div>" +
-        (sci ? '<div class="spg-sci">' + escapeHtml(sci) + "</div>" : "") +
+        '<div class="spg-name"><span class="spg-nm">' + (dot ? dot.outerHTML : "") + (link ? link.outerHTML : "") +
+          (showSci ? ' <span class="spg-sci">(' + escapeHtml(sci) + ")</span>" : "") + "</span>" + subBtn + "</div>" +
         '<div class="spg-meta">' + cell(lbl.total, nd) + cell(lbl.last, last) + cell(lbl.dist, dist) + cell(lbl.prob, prob) + "</div>" +
         '<div class="spg-credit"></div>' +
       "</div>";
     }).join("") + "</div>";
   }
   var spGalleryObs = null;
+  // The card's ☰ button: switch to the Table layout with that species' record sub-list
+  // expanded, scrolled into view and flashed (same reveal as tapping a rarity tile).
+  function openSpGalleryRecords(key) {
+    spExpanded[key] = 1;
+    spLayout = "table";
+    renderSpControls();
+    openSpeciesListRow(key);
+  }
   function wireSpGallery(rec) {
     if (spGalleryObs) { spGalleryObs.disconnect(); spGalleryObs = null; }
+    if (!rec._spgSubWired) {
+      rec._spgSubWired = true;
+      rec.addEventListener("click", function (e) {
+        var b = e.target.closest && e.target.closest(".spg-sub");
+        if (b) { e.preventDefault(); e.stopPropagation(); openSpGalleryRecords(b.getAttribute("data-key")); }
+      });
+    }
     function fill(card) {
       if (card._spgDone) return; card._spgDone = true;
       var sci = card.getAttribute("data-sci"), box = card.querySelector(".spg-img"), none = card.querySelector(".spg-none"), cr = card.querySelector(".spg-credit");

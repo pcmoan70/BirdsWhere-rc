@@ -188,10 +188,12 @@ prediction at that point:
 
 The fetch can be shown three ways (layout dropdown above the list): the ranked **Species list** table,
 the **Observation list** (one row per record) and **Images** — a gallery with one card per species in
-the table's current order: photo, name, scientific name, Total, Last seen, Distance and Probability.
-Photos are the lead image of the species' Wikipedia article, loaded from Wikimedia Commons as cards
-scroll into view (nothing bundled or stored beyond the browser cache) and credited under each picture
-to their author and licence, linked to the Commons file page. The name opens the usual species menu.
+the table's current order: photo, name with the scientific name in parentheses, Total, Last seen,
+Distance and Probability. Photos are the lead image of the species' Wikipedia article, loaded from
+Wikimedia Commons as cards scroll into view (nothing bundled or stored beyond the browser cache) and
+credited under each picture to their author and licence, linked to the Commons file page. The name
+opens the usual species menu; the small **☰** button on a card jumps to that species' record sub-list
+in the Species list table (expanded, scrolled into view).
 
 Click the map in **Recent** mode for the predicted species at that point, ranked by
 probability. Options:

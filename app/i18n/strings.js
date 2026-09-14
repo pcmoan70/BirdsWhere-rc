@@ -756,6 +756,7 @@ window.GeoI18N = (function () {
         "splay.observation": "Observation list",
         "splay.gallery": "Images",
         "spg.noImage": "No image",
+        "spg.records": "Show records",
         "splay.species": "By species",
         "splay.count": "By count",
         "splay.rarity": "By rarity",
