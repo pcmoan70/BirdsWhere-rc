@@ -501,6 +501,7 @@
   "dset.saveCurrent": "💾 Huidige waarnemingen opslaan…",
   "dset.title": "Opgeslagen sets",
   "fetch.failed": "⚠ {sources} reageerde niet — resultaten kunnen onvolledig zijn.",
+  "launch.fewNote": "Hier zijn maar weinig waarnemingen. Een gratis eBird-account (API-sleutel) en een account bij de nationale databases verbeteren de resultaten aanzienlijk – in te stellen onder Gegevensbronnen.",
   "fetch.needKey": "⚠ {sources}: API-sleutel ontbreekt — voeg een gratis sleutel toe in Instellingen → Gegevensbronnen.",
   "gbif.add": "Toevoegen",
   "gbif.addPh": "Plak een datasetsleutel of gbif.org/dataset/…-URL",

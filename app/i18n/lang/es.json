@@ -501,6 +501,7 @@
   "dset.saveCurrent": "💾 Guardar detecciones actuales…",
   "dset.title": "Conjuntos guardados",
   "fetch.failed": "⚠ {sources} no respondió — los resultados pueden estar incompletos.",
+  "launch.fewNote": "Aquí hay pocas observaciones. Una cuenta gratuita de eBird (clave API) y una cuenta en las bases de datos nacionales mejoran mucho los resultados: configúrelas en Fuentes de datos.",
   "fetch.needKey": "⚠ {sources}: falta la clave de API — añade una clave gratuita en Ajustes → Fuentes de datos.",
   "gbif.add": "Añadir",
   "gbif.addPh": "Pega una clave de conjunto de datos o una URL gbif.org/dataset/…",

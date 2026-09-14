@@ -501,6 +501,7 @@
   "dset.saveCurrent": "💾 Uložit aktuální detekce…",
   "dset.title": "Uložené sady",
   "fetch.failed": "⚠ {sources} neodpovědělo — výsledky mohou být neúplné.",
+  "launch.fewNote": "Zde je jen málo pozorování. Bezplatný účet eBird (klíč API) a účet u národních databází výsledky výrazně zlepší – nastavte je v části Zdroje dat.",
   "fetch.needKey": "⚠ {sources}: chybí klíč API — přidejte bezplatný klíč v Nastavení → Zdroje dat.",
   "gbif.add": "Přidat",
   "gbif.addPh": "Vložte klíč datové sady nebo URL gbif.org/dataset/…",

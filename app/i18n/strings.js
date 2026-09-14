@@ -177,6 +177,7 @@ window.GeoI18N = (function () {
         "feedback.thumbsUp": "Works well",
         "feedback.thumbsDown": "Something’s off",
         "fetch.failed": "⚠ {sources} didn’t respond — results may be incomplete.",
+        "launch.fewNote": "Only a few sightings here. A free eBird account (API key) and an account for the national databases improve the results considerably \u2014 set them under Data sources.",
         "fetch.needKey": "⚠ {sources}: API key missing — add a free key in Settings → Data sources.",
         "fetch.errTitle": "Some data sources failed:",
         "fetch.errKeyHint": "Tip: some of these need a free API key. Register one in “Data sources…” for more up-to-date data.",

@@ -501,6 +501,7 @@
   "dset.saveCurrent": "💾 Tallenna nykyiset havainnot…",
   "dset.title": "Tallennetut setit",
   "fetch.failed": "⚠ {sources} ei vastannut — tulokset voivat olla puutteelliset.",
+  "launch.fewNote": "Täältä löytyi vain vähän havaintoja. Ilmainen eBird-tili (API-avain) ja tili kansallisiin tietokantoihin parantavat tuloksia huomattavasti – aseta ne kohdassa Tietolähteet.",
   "fetch.needKey": "⚠ {sources}: API-avain puuttuu — lisää ilmainen avain kohdassa Asetukset → Tietolähteet.",
   "gbif.add": "Lisää",
   "gbif.addPh": "Liitä aineistoavain tai gbif.org/dataset/… -URL",

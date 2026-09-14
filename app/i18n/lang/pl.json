@@ -501,6 +501,7 @@
   "dset.saveCurrent": "💾 Zapisz bieżące wykrycia…",
   "dset.title": "Zapisane zestawy",
   "fetch.failed": "⚠ {sources} nie odpowiedział — wyniki mogą być niepełne.",
+  "launch.fewNote": "Tutaj jest tylko kilka obserwacji. Bezpłatne konto eBird (klucz API) i konto w krajowych bazach danych znacznie poprawiają wyniki – ustaw je w sekcji Źródła danych.",
   "fetch.needKey": "⚠ {sources}: brak klucza API — dodaj darmowy klucz w Ustawienia → Źródła danych.",
   "gbif.add": "Dodaj",
   "gbif.addPh": "Wklej klucz zbioru danych lub URL gbif.org/dataset/…",

@@ -501,6 +501,7 @@
   "dset.saveCurrent": "💾 Enregistrer les détections actuelles…",
   "dset.title": "Sets enregistrés",
   "fetch.failed": "⚠ {sources} n’a pas répondu — les résultats peuvent être incomplets.",
+  "launch.fewNote": "Peu d'observations ici. Un compte eBird gratuit (clé API) et un compte auprès des bases de données nationales améliorent nettement les résultats – à configurer dans Sources de données.",
   "fetch.needKey": "⚠ {sources} : clé API manquante — ajoutez une clé gratuite dans Réglages → Sources de données.",
   "gbif.add": "Ajouter",
   "gbif.addPh": "Collez une clé de jeu de données ou une URL gbif.org/dataset/…",

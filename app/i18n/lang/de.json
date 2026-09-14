@@ -501,6 +501,7 @@
   "dset.saveCurrent": "💾 Aktuelle Nachweise speichern…",
   "dset.title": "Gespeicherte Sets",
   "fetch.failed": "⚠ {sources} hat nicht geantwortet — die Ergebnisse können unvollständig sein.",
+  "launch.fewNote": "Nur wenige Beobachtungen hier. Ein kostenloses eBird-Konto (API-Schlüssel) und ein Konto bei den nationalen Datenbanken verbessern die Ergebnisse erheblich – einzurichten unter Datenquellen.",
   "fetch.needKey": "⚠ {sources}: API-Schlüssel fehlt — kostenlosen Schlüssel in Einstellungen → Datenquellen hinzufügen.",
   "gbif.add": "Hinzufügen",
   "gbif.addPh": "Datensatz-Schlüssel oder gbif.org/dataset/…-URL einfügen",

@@ -4627,6 +4627,20 @@
     armSpLoadingClear();   // the persistent line dismisses on the first interaction
     refreshSpCoords();     // per-area obs counts in the header reflect the finished fetch
   }
+  // A shortcut launch (the QR poster: keyless — eBird skipped, the regional databases only
+  // as far as their public APIs go) that finds FEW sightings gets a one-off note: a free
+  // eBird key and accounts for the national databases would improve this a lot. Shown once
+  // per launch under the "Loaded:" line, dismissed with its ×; opens Data sources.
+  var launchNotePending = false, LAUNCH_NOTE_MAX = 25;
+  function showLaunchNote() {
+    var el = document.getElementById("sp-launch-note"); if (!el) return;
+    el.innerHTML = '<span class="launch-note-txt">' + escapeHtml(t("launch.fewNote")) + "</span> " +
+      '<button type="button" class="btn btn-light launch-note-btn">' + escapeHtml(t("sources.manage")) + "</button>" +
+      '<button type="button" class="launch-note-x" aria-label="Close">×</button>';
+    el.style.display = "";
+    el.querySelector(".launch-note-btn").addEventListener("click", function () { openSourcesManager(); });
+    el.querySelector(".launch-note-x").addEventListener("click", function () { el.style.display = "none"; el.innerHTML = ""; });
+  }
   // The species-page loading line, set straight from a fetch's per-source counts
   // (works for a cached fetch too, where obsTrack never ran). Persistent.
   function showSourceCounts(bySrc, dedupTotal, timedOut, failed, trunc) {
@@ -4655,6 +4669,7 @@
     if (!parts.length) return;
     var html = t("sp.loaded", { n: parts.join(", ") });
     if (dedupTotal != null && keys.length) html += " · " + escapeHtml(t("sp.deduped", { n: dedupTotal }));   // unique kept after de-dup
+    if (launchNotePending && dedupTotal != null) { launchNotePending = false; if (dedupTotal < LAUNCH_NOTE_MAX) showLaunchNote(); }
     var ld = document.getElementById("sp-loading");
     if (ld) {
       ld.innerHTML = html; ld.style.display = "";
@@ -5831,6 +5846,7 @@
     }
     updateSortIndicators();
     urlForceView = (p.show || "").toLowerCase() === "list" ? "list" : null;   // else map-first (also 'map')
+    launchNotePending = true;   // the first settled fetch may add the "few sightings — add keys" note
     stripShortcutParams();   // everything above is consumed — a reload must not run the shortcut again
 
     var modeSel = document.getElementById("mode-select");
@@ -6269,6 +6285,7 @@
           '<div id="sp-filters-wrap"></div>' +
           '<div id="sp-recency-note" class="sp-recency-note" style="display:none"></div>' +
           '<div class="sp-loading" id="sp-loading" style="display:none"></div>' +
+          '<div id="sp-launch-note" style="display:none"></div>' +
           '<div id="sp-records" style="display:none"></div>' +
           '<table id="species-list-table">' +
             '<thead><tr>' +

@@ -501,6 +501,7 @@
   "dset.saveCurrent": "💾 Salvesta praegused leiud…",
   "dset.title": "Salvestatud komplektid",
   "fetch.failed": "⚠ {sources} ei vastanud — tulemused võivad olla puudulikud.",
+  "launch.fewNote": "Siin on vaid mõned vaatlused. Tasuta eBirdi konto (API-võti) ja konto riiklikes andmebaasides parandavad tulemusi oluliselt – seadista need jaotises Andmeallikad.",
   "fetch.needKey": "⚠ {sources}: API-võti puudub — lisa tasuta võti menüüs Seaded → Andmeallikad.",
   "gbif.add": "Lisa",
   "gbif.addPh": "Kleebi andmestiku võti või gbif.org/dataset/… URL",

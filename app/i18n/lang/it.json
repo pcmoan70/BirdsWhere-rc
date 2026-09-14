@@ -501,6 +501,7 @@
   "dset.saveCurrent": "💾 Salva rilevamenti attuali…",
   "dset.title": "Set salvati",
   "fetch.failed": "⚠ {sources} non ha risposto — i risultati potrebbero essere incompleti.",
+  "launch.fewNote": "Qui ci sono poche osservazioni. Un account eBird gratuito (chiave API) e un account presso le banche dati nazionali migliorano molto i risultati: impostali in Fonti dati.",
   "fetch.needKey": "⚠ {sources}: chiave API mancante — aggiungi una chiave gratuita in Impostazioni → Fonti di dati.",
   "gbif.add": "Aggiungi",
   "gbif.addPh": "Incolla una chiave dataset o un URL gbif.org/dataset/…",

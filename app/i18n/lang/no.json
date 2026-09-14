@@ -501,6 +501,7 @@
   "dset.saveCurrent": "💾 Lagre gjeldende funn…",
   "dset.title": "Lagrede sett",
   "fetch.failed": "⚠ {sources} svarte ikke — resultatene kan være ufullstendige.",
+  "launch.fewNote": "Bare noen få observasjoner her. En gratis eBird-konto (API-nøkkel) og en konto hos de nasjonale databasene forbedrer resultatene betydelig – sett dem opp under Datakilder.",
   "fetch.needKey": "⚠ {sources}: API-nøkkel mangler — legg til en gratis nøkkel i Innstillinger → Datakilder.",
   "gbif.add": "Legg til",
   "gbif.addPh": "Lim inn en datasettnøkkel eller gbif.org/dataset/…-URL",

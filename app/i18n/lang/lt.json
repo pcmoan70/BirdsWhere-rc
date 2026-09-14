@@ -501,6 +501,7 @@
   "dset.saveCurrent": "💾 Išsaugoti esamus aptikimus…",
   "dset.title": "Išsaugoti rinkiniai",
   "fetch.failed": "⚠ {sources} neatsakė — rezultatai gali būti nepilni.",
+  "launch.fewNote": "Čia rasta tik keletas stebėjimų. Nemokama eBird paskyra (API raktas) ir paskyra nacionalinėse duomenų bazėse gerokai pagerina rezultatus – nustatykite jas skiltyje Duomenų šaltiniai.",
   "fetch.needKey": "⚠ {sources}: trūksta API rakto — pridėkite nemokamą raktą Nustatymai → Duomenų šaltiniai.",
   "gbif.add": "Pridėti",
   "gbif.addPh": "Įklijuokite duomenų rinkinio raktą arba gbif.org/dataset/… URL",

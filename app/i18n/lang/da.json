@@ -501,6 +501,7 @@
   "dset.saveCurrent": "💾 Gem aktuelle observationer…",
   "dset.title": "Gemte sæt",
   "fetch.failed": "⚠ {sources} svarede ikke — resultaterne kan være ufuldstændige.",
+  "launch.fewNote": "Kun få observationer her. En gratis eBird-konto (API-nøgle) og en konto hos de nationale databaser forbedrer resultaterne betydeligt – sæt dem op under Datakilder.",
   "fetch.needKey": "⚠ {sources}: API-nøgle mangler — tilføj en gratis nøgle i Indstillinger → Datakilder.",
   "gbif.add": "Tilføj",
   "gbif.addPh": "Indsæt en datasæt-nøgle eller gbif.org/dataset/…-URL",

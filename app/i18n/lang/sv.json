@@ -253,6 +253,7 @@
   "feedback.thumbsUp": "Fungerar bra",
   "feedback.thumbsDown": "Något fungerar inte",
   "fetch.failed": "⚠ {sources} svarade inte — resultaten kan vara ofullständiga.",
+  "launch.fewNote": "Bara några få observationer här. Ett gratis eBird-konto (API-nyckel) och ett konto hos de nationella databaserna förbättrar resultaten avsevärt – ställ in dem under Datakällor.",
   "fetch.needKey": "⚠ {sources}: API-nyckel saknas — lägg till en gratis nyckel i Inställningar → Datakällor.",
   "fetch.errTitle": "Vissa datakällor misslyckades:",
   "fetch.errKeyHint": "Tips: några av dessa kräver en gratis API-nyckel. Registrera en i ”Datakällor…” för mer aktuella data.",
