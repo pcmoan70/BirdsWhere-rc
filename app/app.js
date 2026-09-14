@@ -15843,6 +15843,12 @@
       if (!m || !ok) { resolve(true); return; }
       launchGated = true;
       localizeSubtree(m); updatePerfMeta();
+      // Version line: the running version normally comes from the service worker, which is
+      // not registered yet here — read it from the (tiny) manifest instead, plus the last-change
+      // stamp; updatePerfMeta fills the line as each arrives.
+      if (!appVersion) fetch("files.json", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) { if (j && j._version && !appVersion) { appVersion = String(j._version); updatePerfMeta(); } }).catch(function () {});
+      if (!lastChangeText) showLastChange();
       if (cancel) cancel.hidden = false;
       if (m.parentNode !== document.body) document.body.appendChild(m);   // #app-main is still hidden at this point; the overlay is position:fixed, so it lives fine on <body>
       m.classList.add("perf-gate"); m.style.display = "flex";

@@ -4426,7 +4426,7 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 
 /* Welcome popup buttons (Cancel appears only on a shortcut / QR launch — the popup is then a
    consent gate: nothing loads, locates or fetches until OK). */
-.perf-btns { display: flex; gap: 10px; justify-content: flex-end; align-items: center; }
-#perf-modal-ok { margin: 0; }
+.perf-btns { display: flex; gap: 12px; align-items: stretch; }
+.perf-btns .btn { flex: 1 1 0; min-width: 0; margin: 0; padding: 11px 14px; box-sizing: border-box; line-height: 1.2; text-align: center; }   /* equal width + height, side by side (OK alone fills the row) */
 .launch-cancelled { margin: 12px 0; }
 
