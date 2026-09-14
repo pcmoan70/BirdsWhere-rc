@@ -20277,7 +20277,8 @@
   // One card per visible species-table row, in the table's current order: the species'
   // photo (the lead image of its Wikipedia article, resolved lazily as the card scrolls
   // into view), the name (same .sp-link → species menu) with the scientific name in
-  // parentheses after it, the row's Total · Last seen · Distance · Probability, and —
+  // parentheses after it (same .sci-link → Family menu), the row's Total · Last seen ·
+  // Distance · Probability, and —
   // when the species has records — a ☰ button that jumps to its record sub-list in the
   // Table layout. Every photo is credited to its Wikimedia Commons author and licence,
   // linked to the file page.
@@ -20333,6 +20334,7 @@
     return '<div class="sp-gallery">' + rows.map(function (tr) {
       var link = tr.querySelector(".sp-link"), sciTd = tr.querySelector("td.sci");
       var sci = sciTd ? sciTd.textContent.trim() : (link ? link.getAttribute("data-sci") || "" : "");
+      var sciEl = sciTd ? sciTd.querySelector(".sci-link") : null;   // the table's clickable sci (→ Family menu), reused as-is
       var dot = tr.querySelector(".sp-cdot, .det-sw");
       var nd = tr.querySelector(".det-nd"), last = tr.querySelector(".sp-last"), dist = tr.querySelector(".sp-dist"), prob = tr.querySelector(".prob-num");
       var key = link ? link.getAttribute("data-key") || "" : "";
@@ -20343,7 +20345,7 @@
       return '<div class="spg-card" data-sci="' + escapeHtml(sci) + '">' +
         '<div class="spg-img"><span class="spg-none" style="display:none">' + escapeHtml(t("spg.noImage")) + "</span></div>" +
         '<div class="spg-name"><span class="spg-nm">' + (dot ? dot.outerHTML : "") + (link ? link.outerHTML : "") +
-          (showSci ? ' <span class="spg-sci">(' + escapeHtml(sci) + ")</span>" : "") + "</span>" + subBtn + "</div>" +
+          (showSci ? ' <span class="spg-sci">(' + (sciEl ? sciEl.outerHTML : escapeHtml(sci)) + ")</span>" : "") + "</span>" + subBtn + "</div>" +
         '<div class="spg-meta">' + cell(lbl.total, nd) + cell(lbl.last, last) + cell(lbl.dist, dist) + cell(lbl.prob, prob) + "</div>" +
         '<div class="spg-credit"></div>' +
       "</div>";

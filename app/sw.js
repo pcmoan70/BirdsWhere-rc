@@ -21,12 +21,12 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1697";
+var VERSION = "v1698";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
-  "• Images layout: every species card now has a small ☰ button that jumps to that species’ records in the Species list table; the scientific name follows the name in parentheses. Also fixed: an expanded record list no longer collapses when you return from the map to the list.",
+  "• Images layout: every species card now has a small ☰ button that jumps to that species’ records in the Species list table; the scientific name follows the name in parentheses and, as in the table, opens the Family menu. Also fixed: an expanded record list no longer collapses when you return from the map to the list.",
   "• New Images layout for the species list: pick “Images” in the layout dropdown for a card per species — photo, name, Total, Last seen, Distance and Probability — in the list’s current order. Photos come from Wikipedia / Wikimedia Commons and are credited to their author under each picture.",
   "• Older browsers (Safari before 16.4, e.g. on older Macs) could not start the model — “WebAssembly SIMD is not supported”. They now get a fallback runtime automatically. The How-it-works panel documents all ten map overlays, in every language.",
   "• iPhone: the app no longer asks for your location twice at start — all position requests now go through one shared request, and a fix from the last two minutes is reused.",

@@ -192,8 +192,9 @@ the table's current order: photo, name with the scientific name in parentheses, 
 Distance and Probability. Photos are the lead image of the species' Wikipedia article, loaded from
 Wikimedia Commons as cards scroll into view (nothing bundled or stored beyond the browser cache) and
 credited under each picture to their author and licence, linked to the Commons file page. The name
-opens the usual species menu; the small **☰** button on a card jumps to that species' record sub-list
-in the Species list table (expanded, scrolled into view).
+opens the usual species menu and the scientific name the Family menu, as in the table; the small **☰**
+button on a card jumps to that species' record sub-list in the Species list table (expanded, scrolled
+into view).
 
 Click the map in **Recent** mode for the predicted species at that point, ranked by
 probability. Options:
