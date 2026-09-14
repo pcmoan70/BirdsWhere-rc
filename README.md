@@ -606,12 +606,13 @@ https://thebirding.site/f/
 (`app/f/index.html`, served by the service worker even offline) that forwards to
 `?location=here&radius=3&days=90&skip=ebird&show=list&sortby=distance&layout=images&from=poster` (the
 Images gallery, nearest first, ties by rarity). The `from=poster` tag makes the app add one tick to an anonymous
-scan counter (the same hit-counter service as the About footer's page-visit badge — a number only,
-no position, id or cookie), then strips the tag from the address bar so a reload, a restored tab or a
-home-screen shortcut saved from that page never counts again. Nothing else touches that counter — the
-service has no read-only endpoint (every badge fetch adds one), which is why the app does not display
-it; read it with `python3 tools/counts.py` (prints both totals as they stood before its own read) or at
-`https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fthebirding.site%2Ff`. Being 27 characters
+**poster-scans** counter (Abacus, `abacus.jasoncameron.dev`, namespace `thebirding.site` — a number
+only, no position, id or cookie; a **page-visits** counter ticks once per app open the same way), then
+strips the tag from the address bar so a reload, a restored tab or a home-screen shortcut saved from
+that page never counts again. Nothing else touches the counter: the How it works footer shows both
+numbers as tiles through Abacus's **read-only** `/get`, and `python3 tools/counts.py` prints them the
+same way. Live site only — RC and local runs never count. (Seeded 2026-09-14 from the previous badge
+counter's totals, which also ticked on every display.) Being 27 characters
 instead of ~120 it makes a much coarser QR code (33×33 modules at the highest error-correction level,
 instead of 57×57), which survives print wear far better. Change the target by editing that file.
 

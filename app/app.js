@@ -6740,6 +6740,7 @@
       var bellEl = document.getElementById("rarity-bell");
       if (bellEl) bellEl.addEventListener("click", function () { maybeEbirdNudge(); });
       if (!hasHere && !hasLocParam && !sharedOpen) restoreSession();   // return to the view we left (reload-safe)
+      countPageVisit();    // one anonymous tick on the page-visit counter per app open (live site only)
       countPosterScan();   // ?from=poster (the /f/ QR link) → one anonymous tick on the scan counter
       if (hasLocParam) maybeUrlLocationParam();   // ?location=here;radius=…;show=…;sortby=… → geolocate + open list/map
       else maybeUrlAutoLocate();                  // ?here=1 → geolocate + open species list
@@ -7257,21 +7258,42 @@
   // "Last change" timestamp. Rebuilt on language change and when the timestamp
   // resolves, so both survive re-renders.
   var lastChangeText = "";
-  // The page-visit badge: ONE fetch per app open (the badge service counts every fetch and
-  // forbids caching; the About body re-renders several times per boot, which used to add
-  // 4–7 "visits" per session). The same <img> is re-attached on every render; never
-  // fetched from a local dev server.
-  // Both hit counters are for the live site only: the RC channel and local dev servers
-  // must not add to them (the badge path is the production URL either way).
-  function countersLive() { return location.hostname === "thebirding.site"; }
-  var pageVisitImg = null;
-  function pageVisitBadge() {
-    if (!pageVisitImg && countersLive()) {
-      pageVisitImg = new Image();
-      pageVisitImg.alt = "page visits";
-      pageVisitImg.src = "https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fthebirding.site&label=page%20visits&labelColor=%230f1b24&countColor=%232f6f4f";
-    }
-    return pageVisitImg;
+  // ---- Anonymous hit counters (Abacus, abacus.jasoncameron.dev) ---------------------
+  // Two counters in the namespace "thebirding.site": page-visits (one /hit per app open)
+  // and poster-scans (one /hit per /f/ QR launch, see countPosterScan). Abacus has a
+  // READ-ONLY /get, so the How-it-works footer can show both numbers without adding to
+  // them (the previous badge service counted every display). A number only — no
+  // position, id or cookie. Live site only: RC and local servers never count.
+  var COUNTER_API = "https://abacus.jasoncameron.dev/";
+  var COUNTER_NS = "thebirding.site";
+  function countersLive() { return location.hostname === COUNTER_NS; }
+  function counterHit(key) {
+    if (!countersLive() || navigator.onLine === false) return;
+    try { fetch(COUNTER_API + "hit/" + COUNTER_NS + "/" + key, { mode: "cors", cache: "no-store", keepalive: true }).catch(function () {}); } catch (e) {}
+  }
+  function counterGet(key) {
+    return fetch(COUNTER_API + "get/" + COUNTER_NS + "/" + key, { mode: "cors", cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { return (j && typeof j.value === "number") ? j.value : null; })
+      .catch(function () { return null; });
+  }
+  var pageVisitCounted = false;
+  function countPageVisit() { if (pageVisitCounted) return; pageVisitCounted = true; counterHit("page-visits"); }
+  // The footer tiles: both counts, read once per app session (read-only, so a re-read
+  // would be harmless — it just isn't needed) and re-attached on every About render.
+  var counterTiles = null;
+  function counterTilesEl() {
+    if (counterTiles) return counterTiles;
+    counterTiles = document.createElement("div"); counterTiles.id = "hit-counters";
+    counterTiles.innerHTML = '<span class="hit-tile" data-key="page-visits"><span class="hit-lbl">page visits</span><span class="hit-num">…</span></span>' +
+      '<span class="hit-tile hit-poster" data-key="poster-scans"><span class="hit-lbl">poster scans</span><span class="hit-num">…</span></span>';
+    ["page-visits", "poster-scans"].forEach(function (key) {
+      counterGet(key).then(function (v) {
+        var el = counterTiles.querySelector('.hit-tile[data-key="' + key + '"] .hit-num');
+        if (el) el.textContent = v == null ? "—" : String(v);
+      });
+    });
+    return counterTiles;
   }
   function renderAboutBody() {
     var about = document.getElementById("about-body");
@@ -7289,11 +7311,8 @@
         '<div id="visit-counter"></div>' +
         (lastChangeText ? '<div id="last-change">' + escapeHtml(t("footer.lastchange", { t: lastChangeText })) + "</div>" : "") +
       "</div>";
-    var vc = document.getElementById("visit-counter"), vimg = pageVisitBadge();
-    if (vc && vimg) vc.appendChild(vimg);
-    // No poster-scan badge here: the badge service has no read-only endpoint (every fetch
-    // of a badge adds one), so showing it would count every How-it-works view as a scan.
-    // The scan count is read with tools/counts.py (see countPosterScan).
+    var vc = document.getElementById("visit-counter");
+    if (vc) vc.appendChild(counterTilesEl());   // read-only display of both counters (no hit)
     // Localize the embedded [data-i18n] bits (e.g. the feedback button), scoped
     // to the About body — NOT applyI18n(), which calls back here (infinite loop).
     var i18nEls = about.querySelectorAll("[data-i18n]");
@@ -15758,9 +15777,8 @@
   }
 
   // The printed QR poster forwards through /f/ with ?from=poster. Count that launch on the
-  // same anonymous hit counter the About footer uses for page visits — a number, nothing
-  // else: no position, no id, no cookie. Read it at
-  // https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fthebirding.site%2Ff (each view of that badge adds one).
+  // anonymous Abacus counter (see counterHit) — a number, nothing else: no position, no
+  // id, no cookie. Read it with tools/counts.py or in the How-it-works footer (read-only).
   var posterCounted = false;
   function countPosterScan() {
     try {
@@ -15773,9 +15791,7 @@
         var q = location.search.replace(/([?&;])from=poster(?=[&;]|$)/, "$1").replace(/[?&;]+$/, "").replace(/^([?])[&;]+/, "$1");
         history.replaceState(history.state, "", location.pathname + (q === "?" ? "" : q) + location.hash);
       } catch (e) {}
-      if (navigator.onLine === false || !countersLive()) return;   // RC / local runs never count
-      var img = new Image();
-      img.src = "https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fthebirding.site%2Ff&label=poster%20scans&t=" + Date.now();
+      counterHit("poster-scans");   // live site only (countersLive)
     } catch (e) {}
   }
   // One-time performance note shown over the page on load.

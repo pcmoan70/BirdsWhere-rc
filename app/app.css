@@ -2908,7 +2908,12 @@ table.chk-table .chk-text { min-width: 100px; }
 #about-footer { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--md-default-fg-color--lightest, #eee); }
 #about-footer #visit-counter { padding: 0; }
 #about-footer #last-change { padding: 0; }
-#visit-counter img { height: 20px; vertical-align: middle; }
+/* The two hit-counter tiles (badge-styled: dark label, coloured number). */
+#hit-counters { display: inline-flex; flex-wrap: wrap; gap: 8px; }
+.hit-tile { display: inline-flex; font-size: 11px; line-height: 20px; font-weight: 600; border-radius: 4px; overflow: hidden; letter-spacing: .01em; }
+.hit-tile .hit-lbl { background: #0f1b24; color: #fff; padding: 0 7px; }
+.hit-tile .hit-num { background: #2f6f4f; color: #fff; padding: 0 7px; font-variant-numeric: tabular-nums; }
+.hit-tile.hit-poster .hit-num { background: #e8801f; }
 
 /* Optional 2nd-language name column in the Species List (toggled by JS) */
 #species-list-table .name2 { display: none; }
