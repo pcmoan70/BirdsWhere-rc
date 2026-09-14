@@ -4378,6 +4378,8 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .spg-img { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: var(--surface-2, #eef3f1); display: flex; align-items: center; justify-content: center; }
 .spg-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }   /* whole photo, true aspect ratio, letterboxed in a uniform 4:3 tile — never cropped */
 .spg-none { font-size: var(--fs-xs); color: var(--ink-muted, #888); }
+.spg-card.spg-pred { border-style: dashed; }                                                         /* [?] mode: predicted here, no records */
+.spg-tag { position: absolute; top: 6px; left: 6px; z-index: 1; font-size: 10px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: #fff; background: rgba(15,27,36,.72); padding: 1px 6px; border-radius: 4px; }
 .spg-name { padding: 6px 8px 0; font-size: var(--fs-b); font-weight: 600; line-height: 1.25; display: flex; align-items: flex-start; gap: 6px; min-width: 0; }
 .spg-nm { flex: 1 1 auto; min-width: 0; }
 .spg-nm .sp-cdot, .spg-nm .det-sw { vertical-align: middle; margin-right: 4px; }

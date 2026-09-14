@@ -2106,7 +2106,9 @@
     if (spExpanded[key]) delete spExpanded[key]; else spExpanded[key] = 1;
     refreshSpExpansions();
   }
-  function sortSpeciesList() {
+  // `override` (optional {col, dir}) sorts by that instead of speciesListSort — the Images
+  // layout's [?] mode ranks commonest-first ({col: ""}) without touching the user's sort.
+  function sortSpeciesList(override) {
     var tbody = document.getElementById("sp-tbody");
     if (!tbody) return;
     var agg = tbody._sightingsAgg || {};
@@ -2116,7 +2118,8 @@
     var all = Array.prototype.slice.call(tbody.children);
     var extras = all.filter(function (tr) { return tr.classList.contains("sp-extra"); });
     var rows = all.filter(function (tr) { return !tr.classList.contains("sp-extra"); });
-    var col = speciesListSort.col;   // "" = sort OFF → natural ranking (model probability, desc)
+    var sortSpec = override || speciesListSort;
+    var col = sortSpec.col;   // "" = sort OFF → natural ranking (model probability, desc)
     rows.sort(function (a, b) {
       var ka, kb;
       if (!col) return (+b.getAttribute("data-prob") || 0) - (+a.getAttribute("data-prob") || 0);
@@ -2175,7 +2178,7 @@
         kb = (agg[keyB] && agg[keyB].count) || 0;
       }
       var cmp = ka < kb ? -1 : ka > kb ? 1 : 0;
-      return speciesListSort.dir === "asc" ? cmp : -cmp;
+      return sortSpec.dir === "asc" ? cmp : -cmp;
     });
     var frag = document.createDocumentFragment();
     rows.forEach(function (tr) { frag.appendChild(tr); });
@@ -17322,8 +17325,7 @@
     if (spMissingBtn) spMissingBtn.addEventListener("click", function (e) {
       e.stopPropagation();
       spShowMissing = !spShowMissing; window.GeoState.save({ spShowMissing: spShowMissing });
-      this.classList.toggle("on", spShowMissing);
-      applyAgeFilter();
+      renderSpControls();   // relabels the button ("?" ↔ "!") and rebuilds the body (table rows / Images cards)
     });
     var vtBtn = document.getElementById("viewtoggle-btn");
     if (vtBtn) vtBtn.addEventListener("click", function () { if (onListView()) goToMapView(); else showListView(); });
@@ -20497,7 +20499,10 @@
       rec.style.display = "none"; tbl.style.display = "";
       applyAgeFilter();
       refreshSpDistCells();   // fresh distances before sorting by them
-      if (speciesListSort.col) sortSpeciesList();
+      // Images + [?]: the model's commonest species for the point, interleaved with the
+      // observed ones, commonest first — regardless of the table's sort (restored on [!]).
+      if (spLayout === "gallery" && spShowMissing) sortSpeciesList({ col: "", dir: "" });
+      else if (speciesListSort.col) sortSpeciesList();
       if (spLayout === "gallery") {
         tbl.style.display = "none"; rec.style.display = "";
         rec.innerHTML = buildSpGalleryHtml();
@@ -20585,10 +20590,13 @@
       var showSci = sci && !(link && link.textContent.trim() === sci);   // no "(sci)" when the name already IS the sci
       var photoLink = !!key && isBirdKey(key);   // Macaulay Library is birds-only (as in the species menu)
       var probLink = !!key && !!labelsByKey[key];   // model species only: the Migration view / year curve need the model
+      var predicted = !!key && !tr.classList.contains("sp-has-det") && !tr.classList.contains("sp-extra");   // [?] mode: a model prediction with no records here
       function cell(label, el, attrs) { var v = el ? el.textContent.trim() : ""; return v ? '<span class="spg-m' + (attrs ? " " + attrs.cls : "") + '"' + (attrs ? attrs.a : "") + '><span class="spg-k">' + escapeHtml(label) + "</span> " + escapeHtml(v) + "</span>" : ""; }
       var probAttrs = probLink ? { cls: "spg-prob", a: ' role="button" title="' + escapeHtml(t("spg.probTip")) + '"' } : null;
-      return '<div class="spg-card" data-sci="' + escapeHtml(sci) + '" data-key="' + escapeHtml(key) + '" data-date="' + escapeHtml(lastDate) + '">' +
-        '<div class="spg-img' + (photoLink ? ' spg-img-link" role="button" title="' + escapeHtml(t("spg.photosTip")) : '"') + '"><span class="spg-none" style="display:none">' + escapeHtml(t("spg.noImage")) + "</span></div>" +
+      return '<div class="spg-card' + (predicted ? " spg-pred" : "") + '" data-sci="' + escapeHtml(sci) + '" data-key="' + escapeHtml(key) + '" data-date="' + escapeHtml(lastDate) + '">' +
+        '<div class="spg-img' + (photoLink ? ' spg-img-link" role="button" title="' + escapeHtml(t("spg.photosTip")) : '"') + '">' +
+          (predicted ? '<span class="spg-tag">' + escapeHtml(t("spg.predicted")) + "</span>" : "") +
+          '<span class="spg-none" style="display:none">' + escapeHtml(t("spg.noImage")) + "</span></div>" +
         '<div class="spg-name"><span class="spg-nm">' + (dot ? dot.outerHTML : "") + (link ? link.outerHTML : "") +
           (showSci ? ' <span class="spg-sci">(' + (sciEl ? sciEl.outerHTML : escapeHtml(sci)) + ")</span>" : "") + "</span>" + subBtn + "</div>" +
         '<div class="spg-meta">' + cell(lbl.total, nd) + cell(lbl.last, last) + cell(lbl.dist, dist) + cell(lbl.prob, prob, probAttrs) + "</div>" +
@@ -20748,8 +20756,15 @@
     }
     // The observation filter bar (day/date · mode · observer) applies to the detailed
     // record layouts; the prediction table keeps its own flag columns + age cycle.
+    // [?] (table + Images layouts; the observation list has no predictions): also show the
+    // species the model predicts here. While on it reads [!] — tap to go back to observed only.
     var mb = document.getElementById("sp-missing-btn");
-    if (mb) { mb.classList.toggle("on", spShowMissing); mb.style.display = spLayout === "table" ? "" : "none"; }   // predictions only exist in the table layout
+    if (mb) {
+      mb.classList.toggle("on", spShowMissing);
+      mb.textContent = spShowMissing ? "!" : "?";
+      mb.title = t(spShowMissing ? "sp.missingOff" : "sp.missingBtn"); mb.setAttribute("aria-label", mb.title);
+      mb.style.display = (spLayout === "table" || spLayout === "gallery") ? "" : "none";
+    }
     if (spLayout === "table" || spLayout === "gallery") {
       // Column-header panels (Species / Total / Last / Prob) open inline in
       // #sp-filters-wrap, between the header and the first rows. No toggle button.
