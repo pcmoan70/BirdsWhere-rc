@@ -17973,6 +17973,11 @@
   SEASON_META[SEASON_ARRIVING] = { g: "↑", c: "#2e9e5b", k: "season.arriving" };
   SEASON_META[SEASON_PEAK] = { g: "●", c: "var(--brand, #3a7bd5)", k: "season.peak" };
   SEASON_META[SEASON_LEAVING] = { g: "↓", c: "#e0872a", k: "season.leaving" };
+  // The Yr-peak cell: the species' yearly top probability at the point, as number + bar.
+  function ytopCellHtml(s) {
+    var pk = Math.round(s.peak * 100);
+    return '<span class="prob-num">' + pk + '%</span><div class="prob-bar" style="width:' + pk + "%;background:" + probHueColor(s.peak) + '"></div>';
+  }
   function seasonCellHtml(s) {
     if (!s) return "";
     var meta = SEASON_META[s.phase], pct = Math.round(s.ratio * 100);
@@ -18025,7 +18030,7 @@
         var s = byKey[td.getAttribute("data-key")]; if (!s) return;
         td.innerHTML = seasonCellHtml(s);
         var yt = td.parentNode && td.parentNode.querySelector("td.sp-ytop");
-        if (yt) { var pk = Math.round(s.peak * 100); yt.innerHTML = '<span class="prob-num">' + pk + "%</span><div class=\"prob-bar\" style=\"width:" + pk + "%;background:" + probHueColor(s.peak) + '"></div>'; }
+        if (yt) yt.innerHTML = ytopCellHtml(s);
       });
     }).catch(function () {});
   }
@@ -20599,6 +20604,7 @@
         tbl.style.display = "none"; rec.style.display = "";
         rec.innerHTML = buildSpGalleryHtml();
         wireSpGallery(rec);
+        fillSpGalleryBars(rec);
       }
     } else {
       tbl.style.display = "none"; rec.style.display = "";
@@ -20675,6 +20681,7 @@
       var sciEl = sciTd ? sciTd.querySelector(".sci-link") : null;   // the table's clickable sci (→ Family menu), reused as-is
       var dot = tr.querySelector(".sp-cdot, .det-sw");
       var nd = tr.querySelector(".det-nd"), last = tr.querySelector(".sp-last"), dist = tr.querySelector(".sp-dist"), prob = tr.querySelector(".prob-num");
+      var probTd = tr.querySelector("td.prob-cell");   // number + coloured bar, cloned as-is
       var key = link ? link.getAttribute("data-key") || "" : "";
       var lastChip = last ? last.querySelector("[data-date]") : null, lastDate = lastChip ? lastChip.getAttribute("data-date") || "" : "";
       var subBtn = (key && tr.classList.contains("sp-has-det"))   // only rows with records have a sub-list to open
@@ -20684,14 +20691,21 @@
       var probLink = !!key && !!labelsByKey[key];   // model species only: the Migration view / year curve need the model
       var predicted = !!key && !tr.classList.contains("sp-has-det") && !tr.classList.contains("sp-extra");   // [?] mode: a model prediction with no records here
       function cell(label, el, attrs) { var v = el ? el.textContent.trim() : ""; return v ? '<span class="spg-m' + (attrs ? " " + attrs.cls : "") + '"' + (attrs ? attrs.a : "") + '><span class="spg-k">' + escapeHtml(label) + "</span> " + escapeHtml(v) + "</span>" : ""; }
-      var probAttrs = probLink ? { cls: "spg-prob", a: ' role="button" title="' + escapeHtml(t("spg.probTip")) + '"' } : null;
+      // Prob · Season · Yr peak as bar cells on one line (the table's / observation list's cells);
+      // Season + Yr peak are filled once the point's 48-week prediction is in (fillSpGalleryBars).
+      var barsRow = (probLink && probTd) ? '<div class="spg-bars">' +
+          '<span class="spg-bar prob-cell spg-prob" role="button" title="' + escapeHtml(t("spg.probTip")) + '"><span class="spg-k">' + escapeHtml(t("th.probAbbr")) + "</span>" + probTd.innerHTML + "</span>" +
+          '<span class="spg-bar season-cell sp-season" data-key="' + escapeHtml(key) + '" role="button" title="' + escapeHtml(t("th.seasonHint")) + '"><span class="spg-k">' + escapeHtml(t("th.season")) + "</span></span>" +
+          '<span class="spg-bar prob-cell sp-ytop" data-key="' + escapeHtml(key) + '" role="button"><span class="spg-k">' + escapeHtml(t("th.ytop")) + "</span></span>" +
+        "</div>" : "";
       return '<div class="spg-card' + (predicted ? " spg-pred" : "") + '" data-sci="' + escapeHtml(sci) + '" data-key="' + escapeHtml(key) + '" data-date="' + escapeHtml(lastDate) + '">' +
         '<div class="spg-img' + (photoLink ? ' spg-img-link" role="button" title="' + escapeHtml(t("spg.photosTip")) : '"') + '">' +
           (predicted ? '<span class="spg-tag">' + escapeHtml(t("spg.predicted")) + "</span>" : "") +
           '<span class="spg-none" style="display:none">' + escapeHtml(t("spg.noImage")) + "</span></div>" +
         '<div class="spg-name"><span class="spg-nm">' + (dot ? dot.outerHTML : "") + (link ? link.outerHTML : "") +
           (showSci ? ' <span class="spg-sci">(' + (sciEl ? sciEl.outerHTML : escapeHtml(sci)) + ")</span>" : "") + "</span>" + subBtn + "</div>" +
-        '<div class="spg-meta">' + cell(lbl.total, nd) + cell(lbl.last, last) + cell(lbl.dist, dist) + cell(lbl.prob, prob, probAttrs) + "</div>" +
+        '<div class="spg-meta">' + cell(lbl.total, nd) + cell(lbl.last, last) + cell(lbl.dist, dist) + (barsRow ? "" : cell(lbl.prob, prob)) + "</div>" +
+        barsRow +
         '<div class="spg-credit"></div>' +
       "</div>";
     }).join("") + "</div>";
@@ -20715,6 +20729,24 @@
       }
       return true;
     });
+  }
+  // Season + Yr-peak bars on the cards, from the point's cached 48-week prediction (the same
+  // classifySeason the table's Season column and the observation list's cells use).
+  function fillSpGalleryBars(rec) {
+    if (!currentSpView || !isFinite(+currentSpView.lat) || !isFinite(+currentSpView.lon)) return;
+    var lat = +currentSpView.lat, lon = +currentSpView.lon;
+    var weekEl = document.getElementById("week-select"), week = weekEl ? +weekEl.value : weekOfToday();
+    predictAllWeeks(lat, lon).then(function (cell) {
+      if (!document.body.contains(rec)) return;   // re-rendered meanwhile
+      var idxMap = ensureSeasonKeyIdx();
+      Array.prototype.forEach.call(rec.querySelectorAll(".spg-bar.sp-season[data-key]"), function (el) {
+        var key = el.getAttribute("data-key"), idx = idxMap[key]; if (idx == null) return;
+        var s = classifySeason(cell, idx, week), k = el.querySelector(".spg-k");
+        el.innerHTML = (k ? k.outerHTML : "") + seasonCellHtml(s);
+        var yt = el.parentNode && el.parentNode.querySelector(".spg-bar.sp-ytop"), yk = yt && yt.querySelector(".spg-k");
+        if (yt) yt.innerHTML = (yk ? yk.outerHTML : "") + ytopCellHtml(s);
+      });
+    }).catch(function () {});
   }
   var spGalleryObs = null;
   // The card's ☰ button: switch to the Table layout with that species' record sub-list
@@ -20806,7 +20838,7 @@
         if (e.target.closest(".spg-img-link")) {   // the photo → Macaulay Library, ±1 month around the last sighting
           e.preventDefault(); openExternal(macaulayUrl(key, card.getAttribute("data-sci"), date)); return;
         }
-        if (e.target.closest(".spg-prob")) { e.preventDefault(); hideSpgTip(); showSpeciesMigration(key, date); }
+        if (e.target.closest(".spg-prob, .spg-bar")) { e.preventDefault(); hideSpgTip(); showSpeciesMigration(key, date); }   // any of the three bars → Migration view
       });
     }
     function fill(card) {

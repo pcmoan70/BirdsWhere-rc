@@ -4395,7 +4395,15 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .spg-sub { flex: 0 0 auto; margin-left: auto; width: 26px; height: 26px; padding: 0; border: 1px solid var(--border, #d7ded9); border-radius: 6px; background: var(--surface-2, #f2f6f4); color: var(--ink-muted, #555); font-size: 13px; line-height: 1; cursor: pointer; }   /* ☰ → this species' record sub-list (Table layout) */
 .spg-sub:hover { background: var(--brand-soft, #e3efe9); color: var(--ink); }
 .spg-img-link { cursor: pointer; }                                                    /* photo → Macaulay Library (birds) */
-.spg-prob { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 2px; }   /* → Migration view; hover = year curve */
+/* Prob · Season · Yr peak as three bar cells on one line (the lists' .prob-cell / .season-cell
+   markup on spans); any of them → Migration view, hover = the year curve. */
+.spg-bars { display: flex; gap: 3px; padding: 4px 6px 2px; }
+.spg-bar { flex: 1 1 auto; min-width: 0; padding: 2px 3px; font-size: 9.5px; line-height: 1.5; border-radius: 4px; overflow: hidden; white-space: nowrap; background: var(--surface-2, #eef3f1); cursor: pointer; letter-spacing: -0.01em; }   /* widths follow the content (Season is the widest) */
+.spg-bar.prob-cell, .spg-bar.season-cell { min-width: 0; padding: 2px 3px; }   /* the table cells' widths don't apply here */
+.spg-bar .spg-k { position: relative; z-index: 1; color: var(--ink-muted, #777); margin-right: 2px; }
+.spg-meta:empty { display: none; }
+.spg-bar .prob-bar, .spg-bar .season-bar { border-radius: 4px; }
+.spg-bar .season-glyph { margin-right: 1px; }
 .spg-probtip {                                                                        /* hover preview: the Timeline's 48-week bars */
   position: fixed; z-index: 6000; pointer-events: none; width: 290px; max-width: calc(100vw - 8px); box-sizing: border-box;
   background: var(--surface, #fff); color: var(--ink); border: 1px solid var(--border, #d7ded9); border-radius: 8px;
