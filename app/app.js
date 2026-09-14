@@ -9947,6 +9947,98 @@
   // similar same-family species — ranked by the model's probability at the current
   // point so realistic local confusions surface first. Same drill-in as the family
   // browser: each partner is a button into its own species menu.
+  // Score = (0.25·Match + 0.75·misID) × Here. Match is the fused morphology weight
+  // (0-1); misID is the % share (0-100) → /100; Here is local probability (0-1).
+  // Either input absent is taken as 0 (a species with no iNat data leans on Match).
+  function confScore(w) { return (0.25 * w.w + 0.75 * (w.mid / 100)) * w.p; }
+  // The ranked look-alikes of a species: [{ m: label, w: Match, mid: misID %, p: Here }]
+  // by Score (most likely confusion first) when a point is open, else by Match; `out`
+  // is that week's prediction at the point (null without one). Shared by the
+  // Confusion-species table and its images view.
+  async function confusionRanked(key) {
+    var map = await ensureConfusion();
+    var entries = (map && map[key]) || [];
+    var members = entries.map(function (e) { var l = labelsByKey[e.c]; return l ? { m: l, w: e.w, mid: e.mid || 0 } : null; }).filter(Boolean);
+    if (!members.length) return { none: true, arr: [], out: null };
+    var pt = (currentSpView && isFinite(+currentSpView.lat) && isFinite(+currentSpView.lon)) ? currentSpView : null;
+    var out = null;
+    if (pt) { try { out = await predictWeek(+pt.lat, +pt.lon, +document.getElementById("week-select").value); } catch (e) {} }
+    var arr = members.map(function (mm) { return { m: mm.m, w: mm.w, mid: mm.mid, p: out ? (out[mm.m.index] || 0) : -1 }; });
+    if (out) {
+      arr = arr.filter(function (w) { return w.p > 0; });                   // occurs-here only (0% hidden)
+      arr.sort(function (a, b) { return confScore(b) - confScore(a); });    // by Score, most likely-confusion first
+    } else {
+      arr.sort(function (a, b) { return b.w - a.w; });                      // no point: by Match (confusion score)
+    }
+    return { arr: arr, out: out };
+  }
+  // "Confusion species (images)": the same ranked look-alikes as picture cards, left →
+  // right by Score (Match without a point) and wrapping onto further rows, the species
+  // itself first as the reference. Each card: photo (credited), name, scientific name, Match · misID · Here ·
+  // Score; tapping a look-alike opens the compare card, as a table row does.
+  async function openConfusionImages(key, x, y) {
+    var lbl = key && labelsByKey[key]; if (!lbl) return;
+    var el = openAnchoredMenu("detrow-menu family-menu conf-menu conf-img-menu");
+    el.style.maxHeight = "min(80vh,640px)"; el.style.overflowY = "auto";
+    el.style.width = "min(97vw,900px)";
+    var hdr = document.createElement("div");
+    hdr.className = "detrow-menu-hdr detrow-menu-name";
+    hdr.textContent = t("menu.confusionImg");
+    el.appendChild(hdr);
+    var closeBtn = document.createElement("button");
+    closeBtn.type = "button"; closeBtn.className = "conf-close"; closeBtn.textContent = "×";
+    closeBtn.setAttribute("aria-label", "Close");
+    closeBtn.addEventListener("click", function (e) { e.stopPropagation(); closeAnchoredMenu(); });
+    el.appendChild(closeBtn);
+    var wait = document.createElement("div"); wait.className = "detrow-menu-hdr"; wait.textContent = "…";
+    el.appendChild(wait); positionAnchoredMenu(el, x, y);
+    var rk = await confusionRanked(key);
+    if (_anchMenuEl !== el) return;
+    if (rk.none) { wait.textContent = t("confusion.none"); positionAnchoredMenu(el, x, y); return; }
+    var out = rk.out, arr = rk.arr;
+    if (!arr.length) { wait.textContent = t("confusion.noneHere"); positionAnchoredMenu(el, x, y); return; }
+    if (wait.parentNode) wait.parentNode.removeChild(wait);
+    var L = { match: t("confusion.colScore"), misid: t("confusion.colMisid"), here: t("confusion.colHere"), score: t("confusion.colCombined") };
+    function row(cls, label, txt, pct, color, tip) {
+      return '<div class="cfi-row ' + cls + '" title="' + escapeHtml(tip) + '"><i class="cfi-bar" style="width:' + Math.max(0, Math.min(100, pct)).toFixed(0) + '%' + (color ? ";background:" + color : "") + '"></i>' +
+        '<span class="cfi-k">' + escapeHtml(label) + '</span><span class="cfi-v">' + escapeHtml(txt) + "</span></div>";
+    }
+    function pctTxt(p) { var v = p * 100; return v >= 0.5 ? Math.round(v) + "%" : "<1%"; }
+    function card(m, w, isBase) {
+      var nm = speciesName(m), here = out ? (isBase ? (out[m.index] || 0) : w.p) : -1;
+      var sv = (out && !isBase) ? confScore(w) * 100 : -1;
+      return '<div class="cfi-card' + (isBase ? " cfi-base" : "") + '" data-key="' + escapeHtml(m.key) + '" data-sci="' + escapeHtml(m.sci) + '">' +
+        '<div class="spg-img"><span class="spg-none" style="display:none">' + escapeHtml(t("spg.noImage")) + "</span></div>" +
+        '<div class="cfi-name">' + (isBase ? '<span class="cfi-tag">' + escapeHtml(t("confusion.base")) + "</span>" : "") + escapeHtml(nm) + "</div>" +
+        '<div class="cfi-sci">' + escapeHtml(m.sci) + "</div>" +
+        '<div class="cfi-stats">' +
+          row("cfi-match", L.match, isBase ? "—" : String(Math.round(w.w * 100)), isBase ? 0 : w.w * 100, "", t("confusion.tipMatch")) +
+          row("cfi-misid", L.misid, (!isBase && w.mid > 0) ? w.mid + "%" : "—", (!isBase && w.mid > 0) ? Math.max(6, w.mid) : 0, "", t("confusion.tipMisid")) +
+          row("cfi-here", L.here, here >= 0 ? pctTxt(here) : "—", here >= 0 ? Math.max(4, here * 100) : 0, here >= 0 ? probHueColor(here) : "", t("confusion.tipHere")) +
+          row("cfi-score", L.score, sv >= 0 ? (sv >= 0.5 ? String(Math.round(sv)) : (sv > 0 ? "<1" : "0")) : "—", sv >= 0 ? Math.max(2, sv) : 0, sv >= 0 ? probHueColor(sv / 100) : "", t("confusion.tipScore")) +
+        "</div>" +
+        '<div class="spg-credit"></div>' +
+      "</div>";
+    }
+    var strip = document.createElement("div"); strip.className = "cfi-strip";
+    strip.innerHTML = card(lbl, null, true) + arr.map(function (w) { return card(w.m, w, false); }).join("");
+    el.appendChild(strip);
+    var legend = document.createElement("div"); legend.className = "conf-legend";
+    legend.textContent = t("confusion.legend", { match: L.match, misid: L.misid, here: L.here, score: L.score });
+    el.appendChild(legend);
+    positionAnchoredMenu(el, x, y);
+    Array.prototype.forEach.call(strip.querySelectorAll(".cfi-card"), function (c) {
+      loadSpPhoto(c.querySelector(".spg-img"), c.querySelector(".spg-none"), c.querySelector(".spg-credit"), c.getAttribute("data-sci"));
+    });
+    strip.addEventListener("click", function (e) {
+      if (e.target.closest("a")) return;   // the photo credit link
+      var c = e.target.closest(".cfi-card"); if (!c || c.classList.contains("cfi-base")) return;
+      var pk = c.getAttribute("data-key"), w = null;
+      for (var i = 0; i < arr.length; i++) if (arr[i].m.key === pk) { w = arr[i]; break; }
+      if (!w) return;
+      openTraitCompare(key, pk, speciesName(lbl), speciesName(w.m), x, y, { match: w.w, mid: w.mid, here: out ? w.p : null, score: out ? confScore(w) : null });
+    });
+  }
   async function openConfusionMenu(key, x, y) {
     var lbl = key && labelsByKey[key]; if (!lbl) return;
     var el = openAnchoredMenu("detrow-menu family-menu conf-menu");
@@ -9964,30 +10056,10 @@
     positionAnchoredMenu(el, x, y);
     var wait = document.createElement("div"); wait.className = "detrow-menu-hdr"; wait.textContent = "…";
     el.appendChild(wait); positionAnchoredMenu(el, x, y);
-    var map = await ensureConfusion();
+    var rk = await confusionRanked(key);
     if (_anchMenuEl !== el) return;                          // menu closed while loading
-    var entries = (map && map[key]) || [];
-    var members = entries.map(function (e) { var l = labelsByKey[e.c]; return l ? { m: l, w: e.w, mid: e.mid || 0 } : null; }).filter(Boolean);
-    if (!members.length) {
-      wait.textContent = t("confusion.none"); positionAnchoredMenu(el, x, y); return;
-    }
-    var pt = (currentSpView && isFinite(+currentSpView.lat) && isFinite(+currentSpView.lon)) ? currentSpView : null;
-    var out = null;
-    if (pt) {
-      try { out = await predictWeek(+pt.lat, +pt.lon, +document.getElementById("week-select").value); } catch (e) {}
-      if (_anchMenuEl !== el) return;
-    }
-    var arr = members.map(function (mm) { return { m: mm.m, w: mm.w, mid: mm.mid, p: out ? (out[mm.m.index] || 0) : -1 }; });
-    // Score = (0.25·Match + 0.75·misID) × Here. Match is the fused morphology weight
-    // (0-1); misID is the % share (0-100) → /100; Here is local probability (0-1).
-    // Either input absent is taken as 0 (a species with no iNat data leans on Match).
-    function confScore(w) { return (0.25 * w.w + 0.75 * (w.mid / 100)) * w.p; }
-    if (out) {
-      arr = arr.filter(function (w) { return w.p > 0; });                   // occurs-here only (0% hidden)
-      arr.sort(function (a, b) { return confScore(b) - confScore(a); });    // by Score, most likely-confusion first
-    } else {
-      arr.sort(function (a, b) { return b.w - a.w; });                      // no point: by Match (confusion score)
-    }
+    if (rk.none) { wait.textContent = t("confusion.none"); positionAnchoredMenu(el, x, y); return; }
+    var out = rk.out, arr = rk.arr;
     if (!arr.length) { wait.textContent = t("confusion.noneHere"); positionAnchoredMenu(el, x, y); return; }
     if (wait.parentNode) wait.parentNode.removeChild(wait);
     // Columns: species · Match (fused confusability) · misID (iNaturalist human-confusion
@@ -10125,6 +10197,13 @@
           });
           confBtn.title = t("confusion.tip");
           el.appendChild(confBtn);
+          var confImgBtn = drmBtn(t("menu.confusionImg"), function () {
+            var r = confImgBtn.getBoundingClientRect();
+            closeDetRowMenu();
+            openConfusionImages(key, Math.round(r.left), Math.round(r.top));
+          });
+          confImgBtn.title = t("confusion.tip");
+          el.appendChild(confImgBtn);
         }
       }
       var moreBtn = drmBtn(t("menu.recent"), function () {
@@ -20367,6 +20446,26 @@
       "</div>";
     }).join("") + "</div>";
   }
+  // Load a species' photo into a card: the picture into `box`, the author/licence line
+  // into `cr` (linked to the Commons file page), or reveal `none`. Resolves true when
+  // a picture was found, false when there is none, null on network trouble (not
+  // remembered, so a later call retries).
+  function loadSpPhoto(box, none, cr, sci) {
+    if (!sci) { if (none) none.style.display = ""; return Promise.resolve(false); }
+    return spImageFor(sci).then(function (r) {
+      if (!r || r.none) { if (none) none.style.display = ""; return (r && r.tmp) ? null : false; }
+      var img = document.createElement("img"); img.alt = sci; img.decoding = "async";
+      img.crossOrigin = "anonymous";   // CORS load → the SW's species-images cache stores a real (sized) response, not an opaque one
+      img.src = r.t;
+      img.addEventListener("error", function () { img.remove(); if (none) none.style.display = ""; });
+      box.insertBefore(img, box.firstChild);
+      if (cr) {
+        var page = "https://" + (r.h || "commons.wikimedia.org") + "/wiki/File:" + encodeURIComponent((r.f || "").replace(/ /g, "_"));
+        cr.innerHTML = '<a href="' + escapeHtml(page) + '" target="_blank" rel="noopener">' + escapeHtml((r.a ? "© " + r.a : "Wikimedia Commons") + (r.l ? " · " + r.l : "")) + "</a>";
+      }
+      return true;
+    });
+  }
   var spGalleryObs = null;
   // The card's ☰ button: switch to the Table layout with that species' record sub-list
   // expanded, scrolled into view and flashed (same reveal as tapping a rarity tile).
@@ -20442,20 +20541,8 @@
     }
     function fill(card) {
       if (card._spgDone) return; card._spgDone = true;
-      var sci = card.getAttribute("data-sci"), box = card.querySelector(".spg-img"), none = card.querySelector(".spg-none"), cr = card.querySelector(".spg-credit");
-      if (!sci) { if (none) none.style.display = ""; return; }
-      spImageFor(sci).then(function (r) {
-        if (!r || r.none) { if (none) none.style.display = ""; if (r && r.tmp) card._spgDone = false; return; }
-        var img = document.createElement("img"); img.alt = sci; img.decoding = "async";
-        img.crossOrigin = "anonymous";   // CORS load → the SW's species-images cache stores a real (sized) response, not an opaque one
-        img.src = r.t;   // gated by the observer already — load as soon as resolved
-        img.addEventListener("error", function () { img.remove(); if (none) none.style.display = ""; });
-        box.insertBefore(img, box.firstChild);
-        if (cr) {
-          var page = "https://" + (r.h || "commons.wikimedia.org") + "/wiki/File:" + encodeURIComponent((r.f || "").replace(/ /g, "_"));
-          cr.innerHTML = '<a href="' + escapeHtml(page) + '" target="_blank" rel="noopener">' + escapeHtml((r.a ? "© " + r.a : "Wikimedia Commons") + (r.l ? " · " + r.l : "")) + "</a>";
-        }
-      });
+      loadSpPhoto(card.querySelector(".spg-img"), card.querySelector(".spg-none"), card.querySelector(".spg-credit"), card.getAttribute("data-sci"))
+        .then(function (ok) { if (ok === null) card._spgDone = false; });   // network trouble: retried when it scrolls in again
     }
     var cards = rec.querySelectorAll(".spg-card");
     // The first cards load at once (a first screen plus a little), the rest resolve as

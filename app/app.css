@@ -4391,6 +4391,25 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .spg-probtip .spg-pt-h { display: flex; justify-content: space-between; gap: 8px; font-size: var(--fs-xs); color: var(--ink-muted, #777); margin-bottom: 4px; }
 .spg-probtip .spg-pt-h b { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .spg-probtip .bc-bars { height: 44px; }
+/* Confusion species (images): the look-alikes as photo cards, left → right by Score, wrapping;
+   the species itself first (brand border). Shares the gallery's .spg-img / .spg-credit. */
+.cfi-strip { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 8px 6px; align-items: flex-start; }
+.cfi-card { flex: 0 0 150px; width: 150px; background: var(--surface, #fff); border: 1px solid var(--border, #e0e6e3); border-radius: 10px; overflow: hidden; cursor: pointer; font-weight: 400; }
+.cfi-card:hover { background: var(--hover, #eef4f2); }
+.cfi-card.cfi-base { cursor: default; border-color: var(--brand, #2e8b74); box-shadow: inset 0 0 0 1px var(--brand, #2e8b74); }
+.cfi-card.cfi-base:hover { background: var(--surface, #fff); }
+.cfi-name { padding: 5px 7px 0; font-size: var(--fs-s); font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
+.cfi-tag { display: block; font-size: 10px; font-weight: 600; color: var(--brand, #2e8b74); text-transform: uppercase; letter-spacing: .03em; }
+.cfi-sci { padding: 0 7px; font-size: var(--fs-xs); font-style: italic; color: var(--ink-muted, #777); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cfi-stats { padding: 4px 7px 2px; display: grid; gap: 2px; }
+.cfi-row { position: relative; display: flex; justify-content: space-between; gap: 6px; padding: 0 3px; font-size: var(--fs-xs); line-height: 1.35; border-radius: 3px; overflow: hidden; }
+.cfi-row .cfi-bar { position: absolute; left: 0; top: 0; bottom: 0; opacity: .28; border-radius: 3px; background: var(--brand, #2e8b74); }   /* Match: brand tint (as the table) */
+.cfi-row.cfi-misid .cfi-bar { background: #8a63d2; opacity: .30; }                                                                      /* misID: violet (as the table) */
+.cfi-row span { position: relative; }
+.cfi-k { color: var(--ink-muted, #777); }
+.cfi-v { font-variant-numeric: tabular-nums; }
+.cfi-card .spg-credit { padding: 2px 7px 6px; }
+@media (max-width: 400px) { .cfi-card { flex-basis: calc(50% - 4px); width: calc(50% - 4px); } }   /* two per row on narrow phones */
 .spg-meta { padding: 4px 8px 2px; display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: var(--fs-xs); color: var(--ink); }
 .spg-k { color: var(--ink-muted, #777); }
 .spg-credit { padding: 0 8px 6px; font-size: 10px; line-height: 1.3; color: var(--ink-faint, #9aa5a1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-height: 12px; }

@@ -650,6 +650,11 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
   (habitat, trophic niche, lifestyle, migration) — matching traits tinted green, differing ones amber — and
   both birds' 48-week presence curves on **one shared-scale chart** so
   their seasons line up directly.
+- **Confusion species (images)** — the next menu entry shows the same ranked look-alikes as **photo
+  cards**: the species itself first (green border, "This species"), then left to right by Score, wrapping
+  onto further rows (two per row on narrow phones). Each card carries the Wikipedia/Commons lead photo
+  with its credit, the name, the scientific name and **Match · misID · Here · Score** as small bars;
+  tapping a look-alike opens the same compare card.
 
 ### How the look-alike model works
 

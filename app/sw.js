@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1699";
+var VERSION = "v1700";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• Species menu: a new “Confusion species (images)” entry shows the look-alikes as photo cards — the bird itself first, then the most likely confusions left to right — with Match, misID, Here and Score under each picture; tap a card to compare the two birds.",
   "• Images layout: tap a bird’s photo for its Macaulay Library pictures around the month it was last seen, tap the Probability for the Migration view (hover it on a computer for the year curve), and use the ☰ button to jump to the species’ records in the table. The scientific name follows the name in parentheses and opens the Family menu. Photos are now kept on the device (Settings → Storage → Species photos shows the size and clears them). Also fixed: an expanded record list no longer collapses when you return from the map to the list.",
   "• New Images layout for the species list: pick “Images” in the layout dropdown for a card per species — photo, name, Total, Last seen, Distance and Probability — in the list’s current order. Photos come from Wikipedia / Wikimedia Commons and are credited to their author under each picture.",
   "• Older browsers (Safari before 16.4, e.g. on older Macs) could not start the model — “WebAssembly SIMD is not supported”. They now get a fallback runtime automatically. The How-it-works panel documents all ten map overlays, in every language.",
   "• iPhone: the app no longer asks for your location twice at start — all position requests now go through one shared request, and a fix from the last two minutes is reused.",
-  "• Language: the picker now starts with an italic (System) entry that follows your device language (English when unsupported) — the default for everyone who never chose a language. The Radar (Migration Aloft) link in the point popup is now behind Settings → Experimental.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
