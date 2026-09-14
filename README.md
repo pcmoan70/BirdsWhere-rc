@@ -543,6 +543,12 @@ view**.
 Open the app straight onto a point's observations — handy as a home-screen bookmark or a link from
 another app. Options are `;`- or `&`-separated `key=value` pairs.
 
+The shortcut runs **once per launch**: as soon as its parameters are consumed they are removed from
+the address bar, so a reload — phones discard background tabs and reload them when you return — a
+restored tab, or a home-screen shortcut saved from that page is a normal app open that restores the
+view you left (no new location prompt, no new fetch). A device that never chose a list layout keeps
+the link's `layout` as its default. (Shared-link parameters `lat`/`lon`/`s` are not stripped.)
+
 **Parameters**
 
 - **`location`** — `here` (geolocate to your current position) **or** explicit `lat,lon` coordinates

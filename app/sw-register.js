@@ -49,7 +49,14 @@ if ("serviceWorker" in navigator) {
     }
   };
   window.addEventListener("load", function () {
+    // controllerchange = a worker took over the page. After SWUpdate.apply() (skipWaiting)
+    // that is the update → reload onto it. On the very FIRST visit the freshly installed
+    // worker also claims the page (clients.claim) — no reload then: the page already runs
+    // this same version, and reloading would cut short whatever the open was doing (a
+    // QR-poster launch's location + fetch, whose one-shot URL parameters are gone by then).
+    var hadController = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener("controllerchange", function () {
+      if (!hadController) { hadController = true; return; }   // first install: keep the page
       if (SWUpdate._reloaded) return; SWUpdate._reloaded = true; window.location.reload();
     });
 

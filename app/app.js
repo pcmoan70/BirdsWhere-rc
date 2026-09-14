@@ -5643,10 +5643,26 @@
   // Shortcut URL: ?here=1 opens the per-point species list at the device's
   // current GPS position on load. Skips the point-chooser popup that a normal
   // map click would show — the user explicitly asked for the species list.
+  // The one-shot shortcut parameters (location / here / radius / days / skip / show /
+  // sortby / layout / from) are consumed at boot, then dropped from the address bar: a
+  // reload — phones discard background tabs and reload them when you come back — or a
+  // home-screen shortcut saved from that page is then a normal app open, which restores
+  // the session as you left it instead of re-running the shortcut (new location prompt,
+  // new fetch). Dev flags (nosw, legacyort) and shared-link parameters stay.
+  var SHORTCUT_PARAMS = ["location", "here", "radius", "days", "skip", "show", "sortby", "layout", "from"];
+  function stripShortcutParams() {
+    try {
+      var keep = (location.search || "").replace(/^\?/, "").split(/[&;]/).filter(function (kv) {
+        return kv && SHORTCUT_PARAMS.indexOf(kv.split("=")[0].toLowerCase()) < 0;
+      });
+      history.replaceState(history.state, "", location.pathname + (keep.length ? "?" + keep.join("&") : "") + location.hash);
+    } catch (e) {}
+  }
   function maybeUrlAutoLocate() {
     var qs;
     try { qs = new URLSearchParams(window.location.search); } catch (e) { return; }
     if (qs.get("here") !== "1") return;
+    stripShortcutParams();   // one-shot: a reload must not locate + fetch again
     if (!navigator.geolocation || !map) { setStatus(t("status.locateError")); return; }
     var modeSel = document.getElementById("mode-select");
     if (modeSel && modeSel.value !== "list") {
@@ -5805,6 +5821,9 @@
     if (lay === "observation" || lay === "observations" || lay === "obs") spLayout = "observation";
     else if (lay === "table" || lay === "species") spLayout = "table";
     else if (lay === "images" || lay === "gallery" || lay === "pictures") spLayout = "gallery";
+    // A device that never chose a layout takes the link's as its initial default (so a
+    // restored tab after a poster launch still shows the Images cards); a saved choice wins.
+    if (lay && !window.GeoState.get("spLayout", null)) window.GeoState.save({ spLayout: spLayout });
     var sort = urlSortState(p.sortby);
     if (sort) {
       speciesListSort = sort;
@@ -5812,6 +5831,7 @@
     }
     updateSortIndicators();
     urlForceView = (p.show || "").toLowerCase() === "list" ? "list" : null;   // else map-first (also 'map')
+    stripShortcutParams();   // everything above is consumed — a reload must not run the shortcut again
 
     var modeSel = document.getElementById("mode-select");
     if (modeSel && modeSel.value !== "list") {
@@ -15784,13 +15804,9 @@
     try {
       if (posterCounted || !/[?&;]from=poster(?:[&;]|$)/.test(location.search)) return;
       posterCounted = true;
-      // Drop the tag from the address bar at once (the other parameters stay, so the
-      // shortcut still opens as intended): a reload, a restored tab or a home-screen
-      // shortcut saved from this page must not count as another scan.
-      try {
-        var q = location.search.replace(/([?&;])from=poster(?=[&;]|$)/, "$1").replace(/[?&;]+$/, "").replace(/^([?])[&;]+/, "$1");
-        history.replaceState(history.state, "", location.pathname + (q === "?" ? "" : q) + location.hash);
-      } catch (e) {}
+      // The tag leaves the address bar with the other shortcut parameters (see
+      // stripShortcutParams, run by the location handler right after this): a reload, a
+      // restored tab or a home-screen shortcut saved from this page never counts again.
       counterHit("poster-scans");   // live site only (countersLive)
     } catch (e) {}
   }
