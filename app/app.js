@@ -10607,8 +10607,12 @@
     el.innerHTML = "";
     var h = document.createElement("div"); h.className = "detrow-menu-hdr"; h.textContent = label; el.appendChild(h);
     el.appendChild(drmBtn(t("src.only", { src: label }), function () { closeDetRowMenu(); setDetSrcFilter(new Set([label])); }));
-    if (present.length > 1) el.appendChild(drmBtn(t("src.hide", { src: label }), function () {
-      closeDetRowMenu(); setDetSrcFilter(new Set(present.filter(function (s) { return s !== label; })));
+    // "Hide" removes this source from the CURRENTLY kept set (so hides accumulate — it used to
+    // rebuild the set from every present source, un-hiding the ones hidden before); never the last one.
+    var kept = detSrcFilter ? new Set(detSrcFilter) : new Set(present);
+    if (kept.has(label) && kept.size > 1) el.appendChild(drmBtn(t("src.hide", { src: label }), function () {
+      closeDetRowMenu(); kept.delete(label);
+      setDetSrcFilter(present.every(function (p) { return kept.has(p); }) ? null : kept);
     }));
     if (detSrcFilter) el.appendChild(drmBtn(t("src.all"), function () { closeDetRowMenu(); setDetSrcFilter(null); }));
     positionAnchoredMenu(el, x, y);
