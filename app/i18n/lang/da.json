@@ -470,6 +470,7 @@
   "splay.gallery": "Billeder",
   "spg.noImage": "Intet billede",
   "spg.offline": "Ingen internet – fotoet er ikke gemt",
+  "spg.photosDown": "Fotos kan ikke hentes lige nu – dem, der allerede er gemt på enheden, vises stadig.",
   "spg.records": "Vis observationer",
   "spg.predicted": "forudsagt",
   "spg.photosTip": "Fotos af arten (Macaulay Library) omkring den måned, den sidst blev set",

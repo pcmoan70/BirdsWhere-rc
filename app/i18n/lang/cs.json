@@ -470,6 +470,7 @@
   "splay.gallery": "Obrázky",
   "spg.noImage": "Bez obrázku",
   "spg.offline": "Bez internetu – fotografie není v mezipaměti",
+  "spg.photosDown": "Fotografie se teď nedají načíst – ty už uložené v zařízení se stále zobrazují.",
   "spg.records": "Zobrazit záznamy",
   "spg.predicted": "předpověď",
   "spg.photosTip": "Fotografie tohoto druhu (Macaulay Library) kolem měsíce posledního pozorování",

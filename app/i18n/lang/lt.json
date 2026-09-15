@@ -470,6 +470,7 @@
   "splay.gallery": "Nuotraukos",
   "spg.noImage": "Nuotraukos nėra",
   "spg.offline": "Nėra interneto – nuotrauka neįrašyta į talpyklą",
+  "spg.photosDown": "Šiuo metu nuotraukų įkelti nepavyksta – jau įrenginyje išsaugotos vis dar rodomos.",
   "spg.records": "Rodyti stebėjimus",
   "spg.predicted": "prognozuota",
   "spg.photosTip": "Šios rūšies nuotraukos (Macaulay Library) apie paskutinio stebėjimo mėnesį",

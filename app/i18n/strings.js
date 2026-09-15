@@ -771,6 +771,7 @@ window.GeoI18N = (function () {
         "splay.gallery": "Images",
         "spg.noImage": "No image",
         "spg.offline": "No internet \u2014 photo not cached",
+        "spg.photosDown": "Photos can't be loaded right now \u2014 the ones already saved on this device still show.",
         "spg.records": "Show records",
         "spg.predicted": "predicted",
         "spg.photosTip": "Photos of this species (Macaulay Library), around the month it was last seen",

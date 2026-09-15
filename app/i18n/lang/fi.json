@@ -470,6 +470,7 @@
   "splay.gallery": "Kuvat",
   "spg.noImage": "Ei kuvaa",
   "spg.offline": "Ei internetiä – kuvaa ei ole välimuistissa",
+  "spg.photosDown": "Kuvia ei voi nyt ladata – laitteelle jo tallennetut näkyvät edelleen.",
   "spg.records": "Näytä havainnot",
   "spg.predicted": "ennustettu",
   "spg.photosTip": "Kuvia tästä lajista (Macaulay Library) viimeisimmän havainnon kuukauden tienoilta",

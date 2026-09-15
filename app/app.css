@@ -4393,7 +4393,10 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .spg-none { font-size: var(--fs-xs); color: var(--ink-muted, #888); }
 .spg-wait { display: flex; align-items: center; gap: 10px; justify-content: center; padding: 28px 8px; }
 .spg-wait .spinner { margin: 0; }
-.spg-offline { color: var(--ink-muted, #888); opacity: .7; display: inline-flex; }   /* no internet / photo not cached */
+.spg-offline { color: var(--ink-muted, #888); opacity: .55; display: inline-flex; }   /* no internet / photo not cached */
+/* Said once above the cards when photo lookups are failing, instead of a wall of marks. */
+.spg-photonote { display: flex; align-items: center; gap: 8px; margin: 0 8px 8px; padding: 7px 10px; border: 1px solid var(--border, #d7ded9); border-radius: 8px; background: var(--surface-2, #f2f6f4); color: var(--ink-muted, #666); font-size: var(--fs-s); }
+.spg-photonote svg { flex: none; width: 18px; height: 18px; }
 .spg-card.spg-pred { border-style: dashed; }                                                         /* [?] mode: predicted here, no records */
 .spg-tag { position: absolute; top: 6px; left: 6px; z-index: 1; font-size: 10px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: #fff; background: rgba(15,27,36,.72); padding: 1px 6px; border-radius: 4px; }
 .spg-name { padding: 6px 8px 0; font-size: var(--fs-b); font-weight: 600; line-height: 1.25; display: flex; align-items: flex-start; gap: 6px; min-width: 0; }

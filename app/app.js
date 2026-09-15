@@ -20743,7 +20743,7 @@
   }
   function spImageFor(sci) {
     var c = spImgStore(); if (c[sci]) return Promise.resolve(c[sci]);
-    if (navigator.onLine === false) return Promise.resolve({ none: 1, tmp: 1 });   // offline: don't even ask (the SW would answer 503) — retried later
+    if (photoNetDown()) return Promise.resolve({ none: 1, tmp: 1 });   // offline / service down: don't even ask (the SW would answer 503) — retried later
     var title = encodeURIComponent(sci.trim().replace(/\s+/g, "_"));
     return fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + title, { headers: { Accept: "application/json" } })
       // Only a definite 404 means "no article" (remembered below); any other failure —
@@ -20824,15 +20824,49 @@
   // remembered, so a later call retries).
   // Offline (or the photo can't be reached and isn't in the on-device cache): a small
   // "no internet" mark instead of the "No image" text, and the card stays retryable.
+  // Photo lookups all fail the same way when the connection (or Wikimedia) is down: the
+  // service worker answers 503 and every card would mark itself and queue a doomed
+  // request. After a few failures in a row, stop asking, say it ONCE above the cards, and
+  // try again when the connection returns (or after a cooldown).
+  var spPhotoFailStreak = 0, spPhotoDown = false, spPhotoRetryTimer = null;
+  var SPG_FAIL_TRIP = 4, SPG_RETRY_MS = 30000;
+  function photoNetDown() { return navigator.onLine === false || spPhotoDown; }
+  function spPhotoNoteEl(show) {
+    var rec = document.getElementById("sp-records"); if (!rec) return;
+    var el = rec.querySelector(".spg-photonote");
+    if (!show) { if (el) el.remove(); return; }
+    if (el) return;
+    el = document.createElement("div"); el.className = "spg-photonote";
+    el.innerHTML = OFFLINE_ICO + "<span>" + escapeHtml(t("spg.photosDown")) + "</span>";
+    var gal = rec.querySelector(".sp-gallery");
+    if (gal) rec.insertBefore(el, gal); else rec.appendChild(el);
+  }
+  function spPhotoFailed() {
+    if (++spPhotoFailStreak < SPG_FAIL_TRIP || spPhotoDown) return;
+    spPhotoDown = true; spPhotoNoteEl(true);
+    clearTimeout(spPhotoRetryTimer);
+    spPhotoRetryTimer = setTimeout(function () { spPhotoDown = false; spPhotoFailStreak = 0; spPhotoNoteEl(false); }, SPG_RETRY_MS);
+  }
+  function spPhotoOk() {
+    spPhotoFailStreak = 0;
+    // A success means the service answers again — but keep the note while marked cards remain.
+    if (spPhotoDown) { spPhotoDown = false; clearTimeout(spPhotoRetryTimer); }
+  }
   var OFFLINE_ICO = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 8.5a16 16 0 0 1 20 0"/><path d="M5 12a11 11 0 0 1 14 0"/><path d="M8.5 15.5a6 6 0 0 1 7 0"/><circle cx="12" cy="19" r="1" fill="currentColor"/><line x1="3" y1="3" x2="21" y2="21"/></svg>';
   function markOffline(box, none) {
+    if (none) none.style.display = "none";   // one indicator per card, never "No image" AND the mark
+    spPhotoNoteEl(true);                     // say once, above the cards, why the marks are there
     if (!box || box.querySelector(".spg-offline")) return;
     var o = document.createElement("span"); o.className = "spg-offline"; o.title = t("spg.offline"); o.setAttribute("aria-label", t("spg.offline"));
     o.innerHTML = OFFLINE_ICO; box.appendChild(o);
-    if (none) none.style.display = "none";
+  }
+  function markNoImage(box, none) {
+    var o = box && box.querySelector(".spg-offline"); if (o) o.remove();
+    if (none) none.style.display = "";
   }
   // Back online: retry every photo that was marked offline (gallery cards + confusion cards).
   window.addEventListener("online", function () {
+    spPhotoDown = false; spPhotoFailStreak = 0; clearTimeout(spPhotoRetryTimer); spPhotoNoteEl(false);   // back online: retry every marked card
     Array.prototype.forEach.call(document.querySelectorAll(".spg-offline"), function (o) {
       var box = o.parentNode, card = box && box.closest(".spg-card, .cfi-card"); o.remove();
       if (!card) return;
@@ -20842,17 +20876,19 @@
     });
   });
   function loadSpPhoto(box, none, cr, sci) {
-    if (!sci) { if (none) none.style.display = ""; return Promise.resolve(false); }
+    if (!sci) { markNoImage(box, none); return Promise.resolve(false); }
+    if (photoNetDown() && !spImgStore()[sci]) { markOffline(box, none); return Promise.resolve(null); }   // no connection: don't queue a doomed lookup
     return spImageFor(sci).then(function (r) {
-      if (r && r.tmp) { markOffline(box, none); return null; }   // lookup unreachable: not remembered, retried later
-      if (!r || r.none) { if (none) none.style.display = ""; return false; }
+      if (r && r.tmp) { spPhotoFailed(); markOffline(box, none); return null; }   // lookup unreachable: not remembered, retried later
+      if (!r || r.none) { spPhotoOk(); markNoImage(box, none); return false; }
+      spPhotoOk();
       var img = document.createElement("img"); img.alt = sci; img.decoding = "async";
       img.crossOrigin = "anonymous";   // CORS load → the SW's species-images cache stores a real (sized) response, not an opaque one
       img.src = r.t;
       img.addEventListener("error", function () {
         img.remove();
-        if (navigator.onLine === false) markOffline(box, none);   // known photo, just not cached on the device
-        else if (none) none.style.display = "";
+        if (photoNetDown()) markOffline(box, none);   // known photo, just not cached on the device
+        else markNoImage(box, none);
       });
       box.insertBefore(img, box.firstChild);
       if (cr) {

@@ -470,6 +470,7 @@
   "splay.gallery": "Zdjęcia",
   "spg.noImage": "Brak zdjęcia",
   "spg.offline": "Brak internetu – zdjęcie nie jest w pamięci podręcznej",
+  "spg.photosDown": "Nie można teraz wczytać zdjęć – te już zapisane na tym urządzeniu nadal są widoczne.",
   "spg.records": "Pokaż obserwacje",
   "spg.predicted": "przewidywany",
   "spg.photosTip": "Zdjęcia tego gatunku (Macaulay Library) z okolic miesiąca ostatniej obserwacji",

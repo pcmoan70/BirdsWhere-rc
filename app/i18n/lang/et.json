@@ -470,6 +470,7 @@
   "splay.gallery": "Pildid",
   "spg.noImage": "Pilt puudub",
   "spg.offline": "Internetti pole – foto pole vahemälus",
+  "spg.photosDown": "Fotosid ei saa praegu laadida – seadmesse juba salvestatud pildid on endiselt näha.",
   "spg.records": "Näita vaatlusi",
   "spg.predicted": "ennustatud",
   "spg.photosTip": "Selle liigi fotod (Macaulay Library) viimase vaatluse kuu ümber",

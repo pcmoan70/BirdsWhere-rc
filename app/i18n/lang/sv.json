@@ -671,6 +671,7 @@
   "splay.gallery": "Bilder",
   "spg.noImage": "Ingen bild",
   "spg.offline": "Ingen internet – bilden är inte cachad",
+  "spg.photosDown": "Bilder kan inte laddas just nu – de som redan finns sparade på enheten visas fortfarande.",
   "spg.records": "Visa observationer",
   "spg.predicted": "förutsagd",
   "spg.photosTip": "Bilder av arten (Macaulay Library) kring den månad den senast sågs",

@@ -709,8 +709,8 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
   *Photo cards* (default) and the *Table*; offline the table is used automatically, and each popup has a
   single **Text / Images** button (top right, next to ×) that switches to the other view on the spot. Photos are shared
   with the Images list layout through the on-device photo cache, so a bird seen there needs no new
-  download here; a photo that is not cached while offline shows a small no-internet mark and loads as
-  soon as the connection is back.
+  download here; a photo that is not cached while offline shows a small no-internet mark, with one line above the
+  cards explaining it, and loads as soon as the connection is back.
 
 ### How the look-alike model works
 

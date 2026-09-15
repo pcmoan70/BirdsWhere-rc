@@ -470,6 +470,7 @@
   "splay.gallery": "Imagens",
   "spg.noImage": "Sem imagem",
   "spg.offline": "Sem internet — fotografia não está em cache",
+  "spg.photosDown": "Não é possível carregar fotografias neste momento — as já guardadas neste dispositivo continuam a aparecer.",
   "spg.records": "Ver registos",
   "spg.predicted": "prevista",
   "spg.photosTip": "Fotos desta espécie (Macaulay Library) por volta do mês em que foi vista pela última vez",
