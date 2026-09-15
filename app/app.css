@@ -4401,7 +4401,8 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .spg-recpop { padding: 4px 6px 6px; }
 .spg-recpop .detrow-menu-name { padding-right: 8px; }
 .spg-recpop .spg-recpop-n { font-weight: 400; color: var(--ink-muted, #777); }
-.spg-recpop .sp-detail-tbl { font-size: var(--fs-xs); }
+.spg-recpop .sp-detail-tbl { font-size: var(--fs-xs); width: auto; min-width: 100%; }   /* content-sized: every column fits when the screen is wide */
+.spg-recpop .sp-detail-tbl td.sp-d-loc, .spg-recpop .sp-detail-tbl td.sp-d-src { max-width: none; }
 .spg-img-link { cursor: pointer; }                                                    /* photo → Macaulay Library (birds) */
 /* Prob · Season · Yr peak as three bar cells on one line (the lists' .prob-cell / .season-cell
    markup on spans); any of them → Migration view, hover = the year curve. */

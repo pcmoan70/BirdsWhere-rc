@@ -20940,7 +20940,10 @@
     var r = btn.getBoundingClientRect();
     var el = openAnchoredMenu("detrow-menu spg-recpop");
     el.setAttribute("data-key", key);
-    el.style.width = "min(96vw,560px)"; el.style.maxHeight = "min(60vh,420px)"; el.style.overflow = "auto";
+    // Sized to the table's own width (all columns shown when the screen is wide enough),
+    // capped at the viewport — a narrow phone scrolls the table sideways instead.
+    el.style.width = "max-content"; el.style.maxWidth = "96vw"; el.style.minWidth = "min(96vw,360px)";
+    el.style.maxHeight = "min(60vh,420px)"; el.style.overflow = "auto";
     var lbl = labelsByKey[key];
     el.innerHTML = '<div class="detrow-menu-hdr detrow-menu-name">' + escapeHtml(lbl ? speciesName(lbl) : key) + ' <span class="spg-recpop-n">(' + recs.length + ")</span></div>" + spDetailTableHtml(key, recs);
     wireSpDetail(el);
