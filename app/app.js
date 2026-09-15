@@ -6227,6 +6227,11 @@
                 '<p class="cu-hint" data-i18n="ctrl.showsciHint">Show the scientific-name column in the species lists.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
+                '<label for="confusion-view-select" data-i18n="ctrl.confusionView">Confusion species</label>' +
+                '<select id="confusion-view-select"><option value="images" data-i18n="ctrl.confusionImages">Photo cards</option><option value="table" data-i18n="ctrl.confusionTable">Table (no photos)</option></select>' +
+                '<p class="cu-hint" data-i18n="ctrl.confusionViewHint">How the species menu shows look-alikes. Photo cards need an internet connection — offline, the table is shown.</p>' +
+              '</div>' +
+              '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="experimental-toggle"> <span data-i18n="ctrl.experimental">Experimental features</span></label>' +
                 '<p class="cu-hint" data-i18n="ctrl.experimentalHint">Off (default). On: unlocks less-polished extras — currently the NBN Atlas link in the species menu; more may appear here over time.</p>' +
               '</div>' +
@@ -10144,6 +10149,7 @@
     }
     return { arr: arr, out: out };
   }
+  function confusionView() { return window.GeoState.get("confusionView", "images") === "table" ? "table" : "images"; }
   // "Confusion species (images)": the same ranked look-alikes as picture cards, left →
   // right by Score (Match without a point) and wrapping onto further rows, the species
   // itself first as the reference. Each card: photo (credited), name, scientific name, Match · misID · Here ·
@@ -10364,20 +10370,16 @@
         // Confusion species — look-alikes for this bird (morphology + genus),
         // ranked by local probability. Birds only (AVONET covers birds).
         if (isBird) {
+          // Photo cards by default; the table when offline (no photos to fetch) or when the
+          // user chose it in Settings → Confusion species.
           var confBtn = drmBtn(t("menu.confusion"), function () {
             var r = confBtn.getBoundingClientRect();
             closeDetRowMenu();
-            openConfusionMenu(key, Math.round(r.left), Math.round(r.top));
+            if (confusionView() === "images" && navigator.onLine !== false) openConfusionImages(key, Math.round(r.left), Math.round(r.top));
+            else openConfusionMenu(key, Math.round(r.left), Math.round(r.top));
           });
           confBtn.title = t("confusion.tip");
           el.appendChild(confBtn);
-          var confImgBtn = drmBtn(t("menu.confusionImg"), function () {
-            var r = confImgBtn.getBoundingClientRect();
-            closeDetRowMenu();
-            openConfusionImages(key, Math.round(r.left), Math.round(r.top));
-          });
-          confImgBtn.title = t("confusion.tip");
-          el.appendChild(confImgBtn);
         }
       }
       var moreBtn = drmBtn(t("menu.recent"), function () {
@@ -16122,6 +16124,11 @@
       window.GeoState.save({ showSci: showSci });
       applyShowSci();
     });
+    var cvSel = document.getElementById("confusion-view-select");
+    if (cvSel) {
+      cvSel.value = confusionView();
+      cvSel.addEventListener("change", function () { window.GeoState.save({ confusionView: this.value === "table" ? "table" : "images" }); });
+    }
     var expCb = document.getElementById("experimental-toggle");
     if (expCb) {
       expCb.checked = experimentalOn();
@@ -20662,9 +20669,12 @@
   }
   function spImageFor(sci) {
     var c = spImgStore(); if (c[sci]) return Promise.resolve(c[sci]);
+    if (navigator.onLine === false) return Promise.resolve({ none: 1, tmp: 1 });   // offline: don't even ask (the SW would answer 503) — retried later
     var title = encodeURIComponent(sci.trim().replace(/\s+/g, "_"));
     return fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + title, { headers: { Accept: "application/json" } })
-      .then(function (r) { return r.ok ? r.json() : null; })
+      // Only a definite 404 means "no article" (remembered below); any other failure —
+      // offline 503 from the service worker, 429, 5xx — is transient and must not be remembered.
+      .then(function (r) { if (r.ok) return r.json(); if (r.status === 404) return null; throw new Error("summary " + r.status); })
       .then(function (j) {
         var thumb = j && j.thumbnail && j.thumbnail.source, orig = j && j.originalimage && j.originalimage.source;
         if (!thumb || (j && j.type === "disambiguation")) { spImgRemember(sci, { none: 1 }); return { none: 1 }; }
@@ -20734,14 +20744,38 @@
   // into `cr` (linked to the Commons file page), or reveal `none`. Resolves true when
   // a picture was found, false when there is none, null on network trouble (not
   // remembered, so a later call retries).
+  // Offline (or the photo can't be reached and isn't in the on-device cache): a small
+  // "no internet" mark instead of the "No image" text, and the card stays retryable.
+  var OFFLINE_ICO = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 8.5a16 16 0 0 1 20 0"/><path d="M5 12a11 11 0 0 1 14 0"/><path d="M8.5 15.5a6 6 0 0 1 7 0"/><circle cx="12" cy="19" r="1" fill="currentColor"/><line x1="3" y1="3" x2="21" y2="21"/></svg>';
+  function markOffline(box, none) {
+    if (!box || box.querySelector(".spg-offline")) return;
+    var o = document.createElement("span"); o.className = "spg-offline"; o.title = t("spg.offline"); o.setAttribute("aria-label", t("spg.offline"));
+    o.innerHTML = OFFLINE_ICO; box.appendChild(o);
+    if (none) none.style.display = "none";
+  }
+  // Back online: retry every photo that was marked offline (gallery cards + confusion cards).
+  window.addEventListener("online", function () {
+    Array.prototype.forEach.call(document.querySelectorAll(".spg-offline"), function (o) {
+      var box = o.parentNode, card = box && box.closest(".spg-card, .cfi-card"); o.remove();
+      if (!card) return;
+      if (card.classList.contains("spg-card")) card._spgDone = false;
+      loadSpPhoto(box, card.querySelector(".spg-none"), card.querySelector(".spg-credit"), card.getAttribute("data-sci"))
+        .then(function (ok) { if (card.classList.contains("spg-card") && ok !== null) card._spgDone = true; });
+    });
+  });
   function loadSpPhoto(box, none, cr, sci) {
     if (!sci) { if (none) none.style.display = ""; return Promise.resolve(false); }
     return spImageFor(sci).then(function (r) {
-      if (!r || r.none) { if (none) none.style.display = ""; return (r && r.tmp) ? null : false; }
+      if (r && r.tmp) { markOffline(box, none); return null; }   // lookup unreachable: not remembered, retried later
+      if (!r || r.none) { if (none) none.style.display = ""; return false; }
       var img = document.createElement("img"); img.alt = sci; img.decoding = "async";
       img.crossOrigin = "anonymous";   // CORS load → the SW's species-images cache stores a real (sized) response, not an opaque one
       img.src = r.t;
-      img.addEventListener("error", function () { img.remove(); if (none) none.style.display = ""; });
+      img.addEventListener("error", function () {
+        img.remove();
+        if (navigator.onLine === false) markOffline(box, none);   // known photo, just not cached on the device
+        else if (none) none.style.display = "";
+      });
       box.insertBefore(img, box.firstChild);
       if (cr) {
         var page = "https://" + (r.h || "commons.wikimedia.org") + "/wiki/File:" + encodeURIComponent((r.f || "").replace(/ /g, "_"));
