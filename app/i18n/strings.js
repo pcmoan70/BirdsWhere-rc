@@ -300,6 +300,7 @@ window.GeoI18N = (function () {
         "nav.shared": "Shared {n} points — open them in Google Earth (or save to Drive).",
         "route.add": "＋ Add to route",
         "locmenu.find": "Find on map",
+        "locmenu.navigate": "Navigate to",
         "locmenu.add": "Add as point",
         "locmenu.added": "Point added",
         "route.count": "Route ({n})",

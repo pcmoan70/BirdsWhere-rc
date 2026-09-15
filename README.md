@@ -449,7 +449,10 @@ The control line opens three mutually-exclusive **filter subwindows**:
   accurate place name (coordinate-only, or bare country/region names) group under **"(no
   location)"**. Ticking applies after a ~1 s pause, so several boxes rebuild the map once. You can
   also filter straight from a record: tap a **location name** in a species' expanded records or
-  the per-observation list and choose **"Show only this location"** (or add / remove it).
+  the per-observation list and choose **"Show only this location"** (or add / remove it). The same
+  menu offers **Find on map**, **Add as point**, **Add to route**, **Navigate to**, and — green, like
+  the point popup's mode buttons — **Historic** (switch to Historic with that spot placed, pick the
+  range, Fetch) and **Migration** (the Location analysis for that spot; ‹ returns to the list).
 - **👤 Observers** — a checklist of observers with a scope button that cycles **All → None →
   each saved observer list**, plus an editor (**✎**).
 

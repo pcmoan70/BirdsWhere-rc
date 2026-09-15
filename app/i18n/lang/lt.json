@@ -311,6 +311,7 @@
   "nav.shared": "Pasidalyta {n} taškais — atidarykite juos Google Earth (arba įrašykite į Drive).",
   "route.add": "＋ Pridėti į maršrutą",
   "locmenu.find": "Rodyti žemėlapyje",
+  "locmenu.navigate": "Navigacija čia",
   "locmenu.add": "Pridėti kaip tašką",
   "locmenu.added": "Taškas pridėtas",
   "route.count": "Maršrutas ({n})",

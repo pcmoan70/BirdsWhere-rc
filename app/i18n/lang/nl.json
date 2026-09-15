@@ -311,6 +311,7 @@
   "nav.shared": "{n} punten gedeeld — open ze in Google Earth (of sla op naar Drive).",
   "route.add": "＋ Aan route toevoegen",
   "locmenu.find": "Toon op kaart",
+  "locmenu.navigate": "Navigeer hierheen",
   "locmenu.add": "Als punt toevoegen",
   "locmenu.added": "Punt toegevoegd",
   "route.count": "Route ({n})",

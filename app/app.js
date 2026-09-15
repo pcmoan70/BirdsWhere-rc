@@ -9792,9 +9792,9 @@
     b.addEventListener("click", function (e) { e.stopPropagation(); onClick(e); });
     return b;
   }
-  function drmBtn(label, onClick, iconName) {
+  function drmBtn(label, onClick, iconName, cls) {
     var b = document.createElement("button");
-    b.type = "button"; b.className = "detrow-menu-item";
+    b.type = "button"; b.className = "detrow-menu-item" + (cls ? " " + cls : "");
     if (iconName) { b.classList.add("ico-btn"); b.innerHTML = ico(iconName) + "<span></span>"; b.lastChild.textContent = label; }
     else b.textContent = label;
     b.addEventListener("click", function (e) { e.stopPropagation(); onClick(); });
@@ -10682,7 +10682,24 @@
       openPointEditor({ lat: lat, lon: lon, name: name || "" });
     }, "dotsplus"));
     el.appendChild(drmBtn(tLabel("route.add"), function () { closeDetRowMenu(); addToRoute(lat, lon, name || ""); }, "navplus"));
-    el.appendChild(drmBtn(t("nav.title"), function () { closeDetRowMenu(); navigatePoints([{ lat: lat, lon: lon }]); }, "nav"));
+    el.appendChild(drmBtn(t("locmenu.navigate"), function () { closeDetRowMenu(); navigatePoints([{ lat: lat, lon: lon }]); }, "nav"));
+    // Historic / Migration for THIS spot (green, like the point popup's mode buttons):
+    // Historic switches mode with the point placed (pick the range, then Fetch); Migration
+    // runs the location analysis here — ‹ returns to the list it was opened from.
+    el.appendChild(drmBtn(t("mode.historic"), function () {
+      closeDetRowMenu();
+      var sel = document.getElementById("mode-select");
+      if (sel && sel.value !== "historic") { sel.value = "historic"; sel.dispatchEvent(new Event("change", { bubbles: true })); }
+      placeHistoricPoint(lat, lon);
+    }, null, "drm-green"));
+    if (groupHasModel()) el.appendChild(drmBtn(t("mode.barchart").replace(/^[^\p{L}\p{N}]+/u, ""), function () {
+      closeDetRowMenu();
+      var back = currentViewRestorer();
+      var sel = document.getElementById("mode-select");
+      if (sel && sel.value !== "barchart") { sel.value = "barchart"; sel.dispatchEvent(new Event("change", { bubbles: true })); }
+      pushViewBack(back, "migration");
+      renderAnalysis(lat, lon);
+    }, null, "drm-green"));
     if (info && info.links) info.links.forEach(function (lk) {
       el.appendChild(drmBtn(lk.label, (function (u) { return function () { closeDetRowMenu(); openExternal(u); }; })(lk.url)));
     });

@@ -3591,6 +3591,8 @@ a.dl-row:hover, .dl-row-menu:hover { background: var(--surface-2, rgba(0,0,0,.05
   font: inherit; font-size: var(--fs-b); color: var(--ink); cursor: pointer; border-radius: var(--radius-xs); white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis; }
 .detrow-menu-item:hover { background: var(--surface-2); }
+.detrow-menu-item.drm-green { background: var(--good, #2e7d32); color: #fff; font-weight: 600; margin: 2px 0; }   /* mode entries (Historic / Migration), like the point popup's green buttons */
+.detrow-menu-item.drm-green:hover { background: #24672a; }
 /* Active date-filter row: label left, a red × on the right that removes the filter. */
 .detrow-menu-item.drm-active { display: flex; align-items: center; justify-content: space-between; font-weight: 700; }
 .drm-clear-x { display: inline-flex; align-items: center; margin-left: 10px; color: var(--danger, #b42318); cursor: pointer; flex: 0 0 auto; }

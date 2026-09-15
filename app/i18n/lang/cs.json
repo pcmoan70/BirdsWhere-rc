@@ -311,6 +311,7 @@
   "nav.shared": "Sdíleno {n} bodů — otevřete je v Google Earth (nebo uložte na Disk).",
   "route.add": "＋ Přidat do trasy",
   "locmenu.find": "Zobrazit na mapě",
+  "locmenu.navigate": "Navigovat sem",
   "locmenu.add": "Přidat jako bod",
   "locmenu.added": "Bod přidán",
   "route.count": "Trasa ({n})",

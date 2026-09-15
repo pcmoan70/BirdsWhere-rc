@@ -328,6 +328,7 @@
   "nav.shared": "Delade {n} punkter — öppna dem i Google Earth (eller spara till Drive).",
   "route.add": "＋ Lägg till i rutt",
   "locmenu.find": "Visa på kartan",
+  "locmenu.navigate": "Navigera hit",
   "locmenu.add": "Lägg till som punkt",
   "locmenu.added": "Punkt tillagd",
   "route.count": "Rutt ({n})",

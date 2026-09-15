@@ -311,6 +311,7 @@
   "nav.shared": "{n} punti condivisi — aprili in Google Earth (o salvali su Drive).",
   "route.add": "＋ Aggiungi al percorso",
   "locmenu.find": "Mostra sulla mappa",
+  "locmenu.navigate": "Naviga qui",
   "locmenu.add": "Aggiungi come punto",
   "locmenu.added": "Punto aggiunto",
   "route.count": "Percorso ({n})",

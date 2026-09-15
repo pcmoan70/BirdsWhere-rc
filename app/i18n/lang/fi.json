@@ -311,6 +311,7 @@
   "nav.shared": "Jaettiin {n} pistettä — avaa ne Google Earthissa (tai tallenna Driveen).",
   "route.add": "＋ Lisää reitille",
   "locmenu.find": "Näytä kartalla",
+  "locmenu.navigate": "Navigoi tänne",
   "locmenu.add": "Lisää pisteenä",
   "locmenu.added": "Piste lisätty",
   "route.count": "Reitti ({n})",

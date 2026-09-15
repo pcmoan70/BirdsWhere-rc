@@ -311,6 +311,7 @@
   "nav.shared": "Udostępniono {n} punktów — otwórz je w Google Earth (lub zapisz na Dysku).",
   "route.add": "＋ Dodaj do trasy",
   "locmenu.find": "Pokaż na mapie",
+  "locmenu.navigate": "Nawiguj tutaj",
   "locmenu.add": "Dodaj jako punkt",
   "locmenu.added": "Dodano punkt",
   "route.count": "Trasa ({n})",

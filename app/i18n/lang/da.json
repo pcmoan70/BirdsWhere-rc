@@ -311,6 +311,7 @@
   "nav.shared": "Delte {n} punkter — åbn dem i Google Earth (eller gem til Drev).",
   "route.add": "＋ Føj til rute",
   "locmenu.find": "Vis på kortet",
+  "locmenu.navigate": "Naviger hertil",
   "locmenu.add": "Tilføj som punkt",
   "locmenu.added": "Punkt tilføjet",
   "route.count": "Rute ({n})",

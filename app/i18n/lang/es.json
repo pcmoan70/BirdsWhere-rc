@@ -311,6 +311,7 @@
   "nav.shared": "Se compartieron {n} puntos — ábrelos en Google Earth (o guárdalos en Drive).",
   "route.add": "＋ Añadir a la ruta",
   "locmenu.find": "Ver en el mapa",
+  "locmenu.navigate": "Navegar hasta aquí",
   "locmenu.add": "Añadir como punto",
   "locmenu.added": "Punto añadido",
   "route.count": "Ruta ({n})",

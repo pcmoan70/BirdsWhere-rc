@@ -311,6 +311,7 @@
   "nav.shared": "Jagati {n} punkti — ava need Google Earthis (või salvesta Drive'i).",
   "route.add": "＋ Lisa marsruuti",
   "locmenu.find": "Näita kaardil",
+  "locmenu.navigate": "Navigeeri siia",
   "locmenu.add": "Lisa punktina",
   "locmenu.added": "Punkt lisatud",
   "route.count": "Marsruut ({n})",
