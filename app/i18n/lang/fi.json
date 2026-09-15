@@ -1364,7 +1364,6 @@
   "ctrl.showDots": "Näytä pisteet",
   "menu.family": "Heimo",
   "menu.confusion": "Sekaannuslajit",
-  "menu.confusionImg": "Sekaannuslajit (kuvat)",
   "confusion.tip": "Samannäköiset saman heimon lajit, järjestetty täällä esiintymisen mukaan — erottamisen avuksi",
   "confusion.none": "Ei läheisiä sekaannuslajeja",
   "confusion.noneHere": "Täällä ei todennäköisiä sekaannuslajeja",

@@ -1364,7 +1364,6 @@
   "ctrl.showDots": "Vis prikker",
   "menu.family": "Familie",
   "menu.confusion": "Forvekslingsarter",
-  "menu.confusionImg": "Forvekslingsarter (billeder)",
   "confusion.tip": "Lignende arter i samme familie, sorteret efter hvor sandsynlige de er her — til at skelne forvekslinger",
   "confusion.none": "Ingen nære forvekslingsarter",
   "confusion.noneHere": "Ingen forvekslingsarter sandsynlige her",

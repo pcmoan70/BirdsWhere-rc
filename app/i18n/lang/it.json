@@ -1364,7 +1364,6 @@
   "ctrl.showDots": "Mostra punti",
   "menu.family": "Famiglia",
   "menu.confusion": "Specie confondibili",
-  "menu.confusionImg": "Specie confondibili (immagini)",
   "confusion.tip": "Specie simili della stessa famiglia, ordinate per probabilità qui — per distinguerle",
   "confusion.none": "Nessuna specie simile vicina",
   "confusion.noneHere": "Nessuna specie simile probabile qui",

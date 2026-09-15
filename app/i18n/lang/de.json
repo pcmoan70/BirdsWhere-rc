@@ -1364,7 +1364,6 @@
   "ctrl.showDots": "Punkte anzeigen",
   "menu.family": "Familie",
   "menu.confusion": "Verwechslungsarten",
-  "menu.confusionImg": "Verwechslungsarten (Bilder)",
   "confusion.tip": "Ähnlich aussehende Arten derselben Familie, sortiert nach ihrer Wahrscheinlichkeit hier — zum Unterscheiden",
   "confusion.none": "Keine nahen Verwechslungsarten",
   "confusion.noneHere": "Hier keine Verwechslungsarten wahrscheinlich",

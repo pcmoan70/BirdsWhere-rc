@@ -1364,7 +1364,6 @@
   "ctrl.showDots": "Visa prickar",
   "menu.family": "Familj",
   "menu.confusion": "Förväxlingsarter",
-  "menu.confusionImg": "Förväxlingsarter (bilder)",
   "confusion.tip": "Liknande arter i samma familj, sorterade efter hur sannolika de är här — för att skilja dem åt",
   "confusion.none": "Inga nära förväxlingsarter",
   "confusion.noneHere": "Inga förväxlingsarter troliga här",

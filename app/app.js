@@ -10197,7 +10197,7 @@
     el.style.width = "min(97vw,900px)";
     var hdr = document.createElement("div");
     hdr.className = "detrow-menu-hdr detrow-menu-name";
-    hdr.textContent = t("menu.confusionImg");
+    hdr.textContent = t("menu.confusion");   // same title as the text view — the pictures speak for themselves
     el.appendChild(hdr);
     var closeBtn = document.createElement("button");
     closeBtn.type = "button"; closeBtn.className = "conf-close"; closeBtn.textContent = "×";

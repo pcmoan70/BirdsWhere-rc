@@ -1364,7 +1364,6 @@
   "ctrl.showDots": "Zobrazit body",
   "menu.family": "Čeleď",
   "menu.confusion": "Záměnné druhy",
-  "menu.confusionImg": "Záměnné druhy (obrázky)",
   "confusion.tip": "Podobné druhy téže čeledi, seřazené podle pravděpodobnosti výskytu zde — pro rozlišení záměn",
   "confusion.none": "Žádné blízké podobné druhy",
   "confusion.noneHere": "Zde nejsou pravděpodobné žádné podobné druhy",

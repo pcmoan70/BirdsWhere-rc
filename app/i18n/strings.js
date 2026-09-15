@@ -496,7 +496,6 @@ window.GeoI18N = (function () {
         "menu.appmig": "Migration",
         "menu.family": "Family",
         "menu.confusion": "Confusion species",
-        "menu.confusionImg": "Confusion species (images)",
         "confusion.tip": "Similar-looking same-family species, ranked by how likely they are here — for telling look-alikes apart",
         "confusion.none": "No close look-alikes on file",
         "confusion.noneHere": "No look-alikes likely here",

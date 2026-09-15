@@ -1364,7 +1364,6 @@
   "ctrl.showDots": "Näita punkte",
   "menu.family": "Sugukond",
   "menu.confusion": "Segiajavad liigid",
-  "menu.confusionImg": "Segiajavad liigid (pildid)",
   "confusion.tip": "Sarnased sama sugukonna liigid, järjestatud siinse tõenäosuse järgi — äravahetamise vältimiseks",
   "confusion.none": "Lähedasi sarnaseid liike pole",
   "confusion.noneHere": "Siin pole sarnaseid liike tõenäolised",
