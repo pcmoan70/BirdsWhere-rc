@@ -654,7 +654,7 @@ shared payload is all that is shown.
 ## The species menu
 
 Right-click / long-press / tap any species name for a menu **led by the species name in bold**
-(wrapping when long), followed by the observation-specific actions when opened from a record, then:
+(wrapping when long), followed by the record's *Open source* link when opened from an observation, then:
 
 - **Information**, in this order — **Confusion species** (birds), **Distribution**: the model's own
   range map or Wikipedia's range image (with a BirdLife link in its popup; **Settings → Distribution**
@@ -670,6 +670,8 @@ Right-click / long-press / tap any species name for a menu **led by the species 
   species on the map + detections list, like a legend selection; tap again on the same species to show
   everything), then state-showing **toggles**: **Interesting** (★), **Year list** and **Life
   list** (each coloured when the species is in that set, greyed when not). Also **＋ Add to route**.
+- **This observation** (bottom, when opened from a record with a location) — **Show on map**,
+  **Navigate here**, **Add to route** and **Add point to list…**.
 
 ---
 

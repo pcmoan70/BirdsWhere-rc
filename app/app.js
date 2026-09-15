@@ -10355,15 +10355,12 @@
     el.appendChild(nameHdr);
     // 1) This observation — record-specific (source / map / route / lists). Top
     // of the menu when the menu was opened from a dot/pin.
+    // (Show on map · Navigate here · Add to route · Add to point list moved to the BOTTOM — section 4.)
+    var topAny = false;
     if (hasObs) {
-      if (d.url) el.appendChild(drmBtn(t("det.openSource"), function () { closeDetRowMenu(); openExternal(d.url); }));
-      if (hasLoc) {
-        if (!d.fromPin) el.appendChild(drmBtn(tLabel("detmenu.focusMap"), function () { focusPointOnMap(+d.lat, +d.lon); }, "pin"));   // green pin icon only (strip the 🎯 emoji); a map pin is already on the map
-        el.appendChild(drmBtn(t("nav.here"), function () { closeDetRowMenu(); navigatePoints([{ lat: +d.lat, lon: +d.lon }]); }, "nav"));
-        el.appendChild(drmBtn(tLabel("route.add"), function () { closeDetRowMenu(); addToRoute(+d.lat, +d.lon, name); }, "navplus"));
-      }
-      el.appendChild(drmBtn(tLabel("detmenu.addList"), function () { drmRenderLists(el, d); }, "dotsplus"));   // green dots+ icon only (strip the 📍 emoji)
+      if (d.url) { el.appendChild(drmBtn(t("det.openSource"), function () { closeDetRowMenu(); openExternal(d.url); })); topAny = true; }
       if (d.mpId && d.listName) {
+        topAny = true;
         // Opened from a map pin: "Delete" — the pin belongs to a saved list, so confirm the
         // removal from that list first. From a list row: the plain "Remove from list".
         if (d.fromPin) el.appendChild(drmBtn(t("btn.delete"), function () {
@@ -10379,7 +10376,7 @@
     if (lbl || (sci && /\s/.test(sci))) {
       // The name header is at the very top; when record actions precede this
       // section, a plain divider keeps the two visually separate.
-      if (hasObs) { var dv = document.createElement("div"); dv.className = "detrow-menu-div"; el.appendChild(dv); }
+      if (topAny) { var dv = document.createElement("div"); dv.className = "detrow-menu-div"; el.appendChild(dv); }
       if (lbl) {
         // Order: Confusion species · Distribution · Migration · Images · Audio · More of these ·
         // Wikipedia — then Family and the group-specific references.
@@ -10469,6 +10466,17 @@
         function () { toggleYearList(key); closeDetRowMenu(); redraw(); }));
       el.appendChild(drmToggle({ html: ico("sprout") }, inLifeList(key), t("menu.lifelist"),
         function () { toggleLifeList(key); closeDetRowMenu(); redraw(); }));
+    }
+    // 4) This observation on the map — at the bottom, after the list actions: Show on map ·
+    //    Navigate here · Add to route · Add to point list.
+    if (hasObs) {
+      var dv4 = document.createElement("div"); dv4.className = "detrow-menu-div"; el.appendChild(dv4);
+      if (hasLoc) {
+        if (!d.fromPin) el.appendChild(drmBtn(tLabel("detmenu.focusMap"), function () { focusPointOnMap(+d.lat, +d.lon); }, "pin"));   // green pin icon only (strip the 🎯 emoji); a map pin is already on the map
+        el.appendChild(drmBtn(t("nav.here"), function () { closeDetRowMenu(); navigatePoints([{ lat: +d.lat, lon: +d.lon }]); }, "nav"));
+        el.appendChild(drmBtn(tLabel("route.add"), function () { closeDetRowMenu(); addToRoute(+d.lat, +d.lon, name); }, "navplus"));
+      }
+      el.appendChild(drmBtn(tLabel("detmenu.addList"), function () { drmRenderLists(el, d); }, "dotsplus"));   // green dots+ icon only (strip the 📍 emoji)
     }
   }
   function drmRenderLists(el, d) {
