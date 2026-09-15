@@ -21028,14 +21028,15 @@
         .then(function (ok) { if (ok === null) card._spgDone = false; });   // network trouble: retried when it scrolls in again
     }
     var cards = rec.querySelectorAll(".spg-card");
-    // The first cards load at once (a first screen plus a little), the rest resolve as
-    // they come within two screens of the viewport while scrolling.
+    // Need-to-fetch: the first cards load at once (a first screen), the rest only as they
+    // come into view while scrolling (a small look-ahead so the next row is ready when it
+    // appears). Every photo is served from the on-device cache when it is already there.
     var SPG_PRELOAD = 8;
     Array.prototype.forEach.call(cards, function (c, i) { if (i < SPG_PRELOAD) fill(c); });
     if (window.IntersectionObserver) {
       spGalleryObs = new IntersectionObserver(function (entries) {
         entries.forEach(function (en) { if (en.isIntersecting) { fill(en.target); spGalleryObs.unobserve(en.target); } });
-      }, { root: null, rootMargin: "1200px 0px" });
+      }, { root: null, rootMargin: "300px 0px" });
       Array.prototype.forEach.call(cards, function (c, i) { if (i >= SPG_PRELOAD) spGalleryObs.observe(c); });
     } else Array.prototype.forEach.call(cards, fill);
   }
