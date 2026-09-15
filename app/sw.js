@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1732";
+var VERSION = "v1733";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• The Images list now waits for the observations before showing cards — no more wall of exotic model predictions (and their photos) while the fetch is still running.",
   "• Images: hover the ☰ on a card (short tap on a phone) to see the species’ records in a small popover; click (long-press on a phone) still opens the table view on that species. Also fixed: the first tap after a fetch could land on the wrong element because the “Loaded:” line vanished under it.",
   "• Confusion species now opens as photo cards (the bird itself first, then its look-alikes by Score); Settings → Confusion species switches to the table, which is also used offline. Photos are cached on the device and shared with the Images list; offline, an uncached photo shows a no-internet mark and loads when you’re back online.",
   "• Scanning the QR poster now lands on a small page with Cancel and Continue before the app even loads; other shortcut links ask in the welcome popup (Cancel / OK). Nothing is downloaded, no location is requested and nothing is fetched until you confirm.",
   "• The ? button (species list and Images) adds the model’s commonest birds for the spot, mixed with the ones observed and ranked commonest first (predicted cards are dashed and labelled); it turns into ! — tap to go back to the observed birds in your previous order.",
-  "• A QR-poster (or any shortcut) launch now runs once: reopening the phone later brings back the list you had, without asking for your location or fetching again.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

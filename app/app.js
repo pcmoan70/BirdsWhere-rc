@@ -20758,6 +20758,10 @@
   }
   function buildSpGalleryHtml() {
     var tbody = document.getElementById("sp-tbody"); if (!tbody) return "";
+    // Before the observations have landed the table holds the model's whole prediction list
+    // (default sort: rarest first) — as cards that would be a wall of exotic species whose
+    // photos start downloading. Wait for the fetch instead; [?] (predictions wanted) still shows.
+    if (!tbody._sightingsAgg && !spShowMissing) return '<div class="dl-empty spg-wait"><div class="spinner"></div>' + escapeHtml(t("status.loadingDet")) + "</div>";
     var rows = Array.prototype.filter.call(tbody.children, function (tr) { return tr.style.display !== "none" && !tr.classList.contains("sp-detail-row"); });
     if (!rows.length) return '<div class="dl-empty">' + escapeHtml(t("detlist.empty")) + "</div>";
     var lbl = { total: t("th.total"), last: t("th.last"), dist: t("th.dist"), prob: t("th.prob") };
@@ -21500,7 +21504,9 @@
         " · " + t("sp.radius", { km: recentRadiusKm() }) +
         (hist ? " · " + t("hist.range") + " " + fmtDate(hist.from) + " – " + fmtDate(hist.to) +
           (hist.months && hist.months.length ? " · " + t("hist.months") + " " + hist.months.slice().sort(function (a, b) { return a - b; }).map(histMonthShort).join(", ") : "") : ""));
-      document.getElementById("sp-tbody").innerHTML = results.map(function (r) {
+      var tb0 = document.getElementById("sp-tbody");
+      tb0._sightingsAgg = null; tb0._fetchAgg = null;   // a fresh list: no sightings yet (the previous point's must not leak in until this fetch lands)
+      tb0.innerHTML = results.map(function (r) {
         var cmpCell = !hasCompare ? "<td></td>" : cmpAllPositive ? cmpBarCell(kind, r.cmpVal) : deltaCell(r.cmpVal);
         var name2Cell = '<td class="name2">' + (secondLang ? escapeHtml(secondName(r.label)) : "") + '</td>';
         var dKey = escapeHtml(r.label.key);
