@@ -120,11 +120,16 @@ window.GeoAnalysis = (function () {
 
   // ---- Heatmap (probability / arrivals / focus) ---------------------------
   // mode: "prob" | "arrival" | "focus".
+  // Arrivals and Annual Top are normalised by the species' yearly peak, so a species whose
+  // probability never reaches this floor would show a loud but meaningless pattern; they need
+  // a yearly peak of at least 1 %.
+  var ARRIVAL_MIN_PEAK = 0.01;
   function renderHeatmap(el, ctx, mode) {
     var rows = visibleSpecies(ctx);
     var wkIdx = ctx.week - 1;
     var esc = ctx.escapeHtml;
     var isArrival = mode === "arrival", isFocus = mode === "focus";
+    if (isArrival || isFocus) rows = rows.filter(function (r) { return r.maxYear >= ARRIVAL_MIN_PEAK; });
 
     if (rows.length === 0) {
       el.innerHTML = '<p class="an-empty">' + esc(ctx.t("analysis.empty")) + "</p>";
