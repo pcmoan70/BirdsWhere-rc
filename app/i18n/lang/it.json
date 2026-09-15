@@ -61,7 +61,7 @@
   "confusion.tipScore": "Probabilità complessiva di scambiare questo uccello qui = (0,25 × Somigl. + 0,75 × misID) × Qui. Le confusioni reali e probabili sul posto vengono prima; la lista è ordinata in base a questo valore.",
   "confusion.openList": "Mostra le specie confondibili con questo uccello",
   "confusion.base": "Questa specie",
-  "confusion.toTable": "Tabella",
+  "confusion.toText": "Testo",
   "traits.none": "Nessuna caratteristica disponibile",
   "traits.colour": "Colorazione del piumaggio",
   "traits.male": "Maschio",

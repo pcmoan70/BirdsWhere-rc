@@ -61,7 +61,7 @@
   "confusion.tipScore": "Probabilidade global de confundir esta ave aqui = (0,25 × Semel. + 0,75 × misID) × Aqui. As confusões reais e localmente prováveis ficam em primeiro; a lista é ordenada por este valor.",
   "confusion.openList": "Mostrar as espécies confundíveis desta ave",
   "confusion.base": "Esta espécie",
-  "confusion.toTable": "Tabela",
+  "confusion.toText": "Texto",
   "traits.none": "Sem características registadas",
   "traits.colour": "Coloração da plumagem",
   "traits.male": "Macho",

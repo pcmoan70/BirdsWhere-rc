@@ -511,7 +511,7 @@ window.GeoI18N = (function () {
         "confusion.tipScore": "Overall chance you'd mistake this bird here = (0.25 × Match + 0.75 × misID) × Here. Real, locally-likely confusions rank first; the list is sorted by it.",
         "confusion.openList": "Show this bird's confusion species",
         "confusion.base": "This species",
-        "confusion.toTable": "Table",
+        "confusion.toText": "Text",
         "traits.none": "No characteristics on file",
         "traits.colour": "Plumage colour",
         "traits.male": "Male",

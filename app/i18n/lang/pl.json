@@ -61,7 +61,7 @@
   "confusion.tipScore": "Łączna szansa, że pomylisz tu tego ptaka = (0,25 × Podob. + 0,75 × misID) × Tutaj. Rzeczywiste i lokalnie prawdopodobne pomyłki są na początku; lista jest sortowana według tej wartości.",
   "confusion.openList": "Pokaż gatunki mylące z tym ptakiem",
   "confusion.base": "Ten gatunek",
-  "confusion.toTable": "Tabela",
+  "confusion.toText": "Tekst",
   "traits.none": "Brak danych o cechach",
   "traits.colour": "Barwa upierzenia",
   "traits.male": "Samiec",

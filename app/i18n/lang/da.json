@@ -61,7 +61,7 @@
   "confusion.tipScore": "Samlet risiko for at forveksle denne fugl her = (0,25 × Match + 0,75 × misID) × Her. Reelle, lokalt sandsynlige forvekslinger kommer først; listen er sorteret efter den.",
   "confusion.openList": "Vis denne fugls forvekslingsarter",
   "confusion.base": "Denne art",
-  "confusion.toTable": "Tabel",
+  "confusion.toText": "Tekst",
   "traits.none": "Ingen kendetegn registreret",
   "traits.colour": "Fjerdragtsfarve",
   "traits.male": "Han",

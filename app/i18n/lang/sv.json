@@ -61,7 +61,7 @@
   "confusion.tipScore": "Total risk att du förväxlar den här fågeln här = (0,25 × Match + 0,75 × misID) × Här. Verkliga, lokalt sannolika förväxlingar kommer först; listan sorteras efter detta.",
   "confusion.openList": "Visa fågelns förväxlingsarter",
   "confusion.base": "Denna art",
-  "confusion.toTable": "Tabell",
+  "confusion.toText": "Text",
   "traits.none": "Inga egenskaper registrerade",
   "traits.colour": "Fjäderdräktens färg",
   "traits.male": "Hane",

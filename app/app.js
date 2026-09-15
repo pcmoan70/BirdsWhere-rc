@@ -10204,7 +10204,7 @@
     closeBtn.setAttribute("aria-label", "Close");
     closeBtn.addEventListener("click", function (e) { e.stopPropagation(); closeAnchoredMenu(); });
     el.appendChild(closeBtn);
-    confSwitchBtn(el, t("confusion.toTable"), function () { openConfusionMenu(key, x, y); });
+    confSwitchBtn(el, t("confusion.toText"), function () { openConfusionMenu(key, x, y); });   // "Text" → the table view
     var wait = document.createElement("div"); wait.className = "detrow-menu-hdr"; wait.textContent = "…";
     el.appendChild(wait); positionAnchoredMenu(el, x, y);
     var rk = await confusionRanked(key);
@@ -10270,7 +10270,7 @@
     closeBtn.setAttribute("aria-label", "Close");
     closeBtn.addEventListener("click", function (e) { e.stopPropagation(); closeAnchoredMenu(); });
     el.appendChild(closeBtn);
-    confSwitchBtn(el, t("ctrl.confusionImages"), function () { openConfusionImages(key, x, y); });
+    confSwitchBtn(el, t("splay.gallery"), function () { openConfusionImages(key, x, y); });   // "Images" → the photo cards
     positionAnchoredMenu(el, x, y);
     var wait = document.createElement("div"); wait.className = "detrow-menu-hdr"; wait.textContent = "…";
     el.appendChild(wait); positionAnchoredMenu(el, x, y);

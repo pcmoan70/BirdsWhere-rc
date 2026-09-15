@@ -61,7 +61,7 @@
   "confusion.tipScore": "Celková šance, že si tohoto ptáka tady spletete = (0,25 × Shoda + 0,75 × misID) × Zde. Skutečné, místně pravděpodobné záměny jsou na prvních místech; seznam je podle toho seřazen.",
   "confusion.openList": "Zobrazit zaměnitelné druhy tohoto ptáka",
   "confusion.base": "Tento druh",
-  "confusion.toTable": "Tabulka",
+  "confusion.toText": "Text",
   "traits.none": "Žádné vlastnosti v databázi",
   "traits.colour": "Zbarvení opeření",
   "traits.male": "Samec",
