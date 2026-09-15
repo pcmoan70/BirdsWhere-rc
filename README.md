@@ -206,12 +206,13 @@ credited under each picture to their author and licence, linked to the Commons f
 opens the usual species menu and the scientific name the Family menu, as in the table. The small **☰**
 button on a card shows the species' record sub-list: on a computer, hovering it opens the list in a
 small popover and clicking it jumps to the Species list table (expanded on that species, scrolled into
-view); on a phone, a short tap opens the popover and a long press jumps to the table. Tapping a bird's **photo** opens its **Macaulay Library** catalogue narrowed to the month
+view); on a phone, a short tap opens the popover (tapping the button again closes it) and a long press
+jumps to the table. Tapping a bird's **photo** opens its **Macaulay Library** catalogue narrowed to the month
 it was last seen (±1 month — the same link as the species menu's *Photos*); tapping the
 **Probability** opens the **Migration** view (Location analysis → Timeline) for that species, and on
 a mouse device hovering it previews the same 48-week probability bars at the fetch point (current
-week outlined, the last-seen week in blue). The same hover chart appears over every probability-derived
-number in the list views — the table's Probability, Season and comparison cells (Annual Top, % of max,
+week outlined, the last-seen week in blue; on a phone, press and hold a bar for the same chart). The same
+hover chart appears over every probability-derived number in the list views — the table's Probability, Season and comparison cells (Annual Top, % of max,
 Δ), and the observation rows' Probability, Season and Yr-peak cells. The **?** button (the same
 "show predicted species" toggle as the table's) adds the model's commonest species for the point,
 interleaved with the observed ones and ranked commonest first (probability ↓ — in the table too, with

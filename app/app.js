@@ -20883,6 +20883,16 @@
   // Hover-capable devices only; tapping the gallery Probability opens the full view.
   var spgTipEl = null, spgTipKey = "";
   function hideSpgTip() { spgTipKey = ""; if (spgTipEl) spgTipEl.style.display = "none"; }
+  // Touch: after a long-press opened the year curve, the next touch anywhere dismisses it
+  // (the popup itself is pointer-events:none, so nothing under it is blocked meanwhile).
+  function armSpgTipDismiss() {
+    setTimeout(function () {
+      document.addEventListener("touchstart", function off() {
+        document.removeEventListener("touchstart", off, true);
+        hideSpgTip();
+      }, true);
+    }, 0);
+  }
   var YEAR_TIP_CELLS = ".prob-cell, .sp-season, .sp-ytop, .cmp-bar-cell, .delta-up, .delta-down, .delta-flat, .spg-prob";
   // The species + last-seen date a hovered cell belongs to: the cell's own data-key
   // (Season / Yr-peak cells), else its row's or card's (observation rows, gallery cards
@@ -20946,7 +20956,7 @@
   // The ☰ button's record popover: the species' record sub-list (the table's expanded rows)
   // in a small anchored panel. Desktop: shown on hover (click → the table view); touch: a
   // short tap opens it, a long press goes to the table view.
-  var spgRecPop = null, spgPopTimer = null, spgHoldAt = 0;
+  var spgRecPop = null, spgPopTimer = null, spgHoldAt = 0, spgPopWasOpen = false;
   function showSpgRecordsPop(btn, key) {
     var recs = spDetailRowsFor(key); if (!recs.length) return;
     clearTimeout(spgPopTimer);
@@ -20980,8 +20990,12 @@
         if (b) {
           e.preventDefault(); e.stopPropagation();
           if (Date.now() - spgHoldAt < 800) return;   // a long press just acted — swallow the click that follows it
-          if (canHover) openSpGalleryRecords(b.getAttribute("data-key"));   // mouse: click → the table, expanded on this species
-          else showSpgRecordsPop(b, b.getAttribute("data-key"));           // touch: tap → the record popover
+          if (canHover) { openSpGalleryRecords(b.getAttribute("data-key")); return; }   // mouse: click → the table, expanded on this species
+          // Touch: tap → the record popover; tapping the SAME button again closes it. Whether it
+          // WAS open is recorded at touch-start: the anchored-menu's own outside-click handler
+          // (document, capture) has already closed it by the time this click runs.
+          if (spgPopWasOpen) { spgPopWasOpen = false; closeAnchoredMenu(); spgRecPop = null; return; }
+          showSpgRecordsPop(b, b.getAttribute("data-key"));
           return;
         }
         var card = e.target.closest && e.target.closest(".spg-card"); if (!card) return;
@@ -20989,7 +21003,11 @@
         if (e.target.closest(".spg-img-link")) {   // the photo → Macaulay Library, ±1 month around the last sighting
           e.preventDefault(); openExternal(macaulayUrl(key, card.getAttribute("data-sci"), date)); return;
         }
-        if (e.target.closest(".spg-prob, .spg-bar")) { e.preventDefault(); hideSpgTip(); showSpeciesMigration(key, date); }   // any of the three bars → Migration view
+        if (e.target.closest(".spg-prob, .spg-bar")) {
+          e.preventDefault();
+          if (Date.now() - spgHoldAt < 800) return;   // a long press just showed the year curve — swallow its click
+          hideSpgTip(); showSpeciesMigration(key, date);   // any of the three bars → Migration view
+        }
       });
       if (canHover) {
         // Hover ☰ → the record popover (a short delay so scanning past buttons doesn't flash it);
@@ -21006,13 +21024,27 @@
           clearTimeout(hoverT); scheduleSpgPopClose();
         });
       } else {
-        // Touch: press-and-hold ☰ → the table view (click sensation the moment it fires).
+        // Touch: press-and-hold ☰ → the table view; press-and-hold a Prob / Season / Yr-peak
+        // bar → the species' year curve (the popup the mouse gets on hover). Both give the
+        // click sensation the moment they fire, and swallow the click that follows.
         var lpT = null, lpX = 0, lpY = 0;
         rec.addEventListener("touchstart", function (e) {
-          var b = e.target.closest && e.target.closest(".spg-sub"); if (!b) return;
+          var b = e.target.closest && e.target.closest(".spg-sub");
+          var bar = b ? null : (e.target.closest && e.target.closest(".spg-bar"));
+          // Note NOW whether this ☰'s popover is open — the click that follows arrives after the
+          // outside-click handler has closed it, so the tap-to-close state must be read here.
+          spgPopWasOpen = !!(b && spgRecPop && _anchMenuEl === spgRecPop && spgRecPop.getAttribute("data-key") === b.getAttribute("data-key"));
+          if (!b && !bar) return;
           var tt = e.touches && e.touches[0]; lpX = tt ? tt.clientX : 0; lpY = tt ? tt.clientY : 0;
           clearTimeout(lpT);
-          lpT = setTimeout(function () { spgHoldAt = Date.now(); holdFeedback(b); closeAnchoredMenu(); openSpGalleryRecords(b.getAttribute("data-key")); }, holdDelay());
+          lpT = setTimeout(function () {
+            spgHoldAt = Date.now();
+            if (b) { holdFeedback(b); closeAnchoredMenu(); openSpGalleryRecords(b.getAttribute("data-key")); return; }
+            var card = bar.closest(".spg-card"); if (!card) return;
+            holdFeedback(bar);
+            showSpgProbTip(bar, card.getAttribute("data-key"), card.getAttribute("data-date") || "");
+            armSpgTipDismiss();   // the next touch anywhere puts it away
+          }, holdDelay());
         }, { passive: true });
         rec.addEventListener("touchmove", function (e) {
           var tt = e.touches && e.touches[0];
