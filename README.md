@@ -180,7 +180,7 @@ prediction at that point:
 - **Annual Top** — a running total of arrival scores; the part of the year each species is most present.
 - **Scatter** — the top-N species plotted as *(arrival, probability)*, with a sortable table.
 
-**‹ returns to where you came from.** Migration and Species distribution can be opened from another
+**‹ returns to where you came from.** Migration and Distribution can be opened from another
 full view — the species list (a card's Probability, or the species menu), the checklist page, the
 Location analysis page itself, or Range mode. The page's **‹** button (and the browser Back) then
 returns to that view, chaining as deep as you went (list → Migration → distribution → ‹ → ‹ → ‹ lands
@@ -656,8 +656,10 @@ shared payload is all that is shown.
 Right-click / long-press / tap any species name for a menu **led by the species name in bold**
 (wrapping when long), followed by the observation-specific actions when opened from a record, then:
 
-- **Information** — Distribution map (a Wikipedia range image, with a BirdLife link in its popup),
-  **Wikipedia**, then group-specific references: **Macaulay Library** photos/audio (narrowed to the
+- **Information** — **Distribution**: the model's own range map or Wikipedia's range image (with a
+  BirdLife link in its popup); **Settings → Distribution** picks which opens first (model by default),
+  and each falls back to the other when it has nothing for the species (Wikipedia also when offline);
+  the Wikipedia dialog links to the model map. Then **Wikipedia** and group-specific references: **Macaulay Library** photos/audio (narrowed to the
   observation's season — a ±1-month `beginMonth`/`endMonth` window — so images match the time of
   year) and **eBird photos** for birds, **Kew POWO** for plants, **Animal Diversity Web** for
   mammals, plus **Xeno-canto** audio (animals). *Experimental features* (Settings) adds the

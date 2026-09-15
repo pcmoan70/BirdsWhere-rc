@@ -5551,9 +5551,27 @@
   }
 
   function hideDistMap() { document.getElementById("distmap-modal").style.display = "none"; }
+  // Which distribution view the species menu's "Distribution" opens first — the app's own model
+  // range map ("model", default) or Wikipedia's range image ("wiki"); Settings → Distribution.
+  // Either falls back to the other when it has nothing for the species (Wikipedia: no map, or
+  // offline; model: not a model species).
+  function distView() { return window.GeoState.get("distView", "model") === "wiki" ? "wiki" : "model"; }
+  function showDistribution(key, name, sci, dateStr) {
+    var lbl = key && labelsByKey[key];
+    if (distView() === "model") {
+      if (lbl) showSpeciesRange(key, dateStr); else showDistMap(name, sci, key);
+    } else {
+      if (lbl && navigator.onLine === false) { showSpeciesRange(key, dateStr); return; }   // no Wikipedia offline
+      showDistMap(name, sci, key, lbl ? function () { showSpeciesRange(key, dateStr); } : null);
+    }
+  }
   function hideAbout() { document.getElementById("about-modal").style.display = "none"; }
 
-  function showDistMap(name, sci, key) {
+  // `onNone` (optional): called — with the dialog closed — instead of the "no map found"
+  // note when Wikipedia has no range image (the Distribution entry's fallback to the model).
+  var distMapKey = null;   // the species the distribution dialog shows (for its "Species distribution" link)
+  function showDistMap(name, sci, key, onNone) {
+    distMapKey = key || null;
     var modal = document.getElementById("distmap-modal");
     var body = document.getElementById("distmap-body");
     document.getElementById("distmap-title").textContent = name;
@@ -5566,12 +5584,14 @@
     // Reference links shown in the pop-up: Wikipedia, plus BirdLife (birds only).
     function refLinks(fullUrl) {
       var h = "";
+      if (lbl) h += '<a class="dm-model" href="#" role="button">' + escapeHtml(t("menu.apprange")) + '</a> · ';   // the app's own (model) range map
       if (fullUrl) h += '<a href="' + escapeHtml(fullUrl) + '" target="_blank" rel="noopener">' + escapeHtml(t("distmap.download")) + '</a> · ';
       h += '<a class="dm-wiki" data-sci="' + escapeHtml(sci) + '" href="' + escapeHtml(wikipediaUrl(sci)) + '" target="_blank" rel="noopener">Wikipedia</a>';
       if (bird) h += ' · <a class="dm-birdlife" data-en="' + escapeHtml(en) + '" data-sci="' + escapeHtml(sci) + '" href="' + escapeHtml(birdlifeUrl(en, sci)) + '" target="_blank" rel="noopener">BirdLife</a>';
       return h;
     }
     function showNone() {
+      if (onNone) { navClose("distmap"); onNone(); return; }
       body.innerHTML = '<p class="distmap-none">' + escapeHtml(t("distmap.none")) + '</p>' +
         '<div class="distmap-links">' + refLinks(null) + '</div>';
     }
@@ -6230,6 +6250,11 @@
                 '<label for="confusion-view-select" data-i18n="ctrl.confusionView">Confusion species</label>' +
                 '<select id="confusion-view-select"><option value="images" data-i18n="ctrl.confusionImages">Photo cards</option><option value="table" data-i18n="ctrl.confusionTable">Table (no photos)</option></select>' +
                 '<p class="cu-hint" data-i18n="ctrl.confusionViewHint">How the species menu shows look-alikes. Photo cards need an internet connection — offline, the table is shown.</p>' +
+              '</div>' +
+              '<div class="ctrl-group">' +
+                '<label for="dist-view-select" data-i18n="ctrl.distView">Distribution</label>' +
+                '<select id="dist-view-select"><option value="model" data-i18n="ctrl.distModel">Species distribution (model)</option><option value="wiki" data-i18n="ctrl.distWiki">Distribution map (Wikipedia)</option></select>' +
+                '<p class="cu-hint" data-i18n="ctrl.distViewHint">Which map the species menu\u2019s Distribution opens first. Each falls back to the other when it has nothing for the species (Wikipedia also when offline).</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="experimental-toggle"> <span data-i18n="ctrl.experimental">Experimental features</span></label>' +
@@ -10356,7 +10381,7 @@
       // section, a plain divider keeps the two visually separate.
       if (hasObs) { var dv = document.createElement("div"); dv.className = "detrow-menu-div"; el.appendChild(dv); }
       if (lbl) {
-        el.appendChild(drmBtn(t("menu.apprange"), function () { closeDetRowMenu(); showSpeciesRange(key, d && d.date); }));
+        el.appendChild(drmBtn(t("menu.distribution"), function () { closeDetRowMenu(); showDistribution(key, name, sci, d && d.date); }));   // model map or Wikipedia map per Settings, each falling back to the other
         el.appendChild(drmBtn(t("menu.appmig"), function () { closeDetRowMenu(); showSpeciesMigration(key, d && d.date); }));
         // Family browser — every model species in the same family, ranked by the
         // model's probability at the current point (same view as clicking a sci name).
@@ -10390,7 +10415,6 @@
       });
       moreBtn.title = t("menu.recentHint");   // hover description
       el.appendChild(moreBtn);
-      if (lbl) el.appendChild(drmBtn(t("menu.distmap"), function () { closeDetRowMenu(); showDistMap(name, sci, key); }));
       el.appendChild(drmBtn(t("menu.wiki"), function () { closeDetRowMenu(); openWikipedia(sci); }));
       if (isBird) el.appendChild(drmBtn(t("menu.macaulay"), function () { closeDetRowMenu(); openExternal(macaulayUrl(key, sci, d && d.date)); }));   // birds only now
       if (isMammal) el.appendChild(drmBtn(t("menu.adw"), function () { closeDetRowMenu(); openExternal(adwUrl(sci)); }));
@@ -16133,6 +16157,11 @@
       cvSel.value = confusionView();
       cvSel.addEventListener("change", function () { window.GeoState.save({ confusionView: this.value === "table" ? "table" : "images" }); });
     }
+    var dvSel = document.getElementById("dist-view-select");
+    if (dvSel) {
+      dvSel.value = distView();
+      dvSel.addEventListener("change", function () { window.GeoState.save({ distView: this.value === "wiki" ? "wiki" : "model" }); });
+    }
     var expCb = document.getElementById("experimental-toggle");
     if (expCb) {
       expCb.checked = experimentalOn();
@@ -16869,6 +16898,8 @@
       if (!e.target.closest) return;
       var wk = e.target.closest(".dm-wiki");
       if (wk) { e.preventDefault(); openWikipedia(wk.getAttribute("data-sci")); return; }
+      var dm = e.target.closest(".dm-model");   // the app's model range map for the species shown
+      if (dm) { e.preventDefault(); var k = distMapKey; navClose("distmap"); if (k) showSpeciesRange(k); return; }
       var bl = e.target.closest(".dm-birdlife");
       if (bl) { e.preventDefault(); openBirdLife(bl.getAttribute("data-en"), bl.getAttribute("data-sci")); }
     });
