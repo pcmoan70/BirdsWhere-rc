@@ -1494,7 +1494,6 @@ window.GeoI18N = (function () {
         "status.spResult": "{n} species above {p}% at ({lat}, {lon})",
         "status.error": "Error: {msg}",
         "sp.summary": "{lat}°, {lon}° · {week} · {n} species above {p}%",
-        "sp.summaryShort": "{lat}°, {lon}° · {week}",
         "sp.radius": "{km} km neighbourhood",
         "sp.obsN": "{n} obs",
         "sp.spN": "{n} species",

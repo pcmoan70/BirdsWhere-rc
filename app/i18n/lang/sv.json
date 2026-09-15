@@ -127,7 +127,6 @@
   "histo.clearDays": "Rensa valda datum",
   "ctrl.probPerObsHint": "På (standard): varje observations modellsannolikhet använder sin egen plats (25 km-rutnät) och veckan för dess datum — så legendens/listans ordning och ◉-flaggan för sällsynt speglar var & när saker faktiskt sågs (värden cachas). Av: hela mängden använder en enda uppslagning i mitten av det hämtade området och mitten av datumintervallet.",
   "th.probAbbr": "Sannol.",
-  "sp.summaryShort": "{lat}°, {lon}° · {week}",
   "sp.obsN": "{n} fynd",
   "sp.spN": "{n} arter",
   "sp.missingBtn": "Visa även de arter som modellen förutsäger här men som ännu inte observerats",

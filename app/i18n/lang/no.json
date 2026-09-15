@@ -127,7 +127,6 @@
   "histo.clearDays": "Fjern valgte datoer",
   "ctrl.probPerObsHint": "På (standard): hver observasjons modellsannsynlighet bruker sitt eget sted (25 km-rutenett) og uken for datoen — slik gjenspeiler rekkefølgen i tegnforklaringen/listen og ◉-merket for sjeldenhet hvor & når ting faktisk ble sett (verdier bufres). Av: hele settet bruker ett oppslag i midten av det hentede området og midten av datointervallet.",
   "th.probAbbr": "Sanns.",
-  "sp.summaryShort": "{lat}°, {lon}° · {week}",
   "sp.obsN": "{n} obs",
   "sp.spN": "{n} arter",
   "sp.missingBtn": "Vis også artene modellen predikerer her som ennå ikke er observert",

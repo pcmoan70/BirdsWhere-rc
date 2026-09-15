@@ -127,7 +127,6 @@
   "histo.clearDays": "Ausgewählte Daten löschen",
   "ctrl.probPerObsHint": "Ein (Standard): Die Modellwahrscheinlichkeit jeder Beobachtung nutzt ihren eigenen Ort (25-km-Raster) und die Woche ihres Datums — so spiegeln die Reihenfolge in Legende/Liste und die ◉-Markierung für Seltenheit wider, wo & wann etwas tatsächlich gesehen wurde (Werte werden zwischengespeichert). Aus: Die gesamte Menge nutzt eine einzige Abfrage in der Mitte des abgerufenen Gebiets und der Mitte des Zeitraums.",
   "th.probAbbr": "Wahrsch.",
-  "sp.summaryShort": "{lat}°, {lon}° · {week}",
   "sp.obsN": "{n} Beob.",
   "sp.spN": "{n} Arten",
   "sp.missingBtn": "Auch die Arten auflisten, die das Modell hier vorhersagt, aber noch nicht beobachtet wurden",

@@ -127,7 +127,6 @@
   "histo.clearDays": "Limpar as datas selecionadas",
   "ctrl.probPerObsHint": "Ligado (predefinição): a probabilidade do modelo de cada observação usa a sua própria localização (grelha de 25 km) e a semana da sua data — por isso a ordem da legenda/lista e a marca ◉ de raridade refletem onde e quando as coisas foram realmente vistas (os valores são colocados em cache). Desligado: todo o conjunto usa uma única consulta no centro da área obtida e no meio do intervalo de datas.",
   "th.probAbbr": "Prob.",
-  "sp.summaryShort": "{lat}°, {lon}° · {week}",
   "sp.obsN": "{n} obs.",
   "sp.spN": "{n} espécies",
   "sp.missingBtn": "Mostrar também as espécies que o modelo prevê aqui e que ainda não têm observações",

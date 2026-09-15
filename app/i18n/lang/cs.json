@@ -127,7 +127,6 @@
   "histo.clearDays": "Zrušit vybraná data",
   "ctrl.probPerObsHint": "Zapnuto (výchozí): pravděpodobnost modelu u každého pozorování používá vlastní místo (mřížka 25 km) a týden jeho data — pořadí v legendě/seznamu a značka vzácnosti ◉ tak odrážejí, kde a kdy byly věci skutečně viděny (hodnoty se ukládají do mezipaměti). Vypnuto: celá sada používá jediný výpočet uprostřed staženého území a uprostřed rozsahu dat.",
   "th.probAbbr": "Pravd.",
-  "sp.summaryShort": "{lat}°, {lon}° · {week}",
   "sp.obsN": "{n} pozorování",
   "sp.spN": "{n} druhů",
   "sp.missingBtn": "Zobrazit i druhy, které model zde předpovídá, ale zatím nemají pozorování",

@@ -127,7 +127,6 @@
   "histo.clearDays": "Ryd valgte datoer",
   "ctrl.probPerObsHint": "Til (standard): hver observations modelsandsynlighed bruger sit eget sted (25 km-gitter) og ugen for dens dato — så rækkefølgen i signaturforklaring/liste og ◉-mærket for sjældenhed afspejler, hvor & hvornår ting faktisk blev set (værdier caches). Fra: hele sættet bruger ét opslag midt i det hentede område og midt i datointervallet.",
   "th.probAbbr": "Sands.",
-  "sp.summaryShort": "{lat}°, {lon}° · {week}",
   "sp.obsN": "{n} obs",
   "sp.spN": "{n} arter",
   "sp.missingBtn": "Vis også de arter, modellen forudsiger her, men som endnu ikke er observeret",

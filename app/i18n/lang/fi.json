@@ -127,7 +127,6 @@
   "histo.clearDays": "Tyhjennä valitut päivät",
   "ctrl.probPerObsHint": "Päällä (oletus): kunkin havainnon mallitodennäköisyys käyttää omaa sijaintiaan (25 km:n ruudukko) ja päivämääränsä viikkoa — niinpä selitteen/luettelon järjestys ja harvinaisuuden ◉-merkki kuvastavat, missä ja milloin asiat todella nähtiin (arvot tallennetaan välimuistiin). Pois: koko joukko käyttää yhtä laskentaa haetun alueen keskellä ja päivämäärävälin keskellä.",
   "th.probAbbr": "Tod.",
-  "sp.summaryShort": "{lat}°, {lon}° · {week}",
   "sp.obsN": "{n} hav.",
   "sp.spN": "{n} lajia",
   "sp.missingBtn": "Näytä myös lajit, joita malli ennustaa täällä mutta joista ei vielä ole havaintoja",

@@ -3169,6 +3169,16 @@
   // GBIF / eBird / iNaturalist. eBird's API caps dist at 50 km, so values
   // above that affect GBIF/iNat only.
   function recentRadiusKm() { return +window.GeoState.get("recentRadiusKm", 25) || 25; }
+  // The "N species above P%" summary lines count species that are actually plausible here:
+  // at least 15 %, or the Probability slider's own floor when that is higher. (With the
+  // slider at its default 0 % the count used to be "N above 0 %" — nearly the whole model.)
+  var SUMMARY_MIN_PROB = 0.15;
+  function summaryProbFloor(pmin) { return Math.max(+pmin || 0, SUMMARY_MIN_PROB); }
+  function summaryPct(pmin) { return (summaryProbFloor(pmin) * 100).toFixed(0); }
+  function summaryCount(rows, pmin) {
+    var f = summaryProbFloor(pmin);
+    return rows.filter(function (r) { return (+r.prob || 0) >= f; }).length;
+  }
   // BirdWeather: a species counts as "here" on a day only with at least bwMinDet()
   // detections at confidence ≥ bwMinConf(). Both tunable in the BirdWeather entry
   // of the Data-sources card.
@@ -19839,8 +19849,9 @@
     var flatParts = [];
     var html = order.map(function (l) {
       var g = agg[l], parts = [l];
-      if (groupHasModel() && pmin >= 0.1) {
-        var sc = areaSpeciesCount(g.clat, g.clon, week, pmin, pmax, reRender);
+      if (groupHasModel()) {
+        // Same floor as the summary lines: ≥ 15 %, or the slider's own floor when higher.
+        var sc = areaSpeciesCount(g.clat, g.clon, week, summaryProbFloor(pmin), pmax, reRender);
         parts.push(t("sp.spN", { n: (sc === undefined ? "…" : sc) }));
       }
       parts.push(t("sp.obsN", { n: g.obs }));
@@ -20398,8 +20409,8 @@
         if (mergeHint) setStatus(mergeHint.replace(/^ \xb7 /, ""));
       }
       var cSummary = (spp
-        ? t("sp.countrySummaryMerged", { country: info.name || info.cc, n: cells.length, week: week, ns: results.length - nList, nl: nList, p: (pmin * 100).toFixed(0) })
-        : t("sp.countrySummary", { country: info.name || info.cc, n: cells.length, week: week, ns: results.length, p: (pmin * 100).toFixed(0) })) + mergeHint;
+        ? t("sp.countrySummaryMerged", { country: info.name || info.cc, n: cells.length, week: week, ns: summaryCount(results, pmin), nl: nList, p: summaryPct(pmin) })
+        : t("sp.countrySummary", { country: info.name || info.cc, n: cells.length, week: week, ns: summaryCount(results, pmin), p: summaryPct(pmin) })) + mergeHint;
       var cCoordsEl = document.getElementById("sp-coords");
       cCoordsEl.textContent = cSummary;   // country view: a single summary line (no per-point place list)
       cCoordsEl.dataset.flat = cSummary; delete cCoordsEl.dataset.placeKey;
@@ -21531,9 +21542,9 @@
       tbl.classList.toggle("hide-sci", !showSci);
       document.getElementById("sp-name2-head").textContent = secondLang ? window.GeoI18N.langByCode(secondLang).name : "";
       renderSpCoordsAreas(document.getElementById("sp-coords"), lat, lon,
-        // The "N species above p%" count only from a 10% floor up — below that it is most of the model.
-        (pmin >= 0.1 ? t("sp.summary", { lat: lat.toFixed(4), lon: lon.toFixed(4), week: weekMonthLabel(week), n: results.length, p: (pmin * 100).toFixed(0) })
-                     : t("sp.summaryShort", { lat: lat.toFixed(4), lon: lon.toFixed(4), week: weekMonthLabel(week) })) +
+        // "N species above p%": always counted from the summary floor (≥ 15 %, or the slider's
+        // own floor when higher) — below that it would be most of the model.
+        t("sp.summary", { lat: lat.toFixed(4), lon: lon.toFixed(4), week: weekMonthLabel(week), n: summaryCount(results, pmin), p: summaryPct(pmin) }) +
         " · " + t("sp.radius", { km: recentRadiusKm() }) +
         (hist ? " · " + t("hist.range") + " " + fmtDate(hist.from) + " – " + fmtDate(hist.to) +
           (hist.months && hist.months.length ? " · " + t("hist.months") + " " + hist.months.slice().sort(function (a, b) { return a - b; }).map(histMonthShort).join(", ") : "") : ""));
@@ -21588,7 +21599,7 @@
       document.getElementById("barchart-panel").style.display = "none";
       updateViewToggle();   // a fresh list → the header List⇄Map switch applies now
       renderSpControls();   // filter bar + layout dropdown + (records view if not the table)
-      setStatus(t("status.spResult", { n: results.length, p: (pmin * 100).toFixed(0), lat: lat.toFixed(2), lon: lon.toFixed(2) }));
+      setStatus(t("status.spResult", { n: summaryCount(results, pmin), p: summaryPct(pmin), lat: lat.toFixed(2), lon: lon.toFixed(2) }));
 
       // Build CSV for species list (includes 2nd-name + comparison columns when active,
       // plus a "seen_count" column filled from the latest fetch). Rebuilt at DOWNLOAD
@@ -21856,11 +21867,13 @@
     var container = document.getElementById("bc-container");
     var ctx = analysisCtx();
     var lat = analysisData.lat, lon = analysisData.lon;
-    var nVisible = window.GeoAnalysis.visibleSpecies(ctx).length;
+    // The header counts the species actually plausible at this point (≥ 15 %, or the
+    // slider floor when higher) — `curProb` is each species' probability this week.
+    var nVisible = window.GeoAnalysis.visibleSpecies(ctx).filter(function (r) { return r.curProb >= summaryProbFloor(ctx.thresholdFrac); }).length;
 
     setCoordsWithPlace(document.getElementById("bc-coords"), lat, lon,
-      t("sp.summary", { lat: lat.toFixed(4), lon: lon.toFixed(4), week: ctx.week, n: nVisible, p: (ctx.thresholdFrac * 100).toFixed(0) }));
-    setStatus(t("status.spResult", { n: nVisible, p: (ctx.thresholdFrac * 100).toFixed(0), lat: lat.toFixed(2), lon: lon.toFixed(2) }));
+      t("sp.summary", { lat: lat.toFixed(4), lon: lon.toFixed(4), week: ctx.week, n: nVisible, p: summaryPct(ctx.thresholdFrac) }));
+    setStatus(t("status.spResult", { n: nVisible, p: summaryPct(ctx.thresholdFrac), lat: lat.toFixed(2), lon: lon.toFixed(2) }));
 
     if (analysisTab === "timeline") renderTimelineTab(container, ctx);
     else if (analysisTab === "scatter") window.GeoAnalysis.renderScatter(container, ctx);
