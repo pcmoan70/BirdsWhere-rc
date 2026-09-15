@@ -8075,7 +8075,7 @@
     // subdomains must not be undefined — Leaflet reads .length even when the
     // URL has no {s} placeholder (e.g. the Esri satellite layer).
     baseLayer = L.tileLayer(baseUrlFor(render), { attribution: cfg.attribution, maxZoom: MAX_ZOOM, maxNativeZoom: cfg.maxNativeZoom || MAX_ZOOM, subdomains: cfg.subdomains || "abc", noWrap: true });
-    baseLayer._origMaxNative = cfg.maxNativeZoom || MAX_ZOOM;   // restore target when online / leaving an area
+    baseLayer._origMaxNative = cfg.maxNativeZoom || MAX_ZOOM;
     // Tile fetches failing (even when navigator reports "online" — captive portal /
     // dead connection) → treat like offline so the zoom cap upscales cached tiles
     // instead of leaving blank deep tiles; a successful load clears the flag.
@@ -8236,6 +8236,10 @@
     getMap: function () { return map; },
     getBaseLayer: function () { return baseLayer; },
     getArcOverlays: function () { return arcOverlays; },
+    // The basemap actually DRAWN (a key-less Voyager/MapTiler choice renders as Streets).
+    // Offline areas must be recorded and matched against this, not the stored choice —
+    // else the cached tiles belong to one map and the live layer requests another.
+    getRenderedBasemap: function () { return renderedBasemap || window.GeoState.get("basemap", "voyager"); },
   });
 
 

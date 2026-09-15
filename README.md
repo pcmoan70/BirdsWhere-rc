@@ -821,7 +821,11 @@ Settings** (a quiet no-op while offline).
 **Offline maps** — right-click / long-press the map → **Offline maps** opens the panel; its
 **⬇ Download map** button saves the area on screen (pan/zoom first, – shrinks the panel).
 Areas are colour-coded frames you can delete individually; if the browser evicts
-tiles, the app detects it and offers to re-download. Pinned areas are never auto-purged.
+tiles, the app detects it and offers to re-download. Pinned areas are never auto-purged. A download
+covers the zoom levels from the current view down to the chosen max, **plus a few zoomed-out levels**
+so the area still draws when you zoom out, and it is stored against the basemap actually on screen (a
+key-less Voyager/MapTiler choice draws Streets). Offline the map keeps working for every basemap the
+app can draw.
 
 **Google Drive sync** — an optional **manual, one-shot** sync: tapping *Synchronize* opens a small
 dialog to pick **which categories** travel (Settings · Point lists · Trips · Checklists · Fetched

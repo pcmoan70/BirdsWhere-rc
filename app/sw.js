@@ -21,7 +21,7 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1736";
+var VERSION = "v1739";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
@@ -211,7 +211,10 @@ var LAZY = [
   "i18n/lang/no.json", "i18n/lang/pl.json", "i18n/lang/pt.json", "i18n/lang/sv.json",
 ];
 
-var TILE_HOSTS = /(\.basemaps\.cartocdn\.com|\.tile\.openstreetmap\.org|\.tile\.opentopomap\.org|server\.arcgisonline\.com|data-gis\.unep-wcmc\.org|bio\.discomap\.eea\.europa\.eu)/;
+// Every basemap / overlay tile host the app can draw from. A host missing here is never
+// intercepted: its tiles bypass the cache entirely, so they re-download on every view and
+// a downloaded offline area can never serve them (CycloSM and MapTiler were missing).
+var TILE_HOSTS = /(\.basemaps\.cartocdn\.com|\.tile\.openstreetmap\.org|\.tile-cyclosm\.openstreetmap\.fr|\.tile\.opentopomap\.org|api\.maptiler\.com|server\.arcgisonline\.com|data-gis\.unep-wcmc\.org|bio\.discomap\.eea\.europa\.eu)/;
 var API_HOSTS = /(nominatim\.openstreetmap\.org|photon\.komoot\.io|overpass-api\.de|api\.inaturalist\.org|api\.gbif\.org|api\.ebird\.org|artskart\.artsdatabanken\.no|api\.artdatabanken\.se|wikipedia\.org|wikidata\.org|wikimedia\.org)/;
 
 // ---- Incremental updates ---------------------------------------------------

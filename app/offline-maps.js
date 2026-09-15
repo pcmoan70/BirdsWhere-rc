@@ -22,7 +22,7 @@ window.AppOffline = (function () {
       setBasemap, setStatus, syncLabelsConnectivity, t;
   // … and getters for app state that is replaced at runtime (the map is built
   // after this file loads; the base layer is rebuilt on every basemap change).
-  var getMap, getBaseLayer, getArcOverlays;
+  var getMap, getBaseLayer, getArcOverlays, getRenderedBasemap;
 
   function init(ctx) {
     BASEMAPS = ctx.BASEMAPS; H3_ZOOM_PHASE = ctx.H3_ZOOM_PHASE; H3_ZOOM_STEP = ctx.H3_ZOOM_STEP;
@@ -33,6 +33,7 @@ window.AppOffline = (function () {
     navOpen = ctx.navOpen; rasterLabelsLayer = ctx.rasterLabelsLayer; setBasemap = ctx.setBasemap;
     setStatus = ctx.setStatus; syncLabelsConnectivity = ctx.syncLabelsConnectivity; t = ctx.t;
     getMap = ctx.getMap; getBaseLayer = ctx.getBaseLayer; getArcOverlays = ctx.getArcOverlays;
+    getRenderedBasemap = ctx.getRenderedBasemap || function () { return window.GeoState.get("basemap", "voyager"); };
   }
 
   // Download the basemap + active overlay tiles for a drawn rectangle into a
@@ -88,7 +89,7 @@ window.AppOffline = (function () {
     // Cache the aligned raster labels instead so names show offline for any label-
     // capable basemap, in both "on" and "more" modes. (With labels active the CARTO
     // base is already the labels-FREE variant, so no duplication.)
-    var bm = window.GeoState.get("basemap", "voyager");
+    var bm = getRenderedBasemap();   // the map actually drawn — labels must match it
     if (labelsMode() !== "off" && labelsSupported(bm)) arr.push(rasterLabelsLayer(bm));
     return arr.filter(Boolean);
   }
@@ -104,14 +105,19 @@ window.AppOffline = (function () {
   // The integer tile zooms the app actually requests = round(zoom-snap steps).
   // zoomSnap is one H3 resolution, so it skips some integers (e.g. 16) — only
   // cache the levels the map will ever ask for, else offline tiles never match.
+  // Also cache the zoomed-OUT levels down to here: a handful of tiles per level for any
+  // bbox, and without them the map is blank the moment you zoom out past the area's start
+  // zoom — which reads as "my downloaded map isn't there" even though it is.
+  var OVERVIEW_MIN_Z = 4;
   function offlineZoomLevels(zStart, zMax) {
     var step = window.h3 ? H3_ZOOM_STEP : 1;
     var maxZ = getMap().getMaxZoom(), seen = {}, out = [];
+    var lo = Math.min(zStart, OVERVIEW_MIN_Z);
     // Walk the phased H3 ladder (the exact stops the map settles on) so the cached
     // integer tile zooms match what it will actually request.
     for (var m = window.h3 ? H3_ZOOM_PHASE : 0; m <= maxZ + 1e-6; m += step) {
       var tz = Math.round(m);
-      if (tz < zStart || tz > zMax || seen[tz]) continue;
+      if (tz < lo || tz > zMax || seen[tz]) continue;
       seen[tz] = 1; out.push(tz);
     }
     if (!out.length) out.push(zStart);
@@ -168,7 +174,7 @@ window.AppOffline = (function () {
     }).then(function () {
       if (aborted()) { return caches.delete("pinned-" + id).then(function () { return -1; }); }
       var areas = getOfflineAreas();
-      areas.push({ id: id, name: name, basemap: window.GeoState.get("basemap", "voyager"),
+      areas.push({ id: id, name: name, basemap: getRenderedBasemap(),
                    labels: labelsMode(),   // so a refill re-fetches the raster labels + the matching base variant
                    bbox: [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
                    zStart: zStart, zMax: zMax, tiles: ok, bytes: ok * OFFLINE_TILE_BYTES, createdAt: Date.now() });
@@ -438,16 +444,28 @@ window.AppOffline = (function () {
   // instead of requesting missing deep tiles and leaving broken holes. Restored
   // to the layer's real native max when online or outside any download.
   var offlineTilesFailing = false;   // tiles erroring despite navigator.onLine (dead/captive connection)
+  // Re-request a tile layer's tiles after its zoom cap changed. NOT layer.redraw():
+  // Leaflet's redraw sets `_tileZoom = _clampZoom(map.getZoom())` WITHOUT rounding, and
+  // this app snaps zoom to the fractional H3 ladder — so redraw left a fractional tile
+  // zoom and every tile URL came out as ".../12.313357887945102/x/y.png", which no tile
+  // server and no offline cache can answer: the base map went blank the moment the cap
+  // changed (i.e. the moment you went offline). _resetView takes Leaflet's normal path,
+  // which rounds the zoom before clamping it.
+  function redrawTiles(layer) {
+    if (!layer || !layer._map) return;
+    try { layer._removeAllTiles(); layer._resetView(); }
+    catch (e) { try { layer.redraw(); } catch (e2) {} }
+  }
   function refreshOfflineZoomCap() {
     if (!getBaseLayer()) return;
     var cap = getBaseLayer()._origMaxNative || MAX_ZOOM;
     if (!navigator.onLine || offlineTilesFailing) {
-      var here = coveringAreas(window.GeoState.get("basemap", "voyager"));
+      var here = coveringAreas(getRenderedBasemap());
       if (here.length) cap = here.reduce(function (m, a) { return Math.max(m, a.zMax || 0); }, 0);
     }
     if (getBaseLayer().options.maxNativeZoom !== cap) {
       getBaseLayer().options.maxNativeZoom = cap;
-      getBaseLayer().redraw();
+      redrawTiles(getBaseLayer());
     }
     syncLabelsConnectivity();   // flip labels vector↔raster if connectivity changed (guarded: no-op otherwise)
   }
@@ -461,7 +479,7 @@ window.AppOffline = (function () {
     if (navigator.onLine || offlinePromptBusy || !getMap() || !window.caches) return;
     var covering = coveringAreas(null);
     if (!covering.length) return;
-    var curBase = window.GeoState.get("basemap", "voyager");
+    var curBase = getRenderedBasemap();
     // The current basemap is downloaded here → its tiles upscale (handled by the
     // zoom cap); don't interrupt with a prompt. Only offer a switch when *only*
     // a different basemap covers this view.
@@ -484,7 +502,7 @@ window.AppOffline = (function () {
         var a = getOfflineAreas().filter(function (x) { return x.id === this.getAttribute("data-id"); }.bind(this))[0];
         close();
         if (!a) return;
-        if (a.basemap && a.basemap !== window.GeoState.get("basemap", "voyager")) setBasemap(a.basemap);
+        if (a.basemap && a.basemap !== getRenderedBasemap()) setBasemap(a.basemap);
         try { getMap().fitBounds([[a.bbox[1], a.bbox[0]], [a.bbox[3], a.bbox[2]]], { maxZoom: a.zMax }); } catch (e) {}
       });
     });
