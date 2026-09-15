@@ -901,7 +901,10 @@
       document.removeEventListener("pointerdown", spLoadingClearFn, true);
       document.removeEventListener("keydown", spLoadingClearFn, true);
       spLoadingClearFn = null;
-      if (ld) ld.style.display = "none";
+      // Hide AFTER the gesture completes, not on the press: collapsing the line on pointerdown
+      // shifted the list ~26 px under the finger/pointer, so the release (and the click) landed
+      // on a different element — the first tap after a fetch did the wrong thing or nothing.
+      if (ld) setTimeout(function () { ld.style.display = "none"; }, 400);
     };
     document.addEventListener("pointerdown", spLoadingClearFn, true);
     document.addEventListener("keydown", spLoadingClearFn, true);
@@ -20926,13 +20929,44 @@
       spgTipEl.style.left = Math.round(left) + "px"; spgTipEl.style.top = Math.round(top) + "px";
     }).catch(function () {});
   }
+  // The ☰ button's record popover: the species' record sub-list (the table's expanded rows)
+  // in a small anchored panel. Desktop: shown on hover (click → the table view); touch: a
+  // short tap opens it, a long press goes to the table view.
+  var spgRecPop = null, spgPopTimer = null, spgHoldAt = 0;
+  function showSpgRecordsPop(btn, key) {
+    var recs = spDetailRowsFor(key); if (!recs.length) return;
+    clearTimeout(spgPopTimer);
+    if (spgRecPop && _anchMenuEl === spgRecPop && spgRecPop.getAttribute("data-key") === key) return;   // already up for this species
+    var r = btn.getBoundingClientRect();
+    var el = openAnchoredMenu("detrow-menu spg-recpop");
+    el.setAttribute("data-key", key);
+    el.style.width = "min(96vw,560px)"; el.style.maxHeight = "min(60vh,420px)"; el.style.overflow = "auto";
+    var lbl = labelsByKey[key];
+    el.innerHTML = '<div class="detrow-menu-hdr detrow-menu-name">' + escapeHtml(lbl ? speciesName(lbl) : key) + ' <span class="spg-recpop-n">(' + recs.length + ")</span></div>" + spDetailTableHtml(key, recs);
+    wireSpDetail(el);
+    el.addEventListener("mouseenter", function () { clearTimeout(spgPopTimer); });
+    el.addEventListener("mouseleave", function () { scheduleSpgPopClose(); });
+    spgRecPop = el;
+    positionAnchoredMenu(el, Math.round(r.left), Math.round(r.bottom + 4));
+  }
+  function scheduleSpgPopClose() {
+    clearTimeout(spgPopTimer);
+    spgPopTimer = setTimeout(function () { if (spgRecPop && _anchMenuEl === spgRecPop) closeAnchoredMenu(); spgRecPop = null; }, 250);
+  }
   function wireSpGallery(rec) {
     if (spGalleryObs) { spGalleryObs.disconnect(); spGalleryObs = null; }
     if (!rec._spgSubWired) {
       rec._spgSubWired = true;
+      var canHover = !window.matchMedia || window.matchMedia("(hover: hover)").matches;
       rec.addEventListener("click", function (e) {
         var b = e.target.closest && e.target.closest(".spg-sub");
-        if (b) { e.preventDefault(); e.stopPropagation(); openSpGalleryRecords(b.getAttribute("data-key")); return; }
+        if (b) {
+          e.preventDefault(); e.stopPropagation();
+          if (Date.now() - spgHoldAt < 800) return;   // a long press just acted — swallow the click that follows it
+          if (canHover) openSpGalleryRecords(b.getAttribute("data-key"));   // mouse: click → the table, expanded on this species
+          else showSpgRecordsPop(b, b.getAttribute("data-key"));           // touch: tap → the record popover
+          return;
+        }
         var card = e.target.closest && e.target.closest(".spg-card"); if (!card) return;
         var key = card.getAttribute("data-key"), date = card.getAttribute("data-date") || "";
         if (e.target.closest(".spg-img-link")) {   // the photo → Macaulay Library, ±1 month around the last sighting
@@ -20940,6 +20974,36 @@
         }
         if (e.target.closest(".spg-prob, .spg-bar")) { e.preventDefault(); hideSpgTip(); showSpeciesMigration(key, date); }   // any of the three bars → Migration view
       });
+      if (canHover) {
+        // Hover ☰ → the record popover (a short delay so scanning past buttons doesn't flash it);
+        // it stays while the pointer is on the button or the popover, and closes shortly after.
+        var hoverT = null;
+        rec.addEventListener("mouseover", function (e) {
+          var b = e.target.closest && e.target.closest(".spg-sub"); if (!b) return;
+          clearTimeout(spgPopTimer); clearTimeout(hoverT);
+          hoverT = setTimeout(function () { if (b.isConnected) showSpgRecordsPop(b, b.getAttribute("data-key")); }, 180);
+        });
+        rec.addEventListener("mouseout", function (e) {
+          var b = e.target.closest && e.target.closest(".spg-sub"); if (!b) return;
+          var to = e.relatedTarget; if (to && to.closest && (to.closest(".spg-sub") === b || to.closest(".spg-recpop"))) return;
+          clearTimeout(hoverT); scheduleSpgPopClose();
+        });
+      } else {
+        // Touch: press-and-hold ☰ → the table view (click sensation the moment it fires).
+        var lpT = null, lpX = 0, lpY = 0;
+        rec.addEventListener("touchstart", function (e) {
+          var b = e.target.closest && e.target.closest(".spg-sub"); if (!b) return;
+          var tt = e.touches && e.touches[0]; lpX = tt ? tt.clientX : 0; lpY = tt ? tt.clientY : 0;
+          clearTimeout(lpT);
+          lpT = setTimeout(function () { spgHoldAt = Date.now(); holdFeedback(b); closeAnchoredMenu(); openSpGalleryRecords(b.getAttribute("data-key")); }, holdDelay());
+        }, { passive: true });
+        rec.addEventListener("touchmove", function (e) {
+          var tt = e.touches && e.touches[0];
+          if (tt && (Math.abs(tt.clientX - lpX) > 12 || Math.abs(tt.clientY - lpY) > 12)) clearTimeout(lpT);
+        }, { passive: true });
+        rec.addEventListener("touchend", function () { clearTimeout(lpT); }, { passive: true });
+        rec.addEventListener("touchcancel", function () { clearTimeout(lpT); }, { passive: true });
+      }
     }
     function fill(card) {
       if (card._spgDone) return; card._spgDone = true;

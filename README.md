@@ -201,9 +201,10 @@ the table's current order: photo, name with the scientific name in parentheses, 
 lists; any of them opens the Migration view, and hovering shows the year curve). Photos are the lead image of the species' Wikipedia article, loaded from
 Wikimedia Commons as cards scroll into view (nothing bundled or stored beyond the browser cache) and
 credited under each picture to their author and licence, linked to the Commons file page. The name
-opens the usual species menu and the scientific name the Family menu, as in the table; the small **☰**
-button on a card jumps to that species' record sub-list in the Species list table (expanded, scrolled
-into view). Tapping a bird's **photo** opens its **Macaulay Library** catalogue narrowed to the month
+opens the usual species menu and the scientific name the Family menu, as in the table. The small **☰**
+button on a card shows the species' record sub-list: on a computer, hovering it opens the list in a
+small popover and clicking it jumps to the Species list table (expanded on that species, scrolled into
+view); on a phone, a short tap opens the popover and a long press jumps to the table. Tapping a bird's **photo** opens its **Macaulay Library** catalogue narrowed to the month
 it was last seen (±1 month — the same link as the species menu's *Photos*); tapping the
 **Probability** opens the **Migration** view (Location analysis → Timeline) for that species, and on
 a mouse device hovering it previews the same 48-week probability bars at the fetch point (current
