@@ -61,6 +61,7 @@
   "confusion.tipScore": "Bendra tikimybė čia supainioti su šiuo paukščiu = (0,25 × Atit. + 0,75 × misID) × Čia. Pirmiausia rikiuojamos tikros, čia tikėtinos painiavos; sąrašas surikiuotas pagal šį balą.",
   "confusion.openList": "Rodyti šio paukščio panašias rūšis",
   "confusion.base": "Ši rūšis",
+  "confusion.toTable": "Lentelė",
   "traits.none": "Požymių duomenų nėra",
   "traits.colour": "Plunksnų spalva",
   "traits.male": "Patinas",

@@ -61,6 +61,7 @@
   "confusion.tipScore": "Üldine tõenäosus, et sa selle linnu siin segi ajad = (0,25 × Sarn. + 0,75 × misID) × Siin. Tegelikud ja siin tõenäolised segiajamised on eespool; nimekiri on selle järgi sorditud.",
   "confusion.openList": "Näita selle linnu segiajavaid liike",
   "confusion.base": "See liik",
+  "confusion.toTable": "Tabel",
   "traits.none": "Tunnuseid pole kirjas",
   "traits.colour": "Sulestiku värvus",
   "traits.male": "Isane",

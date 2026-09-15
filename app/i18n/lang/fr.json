@@ -61,6 +61,7 @@
   "confusion.tipScore": "Probabilité globale de confondre cet oiseau ici = (0,25 × Ressem. + 0,75 × misID) × Ici. Les confusions réelles et plausibles localement arrivent en tête ; la liste est triée selon ce score.",
   "confusion.openList": "Afficher les espèces ressemblantes de cet oiseau",
   "confusion.base": "Cette espèce",
+  "confusion.toTable": "Tableau",
   "traits.none": "Aucune caractéristique répertoriée",
   "traits.colour": "Coloration du plumage",
   "traits.male": "Mâle",

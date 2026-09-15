@@ -61,6 +61,7 @@
   "confusion.tipScore": "Totale kans dat je deze vogel hier verwart = (0,25 × Match + 0,75 × misID) × Hier. Echte, hier waarschijnlijke verwarringen staan bovenaan; de lijst is hierop gesorteerd.",
   "confusion.openList": "Toon de verwarringssoorten van deze vogel",
   "confusion.base": "Deze soort",
+  "confusion.toTable": "Tabel",
   "traits.none": "Geen kenmerken bekend",
   "traits.colour": "Verenkleedkleur",
   "traits.male": "Mannetje",

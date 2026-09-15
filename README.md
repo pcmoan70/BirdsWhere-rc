@@ -703,7 +703,8 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
   onto further rows (two per row on narrow phones). Each card carries the Wikipedia/Commons lead photo
   with its credit, the name, the scientific name and **Match · misID · Here · Score** as small bars;
   tapping a look-alike opens the same compare card. **Settings → Confusion species** switches between
-  *Photo cards* (default) and the *Table*; offline the table is used automatically. Photos are shared
+  *Photo cards* (default) and the *Table*; offline the table is used automatically, and each popup has a
+  **Table / Photo cards** button (top right, next to ×) to switch to the other view on the spot. Photos are shared
   with the Images list layout through the on-device photo cache, so a bird seen there needs no new
   download here; a photo that is not cached while offline shows a small no-internet mark and loads as
   soon as the connection is back.

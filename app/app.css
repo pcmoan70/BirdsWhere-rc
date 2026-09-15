@@ -858,6 +858,10 @@ input:focus-visible {
   padding: 2px 7px; border-radius: 5px;
 }
 .conf-close:hover { background: var(--hover, #eef4f2); color: var(--ink, #222); }
+/* View switch (table ↔ photo cards), left of the ×. */
+.conf-switch { position: absolute; top: 6px; right: 34px; z-index: 3; border: 1px solid var(--border, #d7ded9); background: var(--surface-2, #f2f6f4); color: var(--ink, #222); font: inherit; font-size: var(--fs-xs); padding: 3px 8px; border-radius: 6px; cursor: pointer; }
+.conf-switch:hover { background: var(--brand-soft, #e3efe9); }
+.conf-menu .detrow-menu-name { padding-right: 120px; }   /* room for the switch + × */
 /* Confusion COMPARE card: focal vs look-alike across colour / shape / ecology. */
 .cmp-menu .detrow-menu-name { padding-right: 28px; }
 .cmp-table { border-collapse: collapse; width: 100%; font-size: 12.5px; }

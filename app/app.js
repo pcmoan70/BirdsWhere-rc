@@ -10178,6 +10178,14 @@
     return { arr: arr, out: out };
   }
   function confusionView() { return window.GeoState.get("confusionView", "images") === "table" ? "table" : "images"; }
+  // The view switch in the popup's top-right (next to ×): table ↔ photo cards, one-off (the
+  // Settings default is untouched); reopens the other view at the same anchor.
+  function confSwitchBtn(el, label, open) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "conf-switch"; b.textContent = label;
+    b.addEventListener("click", function (e) { e.stopPropagation(); closeAnchoredMenu(); open(); });
+    el.appendChild(b);
+  }
   // "Confusion species (images)": the same ranked look-alikes as picture cards, left →
   // right by Score (Match without a point) and wrapping onto further rows, the species
   // itself first as the reference. Each card: photo (credited), name, scientific name, Match · misID · Here ·
@@ -10196,6 +10204,7 @@
     closeBtn.setAttribute("aria-label", "Close");
     closeBtn.addEventListener("click", function (e) { e.stopPropagation(); closeAnchoredMenu(); });
     el.appendChild(closeBtn);
+    confSwitchBtn(el, t("confusion.toTable"), function () { openConfusionMenu(key, x, y); });
     var wait = document.createElement("div"); wait.className = "detrow-menu-hdr"; wait.textContent = "…";
     el.appendChild(wait); positionAnchoredMenu(el, x, y);
     var rk = await confusionRanked(key);
@@ -10261,6 +10270,7 @@
     closeBtn.setAttribute("aria-label", "Close");
     closeBtn.addEventListener("click", function (e) { e.stopPropagation(); closeAnchoredMenu(); });
     el.appendChild(closeBtn);
+    confSwitchBtn(el, t("ctrl.confusionImages"), function () { openConfusionImages(key, x, y); });
     positionAnchoredMenu(el, x, y);
     var wait = document.createElement("div"); wait.className = "detrow-menu-hdr"; wait.textContent = "…";
     el.appendChild(wait); positionAnchoredMenu(el, x, y);

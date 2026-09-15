@@ -61,6 +61,7 @@
   "confusion.tipScore": "Kokonaistodennäköisyys, että sekoittaisit tämän linnun täällä = (0,25 × Osuma + 0,75 × misID) × Tässä. Todelliset, täällä todennäköiset sekaannukset nousevat kärkeen; lista on järjestetty tämän mukaan.",
   "confusion.openList": "Näytä tämän linnun sekaannuslajit",
   "confusion.base": "Tämä laji",
+  "confusion.toTable": "Taulukko",
   "traits.none": "Ei ominaisuustietoja",
   "traits.colour": "Höyhenpuvun väri",
   "traits.male": "Koiras",

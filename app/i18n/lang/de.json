@@ -61,6 +61,7 @@
   "confusion.tipScore": "Gesamtwahrscheinlichkeit, diesen Vogel hier zu verwechseln = (0,25 × Ähnl. + 0,75 × misID) × Hier. Echte, hier wahrscheinliche Verwechslungen stehen vorn; danach ist die Liste sortiert.",
   "confusion.openList": "Verwechslungsarten dieses Vogels anzeigen",
   "confusion.base": "Diese Art",
+  "confusion.toTable": "Tabelle",
   "traits.none": "Keine Merkmale hinterlegt",
   "traits.colour": "Gefiederfärbung",
   "traits.male": "Männchen",
