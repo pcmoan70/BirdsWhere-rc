@@ -20690,6 +20690,7 @@
       var photoLink = !!key && isBirdKey(key);   // Macaulay Library is birds-only (as in the species menu)
       var probLink = !!key && !!labelsByKey[key];   // model species only: the Migration view / year curve need the model
       var predicted = !!key && !tr.classList.contains("sp-has-det") && !tr.classList.contains("sp-extra");   // [?] mode: a model prediction with no records here
+      function plain(prefix, el) { var v = el ? el.textContent.trim() : ""; return v ? '<span class="spg-m">' + escapeHtml(prefix + v) + "</span>" : ""; }
       function cell(label, el, attrs) { var v = el ? el.textContent.trim() : ""; return v ? '<span class="spg-m' + (attrs ? " " + attrs.cls : "") + '"' + (attrs ? attrs.a : "") + '><span class="spg-k">' + escapeHtml(label) + "</span> " + escapeHtml(v) + "</span>" : ""; }
       // Prob · Season · Yr peak as bar cells on one line (the table's / observation list's cells);
       // Season + Yr peak are filled once the point's 48-week prediction is in (fillSpGalleryBars).
@@ -20704,7 +20705,9 @@
           '<span class="spg-none" style="display:none">' + escapeHtml(t("spg.noImage")) + "</span></div>" +
         '<div class="spg-name"><span class="spg-nm">' + (dot ? dot.outerHTML : "") + (link ? link.outerHTML : "") +
           (showSci ? ' <span class="spg-sci">(' + (sciEl ? sciEl.outerHTML : escapeHtml(sci)) + ")</span>" : "") + "</span>" + subBtn + "</div>" +
-        '<div class="spg-meta">' + cell(lbl.total, nd) + cell(lbl.last, last) + cell(lbl.dist, dist) + (barsRow ? "" : cell(lbl.prob, prob)) + "</div>" +
+        // Compact, label-free meta line: "#total(n)  last-seen  distance" (the bars row below
+        // carries the probabilities; a card without the bars keeps a labelled Probability).
+        '<div class="spg-meta">' + plain("#", nd) + plain("", last) + plain("", dist) + (barsRow ? "" : cell(lbl.prob, prob)) + "</div>" +
         barsRow +
         '<div class="spg-credit"></div>' +
       "</div>";

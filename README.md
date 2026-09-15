@@ -196,8 +196,8 @@ The fetch can be shown three ways (layout dropdown above the list — the choice
 device; a `layout=` link parameter applies to that visit only; changing the UI or second-name language
 relabels the open list in place): the ranked **Species list** table,
 the **Observation list** (one row per record) and **Images** — a gallery with one card per species in
-the table's current order: photo, name with the scientific name in parentheses, Total, Last seen and
-Distance, then **Probability · Season · Yr peak** as three bar cells on one line (the same cells as the
+the table's current order: photo, name with the scientific name in parentheses, a compact
+"#total(n) · last seen · distance" line, then **Probability · Season · Yr peak** as three bar cells on one line (the same cells as the
 lists; any of them opens the Migration view, and hovering shows the year curve). Photos are the lead image of the species' Wikipedia article, loaded from
 Wikimedia Commons as cards scroll into view (nothing bundled or stored beyond the browser cache) and
 credited under each picture to their author and licence, linked to the Commons file page. The name
