@@ -822,7 +822,7 @@
   "menu.ebirdau": "eBird Australia (AU)",
   "menu.ebirdnz": "eBird NZ (NZ)",
   "menu.recent": "Daugiau tokių",
-  "menu.recentHint": "Gauti daugiau naujausių šios rūšies stebėjimų 50 km spinduliu (eBird / GBIF / iNaturalist) — parodyti žemėlapyje arba atsisiųsti CSV.",
+  "menu.recentHint": "Gauti daugiau naujausių šios rūšies stebėjimų 1,5 × jūsų gavimo spindulio, paskutinės 90 dienų spinduliu (eBird / GBIF / iNaturalist) — parodyti žemėlapyje arba atsisiųsti CSV.",
   "menu.apprange": "Rūšies paplitimas",
   "menu.distribution": "Paplitimas",
   "menu.appmig": "Migracija",

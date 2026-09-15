@@ -822,7 +822,7 @@
   "menu.ebirdau": "eBird Australia (AU)",
   "menu.ebirdnz": "eBird NZ (NZ)",
   "menu.recent": "Mais destas",
-  "menu.recentHint": "Obter mais observações recentes desta espécie num raio de 50 km (eBird / GBIF / iNaturalist) — mostrar no mapa ou descarregar como CSV.",
+  "menu.recentHint": "Obter mais observações recentes desta espécie num raio de 1,5 × o seu raio de obtenção, últimos 90 dias (eBird / GBIF / iNaturalist) — mostrar no mapa ou descarregar como CSV.",
   "menu.apprange": "Distribuição da espécie",
   "menu.distribution": "Distribuição",
   "menu.appmig": "Migração",

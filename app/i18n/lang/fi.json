@@ -822,7 +822,7 @@
   "menu.ebirdau": "eBird Australia (AU)",
   "menu.ebirdnz": "eBird NZ (NZ)",
   "menu.recent": "Lisää näitä",
-  "menu.recentHint": "Hae lisää tämän lajin viimeaikaisia havaintoja 50 km säteellä (eBird / GBIF / iNaturalist) — näytä kartalla tai lataa CSV:nä.",
+  "menu.recentHint": "Hae lisää tämän lajin viimeaikaisia havaintoja 1,5 × hakusäteesi, viimeiset 90 päivää säteellä (eBird / GBIF / iNaturalist) — näytä kartalla tai lataa CSV:nä.",
   "menu.apprange": "Lajin levinneisyys",
   "menu.distribution": "Levinneisyys",
   "menu.appmig": "Muutto",

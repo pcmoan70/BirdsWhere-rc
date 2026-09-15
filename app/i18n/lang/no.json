@@ -822,7 +822,7 @@
   "menu.ebirdau": "eBird Australia (AU)",
   "menu.ebirdnz": "eBird NZ (NZ)",
   "menu.recent": "Flere av disse",
-  "menu.recentHint": "Hent flere nylige funn av denne arten innen 50 km (eBird / GBIF / iNaturalist) – vis på kartet eller last ned som CSV.",
+  "menu.recentHint": "Hent flere nylige funn av denne arten innen 1,5 × hentradiusen din, siste 90 dager (eBird / GBIF / iNaturalist) – vis på kartet eller last ned som CSV.",
   "menu.apprange": "Artsutbredelse",
   "menu.distribution": "Utbredelse",
   "menu.appmig": "Trekk",

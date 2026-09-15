@@ -822,7 +822,7 @@
   "menu.ebirdau": "eBird Australia (AU)",
   "menu.ebirdnz": "eBird NZ (NZ)",
   "menu.recent": "Rohkem selliseid",
-  "menu.recentHint": "Too rohkem selle liigi hiljutisi vaatlusi 50 km raadiuses (eBird / GBIF / iNaturalist) — kuva kaardil või laadi alla CSV-na.",
+  "menu.recentHint": "Too rohkem selle liigi hiljutisi vaatlusi 1,5 × sinu pärimisraadius, viimased 90 päeva raadiuses (eBird / GBIF / iNaturalist) — kuva kaardil või laadi alla CSV-na.",
   "menu.apprange": "Liigi levik",
   "menu.distribution": "Levik",
   "menu.appmig": "Ränne",

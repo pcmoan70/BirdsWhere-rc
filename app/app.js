@@ -5420,9 +5420,9 @@
     var fmtD = function (d) { return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); };
     var d1, d2;
     if (customRange) { var cr = String(customRange).split(","); d1 = cr[0]; d2 = cr[1] || fmtD(new Date()); }   // Historic mode passes its own range
-    else { var to = new Date(), from = new Date(); from.setMonth(from.getMonth() - 3); d1 = fmtD(from); d2 = fmtD(to); }
+    else { var to = new Date(), from = new Date(); from.setDate(from.getDate() - 90); d1 = fmtD(from); d2 = fmtD(to); }   // the last 90 days
     var range = d1 + "," + d2;
-    var rkm = 50;   // "More of these" searches a fixed 50 km radius around the point
+    var rkm = Math.round(recentRadiusKm() * 1.5 * 10) / 10;   // "More of these": the last fetch radius, widened by half
 
     var inatWeb = "https://www.inaturalist.org/observations?taxon_name=" + encodeURIComponent(sci) +
       "&lat=" + lat.toFixed(4) + "&lng=" + lon.toFixed(4) + "&radius=" + rkm + "&d1=" + d1 + "&d2=" + d2 + "&order_by=observed_on&order=desc";

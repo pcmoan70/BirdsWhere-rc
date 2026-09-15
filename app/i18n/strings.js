@@ -490,7 +490,7 @@ window.GeoI18N = (function () {
         "menu.ebirdau": "eBird Australia (AU)",
         "menu.ebirdnz": "eBird NZ (NZ)",
         "menu.recent": "More of these",
-        "menu.recentHint": "Fetch more recent sightings of this species within 50 km (eBird / GBIF / iNaturalist) — plot them on the map or download as CSV.",
+        "menu.recentHint": "Fetch more recent sightings of this species within 1.5 \u00d7 your fetch radius, last 90 days (eBird / GBIF / iNaturalist) \u2014 plot them on the map or download as CSV.",
         "menu.apprange": "Species distribution",
         "menu.distribution": "Distribution",
         "menu.appmig": "Migration",

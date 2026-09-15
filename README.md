@@ -30,7 +30,7 @@ layered on top are the real sightings.
 |---|---|
 | **"Where should I go birding today?"** | Fetch live observations around you (or all your stored locations at once), sort the list by **probability low→high** so the locally-rarest finds top it, check the **Dist** column, and browse **eBird hotspots** and OSM **viewpoints** (hides, towers & viewpoints) on the map. |
 | **"What's arriving this week?"** | **Migration mode**: per-point arrival/departure heatmaps, phenology timelines and a scatter of *arrival × probability*. The **Season** column (↑ arriving · ● peak · ↓ leaving) puts the same signal in every species list. |
-| **Chasing / studying one species** | Its **Range map** animated across 48 weeks, **"More of these"** (recent sightings within 50 km from eBird/GBIF/iNaturalist), Macaulay photos matched to the season, Xeno-canto audio, Wikipedia — all from one tap on any species name. |
+| **Chasing / studying one species** | Its **Range map** animated across 48 weeks, **"More of these"** (the last 90 days of sightings within 1.5 × your fetch radius from eBird/GBIF/iNaturalist), Macaulay photos matched to the season, Xeno-canto audio, Wikipedia — all from one tap on any species name. |
 | **Planning a trip** | **Historic mode** shows what was seen there in your travel months in previous years; premade **taxonomic groups** and saved species lists focus the view; build a **route** of stops (hides, points, spots) and open it in Google Maps; **download offline maps** for the areas you'll bird without signal. |
 | **Field logging** | The per-location **field checklist**: tick, count, activity/sex, note and 📷 photos per species, all GPS-stamped — exported as PDF/CSV or an **eBird Record Format CSV** ready for upload. |
 | **Year & life listing** | Mark what you've seen; dots, legend and lists show **bronze/yellow "needs" rings** for species missing from this year's or your life list, and one tap filters the map to just the birds you still need. |
@@ -226,8 +226,8 @@ probability. Options:
 - With live sources enabled, each row fills in a **recent-observation count** and a
   **"days since most recent"** age (*n(d)*), updating progressively as each source returns.
   Click a count to open the merged recent-observations modal (CSV-downloadable, plottable) — the
-  same panel as **"More of these"** in a species menu, which fetches recent sightings of that
-  species within **50 km** (eBird / GBIF / iNaturalist).
+  same panel as **"More of these"** in a species menu, which fetches that species' sightings of the
+  **last 90 days** within **1.5 × your fetch radius** (eBird / GBIF / iNaturalist).
 - Species the model doesn't cover but that the sources reported are appended below the
   predicted rows, tagged with a class glyph.
 

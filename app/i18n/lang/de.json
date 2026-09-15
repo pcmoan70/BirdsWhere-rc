@@ -822,7 +822,7 @@
   "menu.ebirdau": "eBird Australia (AU)",
   "menu.ebirdnz": "eBird NZ (NZ)",
   "menu.recent": "Mehr davon",
-  "menu.recentHint": "Weitere aktuelle Nachweise dieser Art im Umkreis von 50 km abrufen (eBird / GBIF / iNaturalist) – auf der Karte anzeigen oder als CSV herunterladen.",
+  "menu.recentHint": "Weitere aktuelle Nachweise dieser Art im Umkreis von 1,5 × Ihres Abrufradius, letzte 90 Tage abrufen (eBird / GBIF / iNaturalist) – auf der Karte anzeigen oder als CSV herunterladen.",
   "menu.apprange": "Artverbreitung",
   "menu.distribution": "Verbreitung",
   "menu.appmig": "Zug",
