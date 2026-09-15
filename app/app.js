@@ -10381,22 +10381,12 @@
       // section, a plain divider keeps the two visually separate.
       if (hasObs) { var dv = document.createElement("div"); dv.className = "detrow-menu-div"; el.appendChild(dv); }
       if (lbl) {
-        el.appendChild(drmBtn(t("menu.distribution"), function () { closeDetRowMenu(); showDistribution(key, name, sci, d && d.date); }));   // model map or Wikipedia map per Settings, each falling back to the other
-        el.appendChild(drmBtn(t("menu.appmig"), function () { closeDetRowMenu(); showSpeciesMigration(key, d && d.date); }));
-        // Family browser — every model species in the same family, ranked by the
-        // model's probability at the current point (same view as clicking a sci name).
-        var famBtn = drmBtn(t("menu.family"), function () {
-          var r = famBtn.getBoundingClientRect();
-          closeDetRowMenu();
-          openFamilyMenu(key, Math.round(r.left), Math.round(r.top));
-        });
-        famBtn.title = t("sci.familyTip");
-        el.appendChild(famBtn);
-        // Confusion species — look-alikes for this bird (morphology + genus),
-        // ranked by local probability. Birds only (AVONET covers birds).
+        // Order: Confusion species · Distribution · Migration · Images · Audio · More of these ·
+        // Wikipedia — then Family and the group-specific references.
+        // Confusion species — look-alikes for this bird (morphology + genus), ranked by local
+        // probability. Birds only (AVONET covers birds). Photo cards by default; the table when
+        // offline (no photos to fetch) or when the user chose it in Settings → Confusion species.
         if (isBird) {
-          // Photo cards by default; the table when offline (no photos to fetch) or when the
-          // user chose it in Settings → Confusion species.
           var confBtn = drmBtn(t("menu.confusion"), function () {
             var r = confBtn.getBoundingClientRect();
             closeDetRowMenu();
@@ -10406,7 +10396,11 @@
           confBtn.title = t("confusion.tip");
           el.appendChild(confBtn);
         }
+        el.appendChild(drmBtn(t("menu.distribution"), function () { closeDetRowMenu(); showDistribution(key, name, sci, d && d.date); }));   // model map or Wikipedia map per Settings, each falling back to the other
+        el.appendChild(drmBtn(t("menu.appmig"), function () { closeDetRowMenu(); showSpeciesMigration(key, d && d.date); }));
       }
+      if (isBird) el.appendChild(drmBtn(t("menu.macaulay"), function () { closeDetRowMenu(); openExternal(macaulayUrl(key, sci, d && d.date)); }));   // Images (Macaulay Library) — birds only
+      if (!isPlant && !isFungi) el.appendChild(drmBtn(t("menu.xeno"), function () { closeDetRowMenu(); openExternal(xenoCantoUrl(sci)); }));   // Audio (Xeno-canto) — animals only
       var moreBtn = drmBtn(t("menu.recent"), function () {
         closeDetRowMenu();
         var la = hasLoc ? +d.lat : (marker ? marker.getLatLng().lat : map.getCenter().lat);
@@ -10416,10 +10410,19 @@
       moreBtn.title = t("menu.recentHint");   // hover description
       el.appendChild(moreBtn);
       el.appendChild(drmBtn(t("menu.wiki"), function () { closeDetRowMenu(); openWikipedia(sci); }));
-      if (isBird) el.appendChild(drmBtn(t("menu.macaulay"), function () { closeDetRowMenu(); openExternal(macaulayUrl(key, sci, d && d.date)); }));   // birds only now
+      if (lbl) {
+        // Family browser — every model species in the same family, ranked by the
+        // model's probability at the current point (same view as clicking a sci name).
+        var famBtn = drmBtn(t("menu.family"), function () {
+          var r = famBtn.getBoundingClientRect();
+          closeDetRowMenu();
+          openFamilyMenu(key, Math.round(r.left), Math.round(r.top));
+        });
+        famBtn.title = t("sci.familyTip");
+        el.appendChild(famBtn);
+      }
       if (isMammal) el.appendChild(drmBtn(t("menu.adw"), function () { closeDetRowMenu(); openExternal(adwUrl(sci)); }));
       if (isPlant) el.appendChild(drmBtn(t("menu.powo"), function () { closeDetRowMenu(); openExternal(powoUrl(sci)); }));
-      if (!isPlant && !isFungi) el.appendChild(drmBtn(t("menu.xeno"), function () { closeDetRowMenu(); openExternal(xenoCantoUrl(sci)); }));   // sounds — animals only
       // Experimental references (Settings → Experimental) — off by default.
       // Region-gated on the record's location (map centre when the species has none):
       // NBN Atlas only covers the British Isles, EuroBirdPortal only Europe.

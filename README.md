@@ -656,10 +656,12 @@ shared payload is all that is shown.
 Right-click / long-press / tap any species name for a menu **led by the species name in bold**
 (wrapping when long), followed by the observation-specific actions when opened from a record, then:
 
-- **Information** — **Distribution**: the model's own range map or Wikipedia's range image (with a
-  BirdLife link in its popup); **Settings → Distribution** picks which opens first (model by default),
-  and each falls back to the other when it has nothing for the species (Wikipedia also when offline);
-  the Wikipedia dialog links to the model map. Then **Wikipedia** and group-specific references: **Macaulay Library** photos/audio (narrowed to the
+- **Information**, in this order — **Confusion species** (birds), **Distribution**: the model's own
+  range map or Wikipedia's range image (with a BirdLife link in its popup; **Settings → Distribution**
+  picks which opens first, model by default, each falling back to the other when it has nothing for the
+  species, Wikipedia also when offline; the Wikipedia dialog links to the model map), **Migration**,
+  **Images** (Macaulay Library, birds), **Audio** (Xeno-canto, animals), **More of these**, **Wikipedia**,
+  then **Family** and the group-specific references: **Macaulay Library** photos/audio (narrowed to the
   observation's season — a ±1-month `beginMonth`/`endMonth` window — so images match the time of
   year) and **eBird photos** for birds, **Kew POWO** for plants, **Animal Diversity Web** for
   mammals, plus **Xeno-canto** audio (animals). *Experimental features* (Settings) adds the
