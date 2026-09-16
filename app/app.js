@@ -20784,7 +20784,11 @@
       var link = tr.querySelector(".sp-link"), sciTd = tr.querySelector("td.sci");
       var sci = sciTd ? sciTd.textContent.trim() : (link ? link.getAttribute("data-sci") || "" : "");
       var sciEl = sciTd ? sciTd.querySelector(".sci-link") : null;   // the table's clickable sci (→ Family menu), reused as-is
-      var dot = tr.querySelector(".sp-cdot, .det-sw");
+      // The .sp-dot HOLDER, not the bare swatch inside it: the swatch is an inline span whose
+      // width/height only apply as a flex item of that holder — cloned alone it collapsed to a
+      // thin line beside the name. The holder carries the status too (★ / rare centre dot /
+      // year-life ring), so the card shows the same dot as every other list.
+      var dot = tr.querySelector(".sp-dot, .sp-cdot, .det-sw");
       var nd = tr.querySelector(".det-nd"), last = tr.querySelector(".sp-last"), dist = tr.querySelector(".sp-dist"), prob = tr.querySelector(".prob-num");
       var probTd = tr.querySelector("td.prob-cell");   // number + coloured bar, cloned as-is
       var key = link ? link.getAttribute("data-key") || "" : "";
