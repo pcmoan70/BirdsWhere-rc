@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1746";
+var VERSION = "v1747";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• Rarity alerts now watch ALL your observation sources around every 🔔 location, not just eBird’s notable feed — anything the model finds unlikely there raises an alert, and it works without an eBird key. Turn it off under Settings → Rarity alerts. The background checks step aside for any fetch you start.",
   "• Observations that come with a photo now show a small camera next to the source — tap it for the observer’s own picture, with credit and a link to the record. Threatened species carry their national red-list code (NT/VU/EN/CR) beside the name in the lists.",
   "• Confusion species now recognises birds that are alike in the air but unrelated: a Common Swift lists swallows and martins (and the reverse), a Dunlin lists the Ringed Plover, and Goldcrest/Chiffchaff scores far higher. Size counts for less in flight, and unrelated groups are no longer written off by family alone.",
   "• The Images list now waits for the observations before showing cards — no more wall of exotic model predictions (and their photos) while the fetch is still running.",
   "• Images: hover the ☰ on a card (short tap on a phone) to see the species’ records in a small popover; click (long-press on a phone) still opens the table view on that species. Also fixed: the first tap after a fetch could land on the wrong element because the “Loaded:” line vanished under it.",
-  "• Confusion species now opens as photo cards (the bird itself first, then its look-alikes by Score); Settings → Confusion species switches to the table, which is also used offline. Photos are cached on the device and shared with the Images list; offline, an uncached photo shows a no-internet mark and loads when you’re back online.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

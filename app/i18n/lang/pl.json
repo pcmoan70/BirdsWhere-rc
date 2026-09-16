@@ -260,6 +260,8 @@
   "rarity.countryWide": "Alerty ogólnokrajowe",
   "status.alert": "Alert rzadkości (!)",
   "rarity.countryWideTip": "Dla każdego punktu 🔔 pobieraj alerty o rzadkich ptakach dla CAŁEGO KRAJU zamiast tylko promienia wokół — kanał notable eBird dla tego kraju. Punkty w tym samym kraju pobierane są tylko raz. Zużywa więcej Twojego budżetu API eBird (większa odpowiedź na kraj).",
+  "rarity.allSrc": "Sprawdzaj wszystkie źródła, nie tylko eBird",
+  "rarity.allSrcHint": "Przeszukuje też Twoje zwykłe źródła obserwacji (GBIF, iNaturalist, bazy krajowe…) wokół każdego punktu 🔔 i ostrzega o wszystkim, co model uznaje tam za mało prawdopodobne. Wyłapuje rzadkości, których eBird nigdy nie oznaczył, i działa bez klucza eBird. Te kontrole w tle ustępują każdemu pobieraniu, które sam uruchomisz.",
   "rarity.probThHint": "Pobrane obserwacje, których prawdopodobieństwo modelu (własna lokalizacja + tydzień) jest poniżej, trafiają na listę rzadkości pod dzwonkiem. 0 = wył.",
   "rarity.days": "Pokaż ostatnie (dni)",
   "rarity.checkNow": "Sprawdź teraz",

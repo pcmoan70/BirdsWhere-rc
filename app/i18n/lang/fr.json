@@ -260,6 +260,8 @@
   "rarity.countryWide": "Alertes nationales",
   "status.alert": "Alerte rareté (!)",
   "rarity.countryWideTip": "Pour chaque point 🔔, récupérer les alertes d'oiseaux rares pour TOUT LE PAYS au lieu du seul rayon autour — le flux « notable » d'eBird pour ce pays. Les points d'un même pays ne sont récupérés qu'une fois. Consomme davantage de votre budget d'API eBird (réponse plus volumineuse par pays).",
+  "rarity.allSrc": "Vérifier toutes les sources, pas seulement eBird",
+  "rarity.allSrcHint": "Interroge aussi vos sources d’observations habituelles (GBIF, iNaturalist, les bases nationales…) autour de chaque point 🔔 et signale tout ce que le modèle juge improbable à cet endroit. Repère des raretés qu’eBird n’a jamais signalées, et fonctionne sans clé eBird. Ces vérifications en arrière-plan s’effacent devant toute récupération que vous lancez.",
   "rarity.probThHint": "Les observations récupérées dont la probabilité du modèle (lieu + semaine propres) est inférieure rejoignent la liste des raretés sous la cloche. 0 = désactivé.",
   "rarity.days": "Afficher les derniers (jours)",
   "rarity.checkNow": "Vérifier maintenant",

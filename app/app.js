@@ -4225,6 +4225,55 @@
     });
     return list;
   }
+  // ---- Rarity sweep: a quiet fetch of the ordinary sources ------------------
+  // The 🔔 poll uses this to look for locally-rare birds in the SAME sources a
+  // normal fetch queries, around a bell-ticked location. It deliberately shares
+  // none of the fetch UI or bookkeeping: no loading line (obsNewBatch/obsTrack),
+  // no status text, no sightings cache, no plotting and no fetched-area tagging —
+  // so a sweep running in the background is invisible to, and never steals state
+  // from, a fetch the user started. Its abort controllers live in raritySweepCtrls
+  // (not activeFetchCtrls, which is what marks a USER fetch), and each source's
+  // truncation note is drained so it can never surface in the user's next fetch
+  // summary. Resolves with normalized records; a failing source contributes none.
+  function rarityFetchSources(lat, lon, rkm, days) {
+    var fmtD = function (d) { return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); };
+    var d2 = fmtD(new Date());
+    return AppGeo.countryCode(lat, lon).catch(function () { return ""; }).then(function (cc) {
+      var c = { lat: lat, lon: lon, d2: d2, rkm: rkm, cc: cc, tok: ebirdKey(), days: days,
+        dateBack: function (n) { var d = new Date(); d.setDate(d.getDate() - n); return fmtD(d); } };
+      // One source: own controller (registered for a map-clear), own timeout — capped
+      // shorter than a user fetch's since nobody is waiting for it.
+      function job(id, timeout, run) {
+        var ctrl = (typeof AbortController !== "undefined") ? new AbortController() : null, tmr = null;
+        if (ctrl) { raritySweepCtrls.add(ctrl); tmr = setTimeout(function () { try { ctrl.abort(); } catch (e) {} }, Math.max(10, Math.min(+timeout || 60, 60)) * 1000); }
+        function done(rows) {
+          if (tmr) clearTimeout(tmr);
+          if (ctrl) raritySweepCtrls.delete(ctrl);
+          if (AppFetch.takeTrunc) { try { AppFetch.takeTrunc(id); } catch (e) {} }
+          return rows || [];
+        }
+        return Promise.resolve().then(function () { return run(ctrl ? Object.assign({}, c, { signal: ctrl.signal }) : c); })
+          .then(done, function () { return done([]); });
+      }
+      var jobs = [];
+      if (!isSourceOff("gbif") && !urlSkipSrc.gbif) jobs.push(job("gbif", gbifTimeout(), function (cs) {
+        return AppFetch.fetchGbifAll(cs.lat, cs.lon, cs.dateBack(Math.min(GBIF_MAX_DAYS || 92, days)) + "," + cs.d2, cs.rkm, cs.cc, cs.signal).then(AppNormalize.normGbif);
+      }));
+      directSources().forEach(function (s) {
+        if (isSourceOff(s.id) || urlSkipSrc[s.id]) return;
+        if ((s.id === "ebird" || s.id === "birdweather" || s.id === "nbn") && !groupIsBirds()) return;   // birds-only feeds
+        if (s.id === "ebird" && !c.tok) return;                                                          // keyless eBird would only fail
+        if (s.country && !AppGeo.countryMatch(lat, lon, s.country, rkm, cc)) return;                     // out of this source's country
+        jobs.push(job(s.id, s.timeout, function (cs) { return runDirectSource(s, cs); }));
+      });
+      if (!jobs.length) return [];
+      return Promise.all(jobs).then(function (lists) {
+        var rows = [];
+        lists.forEach(function (r) { if (r && r.length) rows = rows.concat(r); });
+        return rows;
+      });
+    }, function () { return []; });
+  }
   // Cached fetch of every species' recent detections at a point (last 3 months;
   // eBird is still capped at its 30-day API limit). The resolved object carries
   // `failed` — the source names that errored.
@@ -4309,9 +4358,21 @@
   // loops, so clearing the map (red ×) can cancel every pending detection fetch.
   var activeFetchCtrls = new Set();
   var fetchLoopGen = 0;
+  // The rarity sweep's own controllers (see rarityFetchSources). Kept OUT of
+  // activeFetchCtrls so a background sweep never reads as a user fetch — but a
+  // map-clear aborts it like everything else.
+  var raritySweepCtrls = new Set();
+  function abortRaritySweep() {
+    raritySweepCtrls.forEach(function (c) { try { c.abort(); } catch (e) {} });
+    raritySweepCtrls.clear();
+  }
+  // Is a fetch the USER asked for running right now? The rarity sweep waits for a
+  // quiet moment and steps aside the instant one of these starts.
+  function userFetchActive() { return !!storedFetchBusy || activeFetchCtrls.size > 0 || mapFetchPending > 0; }
   function cancelPendingFetches() {
     fetchLoopGen++;                                                    // stop the queue/loop recursions
     try { if (histAbort) histAbort.abort(); } catch (e) {}            // historic month workers check sig.aborted
+    abortRaritySweep();
     activeFetchCtrls.forEach(function (c) { try { c.abort(); } catch (e) {} });
     activeFetchCtrls.clear();
     storedFetchBusy = false;
@@ -6232,6 +6293,10 @@
               '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="rarity-notif-toggle"> <span data-i18n="rarity.sysNotif">System notifications</span></label>' +
                 '<p class="cu-hint" data-i18n="rarity.sysNotifHint">Also raise a system notification for each new rarity alert — needs the browser’s notification permission.</p>' +
+              '</div>' +
+              '<div class="ctrl-group">' +
+                '<label class="ctrl-check"><input type="checkbox" id="rarity-allsrc-toggle" checked> <span data-i18n="rarity.allSrc">Check all sources, not just eBird</span></label>' +
+                '<p class="cu-hint" data-i18n="rarity.allSrcHint">Also search your ordinary observation sources (GBIF, iNaturalist, the national databases…) around every 🔔 point, and alert on anything the model finds unlikely there. Catches rarities eBird never flagged, and works without an eBird key. These background checks step aside for any fetch you start.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="rarity-country-toggle"> <span data-i18n="rarity.countryWide">Whole-country alerts</span></label>' +
@@ -16635,6 +16700,11 @@
         scheduleRarityPoll();    // a raised threshold re-surfaces dropped alerts on the next poll
       });
     }
+    var rAll = document.getElementById("rarity-allsrc-toggle");
+    if (rAll) {
+      rAll.checked = rarityCfg().allSources !== false;
+      rAll.addEventListener("change", function () { raritySave({ allSources: !!this.checked }); rarityAlertsChanged(); });   // re-checks the bell (alerts work without an eBird key now) and polls
+    }
     var rCw = document.getElementById("rarity-country-toggle");
     if (rCw) {
       rCw.checked = !!rarityCfg().countryWide;
@@ -19554,6 +19624,7 @@
     spDetailTableHtml: spDetailTableHtml, spListDot: spListDot,
     speciesColor: speciesColor, t: t, wireLocHover: wireLocHover,
     wireSpDetail: wireSpDetail, rarityMapVisible: rarityMapVisible, rarityScoreProbs: rarityScoreProbs, onRarityListChanged: onRarityListChanged,
+    rarityFetchSources: rarityFetchSources, abortRaritySweep: abortRaritySweep, userFetchActive: userFetchActive, speciesName: speciesName,
     getMap: function () { return map; },
     getLang: function () { return lang; },
     getShowSci: function () { return showSci; },

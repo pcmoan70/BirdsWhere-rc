@@ -1108,6 +1108,8 @@
   "rarity.countryWide": "Rikstäckande varningar",
   "status.alert": "Raritetsvarning (!)",
   "rarity.countryWideTip": "För varje 🔔-punkt hämtas varningar om sällsynta fåglar för HELA LANDET i stället för bara radien runt om — eBirds notable-flöde för det landet. Punkter i samma land hämtas bara en gång. Använder mer av din eBird-API-budget (större svar per land).",
+  "rarity.allSrc": "Kontrollera alla källor, inte bara eBird",
+  "rarity.allSrcHint": "Söker även i dina vanliga observationskällor (GBIF, iNaturalist, de nationella databaserna …) runt varje 🔔-punkt och varnar för allt som modellen anser osannolikt där. Hittar rariteter som eBird aldrig flaggat, och fungerar utan eBird-nyckel. De här bakgrundskontrollerna viker undan för varje hämtning du startar.",
   "rarity.probThHint": "Hämtade observationer vars modellsannolikhet (egen plats + vecka) ligger under detta läggs till i raritetslistan under klockan. 0 = av.",
   "rarity.days": "Visa senaste (dagar)",
   "rarity.checkNow": "Kontrollera nu",

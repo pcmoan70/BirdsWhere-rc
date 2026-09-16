@@ -260,6 +260,8 @@
   "rarity.countryWide": "Celostátní upozornění",
   "status.alert": "Vzácný druh (!)",
   "rarity.countryWideTip": "Pro každý bod 🔔 načíst upozornění na vzácné ptáky pro CELOU ZEMI, a ne jen pro okolní poloměr — feed pozoruhodných pozorování eBird pro danou zemi. Body ve stejné zemi se načítají jen jednou. Spotřebuje více vašeho limitu eBird API (větší odpověď na zemi).",
+  "rarity.allSrc": "Kontrolovat všechny zdroje, nejen eBird",
+  "rarity.allSrcHint": "Prohledá i vaše běžné zdroje pozorování (GBIF, iNaturalist, národní databáze…) v okolí každého bodu 🔔 a upozorní na vše, co tam model považuje za nepravděpodobné. Zachytí vzácnosti, které eBird nikdy neoznačil, a funguje i bez klíče k eBirdu. Tyto kontroly na pozadí ustoupí každému stahování, které spustíte.",
   "rarity.probThHint": "Stažená pozorování, jejichž pravděpodobnost modelu (vlastní místo + týden) je nižší, se přidají do seznamu rarit pod zvonkem. 0 = vypnuto.",
   "rarity.days": "Zobrazit posledních (dní)",
   "rarity.checkNow": "Zkontrolovat nyní",

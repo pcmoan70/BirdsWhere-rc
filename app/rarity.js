@@ -18,7 +18,8 @@ window.AppRarity = (function () {
   var createModal, detIsRare, detName, ebirdKey, escapeHtml, fmtDate, getHereFix, getStoredLocations,
       hereAsLoc, hereCfg, hideDetHover, holdDelay, ico, llFromAttrs, onDetMarkerClick,
       recentRadiusKm, safeHref, setStatus, setTabAlert, showDetHover, spDetailTableHtml,
-      spListDot, speciesColor, t, wireLocHover, wireSpDetail, rarityMapVisible, rarityScoreProbs, onRarityListChanged;
+      spListDot, speciesColor, t, wireLocHover, wireSpDetail, rarityMapVisible, rarityScoreProbs, onRarityListChanged,
+      rarityFetchSources, abortRaritySweep, userFetchActive, speciesName;
   // … and getters for app state that is reassigned after load (the map is built
   // long after this file runs; the language and the two lookup tables change).
   var getMap, getLang, getShowSci, getDetPlot, getLabelsByKey;
@@ -35,6 +36,8 @@ window.AppRarity = (function () {
     speciesColor = ctx.speciesColor; t = ctx.t; wireLocHover = ctx.wireLocHover;
     wireSpDetail = ctx.wireSpDetail; rarityMapVisible = ctx.rarityMapVisible; rarityScoreProbs = ctx.rarityScoreProbs;
     onRarityListChanged = ctx.onRarityListChanged;
+    rarityFetchSources = ctx.rarityFetchSources; abortRaritySweep = ctx.abortRaritySweep; userFetchActive = ctx.userFetchActive;
+    speciesName = ctx.speciesName;
     getMap = ctx.getMap; getLang = ctx.getLang; getShowSci = ctx.getShowSci;
     getDetPlot = ctx.getDetPlot; getLabelsByKey = ctx.getLabelsByKey;
   }
@@ -68,6 +71,10 @@ window.AppRarity = (function () {
     if (!isFinite(+c.showDays) || +c.showDays < 0) c.showDays = 7;   // display window: 0 = Today, else last N days
     if (c.showMap == null) c.showMap = true;   // rarity records plotted on the map as ordinary (filtered) dots
     if (c.countryWide == null) c.countryWide = false;   // fetch notable for each point's WHOLE COUNTRY, not just its radius
+    // Also sweep the ORDINARY observation sources (GBIF / iNaturalist / the national
+    // portals / eBird / BirdWeather) around each 🔔 location and alert on anything the
+    // model finds unlikely there — eBird's notable feed only covers what eBird itself flags.
+    if (c.allSources == null) c.allSources = true;
     if (c.sound == null) c.sound = true;
     if (c.sysNotif == null) c.sysNotif = false;
     if (!c.seen) c.seen = {};
@@ -77,6 +84,7 @@ window.AppRarity = (function () {
   }
   function raritySave(patch) { var c = rarityCfg(); for (var k in patch) c[k] = patch[k]; window.GeoState.save({ rarityAlerts: c }); return c; }
   function rarityCountryWide() { return rarityCfg().countryWide === true; }
+  function rarityAllSources() { return rarityCfg().allSources !== false && typeof rarityFetchSources === "function"; }
   // Upper model-probability gate (%): a rarity alert whose model probability at its
   // OWN point and found-week is above this is discarded (the model thinks the bird is
   // common there, so it isn't really rare). 100 = gate off.
@@ -129,6 +137,10 @@ window.AppRarity = (function () {
       // coordinates, but records in the same species×~1 km group can sit hundreds
       // of metres apart — near-a-point views need the exact position.
       if (isFinite(+it.lat) && isFinite(+it.lon)) { rec.lat = +it.lat; rec.lon = +it.lon; }
+      // The observer's own photo + the species' red-list code, when the source reports
+      // them — the pane's record table shows the same 📷 and tag as the species lists.
+      if (it.photo) { rec.photo = it.photo; if (it.photoBig) rec.photoBig = it.photoBig; if (it.photoBy) rec.photoBy = it.photoBy; }
+      if (it.rl) rec.rl = it.rl;
       if (it.fresh) rec.at = Date.now();   // fresh live alert → "alert received" time (shown in ⓘ)
       var i = byK[it.k], e;
       if (i == null) {
@@ -301,7 +313,8 @@ window.AppRarity = (function () {
         date: String(r.dt || "").slice(0, 10), time: rarityRecTime(r), place: e.place || "", lat: e.lat, lon: e.lon,
         count: r.count != null ? r.count : "", observer: r.observer || "",
         src: r.src || (e.src === "ebird" ? "eBird" : ""), url: r.url || "", note: rarityNoteWith(e, r),
-        act: "", flags: "", origin: "", color: key ? speciesColor(key) : "#888" };
+        act: "", flags: "", origin: "", color: key ? speciesColor(key) : "#888",
+        photo: r.photo || "", photoBig: r.photoBig || "", photoBy: r.photoBy || "", rl: r.rl || "" };
     });
   }
   // After the per-observation probabilities land: every plotted MODEL-species
@@ -329,18 +342,114 @@ window.AppRarity = (function () {
         // 30-day rarity list (its entries would be pruned instantly anyway).
         var ts = Date.parse(String(r.date || "").slice(0, 10));
         if (!isFinite(ts) || Date.now() - ts > 30 * 86400000) return;
-        var id = "loc|" + sci + "|" + (r.date || "") + "|" + (+r.lat).toFixed(3) + "," + (+r.lon).toFixed(3) + "|" + (r.observer || "");
+        var id = localRarityId(sci, r.date, r.lat, r.lon, r.observer);   // same id the sweep uses — one entry either way
         if (cfg.seen[id]) return;
         cfg.seen[id] = Date.now(); changed = true;
         adds.push({ k: rarityGroupKey(sci, r.lat, r.lon), rid: id, sci: sci, name: name, dt: r.date || "",
           place: r.place || "", observer: r.observer || "", count: r.count != null ? r.count : "",
           note: r.note || "", url: r.url || "", lat: +r.lat, lon: +r.lon, area: "", src: "local",
-          rsrc: r.src || "", why: "prob", recProb: Math.round(p * 1000) / 10, prob: Math.round(p * 1000) / 10 });
+          rsrc: r.src || "", why: "prob", recProb: Math.round(p * 1000) / 10, prob: Math.round(p * 1000) / 10,
+          photo: r.photo || "", photoBig: r.photoBig || "", photoBy: r.photoBy || "", rl: r.rl || "" });
       });
     });
     if (changed) window.GeoState.save({ rarityAlerts: cfg });
     rarityListUpsert(adds);
     if (adds.length) rarityPlotList();
+  }
+  // ---- The ordinary-sources sweep -------------------------------------------
+  // eBird's notable feed only reports what eBird itself flags, and only where eBird
+  // is used. So each 🔔 location is ALSO swept through the sources a normal fetch
+  // queries (GBIF / iNaturalist / the national portals / eBird / BirdWeather), and
+  // anything the model finds unlikely at its own spot and week becomes an alert —
+  // the same test the local harvest applies to observations the user fetched.
+  //
+  // It yields to the user completely: the sweep is skipped while a fetch of theirs
+  // is running, aborted if one starts mid-sweep (the next cycle retries), and it
+  // touches none of the fetch UI (see rarityFetchSources in app.js).
+  var RARITY_SWEEP_DAYS = 7;          // the notable feed's window — recent birds only
+  var RARITY_SCORE_CHUNK = 64;        // the model returns the WHOLE species vector per row: score in bounded slices
+  // The synthetic record id shared with harvestLocalRarities, so an observation the
+  // user fetched and the sweep found is ONE entry, whichever arrived first.
+  function localRarityId(sci, date, lat, lon, observer) {
+    return "loc|" + sci + "|" + (date || "") + "|" + (+lat).toFixed(3) + "," + (+lon).toFixed(3) + "|" + (observer || "");
+  }
+  function scoreInChunks(items) {
+    var out = [], i = 0;
+    function step() {
+      if (i >= items.length) return Promise.resolve(out);
+      var slice = items.slice(i, i + RARITY_SCORE_CHUNK); i += RARITY_SCORE_CHUNK;
+      return Promise.resolve(rarityScoreProbs(slice)).then(function (ps) {
+        for (var j = 0; j < slice.length; j++) out.push((ps && ps[j] != null) ? ps[j] : -1);
+        return step();
+      }, function () { for (var j2 = 0; j2 < slice.length; j2++) out.push(-1); return step(); });
+    }
+    return step();
+  }
+  // One location's sweep: fetch → score → keep the unlikely ones → upsert.
+  function sweepLoc(l, areaName, done) {
+    function fin() { if (done) done(); }
+    if (!rarityAllSources() || !l || !isFinite(+l.lat) || !isFinite(+l.lon)) { fin(); return; }
+    if (typeof userFetchActive === "function" && userFetchActive()) { fin(); return; }   // the user is fetching — leave the network to them
+    var guard = setInterval(function () {
+      if (typeof userFetchActive === "function" && userFetchActive() && typeof abortRaritySweep === "function") abortRaritySweep();
+    }, 1000);
+    function end() { clearInterval(guard); fin(); }
+    var pr;
+    try { pr = rarityFetchSources(+l.lat, +l.lon, +l.radius > 0 ? +l.radius : recentRadiusKm(), RARITY_SWEEP_DAYS); }
+    catch (e) { end(); return; }
+    Promise.resolve(pr).then(function (recs) { ingestSweep(recs || [], "src:" + rarityLocKey(l), areaName || l.name || "", end); }, end);
+  }
+  // Score a sweep's records and fold the rare ones into the list (announcing the
+  // new ones, unless this is the location's first sweep — then it seeds silently,
+  // exactly like a first notable poll).
+  function ingestSweep(recs, seedKey, areaName, done) {
+    var cfg = rarityCfg(), th = rarityProbMaxPct(), now = Date.now();
+    if (!(th < 100) || typeof rarityScoreProbs !== "function") { if (done) done(); return; }
+    var byId = Object.create(null), order = [];
+    recs.forEach(function (r) {
+      if (!r || !r.sciName || !isFinite(+r.lat) || !isFinite(+r.lon)) return;
+      if (r.cls && r.cls !== "Aves") return;                                   // rarity alerts are a bird feature
+      var ts = Date.parse(String(r.date || "").slice(0, 10));
+      if (!isFinite(ts) || now - ts > 30 * 86400000) return;                   // the list prunes at 30 days anyway
+      var key = rarityModelKey(r.sciName); if (!key) return;                   // not a model species → no probability to judge it by
+      var lbl = getLabelsByKey()[key], sci = (lbl && lbl.sci) || r.sciName;
+      var id = localRarityId(sci, r.date, r.lat, r.lon, r.observer);
+      if (byId[id]) return;                                                    // same observation from several sources
+      byId[id] = { r: r, id: id, sci: sci, name: (lbl && speciesName(lbl)) || r.comName || sci };
+      order.push(id);
+    });
+    if (!order.length) { if (done) done(); return; }
+    // Score once per (species, ~1 km spot, date) — a flock reported many times over
+    // is one model question.
+    var cellOf = {}, cells = [], items = [];
+    order.forEach(function (id) {
+      var c = byId[id], r = c.r;
+      var ck = c.sci + "|" + (+r.lat).toFixed(2) + "," + (+r.lon).toFixed(2) + "|" + (r.date || "");
+      if (cellOf[ck] == null) { cellOf[ck] = items.length; items.push({ sci: c.sci, lat: +r.lat, lon: +r.lon, dt: r.date }); }
+      cells.push(cellOf[ck]);
+    });
+    scoreInChunks(items).then(function (probs) {
+      var seeding = !cfg.seeded[seedKey], adds = [], fresh = [], changed = false;
+      order.forEach(function (id, i) {
+        var p = probs[cells[i]];
+        if (!(isFinite(p) && p >= 0 && p * 100 < th)) return;                  // the model finds it likely here → not a rarity
+        var c = byId[id], r = c.r, pct = Math.round(p * 1000) / 10;
+        var isNew = !cfg.seen[id];
+        if (isNew) { cfg.seen[id] = Date.now(); changed = true; }
+        adds.push({ fresh: isNew && !seeding, k: rarityGroupKey(c.sci, r.lat, r.lon), rid: id, sci: c.sci, name: c.name,
+          dt: r.date || "", place: r.place || "", observer: r.observer || "", count: r.count != null ? r.count : "",
+          note: r.note || "", url: r.url || "", lat: +r.lat, lon: +r.lon, area: areaName, src: "local", rsrc: r.src || "",
+          why: "prob", recProb: pct, prob: pct,
+          photo: r.photo || "", photoBig: r.photoBig || "", photoBy: r.photoBy || "", rl: r.rl || "" });
+        if (isNew && !seeding) fresh.push({ area: areaName, raw: { obsId: id, sciName: c.sci, comName: c.name, lat: +r.lat, lng: +r.lon,
+          obsDt: r.date || "", locName: r.place || "", userDisplayName: r.observer || "", howMany: (r.count != null ? r.count : ""), _url: r.url || "" } });
+      });
+      cfg.seeded[seedKey] = 1;
+      window.GeoState.save({ rarityAlerts: cfg });
+      if (adds.length) { rarityListUpsert(adds); rarityPlotList(); }
+      if (fresh.length) rarityAnnounce(fresh);
+      if (done) done();
+    }, function () { if (done) done(); });
   }
   // Chained setTimeout (drift-free after background-tab throttling); ≥5 min
   // intervals are safely above Chrome's 1/min hidden-tab timer granularity.
@@ -364,7 +473,10 @@ window.AppRarity = (function () {
     var locs = rarityLocs();
     if (!locs.length || !rarityCfg().enabled) { scheduleRarityPoll(); return; }
     var tok = ebirdKey();
-    if (!tok || tok === rarityBadKey || navigator.onLine === false) { raritySave({ lastPoll: Date.now() }); scheduleRarityPoll(); return; }
+    // eBird's notable feed needs a working key; the ordinary-source sweep doesn't —
+    // so a poll is worth running as long as ONE of the two can deliver something.
+    var ebirdOn = !!tok && tok !== rarityBadKey, sweepOn = rarityAllSources();
+    if ((!ebirdOn && !sweepOn) || navigator.onLine === false) { raritySave({ lastPoll: Date.now() }); scheduleRarityPoll(); return; }
     rarityPollBusy = true;
     updateRarityBell();   // bell shows the fetching state (orange) for the whole cycle
     var cfg = rarityCfg(), fresh = [], listAdds = [], i = 0;
@@ -430,17 +542,22 @@ window.AppRarity = (function () {
         return;
       }
       poll(l);
-      function fetchDone() { setTimeout(next, 1200); }
-      function fetchErr(tm, err) { if (tm) clearTimeout(tm); if (err && (err.status === 401 || err.status === 403)) { rarityBadKey = tok; setStatus(t("rarity.needKey")); } setTimeout(next, 1200); }
       function poll(l) {
+        // This location's eBird notable feed first (when there's a usable key), then the
+        // sweep of the ordinary sources for the same spot — the next location follows
+        // after the polite gap.
+        function after() { sweepLoc(l, l.name, function () { setTimeout(next, 1200); }); }
+        function fetchDone() { after(); }
+        function fetchErr(tm, err) { if (tm) clearTimeout(tm); if (err && (err.status === 401 || err.status === 403)) { rarityBadKey = tok; setStatus(t("rarity.needKey")); } after(); }
+        if (!ebirdOn) { after(); return; }   // no usable eBird key → the sweep alone carries this location
         var ctrl = (typeof AbortController !== "undefined") ? new AbortController() : null;
         var tm = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (e) {} }, 30000) : null;
         if (countryWide) {
           // Whole-country alerts: fetch notable for the point's COUNTRY (once per country per
           // cycle, so several points in one country don't refetch it).
           var run = function (cc, cname) {
-            if (!cc) { if (tm) clearTimeout(tm); setTimeout(next, 150); return; }
-            if (doneRegions[cc]) { if (tm) clearTimeout(tm); setTimeout(next, 60); return; }
+            if (!cc) { if (tm) clearTimeout(tm); after(); return; }
+            if (doneRegions[cc]) { if (tm) clearTimeout(tm); after(); return; }
             doneRegions[cc] = 1;
             window.AppFetch.fetchEbirdNotableRegion(cc, tok, RARITY_BACK_DAYS, locale, ctrl && ctrl.signal)
               .then(function (obs) { if (tm) clearTimeout(tm); handleObs(obs, "cc:" + cc, cname || cc, fetchDone); }, function (err) { fetchErr(tm, err); });
@@ -461,8 +578,17 @@ window.AppRarity = (function () {
       ids = Object.keys(cfg.seen);
       if (ids.length > RARITY_SEEN_CAP) ids.sort(function (a, b) { return cfg.seen[a] - cfg.seen[b]; })
         .slice(0, ids.length - RARITY_SEEN_CAP).forEach(function (id) { delete cfg.seen[id]; });
+      // Seeded keys come in three shapes: a location ("here" / "lat,lon"), a country
+      // ("cc:XX", whole-country mode) and a location's source sweep ("src:<loc>").
+      // Drop one only when its LOCATION lost its 🔔 — a country key survives while any
+      // 🔔 location does. (Stripping the prefix matters: an un-seeded key re-seeds, and
+      // a re-seeded location alerts on nothing.)
       var live = {}; rarityLocs().forEach(function (l) { live[rarityLocKey(l)] = 1; });
-      Object.keys(cfg.seeded).forEach(function (k) { if (!live[k]) delete cfg.seeded[k]; });
+      var anyLoc = Object.keys(live).length > 0;
+      Object.keys(cfg.seeded).forEach(function (k) {
+        if (k.indexOf("cc:") === 0) { if (!anyLoc) delete cfg.seeded[k]; return; }
+        if (!live[k.indexOf("src:") === 0 ? k.slice(4) : k]) delete cfg.seeded[k];
+      });
       cfg.lastPoll = Date.now();
       window.GeoState.save({ rarityAlerts: cfg });
       rarityListUpsert(listAdds);   // persist ALL first-seen notable records (grouped species×location)
@@ -522,7 +648,7 @@ window.AppRarity = (function () {
     rarityLayer.addLayer(mk);
     rarityFeed.unshift({ id: rarityId(o), name: o.comName || o.sciName || "?", sci: o.sciName || "",
       dt: o.obsDt || "", place: o.locName || "", observer: o.userDisplayName || "",
-      count: o.howMany != null ? o.howMany : "", url: o.subId ? "https://ebird.org/checklist/" + o.subId : "",
+      count: o.howMany != null ? o.howMany : "", url: o.subId ? "https://ebird.org/checklist/" + o.subId : (o._url || ""),
       lat: +o.lat, lon: +o.lng, area: area || "", marker: mk, unread: true });   // unread → red "!" on its list row
     while (rarityFeed.length > RARITY_FEED_CAP) {
       var old = rarityFeed.pop();
@@ -582,7 +708,7 @@ window.AppRarity = (function () {
       rem.style.display = showRem ? "" : "none";
     }
     var kh = document.getElementById("rarity-key-hint");
-    if (kh) kh.style.display = ebirdKey() ? "none" : "";
+    if (kh) kh.style.display = (ebirdKey() || rarityAllSources()) ? "none" : "";   // without a key the sweep still delivers alerts
   }
   // Opening the panel = mark-as-read: badge zeroed, star pulses stop (stars stay).
   function showRarityPanel() {

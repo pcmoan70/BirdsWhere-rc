@@ -260,6 +260,8 @@
   "rarity.countryWide": "Landelijke meldingen",
   "status.alert": "Zeldzaamheidsmelding (!)",
   "rarity.countryWideTip": "Voor elk 🔔-punt meldingen van zeldzame vogels voor het HELE LAND ophalen in plaats van alleen de straal eromheen — de eBird-notable-feed voor dat land. Punten in hetzelfde land worden maar één keer opgehaald. Gebruikt meer van je eBird-API-budget (grotere respons per land).",
+  "rarity.allSrc": "Alle bronnen controleren, niet alleen eBird",
+  "rarity.allSrcHint": "Doorzoekt ook je gewone waarnemingsbronnen (GBIF, iNaturalist, de nationale databanken …) rond elk 🔔-punt en waarschuwt voor alles wat het model daar onwaarschijnlijk vindt. Vindt zeldzaamheden die eBird nooit markeerde, en werkt zonder eBird-sleutel. Deze achtergrondcontroles wijken voor elke ophaalactie die je zelf start.",
   "rarity.probThHint": "Opgehaalde waarnemingen waarvan de modelkans (eigen locatie + week) hieronder ligt, komen in de zeldzaamhedenlijst onder de bel. 0 = uit.",
   "rarity.days": "Toon laatste (dagen)",
   "rarity.checkNow": "Nu controleren",

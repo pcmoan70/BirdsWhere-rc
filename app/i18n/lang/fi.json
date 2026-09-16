@@ -260,6 +260,8 @@
   "rarity.countryWide": "Koko maan hälytykset",
   "status.alert": "Harvinaisuushälytys (!)",
   "rarity.countryWideTip": "Hae jokaiselle 🔔-pisteelle harvinaisten lintujen hälytykset KOKO MAALLE pelkän ympäröivän säteen sijaan — kyseisen maan eBirdin notable-syöte. Saman maan pisteet haetaan vain kerran. Käyttää enemmän eBird-API-budjettiasi (suurempi vastaus maata kohti).",
+  "rarity.allSrc": "Tarkista kaikki lähteet, ei vain eBirdiä",
+  "rarity.allSrcHint": "Hakee myös tavallisista havaintolähteistäsi (GBIF, iNaturalist, kansalliset tietokannat…) jokaisen 🔔-pisteen ympäriltä ja hälyttää kaikesta, mitä malli pitää siellä epätodennäköisenä. Löytää harvinaisuuksia, joita eBird ei ole koskaan merkinnyt, ja toimii ilman eBird-avainta. Nämä taustatarkistukset väistyvät aina, kun itse käynnistät haun.",
   "rarity.probThHint": "Haetut havainnot, joiden mallitodennäköisyys (oma sijainti + viikko) on tämän alle, lisätään kellon alla olevaan harvinaisuuslistaan. 0 = pois.",
   "rarity.days": "Näytä viimeiset (päivää)",
   "rarity.checkNow": "Tarkista nyt",

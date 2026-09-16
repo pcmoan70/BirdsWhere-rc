@@ -1206,6 +1206,8 @@ window.GeoI18N = (function () {
         "rarity.showMap": "Show rarities on the map",
         "rarity.countryWide": "Whole-country alerts",
         "rarity.countryWideTip": "For every 🔔 point, fetch rare-bird alerts for its ENTIRE COUNTRY instead of just the radius around it — the eBird notable feed for that country. Points that share a country are fetched only once. Uses more of your eBird API budget (a bigger response per country).",
+        "rarity.allSrc": "Check all sources, not just eBird",
+        "rarity.allSrcHint": "Also search your ordinary observation sources (GBIF, iNaturalist, the national databases…) around every 🔔 point, and alert on anything the model finds unlikely there. Catches rarities eBird never flagged, and works without an eBird key. These background checks step aside for any fetch you start.",
         "rarity.whyEbird": "Rarity: flagged as notable in eBird's rarity report",
         "rarity.whyProb": "Rarity: model probability {p}% is below the {th}% threshold",
         "rarity.timeObs": "Observed {t}",

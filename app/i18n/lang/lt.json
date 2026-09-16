@@ -260,6 +260,8 @@
   "rarity.countryWide": "Visos šalies įspėjimai",
   "status.alert": "Retenybės įspėjimas (!)",
   "rarity.countryWideTip": "Kiekvienam 🔔 taškui gauti retų paukščių įspėjimus VISAI ŠALIAI, o ne tik aplinkiniam spinduliui — tos šalies eBird notable srautas. Tos pačios šalies taškai gaunami tik kartą. Sunaudoja daugiau jūsų eBird API biudžeto (didesnis atsakymas šaliai).",
+  "rarity.allSrc": "Tikrinti visus šaltinius, ne tik „eBird“",
+  "rarity.allSrcHint": "Taip pat ieško jūsų įprastuose stebėjimų šaltiniuose (GBIF, iNaturalist, nacionalinėse duomenų bazėse…) aplink kiekvieną 🔔 tašką ir įspėja apie viską, ką modelis ten laiko mažai tikėtinu. Randa retenybių, kurių „eBird“ niekada nepažymėjo, ir veikia be „eBird“ rakto. Šie foniniai patikrinimai užleidžia vietą bet kokiam jūsų pradėtam parsisiuntimui.",
   "rarity.probThHint": "Parsiųsti stebėjimai, kurių modelio tikimybė (sava vieta + savaitė) yra žemiau, patenka į retenybių sąrašą po varpeliu. 0 = išjungta.",
   "rarity.days": "Rodyti paskutines (dienas)",
   "rarity.checkNow": "Tikrinti dabar",

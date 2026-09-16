@@ -260,6 +260,8 @@
   "rarity.countryWide": "Landesweite Warnungen",
   "status.alert": "Seltenheitswarnung (!)",
   "rarity.countryWideTip": "Für jeden 🔔-Punkt Warnungen zu seltenen Vögeln für das GANZE LAND abrufen statt nur für den Radius darum — der eBird-Notable-Feed für dieses Land. Punkte im selben Land werden nur einmal abgerufen. Verbraucht mehr deines eBird-API-Budgets (größere Antwort pro Land).",
+  "rarity.allSrc": "Alle Quellen prüfen, nicht nur eBird",
+  "rarity.allSrcHint": "Durchsucht auch deine gewöhnlichen Beobachtungsquellen (GBIF, iNaturalist, die nationalen Datenbanken …) rund um jeden 🔔-Punkt und meldet alles, was das Modell dort für unwahrscheinlich hält. Findet Seltenheiten, die eBird nie gemeldet hat, und funktioniert ohne eBird-Schlüssel. Diese Hintergrundprüfungen treten hinter jeden Abruf zurück, den du startest.",
   "rarity.probThHint": "Abgerufene Beobachtungen, deren Modellwahrscheinlichkeit (eigener Ort + Woche) darunter liegt, kommen in die Raritätenliste unter der Glocke. 0 = aus.",
   "rarity.days": "Zeige letzte (Tage)",
   "rarity.checkNow": "Jetzt prüfen",

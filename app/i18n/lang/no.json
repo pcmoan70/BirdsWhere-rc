@@ -260,6 +260,8 @@
   "rarity.countryWide": "Landsdekkende varsler",
   "status.alert": "Sjeldenhetsvarsel (!)",
   "rarity.countryWideTip": "For hvert 🔔-punkt hentes varsler om sjeldne fugler for HELE LANDET i stedet for bare radiusen rundt — eBirds notable-feed for det landet. Punkter i samme land hentes bare én gang. Bruker mer av eBird-API-budsjettet ditt (større svar per land).",
+  "rarity.allSrc": "Sjekk alle kilder, ikke bare eBird",
+  "rarity.allSrcHint": "Søker også i de vanlige observasjonskildene dine (GBIF, iNaturalist, de nasjonale databasene …) rundt hvert 🔔-punkt, og varsler om alt modellen mener er usannsynlig der. Fanger opp sjeldenheter eBird aldri har flagget, og virker uten eBird-nøkkel. Disse bakgrunnssjekkene viker for alle hentinger du selv starter.",
   "rarity.probThHint": "Hentede observasjoner der modellsannsynligheten (eget sted + uke) er under denne, legges til i sjeldenhetslisten under bjella. 0 = av.",
   "rarity.days": "Vis siste (dager)",
   "rarity.checkNow": "Sjekk nå",

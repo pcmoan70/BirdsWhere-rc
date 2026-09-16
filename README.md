@@ -50,7 +50,7 @@ layered on top are the real sightings.
 - [Recent Observations (species list)](#recent-observations-species-list)
 - [Historic observations](#historic-observations)
 - [Live observation sources](#live-observation-sources)
-- [eBird rarity alerts](#ebird-rarity-alerts)
+- [Rarity alerts](#rarity-alerts)
 - [Detections on the map](#detections-on-the-map)
 - [The map legend & filters](#the-map-legend--filters)
 - [Detections list](#detections-list)
@@ -366,7 +366,7 @@ registered in two databases once instead of twice — off by default).
 
 ---
 
-## eBird rarity alerts
+## Rarity alerts
 
 A standing **subscription to rarities**: mark any stored location with the **🔔** column
 (press-and-hold the 🔍 search button to open the stored-locations panel) and, while the app
@@ -374,6 +374,15 @@ is open, eBird's **notable-observations** feed is polled around it (max 50 km �
 limit) at a chosen interval (**10/30/60 min or Manual**, Settings → **Rarity alerts**). Needs the
 free eBird API key. An optional **whole-country mode** (Settings → Rarity alerts) instead polls the
 notable feed for the entire country a location sits in, rather than just its 50 km circle.
+
+Each 🔔 location is also **swept through the ordinary observation sources** — GBIF, iNaturalist,
+Artsobservasjoner, Artportalen, Laji.fi, eBird and BirdWeather, whichever are enabled where you are
+— and anything the model finds unlikely at its own spot and week becomes an alert, exactly like a
+fetched observation below the rarity threshold. That catches birds eBird never flagged, covers the
+places eBird is barely used, and works **without an eBird key**. Turn it off with *Check all sources,
+not just eBird* (Settings → Rarity alerts). These background checks stay out of the way of the app:
+they never touch the loading line or the status text, they are **skipped while a fetch of yours is
+running**, and they **abort themselves** if you start one — the next check picks up where it left off.
 
 When a **never-seen-before** rarity arrives it:
 
