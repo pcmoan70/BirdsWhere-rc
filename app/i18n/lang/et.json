@@ -270,6 +270,7 @@
   "rarity.emailBad": "See ei tundu olevat e-posti aadress.",
   "rarity.emailOn": "Uued teated saadetakse ka sellele aadressile.",
   "rarity.emailLast": "Viimane teatekiri saadetud {t}.",
+  "rarity.emailTestOk": "Testkiri saadetud {t}. Uued teated saadetakse kohe, kui need saabuvad.",
   "rarity.emailSubject": "BirdsWhere: {n} uut haruldusteadet",
   "rarity.emailFoot": "Saatis BirdsWhere, kui rakendus oli sinu seadmes avatud.",
   "rarity.emailTestSubj": "BirdsWhere'i testkiri",

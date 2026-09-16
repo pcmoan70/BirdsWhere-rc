@@ -270,6 +270,7 @@
   "rarity.emailBad": "To nie wygląda na adres e-mail.",
   "rarity.emailOn": "Nowe alerty będą też wysyłane na ten adres.",
   "rarity.emailLast": "Ostatni e-mail z alertem wysłany {t}.",
+  "rarity.emailTestOk": "Wiadomość testowa wysłana {t}. Nowe alerty będą wysyłane, gdy się pojawią.",
   "rarity.emailSubject": "BirdsWhere: {n} nowych alertów o rzadkościach",
   "rarity.emailFoot": "Wysłane przez BirdsWhere, gdy aplikacja była otwarta na Twoim urządzeniu.",
   "rarity.emailTestSubj": "Wiadomość testowa BirdsWhere",

@@ -270,6 +270,7 @@
   "rarity.emailBad": "Tämä ei näytä sähköpostiosoitteelta.",
   "rarity.emailOn": "Uudet hälytykset lähetetään myös tähän osoitteeseen.",
   "rarity.emailLast": "Viimeisin hälytyssähköposti lähetetty {t}.",
+  "rarity.emailTestOk": "Testiviesti lähetetty {t}. Uudet hälytykset lähetetään heti niiden saapuessa.",
   "rarity.emailSubject": "BirdsWhere: {n} uutta harvinaisuushälytystä",
   "rarity.emailFoot": "Lähettänyt BirdsWhere, kun sovellus oli auki laitteellasi.",
   "rarity.emailTestSubj": "BirdsWhere-testiviesti",

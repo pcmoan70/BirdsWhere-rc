@@ -270,6 +270,7 @@
   "rarity.emailBad": "Dette ser ikke ut som en e-postadresse.",
   "rarity.emailOn": "Nye varsler sendes også til denne adressen.",
   "rarity.emailLast": "Siste varsel-e-post sendt {t}.",
+  "rarity.emailTestOk": "Testmelding sendt {t}. Nye varsler sendes etter hvert som de kommer.",
   "rarity.emailSubject": "BirdsWhere: {n} nye sjeldenhetsvarsler",
   "rarity.emailFoot": "Sendt av BirdsWhere mens appen var åpen på enheten din.",
   "rarity.emailTestSubj": "BirdsWhere testmelding",

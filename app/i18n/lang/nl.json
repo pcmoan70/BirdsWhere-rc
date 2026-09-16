@@ -270,6 +270,7 @@
   "rarity.emailBad": "Dat lijkt geen e-mailadres.",
   "rarity.emailOn": "Nieuwe meldingen gaan ook naar dit adres.",
   "rarity.emailLast": "Laatste meldingsmail verstuurd {t}.",
+  "rarity.emailTestOk": "Testbericht verstuurd {t}. Nieuwe meldingen worden gemaild zodra ze binnenkomen.",
   "rarity.emailSubject": "BirdsWhere: {n} nieuwe zeldzaamheidsmeldingen",
   "rarity.emailFoot": "Verstuurd door BirdsWhere terwijl de app open stond op je apparaat.",
   "rarity.emailTestSubj": "BirdsWhere testbericht",

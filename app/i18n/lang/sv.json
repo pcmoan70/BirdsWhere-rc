@@ -1119,6 +1119,7 @@
   "rarity.emailBad": "Det ser inte ut som en e-postadress.",
   "rarity.emailOn": "Nya larm mejlas också till den här adressen.",
   "rarity.emailLast": "Senaste larmmejlet skickat {t}.",
+  "rarity.emailTestOk": "Testmeddelande skickat {t}. Nya larm mejlas allteftersom de kommer.",
   "rarity.emailSubject": "BirdsWhere: {n} nya raritetslarm",
   "rarity.emailFoot": "Skickat av BirdsWhere medan appen var öppen på din enhet.",
   "rarity.emailTestSubj": "BirdsWhere testmeddelande",

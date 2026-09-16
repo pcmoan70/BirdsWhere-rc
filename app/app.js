@@ -2619,6 +2619,8 @@
   // (Migration for another species from the Migration page) pushes nothing.
   var viewBackStack = [], viewRestoring = false;
   function currentViewRestorer() {
+    var rp = document.getElementById("rarity-page");
+    if (rp && rp.style.display !== "none") return { kind: "rarity", go: reshowRarityPage };
     var fp = document.getElementById("field-page");
     if (fp && fp.style.display !== "none") return { kind: "field", go: reshowFieldPage };
     var sp = document.getElementById("species-panel");
@@ -2639,6 +2641,25 @@
     try { r.go(); } catch (e) {} finally { viewRestoring = false; }
     return true;
   }
+  // ---- The rarity-alerts page ----------------------------------------------
+  // Opened from the header bell. Same framework as the other full pages: one page
+  // at a time, registered in the "page" nav slot, and the view it was opened from
+  // is pushed so ‹ (and browser Back) return there.
+  function rarityPageEl() { return document.getElementById("rarity-page"); }
+  function rarityPageOpen() {
+    var el = rarityPageEl(); if (!el) return;
+    if (el.style.display === "flex") { navOpen("page", closeAnyFullPage); return; }   // already open — this is a re-render
+    pushViewBack(currentViewRestorer(), "rarity");
+    closeAnyFullPage();                 // whichever page was showing steps aside
+    el.style.display = "flex"; el.scrollTop = 0;
+    navOpen("page", closeAnyFullPage);
+  }
+  function rarityPageClose() {
+    var el = rarityPageEl(); if (!el || el.style.display === "none") return;
+    if (!navClose("page")) { el.style.display = "none"; try { window.AppRarity.pageClosed(); } catch (e) {} }
+    popViewBack();                      // back to the view the bell was pressed from
+  }
+  function reshowRarityPage() { try { window.AppRarity.showPanel(); } catch (e) {} }
   function reshowAnalysisPage() {
     if (!analysisData) { exitToRecentMode(); return; }
     var modeEl = document.getElementById("mode-select");
@@ -2672,6 +2693,8 @@
     if (sp && sp.classList.contains("as-page")) { sp.classList.remove("as-page"); sp.style.display = "none"; }
     var bc = document.getElementById("barchart-panel");
     if (bc && bc.classList.contains("as-page")) { bc.classList.remove("as-page"); bc.style.display = "none"; }
+    var rp = document.getElementById("rarity-page");
+    if (rp && rp.style.display !== "none") { rp.style.display = "none"; try { window.AppRarity.pageClosed(); } catch (e) {} }
     if (typeof updateViewToggle === "function") updateViewToggle();   // list page closed → switch reflects the map view
     saveSession({ page: "" });
     // Returning to the map: re-assert the current mode's controls so the
@@ -6475,7 +6498,8 @@
               '<div class="settings-toprow">' +
                 '<button type="button" class="btn ico-btn feedback-open settings-feedback">' + ico("mail") + '<span class="ico-label" data-i18n="feedback.send">Feedback</span></button>' +
               '</div>' +
-              '<div class="app-qr"><img src="qr-app.svg" alt="" width="140" height="140" /><span class="app-qr-cap" data-i18n="settings.qrShare">Scan to open / share this app</span></div>' +
+              '<div class="app-qr"><a class="app-qr-url" href="https://thebirding.site/" target="_blank" rel="noopener">thebirding.site</a>' +
+                '<img src="qr-app.svg" alt="" width="140" height="140" /><span class="app-qr-cap" data-i18n="settings.qrShare">Scan to open / share this app</span></div>' +
               '<div class="settings-section" data-i18n="settings.secWhatsNew">What’s new</div>' +
               '<div id="whatsnew-list" class="whatsnew-list"></div>' +
             '</div>' +
@@ -6598,6 +6622,10 @@
             '<div id="place-list"></div>' +
           '</div>' +
         '</div>' +
+        // Rarity alerts: a full page in the same framework as the checklist/species
+        // pages (under the header bar, ‹ returns to the previous view). rarity.js
+        // renders into it; it stays empty until the bell is opened.
+        '<div id="rarity-page" class="rarity-panel" style="display:none"></div>' +
         '<div id="entry-page" style="display:none">' +
           '<div class="field-page-bar">' +
             '<button id="entry-back" class="fp-back" title="Back">‹</button>' +
@@ -16798,7 +16826,9 @@
       var when = c.emailAt ? new Date(c.emailAt).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
       if (c.emailState === "activate") return t("rarity.emailActivate");
       if (c.emailState === "fail") return t("rarity.emailFail") + (when ? " (" + when + ")" : "");
-      if (c.emailState === "ok") return t("rarity.emailLast", { t: when });
+      // A confirmed address that has only ever had the test message says so plainly —
+      // otherwise "last alert mail" would claim an alert that never went out.
+      if (c.emailState === "ok") return t(c.emailKind === "alert" ? "rarity.emailLast" : "rarity.emailTestOk", { t: when });
       return t("rarity.emailOn");
     }
     if (rEm) {
@@ -16818,11 +16848,11 @@
       raritySave({ email: v });
       var btn = this; btn.disabled = true;
       if (rEmN) rEmN.textContent = t("rarity.emailSending");
-      window.AppRarity.rarityEmailPost(v, t("rarity.emailTestSubj"), t("rarity.emailTestBody"))
+      window.AppRarity.rarityEmailTestSend(v)   // the latest real alerts when there are any
         .then(function (r) {
-          window.AppRarity.rarityEmailState(r.ok ? "ok" : (r.activate ? "activate" : "fail"));
+          window.AppRarity.rarityEmailState(r.ok ? "ok" : (r.activate ? "activate" : "fail"), "test");
           if (rEmN) rEmN.textContent = r.activate ? t("rarity.emailActivate") : (r.ok ? t("rarity.emailSent") : t("rarity.emailFail"));
-        }, function () { window.AppRarity.rarityEmailState("fail"); if (rEmN) rEmN.textContent = t("rarity.emailFail"); })
+        }, function () { window.AppRarity.rarityEmailState("fail", "test"); if (rEmN) rEmN.textContent = t("rarity.emailFail"); })
         .then(function () { btn.disabled = false; });
     });
     var rCw = document.getElementById("rarity-country-toggle");
@@ -19745,6 +19775,7 @@
     speciesColor: speciesColor, t: t, wireLocHover: wireLocHover,
     wireSpDetail: wireSpDetail, rarityMapVisible: rarityMapVisible, rarityScoreProbs: rarityScoreProbs, onRarityListChanged: onRarityListChanged,
     rarityFetchSources: rarityFetchSources, abortRaritySweep: abortRaritySweep, userFetchActive: userFetchActive, speciesName: speciesName,
+    rarityPageEl: rarityPageEl, openRarityPage: rarityPageOpen, closeRarityPage: rarityPageClose,
     getMap: function () { return map; },
     getLang: function () { return lang; },
     getShowSci: function () { return showSci; },

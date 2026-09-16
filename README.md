@@ -402,8 +402,10 @@ When a **never-seen-before** rarity arrives it:
   default 7), grouped **species × location** with the last-seen date and a record tally —
   **every** notable record from the polls joins it, not just the new ones. **▸ expands** a
   group to its individual records (time, observer, count, comments, links); tapping a row
-  pans the map there. The page carries the same furniture as the Species list and Migration
-  pages — back arrow, title, a "last check" line with ↻, then one row of controls. Alerts you
+  pans the map there. It is a **full page in the same framework as the Species list and Migration
+  pages** — it opens under the green header bar (which stays usable), carries the same furniture
+  (back arrow, title, a "last check" line with ↻, then one row of controls), and its ‹ — like the
+  browser's Back — returns to the view you opened it from. Alerts you
   have **not seen yet are bold**; everything already read is in the normal weight. Opening marks
   all read, *Clear alerts* wipes list + stars, and an
   **Alerts on** toggle pauses/resumes the whole function — the bell dims while paused.
@@ -419,8 +421,11 @@ When a **never-seen-before** rarity arrives it:
   its own, so the message is handed to a relay (**formsubmit.co**) that accepts a request straight
   from the browser: the first message is a **confirmation request from FormSubmit** — click its link
   once (it often lands in the **spam folder**) and after that each batch of new alerts arrives as one
-  mail, at most one every five minutes. *Send test* checks the whole path, and the line under the
-  address always says what became of the last message (sent · not confirmed yet · failed). Your address and the alert text pass through that service, and — like every other
+  mail, at most one every five minutes — alerts raised inside that window wait for it and travel with
+  the next message rather than being dropped. *Send test* mails the **latest real alerts** (a plain
+  note when the list is empty), so what arrives is what an alert mail looks like, and the line under
+  the address always says what became of the last message (alert sent · test sent · not confirmed
+  yet · failed). Your address and the alert text pass through that service, and — like every other
   alert — mail only goes out **while the app is open**.
 
 The **first** check of each location arms silently (everything already reported is marked

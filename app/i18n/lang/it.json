@@ -270,6 +270,7 @@
   "rarity.emailBad": "Questo non sembra un indirizzo e-mail.",
   "rarity.emailOn": "I nuovi avvisi verranno inviati anche a questo indirizzo.",
   "rarity.emailLast": "Ultima e-mail di avviso inviata {t}.",
+  "rarity.emailTestOk": "Messaggio di prova inviato {t}. I nuovi avvisi vengono inviati appena arrivano.",
   "rarity.emailSubject": "BirdsWhere: {n} nuovi avvisi di rarità",
   "rarity.emailFoot": "Inviato da BirdsWhere mentre l’app era aperta sul tuo dispositivo.",
   "rarity.emailTestSubj": "Messaggio di prova BirdsWhere",

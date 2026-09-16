@@ -15,17 +15,18 @@ window.AppRarity = (function () {
 
   // ---- injected by app.js (init) -----------------------------------------
   // Plain function aliases (stable references) …
-  var createModal, detIsRare, detName, ebirdKey, escapeHtml, fmtDate, getHereFix, getStoredLocations,
+  var detIsRare, detName, ebirdKey, escapeHtml, fmtDate, getHereFix, getStoredLocations,
       hereAsLoc, hereCfg, hideDetHover, holdDelay, ico, llFromAttrs, onDetMarkerClick,
       recentRadiusKm, safeHref, setStatus, setTabAlert, showDetHover, spDetailTableHtml,
       spListDot, speciesColor, t, wireLocHover, wireSpDetail, rarityMapVisible, rarityScoreProbs, onRarityListChanged,
-      rarityFetchSources, abortRaritySweep, userFetchActive, speciesName;
+      rarityFetchSources, abortRaritySweep, userFetchActive, speciesName,
+      rarityPageEl, openRarityPage, closeRarityPage;
   // … and getters for app state that is reassigned after load (the map is built
   // long after this file runs; the language and the two lookup tables change).
   var getMap, getLang, getShowSci, getDetPlot, getLabelsByKey;
 
   function init(ctx) {
-    createModal = ctx.createModal; detIsRare = ctx.detIsRare; detName = ctx.detName;
+    detIsRare = ctx.detIsRare; detName = ctx.detName;
     ebirdKey = ctx.ebirdKey; escapeHtml = ctx.escapeHtml; fmtDate = ctx.fmtDate; getHereFix = ctx.getHereFix;
     getStoredLocations = ctx.getStoredLocations; hereAsLoc = ctx.hereAsLoc; hereCfg = ctx.hereCfg;
     hideDetHover = ctx.hideDetHover; holdDelay = ctx.holdDelay; ico = ctx.ico;
@@ -38,6 +39,7 @@ window.AppRarity = (function () {
     onRarityListChanged = ctx.onRarityListChanged;
     rarityFetchSources = ctx.rarityFetchSources; abortRaritySweep = ctx.abortRaritySweep; userFetchActive = ctx.userFetchActive;
     speciesName = ctx.speciesName;
+    rarityPageEl = ctx.rarityPageEl; openRarityPage = ctx.openRarityPage; closeRarityPage = ctx.closeRarityPage;
     getMap = ctx.getMap; getLang = ctx.getLang; getShowSci = ctx.getShowSci;
     getDetPlot = ctx.getDetPlot; getLabelsByKey = ctx.getLabelsByKey;
   }
@@ -80,6 +82,7 @@ window.AppRarity = (function () {
     if (typeof c.email !== "string") c.email = "";
     if (!isFinite(+c.lastEmail)) c.lastEmail = 0;
     if (typeof c.emailState !== "string") c.emailState = "";   // "" | "ok" | "activate" | "fail" — what became of the last message
+    if (typeof c.emailKind !== "string") c.emailKind = "";     // "test" | "alert" — which kind it was
     if (!isFinite(+c.emailAt)) c.emailAt = 0;
     if (c.sound == null) c.sound = true;
     if (c.sysNotif == null) c.sysNotif = false;
@@ -628,6 +631,9 @@ window.AppRarity = (function () {
     try { rarityEmailAlerts(fresh); } catch (e) {}
     setStatus(t("rarity.newMany", { n: fresh.length }));
   }
+  // The page framework closed the rarity page (‹, browser Back, or another page
+  // taking its place): stop re-rendering into it.
+  function rarityPageClosed() { rarityPanelRefresh = null; }
   // ---- Email delivery -------------------------------------------------------
   // The app has no server of its own, so a mail can only be handed to a relay that
   // accepts a browser request. FormSubmit takes the user's OWN address as the
@@ -664,19 +670,46 @@ window.AppRarity = (function () {
   // What became of the last message — so a mail that never arrived can be explained
   // in Settings instead of failing silently. "activate" = the relay is still waiting
   // for the address to confirm itself, so nothing is being delivered yet.
-  function rarityEmailState(state) { raritySave({ emailState: state, emailAt: Date.now() }); }
-  function rarityEmailAlerts(fresh) {
+  function rarityEmailState(state, kind) { raritySave({ emailState: state, emailKind: kind || "test", emailAt: Date.now() }); }
+  // A cycle announces more than once — the ordinary-source sweep does it per location,
+  // eBird's notable batch at the end — so alerts are QUEUED and sent together. Anything
+  // arriving inside the rate-limit window waits for it instead of being thrown away.
+  var mailQueue = [], mailTimer = null, RARITY_MAIL_QUEUE_CAP = 60;
+  function rarityEmailFlush() {
+    mailTimer = null;
+    var batch = mailQueue.slice(); mailQueue.length = 0;
     var to = rarityEmailTo();
-    if (!fresh.length || !rarityEmailValid(to)) return;
-    var cfg = rarityCfg();
-    if (Date.now() - (+cfg.lastEmail || 0) < RARITY_MAIL_GAP_MS) return;
+    if (!batch.length || !rarityEmailValid(to)) return;
     raritySave({ lastEmail: Date.now() });
-    var subject = t("rarity.emailSubject", { n: fresh.length });
-    var body = subject + "\n\n" + fresh.map(rarityAlertLine).join("\n") + "\n\n" + t("rarity.emailFoot");
+    var subject = t("rarity.emailSubject", { n: batch.length });
+    var body = subject + "\n\n" + batch.map(rarityAlertLine).join("\n") + "\n\n" + t("rarity.emailFoot");
     rarityEmailPost(to, subject, body).then(function (r) {
-      rarityEmailState(r.ok ? "ok" : (r.activate ? "activate" : "fail"));
+      rarityEmailState(r.ok ? "ok" : (r.activate ? "activate" : "fail"), "alert");
       if (!r.ok) setStatus(t(r.activate ? "rarity.emailActivate" : "rarity.emailFail"));   // say it once, where the alert was announced
-    }, function () { rarityEmailState("fail"); });
+    }, function () { rarityEmailState("fail", "alert"); });
+  }
+  function rarityEmailAlerts(fresh) {
+    if (!fresh.length || !rarityEmailValid(rarityEmailTo())) return;
+    fresh.forEach(function (f) { mailQueue.push(f); });
+    if (mailQueue.length > RARITY_MAIL_QUEUE_CAP) mailQueue.splice(0, mailQueue.length - RARITY_MAIL_QUEUE_CAP);   // keep the newest
+    if (mailTimer) return;                                                                    // a send is already pending
+    var wait = RARITY_MAIL_GAP_MS - (Date.now() - (+rarityCfg().lastEmail || 0));
+    if (wait <= 0) rarityEmailFlush();
+    else mailTimer = setTimeout(rarityEmailFlush, wait);
+  }
+  // "Send test" mails the MOST RECENT alerts when there are any, so what lands in the
+  // inbox is a real alert mail rather than a stand-in; a plain note when the list is empty.
+  function rarityEmailTestSend(to) {
+    var list = getRarityList().slice(0, 5), subject, body;
+    if (list.length) {
+      subject = t("rarity.emailSubject", { n: list.length });
+      body = subject + "\n\n" + list.map(function (e) {
+        return "• " + (e.name || e.sci) + (e.place ? " — " + e.place : "") +
+          (e.dt ? " — " + String(e.dt).slice(0, 10) : "") + (e.prob != null ? " — " + e.prob + "%" : "") +
+          (e.url ? "\n  " + e.url : "");
+      }).join("\n") + "\n\n" + t("rarity.emailFoot");
+    } else { subject = t("rarity.emailTestSubj"); body = t("rarity.emailTestBody"); }
+    return rarityEmailPost(to, subject, body);
   }
   // Live-alert marker on its own layer — independent of the detections pipeline,
   // its filters and the red-× clear. Session-only (the seen-set is the persistence).
@@ -783,8 +816,12 @@ window.AppRarity = (function () {
       var p = el && el.querySelector(".rarity-pulse");
       if (p) p.classList.add("done");
     });
-    var m = createModal({ escClose: true, boxClass: "rarity-panel", onClose: function () { rarityPanelRefresh = null; } });
-    m.overlay.style.padding = "0";   // full-screen box — the overlay's 16px inset would shrink it
+    // A real page in the app's page framework (like the Species list / Migration /
+    // checklist pages): it sits UNDER the green header bar, which stays usable, and
+    // its ‹ returns to whatever view it was opened from.
+    var page = rarityPageEl && rarityPageEl(); if (!page) return;
+    var m = { box: page, close: function () { closeRarityPage(); } };
+    openRarityPage();
     var expanded = Object.create(null);   // group key → its individual records are shown
     function render() {
       var cfg = rarityCfg();
@@ -1065,6 +1102,8 @@ window.AppRarity = (function () {
     ensureAudioUnlocked: ensureAudioUnlocked,
     harvestLocalRarities: harvestLocalRarities,
     rarityEmailPost: rarityEmailPost, rarityEmailValid: rarityEmailValid, rarityEmailState: rarityEmailState,
+    rarityEmailTestSend: rarityEmailTestSend,
+    showPanel: showRarityPanel, pageClosed: rarityPageClosed,
     initRarityAlerts: initRarityAlerts,
     // the group key behind the currently-open rarity window (app.js clears it
     // when a non-rarity window opens, and reads it when the red ✕ is pressed)
