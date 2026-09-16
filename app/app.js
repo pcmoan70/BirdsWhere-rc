@@ -1716,6 +1716,18 @@
     return '<span class="sp-dot' + '" data-key="' + escapeHtml(key || "") + '">' +
       detSwatch(color, !!key && isInteresting(key), !!rare, key) + "</span>";
   }
+  // Every species dot OUTSIDE the prediction table: the Images cards clone the table's dot,
+  // the observation rows and the ☰ record popover build their own. Starring a species (or
+  // ticking a year/life list) must change those dots in place — rebuilding the gallery would
+  // re-resolve and reload every photo.
+  function repaintDotsOutsideTable(rareSet) {
+    var tbody = document.getElementById("sp-tbody");
+    Array.prototype.forEach.call(document.querySelectorAll(".sp-dot[data-key]"), function (h) {
+      if (tbody && tbody.contains(h)) return;   // the table's own dots are repainted above
+      var k = h.getAttribute("data-key");
+      paintSpDot(h, !!(rareSet ? rareSet[k] : detIsRare(k)));
+    });
+  }
   function paintSpDot(holder, rare) {
     if (!holder) return;
     var key = holder.getAttribute("data-key"); if (!key) return;
@@ -2290,6 +2302,7 @@
       tr.style.display = ((missingOk || (recencyOk && countOk && !obsFilteredOut)) && rareOk && buildOk && selOk && excOk) ? "" : "none";
     });
     refreshSpExpansions();   // keep expanded detail sub-rows under their (visible) species
+    repaintDotsOutsideTable(rareAll);   // Images cards / observation rows / the ☰ popover
     updateRecencyNote();
     filterSpRows();          // re-apply the name search on top of the other filters
   }
