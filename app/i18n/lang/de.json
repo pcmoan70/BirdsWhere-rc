@@ -1326,6 +1326,7 @@
   "season.leaving": "Abziehend",
   "sp.expandHint": "Nachweise dieser Art zeigen",
   "sp.recencyNote": "Zeigt {window} — {n} Nachweise ausgeblendet",
+  "sp.modelOnly": "Keine Beobachtungen hier — das erwartet das Modell an dieser Stelle, die wahrscheinlichsten zuerst.",
   "sp.lastDays": "letzte {n} Tage",
   "sp.monthsOnly": "ausgewählte Monate",
   "th.arrival": "Ankunft",

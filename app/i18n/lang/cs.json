@@ -1326,6 +1326,7 @@
   "season.leaving": "Odlétá",
   "sp.expandHint": "Zobrazit pozorování druhu",
   "sp.recencyNote": "Zobrazeno {window} — {n} pozorování skryto",
+  "sp.modelOnly": "Žádná pozorování — tohle model v tomto místě očekává, nejpravděpodobnější první.",
   "sp.lastDays": "posledních {n} dní",
   "sp.monthsOnly": "vybrané měsíce",
   "th.arrival": "Přílet",

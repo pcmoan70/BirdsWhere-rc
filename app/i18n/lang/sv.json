@@ -1334,6 +1334,7 @@
   "season.leaving": "Lämnar",
   "sp.expandHint": "Visa artens fynd",
   "sp.recencyNote": "Visar {window} — {n} fynd visas inte",
+  "sp.modelOnly": "Inga observationer här — det här är vad modellen väntar sig på platsen, mest sannolika först.",
   "sp.lastDays": "senaste {n} dagarna",
   "sp.monthsOnly": "valda månader",
   "th.arrival": "Ankomst",

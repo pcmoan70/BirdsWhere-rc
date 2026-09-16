@@ -1497,6 +1497,7 @@ window.GeoI18N = (function () {
         "season.leaving": "Leaving",
         "sp.expandHint": "Show this species’ records",
         "sp.recencyNote": "Showing {window} — {n} detections not shown",
+        "sp.modelOnly": "No observations here — this is what the model expects at this spot, likeliest first.",
         "sp.lastDays": "last {n} days",
         "sp.monthsOnly": "selected months",
         "th.arrival": "Arrival",

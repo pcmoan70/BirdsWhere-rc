@@ -1326,6 +1326,7 @@
   "season.leaving": "Odlot",
   "sp.expandHint": "Pokaż obserwacje gatunku",
   "sp.recencyNote": "Pokazuje {window} — ukryto {n} obserwacji",
+  "sp.modelOnly": "Brak obserwacji — to, czego model spodziewa się w tym miejscu, od najbardziej prawdopodobnych.",
   "sp.lastDays": "ostatnie {n} dni",
   "sp.monthsOnly": "wybrane miesiące",
   "th.arrival": "Przylot",

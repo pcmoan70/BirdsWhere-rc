@@ -1326,6 +1326,7 @@
   "season.leaving": "Marchándose",
   "sp.expandHint": "Mostrar registros de la especie",
   "sp.recencyNote": "Mostrando {window} — {n} registros no mostrados",
+  "sp.modelOnly": "No hay observaciones aquí: esto es lo que el modelo espera en este punto, primero las más probables.",
   "sp.lastDays": "últimos {n} días",
   "sp.monthsOnly": "meses seleccionados",
   "th.arrival": "Llegada",

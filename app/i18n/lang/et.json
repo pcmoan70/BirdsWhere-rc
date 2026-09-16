@@ -1326,6 +1326,7 @@
   "season.leaving": "Lahkub",
   "sp.expandHint": "Näita liigi vaatlusi",
   "sp.recencyNote": "Kuvatakse {window} — {n} vaatlust peidetud",
+  "sp.modelOnly": "Siin pole vaatlusi — mudel ootab siin neid liike, tõenäolisemad eespool.",
   "sp.lastDays": "viimased {n} päeva",
   "sp.monthsOnly": "valitud kuud",
   "th.arrival": "Saabumine",

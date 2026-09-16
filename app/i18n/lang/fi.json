@@ -1326,6 +1326,7 @@
   "season.leaving": "Lähtee",
   "sp.expandHint": "Näytä lajin havainnot",
   "sp.recencyNote": "Näytetään {window} — {n} havaintoa piilotettu",
+  "sp.modelOnly": "Ei havaintoja täällä — tässä on se, mitä malli odottaa tällä paikalla, todennäköisimmät ensin.",
   "sp.lastDays": "viimeiset {n} päivää",
   "sp.monthsOnly": "valitut kuukaudet",
   "th.arrival": "Saapuminen",

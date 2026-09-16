@@ -1326,6 +1326,7 @@
   "season.leaving": "Départ",
   "sp.expandHint": "Voir les observations de l’espèce",
   "sp.recencyNote": "Affichage {window} — {n} observations masquées",
+  "sp.modelOnly": "Aucune observation ici — voici ce que le modèle attend à cet endroit, les plus probables d’abord.",
   "sp.lastDays": "{n} derniers jours",
   "sp.monthsOnly": "mois sélectionnés",
   "th.arrival": "Arrivée",

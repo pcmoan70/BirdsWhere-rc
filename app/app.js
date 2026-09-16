@@ -1473,6 +1473,11 @@
   // above the rare threshold — slotted into the current sort with their probability / season /
   // comparison columns; persisted.
   var spShowMissing = !!window.GeoState.get("spShowMissing", false);
+  // A spot with NO observations at all fills the list with the model's own prediction
+  // instead of showing nothing — the same set [?] shows, commonest first. It lasts for
+  // that fetch only and leaves the user's own [?] setting (spShowMissing) alone.
+  var spMissingAuto = false;
+  function spMissingOn() { return spShowMissing || spMissingAuto; }
   var spCountMin = 1, spCountMax = null;   // Total-column lower/upper bounds (inclusive; null = open). Default: Total ≥ 1 — list only species actually observed.
   var spCountMetric = "total";                // which count the bounds restrict: "total" (specimens) or "pairs" (observations)
   var spNameQuery = "";                       // species-list name filter (raw text; lowercased at compare time)
@@ -2347,6 +2352,21 @@
     var anyBuild = withBuild && (spFilters.star || spFilters.year || spFilters.life);
     var hasSel = Object.keys(detSelected).length > 0;   // a species selection / applied species list narrows the table too
     var now = Date.now();
+    // Empty spot → the model's own ranking stands in for the missing observations. Show what
+    // it puts at MODEL_FLOOR or better and, where even that is empty (far offshore, deep
+    // desert), its best MODEL_TOP_N anyway — the answer must never be a blank page. An
+    // explicit probability floor set by the user still wins.
+    var MODEL_FLOOR = 0.01, MODEL_MIN_ROWS = 10, MODEL_TOP_N = 25, autoCut = 0;
+    if (spMissingAuto) {
+      var ps = [];
+      Array.prototype.forEach.call(tbody.children, function (tr) {
+        if (tr.classList.contains("sp-detail-row") || tr.classList.contains("sp-extra")) return;
+        var p = +tr.getAttribute("data-prob") || 0; if (p > 0) ps.push(p);
+      });
+      ps.sort(function (a, b) { return b - a; });
+      var above = 0; while (above < ps.length && ps[above] >= MODEL_FLOOR) above++;
+      autoCut = (above >= MODEL_MIN_ROWS) ? MODEL_FLOOR : (ps.length ? ps[Math.min(ps.length, MODEL_TOP_N) - 1] : 0);
+    }
     Array.prototype.forEach.call(tbody.querySelectorAll("tr"), function (tr) {
       if (tr.classList.contains("sp-detail-row")) return;   // handled by refreshSpExpansions below
       var extra = tr.classList.contains("sp-extra");
@@ -2409,8 +2429,9 @@
       // Predicted species down to the list's own probability floor; with the floor at 0 %
       // the rare threshold guards instead — else the whole model would pour into the list.
       var floor = (+document.getElementById("prob-min").value || 0) / 100;
-      var missingOk = spShowMissing && !!agg && !entry && !extra &&
-        (+tr.getAttribute("data-prob") || 0) >= (floor > 0 ? floor : rarePct() / 100);
+      var missingCut = spMissingAuto ? Math.max(floor, autoCut) : (floor > 0 ? floor : rarePct() / 100);
+      var missingOk = spMissingOn() && !!agg && !entry && !extra &&
+        (+tr.getAttribute("data-prob") || 0) >= missingCut;
       tr.style.display = ((missingOk || (recencyOk && countOk && !obsFilteredOut)) && rareOk && buildOk && selOk && excOk) ? "" : "none";
     });
     refreshSpExpansions();   // keep expanded detail sub-rows under their (visible) species
@@ -2459,7 +2480,11 @@
     var active = !!rg || days !== 0 || months.length > 0;
     var hidden = 0;
     if (active && agg) Object.keys(agg).forEach(function (k) { (agg[k].rows || []).forEach(function (r) { if (!detDatePasses(r.date)) hidden++; }); });
-    if (!active || !hidden) { el.style.display = "none"; return; }
+    if (!active || !hidden) {
+      // Nothing to say about the date window — but an empty spot explains itself here.
+      if (spMissingAuto) { el.textContent = t("sp.modelOnly"); el.style.display = ""; return; }
+      el.style.display = "none"; return;
+    }
     var win = rg ? ((rg.from ? fmtDate(rg.from) : "…") + " – " + (rg.to ? fmtDate(rg.to) : "…"))
       : (days ? t("sp.lastDays", { n: days }) : t("sp.monthsOnly", { n: months.length }));
     el.textContent = t("sp.recencyNote", { window: win, n: hidden });
@@ -4974,6 +4999,17 @@
   function applySightings(tbody, token, result, isFinal) {
     if (!tbody || tbody.dataset.sightingsToken !== token) return;
     if (isFinal) showSourceCounts(result.bySrc, result.dedupTotal, result.timedOut, result.failed, result.truncInfo);
+    // Nothing found at this spot: rather than an empty page, show what the model expects
+    // here, commonest first (the filtering pass below already honours spMissingAuto).
+    var missingFlip = false;
+    if (isFinal && !spShowMissing) {
+      var nothingHere = !(result && result.dedupTotal > 0);
+      if (nothingHere !== spMissingAuto) {
+        spMissingAuto = nothingHere;
+        missingFlip = true;
+        if (nothingHere) { speciesListSort = { col: "prob", dir: "desc" }; try { updateSortIndicators(); } catch (e) {} }
+      }
+    }
     // Union across ALL plotted point-fetches, so the list mirrors the accumulated
     // map dots — not just this one fetch's data.
     // Rarity records within the list's own neighbourhood (the same radius the
@@ -5031,6 +5067,9 @@
     // Re-apply the active age/rare filters and sort as data arrives.
     applyAgeFilter();
     if (speciesListSort.col) sortSpeciesList();
+    // The prediction fallback just went on or off → relabel [?]/[!] and rebuild the body
+    // (the Images layout draws its cards from the rows the filter pass just settled).
+    if (missingFlip) { try { renderSpControls(); } catch (e) {} }
     // Map-first Species-List fetch: drop the dots onto the map as each source's
     // data lands. We only plot while the map is the visible view — if the user
     // has tapped the list icon we leave the (already-plotted) dots be; toggling
@@ -11941,7 +11980,7 @@
       if (sl) key = sl.getAttribute("data-key");
       else { var ex = tr.querySelector(".det-count-extra[data-sci]"); if (ex) key = "x:" + String(ex.getAttribute("data-sci") || "").toLowerCase(); }
       // [?] predictions have no detections to be "in view" — keep them (applyAgeFilter let them through).
-      var missing = spShowMissing && !!sl && !tr.classList.contains("sp-has-det") && !tr.classList.contains("sp-extra");
+      var missing = spMissingOn() && !!sl && !tr.classList.contains("sp-has-det") && !tr.classList.contains("sp-extra");
       var show = missing || !!(key && inView[key]);
       tr.style.display = show ? "" : "none";
       if (show) shown++;
@@ -17785,7 +17824,9 @@
     var spSortBeforeMissing = null;
     if (spMissingBtn) spMissingBtn.addEventListener("click", function (e) {
       e.stopPropagation();
-      spShowMissing = !spShowMissing; window.GeoState.save({ spShowMissing: spShowMissing });
+      spShowMissing = spMissingOn() ? false : true;   // [!] while the empty-spot fallback is on means "hide them"
+      spMissingAuto = false;                           // from here the user's own setting decides
+      window.GeoState.save({ spShowMissing: spShowMissing });
       if (spShowMissing) {
         spSortBeforeMissing = { col: speciesListSort.col, dir: speciesListSort.dir };
         speciesListSort = { col: "prob", dir: "desc" };
@@ -21055,7 +21096,7 @@
     // Before the observations have landed the table holds the model's whole prediction list
     // (default sort: rarest first) — as cards that would be a wall of exotic species whose
     // photos start downloading. Wait for the fetch instead; [?] (predictions wanted) still shows.
-    if (!tbody._sightingsAgg && !spShowMissing) return '<div class="dl-empty spg-wait"><div class="spinner"></div>' + escapeHtml(t("status.loadingDet")) + "</div>";
+    if (!tbody._sightingsAgg && !spMissingOn()) return '<div class="dl-empty spg-wait"><div class="spinner"></div>' + escapeHtml(t("status.loadingDet")) + "</div>";
     var rows = Array.prototype.filter.call(tbody.children, function (tr) { return tr.style.display !== "none" && !tr.classList.contains("sp-detail-row"); });
     if (!rows.length) return '<div class="dl-empty">' + escapeHtml(t("detlist.empty")) + "</div>";
     var lbl = { total: t("th.total"), last: t("th.last"), dist: t("th.dist"), prob: t("th.prob") };
@@ -21432,9 +21473,9 @@
     // species the model predicts here. While on it reads [!] — tap to go back to observed only.
     var mb = document.getElementById("sp-missing-btn");
     if (mb) {
-      mb.classList.toggle("on", spShowMissing);
-      mb.textContent = spShowMissing ? "!" : "?";
-      mb.title = t(spShowMissing ? "sp.missingOff" : "sp.missingBtn"); mb.setAttribute("aria-label", mb.title);
+      mb.classList.toggle("on", spMissingOn());
+      mb.textContent = spMissingOn() ? "!" : "?";
+      mb.title = t(spMissingOn() ? "sp.missingOff" : "sp.missingBtn"); mb.setAttribute("aria-label", mb.title);
       mb.style.display = (spLayout === "table" || spLayout === "gallery") ? "" : "none";
     }
     if (spLayout === "table" || spLayout === "gallery") {

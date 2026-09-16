@@ -1326,6 +1326,7 @@
   "season.leaving": "Išvyksta",
   "sp.expandHint": "Rodyti rūšies stebėjimus",
   "sp.recencyNote": "Rodoma {window} — {n} stebėjimų nerodoma",
+  "sp.modelOnly": "Stebėjimų čia nėra — štai ko modelis tikisi šioje vietoje, tikėtiniausi pirma.",
   "sp.lastDays": "paskutinės {n} d.",
   "sp.monthsOnly": "pasirinkti mėnesiai",
   "th.arrival": "Atskridimas",

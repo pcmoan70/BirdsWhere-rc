@@ -1326,6 +1326,7 @@
   "season.leaving": "Vertrek",
   "sp.expandHint": "Toon waarnemingen van de soort",
   "sp.recencyNote": "Toont {window} — {n} waarnemingen niet getoond",
+  "sp.modelOnly": "Geen waarnemingen hier — dit verwacht het model op deze plek, de waarschijnlijkste eerst.",
   "sp.lastDays": "laatste {n} dagen",
   "sp.monthsOnly": "geselecteerde maanden",
   "th.arrival": "Aankomst",

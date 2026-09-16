@@ -1326,6 +1326,7 @@
   "season.leaving": "Forlater",
   "sp.expandHint": "Vis artens funn",
   "sp.recencyNote": "Viser {window} — {n} funn vises ikke",
+  "sp.modelOnly": "Ingen observasjoner her — dette er hva modellen venter på dette stedet, mest sannsynlige først.",
   "sp.lastDays": "siste {n} dager",
   "sp.monthsOnly": "valgte måneder",
   "th.arrival": "Ankomst",
