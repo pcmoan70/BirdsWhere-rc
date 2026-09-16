@@ -2121,12 +2121,14 @@
     var cols = list.length <= 3 ? list.length : Math.min(4, Math.ceil(list.length / 2));
     el.style.setProperty("--mos-cols", cols);
     var by = btn.getAttribute("data-by") || "", src = btn.getAttribute("data-url") || "";
-    el.innerHTML = '<div class="obs-mosaic-hdr">' + escapeHtml(btn.getAttribute("data-name") || "") +
+    el.innerHTML = '<button type="button" class="conf-close obs-mosaic-x" aria-label="' + escapeHtml(t("btn.close")) + '" title="' + escapeHtml(t("btn.close")) + '">×</button>' +
+      '<div class="obs-mosaic-hdr">' + escapeHtml(btn.getAttribute("data-name") || "") +
         (list.length > 1 ? ' <span class="obs-mosaic-n">(' + list.length + ")</span>" : "") + "</div>" +
       '<div class="obs-mosaic-grid' + (list.length === 1 ? " one" : "") + '">' +
         list.map(function (u, i) { return '<span class="obs-mos-tile" role="button" tabindex="0" data-i="' + i + '" title="' + escapeHtml(t("obs.photo")) + '"><img alt="" src="' + escapeHtml(u) + '"></span>'; }).join("") + "</div>" +
       '<div class="obs-photo-cred">' + (by ? escapeHtml(by) : "") +
         (src ? (by ? " · " : "") + '<a href="' + escapeHtml(src) + '" target="_blank" rel="noopener">' + escapeHtml(t("det.openSource")) + "</a>" : "") + "</div>";
+    el.querySelector(".obs-mosaic-x").addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); closeObsMosaic(); });
     Array.prototype.forEach.call(el.querySelectorAll(".obs-mos-tile"), function (tile) {
       tile.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); closeObsMosaic(); showObsPhoto(btn, list[+this.getAttribute("data-i")]); });
       tile.querySelector("img").addEventListener("error", function () { tile.classList.add("bad"); });   // a dead URL leaves no gap

@@ -4493,8 +4493,12 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .obs-photo-n { font-size: 10px; line-height: 1; margin-left: 1px; font-variant-numeric: tabular-nums; }
 /* The hover/tap mosaic: every picture of one observation, square tiles 2–3 to a row
    (a single picture is shown whole). Loaded only when the mosaic opens. */
+/* NB: no position here — .detrow-menu is position:fixed and does the anchoring (and is
+   already the containing block the × positions against). Overriding it drops the popover
+   into normal flow, which lands it off-screen. */
 .obs-mosaic { padding: 6px 8px 5px; width: max-content; max-width: min(94vw, 470px); }
-.obs-mosaic-hdr { font-weight: 600; margin-bottom: 5px; white-space: nowrap; }
+.obs-mosaic-hdr { font-weight: 600; margin-bottom: 5px; white-space: nowrap; padding-right: 26px; }   /* room for the × */
+.obs-mosaic-x { top: 1px; right: 2px; font-size: var(--fs-glyph, 18px); }
 .obs-mosaic-n { font-weight: 400; color: var(--ink-muted, #777); }
 .obs-mosaic-grid { display: grid; grid-template-columns: repeat(var(--mos-cols, 3), var(--mos-tile, 104px)); gap: 4px; justify-content: start; }
 .obs-mos-tile { display: block; width: var(--mos-tile, 104px); height: var(--mos-tile, 104px); overflow: hidden; border-radius: 6px; background: var(--panel-2, #eee); cursor: zoom-in; }
