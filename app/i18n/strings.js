@@ -1433,7 +1433,6 @@ window.GeoI18N = (function () {
         "popup.cancelled": "BirdsWhere was not loaded.",
         "popup.loadNow": "Load now",
         "btn.cancel": "Cancel",
-        "popup.feedback": "Ideas, bug reports and praise are welcome:",
         "basemap.dark": "Dark",
         "basemap.light": "Light",
         "basemap.streets": "Streets",

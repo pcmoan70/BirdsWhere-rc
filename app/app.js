@@ -6692,7 +6692,6 @@
           '<p class="perf-desc" data-i18n="popup.desc">See where birds live, migrate, and are being seen right now — live observations from eBird, GBIF, iNaturalist and national databases, plus range and timing estimates worked out on your device. Everything runs in your browser.</p>' +
           '<p class="perf-privacy" data-i18n="popup.privacy">Private by design: there is no account and no server of ours. Your searches, saved lists and settings stay on this device — nothing is sent anywhere except the direct requests to the observation sources you query.</p>' +
           '<p class="perf-keys" data-i18n="popup.keysTip"></p>' +
-          '<p class="perf-feedback"><span data-i18n="popup.feedback"></span> <button type="button" class="feedback-open ico-btn">' + ico("mail") + '<span class="ico-label" data-i18n="feedback.send">Message</span></button></p>' +
           // Offline mode reads as a line of text with its icon in front, not a button.
           '<div class="install-row" id="install-row">' + ico("install") + '<span class="install-steps cu-hint"></span></div>' +
           '<div class="perf-version" id="perf-version" style="display:none"></div>' +

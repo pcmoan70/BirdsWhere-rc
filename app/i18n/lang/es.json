@@ -1262,7 +1262,6 @@
   "popup.cancelled": "BirdsWhere no se ha cargado.",
   "popup.loadNow": "Cargar ahora",
   "btn.cancel": "Cancelar",
-  "popup.feedback": "Ideas, informes de errores y elogios son bienvenidos:",
   "feedback.send": "Comentarios",
   "feedback.title": "Comentarios",
   "feedback.intro": "El equipo —una persona y una IA— agradece cualquier cosa: ideas de nuevas funciones, pistas sobre fuentes de datos que aún no usamos, ideas para el modelado predictivo, avisos de errores, problemas de usabilidad, elogios…",
