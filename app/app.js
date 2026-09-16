@@ -10251,9 +10251,9 @@
     function card(m, w, isBase) {
       var nm = speciesName(m), here = out ? (isBase ? (out[m.index] || 0) : w.p) : -1;
       var sv = (out && !isBase) ? confScore(w) * 100 : -1;
-      return '<div class="cfi-card' + (isBase ? " cfi-base" : "") + '" data-key="' + escapeHtml(m.key) + '" data-sci="' + escapeHtml(m.sci) + '">' +
+      return '<div class="cfi-card' + (isBase ? ' cfi-base" title="' + escapeHtml(t("confusion.base")) + '"' : '"') + ' data-key="' + escapeHtml(m.key) + '" data-sci="' + escapeHtml(m.sci) + '">' +
         '<div class="spg-img"><span class="spg-none" style="display:none">' + escapeHtml(t("spg.noImage")) + "</span></div>" +
-        '<div class="cfi-name">' + (isBase ? '<span class="cfi-tag">' + escapeHtml(t("confusion.base")) + "</span>" : "") + escapeHtml(nm) + "</div>" +
+        '<div class="cfi-name">' + escapeHtml(nm) + "</div>" +   // the species itself is marked by its thicker frame (.cfi-base), not a label
         '<div class="cfi-sci">' + escapeHtml(m.sci) + "</div>" +
         '<div class="cfi-stats">' +
           row("cfi-match", L.match, isBase ? "—" : String(Math.round(w.w * 100)), isBase ? 0 : w.w * 100, "", "confusion.tipMatch") +

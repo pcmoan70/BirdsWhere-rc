@@ -4435,10 +4435,9 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .cfi-strip { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 8px 6px; align-items: flex-start; }
 .cfi-card { flex: 0 0 150px; width: 150px; background: var(--surface, #fff); border: 1px solid var(--border, #e0e6e3); border-radius: 10px; overflow: hidden; cursor: pointer; font-weight: 400; }
 .cfi-card:hover { background: var(--hover, #eef4f2); }
-.cfi-card.cfi-base { cursor: default; border-color: var(--brand, #2e8b74); box-shadow: inset 0 0 0 1px var(--brand, #2e8b74); }
+.cfi-card.cfi-base { cursor: default; border: 3px solid var(--brand, #2e8b74); }   /* the species the list is FOR: a thicker frame, no label */
 .cfi-card.cfi-base:hover { background: var(--surface, #fff); }
 .cfi-name { padding: 5px 7px 0; font-size: var(--fs-s); font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
-.cfi-tag { display: block; font-size: 10px; font-weight: 600; color: var(--brand, #2e8b74); text-transform: uppercase; letter-spacing: .03em; }
 .cfi-sci { padding: 0 7px; font-size: var(--fs-xs); font-style: italic; color: var(--ink-muted, #777); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cfi-stats { padding: 4px 7px 2px; display: grid; gap: 2px; }
 .cfi-row { position: relative; display: flex; justify-content: space-between; gap: 6px; padding: 0 3px; font-size: var(--fs-xs); line-height: 1.35; border-radius: 3px; overflow: hidden; }
