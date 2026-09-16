@@ -6694,7 +6694,7 @@
           '<p class="perf-keys" data-i18n="popup.keysTip"></p>' +
           '<p class="perf-feedback"><span data-i18n="popup.feedback"></span> <button type="button" class="feedback-open ico-btn">' + ico("mail") + '<span class="ico-label" data-i18n="feedback.send">Message</span></button></p>' +
           // Offline mode reads as a line of text with its icon in front, not a button.
-          '<div class="install-row"><button type="button" id="install-info" class="install-link ico-btn" hidden>' + ico("install") + '<span class="ico-label" data-i18n="install.app">Offline mode</span></button><div class="install-steps cu-hint"></div></div>' +
+          '<div class="install-row" id="install-row">' + ico("install") + '<span class="install-steps cu-hint"></span></div>' +
           '<div class="perf-version" id="perf-version" style="display:none"></div>' +
           '<div class="perf-btns"><a class="perf-about about-page-link" href="about/" target="_blank" rel="noopener" data-i18n="settings.aboutPage">About ↗</a>' +
           '<button id="perf-modal-cancel" class="btn btn-light" data-i18n="btn.cancel" hidden>Cancel</button>' +
@@ -16235,11 +16235,10 @@
     if (m) m.style.display = "none";
   }
 
-  // ---- PWA install (exposed only from the info screen + Settings) -----------
-  // No floating pill or splash button (those proved flaky). We silently stash
-  // the browser's install prompt; a tap on either button runs it, or shows
-  // platform-specific manual steps when there's no prompt API (iOS, Firefox …).
-  var deferredInstall = null;
+  // ---- PWA install (a line of guidance on the info screen) ------------------
+  // No button and no stashed prompt: the welcome screen simply states the route to an
+  // installed copy for this platform, and the browser is left to offer its own install
+  // control (the address-bar icon / menu item) in its own way.
   function installIsStandalone() {
     try { return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true; } catch (e) { return false; }
   }
@@ -16254,30 +16253,18 @@
   function installStepsText() {
     return installIsIOS() ? (installIsIOSSafari() ? t("install.ios") : t("install.iosOther")) : t("install.manual");
   }
-  // Show/hide the install line by install state (hidden once installed). The how-to
-  // is written out straight away — nothing to tap to find out what offline mode is.
+  // Write the how-to out (it follows the UI language via refreshLangUI) and drop the
+  // whole line once the app IS installed, when there is nothing left to explain.
   function refreshInstallUI() {
     var installed = installIsStandalone();
-    var info = document.getElementById("install-info");
-    if (info) info.hidden = installed;
+    var row = document.getElementById("install-row");
+    if (row) row.hidden = installed;
     var steps = document.querySelector(".install-steps");
-    if (steps) { steps.textContent = installed ? "" : installStepsText(); steps.hidden = installed; }
+    if (steps) steps.textContent = installed ? "" : installStepsText();
   }
   function initInstall() {
-    window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); deferredInstall = e; refreshInstallUI(); });
-    window.addEventListener("appinstalled", function () { deferredInstall = null; refreshInstallUI(); });
+    window.addEventListener("appinstalled", refreshInstallUI);
     refreshInstallUI();
-  }
-  // Tapped an install button: native prompt if the browser offered one, else
-  // the right manual steps for this platform, shown in the adjacent hint line.
-  function doInstall(btn) {
-    var steps = btn && btn.parentNode && btn.parentNode.querySelector(".install-steps");
-    if (deferredInstall) {
-      deferredInstall.prompt();
-      deferredInstall.userChoice.then(function () { deferredInstall = null; refreshInstallUI(); });
-      return;
-    }
-    if (steps) { steps.textContent = installStepsText(); steps.hidden = false; }   // already shown; re-assert in case it was emptied
   }
 
   // ---- Feedback (EmailJS) ---------------------------------------------------
@@ -17199,9 +17186,6 @@
     document.getElementById("perf-modal").addEventListener("click", function (e) {
       if (e.target === this) hidePerfModal();   // click outside the box
     });
-    // Install button (info screen) → native prompt or manual steps.
-    var installInfoBtn = document.getElementById("install-info");
-    if (installInfoBtn) installInfoBtn.addEventListener("click", function () { doInstall(this); });
     document.getElementById("distmap-close").addEventListener("click", function () { navClose("distmap"); });
     document.getElementById("distmap-modal").addEventListener("click", function (e) {
       if (e.target === this) navClose("distmap");
