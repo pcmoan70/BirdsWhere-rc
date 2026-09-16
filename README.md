@@ -728,10 +728,20 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
 5. **Genus** (0.15) — a same-genus boost.
 
 Two **gates** then scale everything inferred from morphology, colour and taxonomy: a **major size
-difference** (about 1.4× in linear size or 3× in body mass halves it; 2× / 9× cuts it to a fifth) and a
-**different family** (keeps about a third). Real iNaturalist confusions are never gated, so a
-Sparrowhawk still lists the Goshawk (Match 55, misID 75 %), while a Goldcrest's leaf-warbler
-"look-alikes" fall from ~58 to ~18.
+difference** (about 1.4× in linear size or 3× in body mass halves it; 2× / 9× cuts it to a fifth) and
+**taxonomic distance** (same family 1, same order ~0.6, unrelated ~0.35). Real iNaturalist confusions are
+never gated, so a Sparrowhawk still lists the Goshawk (Match 55, misID 75 %).
+
+**Convergence relaxes both gates.** Birds that make their living the same way — same AVONET foraging
+lifestyle and trophic niche — and genuinely share a shape are confused across taxonomy: swifts, swiftlets
+and martins are aerial invertivores with one silhouette, plovers and sandpipers share a wader build. The
+taxonomic gate is lifted toward 1 in proportion to that convergence, and for two **aerial** species the
+size step is doubled, because size is the first cue you lose against the sky. Because a crowd of
+congeners otherwise fills every slot, up to six extra slots hold the best few (max 3) partners from each
+family the list doesn't already cover. A Common Swift now lists Barn Swallow, Crag Martin and House
+Martin, a Barn Swallow lists the Common Swift, a Dunlin lists the Ringed Plover, and Goldcrest ↔
+Chiffchaff rose from 18 to 47 — while same-family pairs and unrelated ones (Swift ↔ Blackbird) are
+unchanged. Cost: 1.7 % more entries.
 
 A **plumage-colour** score is then averaged in (≈ half the final Match): per-sex RGB histograms
 (6×6×6 = 216 bins) from the HBW-RGB illustration dataset, matched separately for male and female so a

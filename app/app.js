@@ -80,7 +80,7 @@
   var TAX_URL = "taxonomy-base.csv";        // species_code + English name + class (split from taxonomy.csv)
   var TAX_NAMES_BASE = "i18n/names/";       // per-language name packs, line-aligned to taxonomy-base.csv rows
   var CONFUSION_URL = "confusion.csv";      // per-bird look-alike (confusion) partner codes; fetched on first use
-  var CONFUSION_REV = 13;                     // bump when confusion.csv changes — busts the runtime (cache-first) copy
+  var CONFUSION_REV = 14;                     // bump when confusion.csv changes — busts the runtime (cache-first) copy
   var TRAITS_URL = "species-traits.json";   // per-species characteristics (AVONET morphology/ecology + HBW colour)
   var TRAITS_REV = 2;                        // bump when species-traits.json changes
 
