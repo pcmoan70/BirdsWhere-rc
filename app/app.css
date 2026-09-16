@@ -4463,3 +4463,20 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .perf-btns .btn { flex: 1 1 0; min-width: 0; max-width: 46%; margin: 0; padding: 11px 14px; box-sizing: border-box; line-height: 1.2; text-align: center; }   /* Cancel + OK equal, to the right */
 .launch-cancelled { margin: 12px 0; }
 
+/* The observation's own photo: a camera button on the record row → the picture itself. */
+.obs-photo { display: inline-flex; vertical-align: middle; margin-left: 3px; color: var(--brand, #2e8b74); cursor: pointer; }
+.obs-photo svg { width: 15px; height: 15px; }
+.obs-photo:hover { color: var(--brand-deep, #14504a); }
+.obs-photo-box { max-width: min(96vw, 760px); }
+.obs-photo-wrap { display: flex; justify-content: center; align-items: center; min-height: 120px; margin: 6px 0 4px; }
+.obs-photo-wrap img { max-width: 100%; max-height: min(70vh, 620px); border-radius: 8px; display: block; }
+.obs-photo-cred { font-size: var(--fs-xs); color: var(--ink-muted, #777); text-align: center; }
+.obs-photo-cred a { color: var(--brand, #2e8b74); }
+/* National red-list category (NT → CR), from the Nordic sources that report it. */
+.rl-tag { display: inline-block; font-size: 10px; font-weight: 700; line-height: 1.5; padding: 0 4px; border-radius: 3px; vertical-align: middle; margin-left: 4px; letter-spacing: .02em; color: #fff; background: #9aa5a1; }
+.rl-dd { background: #8a8f8d; }
+.rl-nt { background: #b8a533; }
+.rl-vu { background: #e8801f; }
+.rl-en { background: #d4522a; }
+.rl-cr, .rl-re { background: #b3261e; }
+

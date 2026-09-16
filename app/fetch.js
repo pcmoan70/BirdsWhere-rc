@@ -544,7 +544,7 @@ window.AppFetch = (function () {
   // personal access_token. GeoJSON output (coords from the feature geometry);
   // filtered by a WGS84 bounding box + a date range. Field paths are the valid
   // warehouse "selected" fields (verified against FinBIF's own tooling).
-  var LAJI_FIELDS = "unit.linkings.taxon.scientificName,unit.linkings.taxon.nameEnglish,unit.linkings.taxon.nameFinnish,unit.interpretations.individualCount,gathering.displayDateTime,gathering.locality,gathering.interpretations.municipalityDisplayname,gathering.interpretations.coordinateAccuracy,document.documentId,unit.linkings.taxon.kingdomScientificName,unit.linkings.taxon.informalTaxonGroups,unit.notes,gathering.notes";
+  var LAJI_FIELDS = "unit.linkings.taxon.scientificName,unit.linkings.taxon.nameEnglish,unit.linkings.taxon.nameFinnish,unit.interpretations.individualCount,gathering.displayDateTime,gathering.locality,gathering.interpretations.municipalityDisplayname,gathering.interpretations.coordinateAccuracy,document.documentId,unit.linkings.taxon.kingdomScientificName,unit.linkings.taxon.informalTaxonGroups,unit.notes,gathering.notes,unit.media,unit.images,unit.linkings.taxon.latestRedListStatusFinland.status";   // media = the observer's own photo; red-list status for the rarity tag
   async function fetchLajiAll(lat, lon, d1, d2, rkm, key, ep, signal) {
     if (!key) throw new Error("Laji.fi: no API key");   // surfaced as a failed source
     var dLat = rkm / 111.32, cos = Math.cos(lat * Math.PI / 180);

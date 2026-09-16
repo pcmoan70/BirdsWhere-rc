@@ -287,6 +287,7 @@
       sources:  '<circle cx="12" cy="12" r="2"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 16.2a6 6 0 0 0 0-8.4M4.9 4.9a10 10 0 0 0 0 14.2M19.1 19.1a10 10 0 0 0 0-14.2"/>',
       datasets: '<path d="M12 3 3 7.5 12 12l9-4.5L12 3zM3 12l9 4.5 9-4.5M3 16.5 12 21l9-4.5"/>',
       globe:    '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.6 2.6 15.4 0 18M12 3c-2.6 2.6-2.6 15.4 0 18"/>',
+      camera:   '<path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.2" r="3.4"/>',
       download: '<path d="M12 3v11M7.5 9.5 12 14l4.5-4.5M5 20h14"/>',
       upload:   '<path d="M12 21V10M7.5 14.5 12 10l4.5 4.5M5 4h14"/>',
       folder:   '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
@@ -1643,7 +1644,9 @@
       e.rows.forEach(function (r) {
         if (!detRowPasses(r)) return;
         rows.push({ key: key, name: nm, color: spCol, lat: r.lat, lon: r.lon, date: r.date || "", src: r.src || "", origin: r.origin || "",
-          url: r.url || "", place: r.place || "", placeCoarse: !!r.placeCoarse, posFuzzM: +r.posFuzzM || 0, count: (r.count != null ? r.count : ""), act: r.act || "", note: r.note || "", flags: r.flags || "", observer: r.observer || "", prob: (r._prob != null ? r._prob : -1) });
+          url: r.url || "", place: r.place || "", placeCoarse: !!r.placeCoarse, posFuzzM: +r.posFuzzM || 0, count: (r.count != null ? r.count : ""), act: r.act || "", note: r.note || "", flags: r.flags || "", observer: r.observer || "",
+          photo: r.photo || "", photoBig: r.photoBig || "", photoBy: r.photoBy || "", rl: r.rl || "",   // the observer's own picture + red-list code
+          prob: (r._prob != null ? r._prob : -1) });
       });
     } else {
       rows = collectVisibleDetections(null, true).filter(function (d) { return d.key === key; });   // extras / no agg → fall back to plotted rows
@@ -1727,6 +1730,20 @@
       var k = h.getAttribute("data-key");
       paintSpDot(h, !!(rareSet ? rareSet[k] : detIsRare(k)));
     });
+  }
+  // ---- Red list (IUCN-style national categories) -----------------------------
+  // Artsobservasjoner, Artportalen and Laji.fi ship the species' national red-list
+  // category on the record itself. Keep the strongest one seen per species and show it as
+  // a small tag — the shorthand a Nordic birder reads at a glance.
+  var spRedList = Object.create(null);
+  var RL_RANK = { DD: 1, NT: 2, VU: 3, EN: 4, CR: 5, RE: 6 };
+  function noteRedList(key, code) {
+    if (!key || !code || !RL_RANK[code]) return;
+    if (!spRedList[key] || RL_RANK[code] > RL_RANK[spRedList[key]]) spRedList[key] = code;
+  }
+  function rlTagHtml(code) {
+    if (!code || !RL_RANK[code]) return "";
+    return ' <span class="rl-tag rl-' + code.toLowerCase() + '" title="' + escapeHtml(t("rl." + code.toLowerCase()) + " — " + t("rl.src")) + '">' + code + "</span>";
   }
   function paintSpDot(holder, rare) {
     if (!holder) return;
@@ -1839,12 +1856,19 @@
       '" data-lat="' + (d.lat == null ? "" : d.lat) + '" data-lon="' + (d.lon == null ? "" : d.lon) +
       '" data-date="' + escapeHtml(d.date || "") + '" data-url="' + escapeHtml(d.url || "") + '"';
     var nameLink = (d.rarity ? '<span class="det-rar">!</span> ' : "") +
-      '<span class="sp-link"' + recAttrs + ">" + escapeHtml(dispName) + "</span>";
+      '<span class="sp-link"' + recAttrs + ">" + escapeHtml(dispName) + "</span>" + rlTagHtml(d.rl);
     // When the record carries an activity and/or a note (source-dependent — GBIF,
     // iNaturalist, Artsobservasjoner, Artportalen have them; eBird/BirdNET don't),
     // an ⓘ opens a small formatted popup with those details.
     var infoAl = d.act ? actLabel(d.act) : "", infoNt = String(d.note || "").trim(), infoFl = String(d.flags || "").trim();
     var hasLink = /https?:\/\//i.test(infoNt);   // the note carries a web link → green "link out" arrow instead of ⓘ
+    // The recorder's OWN photo of this bird (iNaturalist / GBIF / Artsobservasjoner and the
+    // other Nordic portals): a camera button straight to the picture, no detour via the source.
+    var photoIcon = d.photo
+      ? ' <span class="obs-photo" role="button" tabindex="0" aria-label="' + escapeHtml(t("obs.photo")) + '" title="' + escapeHtml(t("obs.photo")) +
+        '" data-photo="' + escapeHtml(d.photoBig || d.photo) + '" data-thumb="' + escapeHtml(d.photo) + '" data-by="' + escapeHtml(d.photoBy || "") +
+        '" data-name="' + escapeHtml(dispName) + '" data-url="' + escapeHtml(d.url || "") + '">' + ico("camera") + "</span>"
+      : "";
     var infoIcon = (infoAl || infoNt || infoFl)
       ? ' <span class="obs-info' + (hasLink ? " obs-info-link" : "") + '" role="button" tabindex="0" aria-label="' + escapeHtml(t("obs.infoLabel")) + '" title="' + escapeHtml(t("obs.infoLabel")) +
         '" data-act="' + escapeHtml(d.act || "") + '" data-note="' + escapeHtml(String(d.note || "")) + '" data-flags="' + escapeHtml(infoFl) + '" data-src="' + escapeHtml(srcLabel(d)) + '">' + ico(hasLink ? "linkout" : "info") + "</span>"
@@ -1860,8 +1884,8 @@
       (opts.loc ? '<td class="sp-d-loc">' + (placeAccurate(d)
         ? '<span class="sp-loc-click" role="button" data-loc="' + escapeHtml(String(d.place).trim()) + '" title="' + escapeHtml(d.place) + '">' + escapeHtml(d.place) + "</span>"
         : rgeoSpanHtml(d.lat, d.lon, "sp-loc-click", "", ' role="button"', String(d.place || "").trim(), d.posFuzzM)) + "</td>" : "") +   // lat/lon-only or generic place → map-derived name
-      (opts.src ? '<td class="sp-d-src">' + srcClickHtml(srcLabel(d)) + infoIcon + "</td>" : "") +
-      (opts.info ? '<td class="sp-d-info">' + (timeSpan ? timeSpan + " " : "") + infoIcon + "</td>" : "") +   // ⓘ in its own column (obs list — dist/src live in the group subheading; rarity obs time beside it)
+      (opts.src ? '<td class="sp-d-src">' + srcClickHtml(srcLabel(d)) + photoIcon + infoIcon + "</td>" : "") +
+      (opts.info ? '<td class="sp-d-info">' + (timeSpan ? timeSpan + " " : "") + photoIcon + infoIcon + "</td>" : "") +   // ⓘ in its own column (obs list — dist/src live in the group subheading; rarity obs time beside it)
       (opts.obs ? '<td class="sp-d-obs">' + obsCell + "</td>" : "") +
       (opts.dist !== false ? '<td class="num sp-d-dist">' + km + "</td>" : "") + "</tr>";   // distance rightmost
   }
@@ -2036,6 +2060,22 @@
     el.addEventListener("mouseleave", hideLocHoverMap);
   }
   function llFromAttrs(el2) { return { lat: parseFloat(el2.getAttribute("data-lat")), lon: parseFloat(el2.getAttribute("data-lon")) }; }
+  // The observation's own photo, full size, with its credit and a link to the source
+  // record. Opened from the camera button on a record row (and the ☰ popover).
+  function showObsPhoto(btn) {
+    var url = btn.getAttribute("data-photo") || btn.getAttribute("data-thumb"); if (!url) return;
+    var m = createModal({ boxClass: "obs-photo-box" });
+    var by = btn.getAttribute("data-by") || "", src = btn.getAttribute("data-url") || "";
+    m.box.innerHTML = '<div class="ui-modal-msg">' + escapeHtml(btn.getAttribute("data-name") || "") + "</div>" +
+      '<div class="obs-photo-wrap"><img alt="" src="' + escapeHtml(url) + '" /></div>' +
+      '<div class="obs-photo-cred">' + (by ? escapeHtml(by) : "") +
+        (src ? (by ? " · " : "") + '<a href="' + escapeHtml(src) + '" target="_blank" rel="noopener">' + escapeHtml(t("det.openSource")) + "</a>" : "") + "</div>";
+    var img = m.box.querySelector("img");
+    img.addEventListener("error", function () {   // the big version may not exist → fall back to the thumbnail
+      var th = btn.getAttribute("data-thumb");
+      if (th && img.src !== th) img.src = th; else { img.remove(); m.box.querySelector(".obs-photo-wrap").textContent = t("spg.noImage"); }
+    });
+  }
   function wireSpDetail(container) {
     // Sortable column headers — sort applies WITHIN each date×observer×location group.
     Array.prototype.forEach.call(container.querySelectorAll(".sp-obs-h"), function (th) {
@@ -2076,6 +2116,9 @@
         var cell = this.closest && this.closest("td"); if (cell) cell.classList.add("sp-obs-expanded");   // let the full list wrap
         this.parentNode && this.parentNode.removeChild(this);   // drop the "…" once expanded
       });
+    });
+    Array.prototype.forEach.call(container.querySelectorAll(".obs-photo"), function (b) {
+      b.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showObsPhoto(this); });
     });
     Array.prototype.forEach.call(container.querySelectorAll(".dl-src-click"), function (s) {
       s.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showSrcFilterMenu(this.getAttribute("data-src"), e.clientX, e.clientY); });
@@ -4801,6 +4844,9 @@
         row.classList.toggle("sp-has-det", !!(entry && entry.count));   // caret shows only when there's something to expand
         row.classList.toggle("sp-rar", !!(entry && entry.rows && entry.rows.some(function (r) { return r.rarity; })));   // rarity records here → red "!" before the name
       }
+      if (entry && entry.rows) entry.rows.forEach(function (r) { noteRedList(key, r.rl); });   // red-list category rides on the records
+      var nameTd = row && row.children[1], link = nameTd && nameTd.querySelector(".sp-link");
+      if (link && spRedList[key] && !nameTd.querySelector(".rl-tag")) link.insertAdjacentHTML("afterend", rlTagHtml(spRedList[key]));
       if (!entry || !entry.count) { if (isFinal) td.textContent = ""; return; }   // partial: leave the hourglass for not-yet-arrived data
       // Pure total (applyAgeFilter recomputes it as filtered SPECIMENS right after).
       td.innerHTML = '<button type="button" class="det-count-btn" data-key="' + escapeHtml(key) + '">' + entry.count + "</button>";
@@ -8931,7 +8977,10 @@
   // "all"/"1 day"/etc. all render coloured. Visibility (above) does the filtering.
   function detSlim(rows) {
     return (rows || []).filter(function (r) { return r.lat != null && r.lon != null; })
-      .map(function (r) { return { lat: +r.lat, lon: +r.lon, url: r.url || "", date: r.date || "", src: r.src || "", origin: r.origin || "", place: r.place || "", placeCoarse: r.placeCoarse ? 1 : undefined, posFuzzM: (+r.posFuzzM > 0) ? +r.posFuzzM : undefined, count: (r.count != null ? r.count : ""), act: r.act || "", note: String(r.note || "").slice(0, 1000), flags: r.flags || "", observer: r.observer || "" }; });   // note cap 1000 (was 160 — cut real observer notes; the ⓘ popup scrolls); undefined placeCoarse/posFuzzM serialize away
+      .map(function (r) { return { lat: +r.lat, lon: +r.lon, url: r.url || "", date: r.date || "", src: r.src || "", origin: r.origin || "", place: r.place || "", placeCoarse: r.placeCoarse ? 1 : undefined, posFuzzM: (+r.posFuzzM > 0) ? +r.posFuzzM : undefined, count: (r.count != null ? r.count : ""), act: r.act || "", note: String(r.note || "").slice(0, 1000), flags: r.flags || "", observer: r.observer || "",
+        // The observer's own photo + the species' red-list code, when the source gives them.
+        // Stored only when present (undefined serializes away); photoBig only when it differs.
+        photo: r.photo || undefined, photoBig: (r.photoBig && r.photoBig !== r.photo) ? r.photoBig : undefined, photoBy: r.photoBy ? String(r.photoBy).slice(0, 120) : undefined, rl: r.rl || undefined }; });   // note cap 1000 (was 160 — cut real observer notes; the ⓘ popup scrolls); undefined placeCoarse/posFuzzM serialize away
   }
   // Localized display name for a plotted species (re-derived from the key so it
   // follows the UI language); falls back to the name stored at plot time.
@@ -9295,7 +9344,9 @@
           if (Math.abs(r.lat - near.lat) > dLat || Math.abs(r.lon - near.lon) > dLon) return;   // bbox reject (cheap)
           if (map.distance(center, L.latLng(r.lat, r.lon)) > near.meters) return;
         }
-        out.push({ key: k, name: nm, color: e.color, lat: r.lat, lon: r.lon, date: r.date || "", src: r.src || "", origin: r.origin || "", url: r.url || "", place: r.place || "", placeCoarse: !!r.placeCoarse, posFuzzM: +r.posFuzzM || 0, count: (r.count != null ? r.count : ""), act: r.act || "", note: r.note || "", flags: r.flags || "", observer: r.observer || "", listName: r._listName || "", mpId: r._mpId || "", rarity: !!r.rarity, alert: !!r._alert, prob: (r._prob != null ? r._prob : -1) });
+        out.push({ key: k, name: nm, color: e.color, lat: r.lat, lon: r.lon, date: r.date || "", src: r.src || "", origin: r.origin || "", url: r.url || "", place: r.place || "", placeCoarse: !!r.placeCoarse, posFuzzM: +r.posFuzzM || 0, count: (r.count != null ? r.count : ""), act: r.act || "", note: r.note || "", flags: r.flags || "", observer: r.observer || "", listName: r._listName || "", mpId: r._mpId || "", rarity: !!r.rarity, alert: !!r._alert,
+          photo: r.photo || "", photoBig: r.photoBig || "", photoBy: r.photoBy || "", rl: r.rl || "",
+          prob: (r._prob != null ? r._prob : -1) });
       });
     });
     // Rarity-alert records are now first-class detPlot rows (flagged `rarity`, injected by
@@ -11275,6 +11326,8 @@
         // fresh fetch upgrades older rows (e.g. count/activity not stored before).
         if ((ex.count == null || ex.count === "") && r.count != null && r.count !== "") ex.count = r.count;
         if (!ex.act && r.act) ex.act = r.act;
+        if (!ex.photo && r.photo) { ex.photo = r.photo; ex.photoBig = r.photoBig; ex.photoBy = r.photoBy; }   // rows stored before photos were carried
+        if (!ex.rl && r.rl) ex.rl = r.rl;
         if (r.rarity) ex.rarity = true;   // same observation is ALSO a rarity alert → keep the "!" on the merged row
         if (r._areas && r._areas.length) {   // fetched by another area too → union the owners
           if (!ex._areas) ex._areas = [];

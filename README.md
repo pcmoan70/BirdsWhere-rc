@@ -273,6 +273,13 @@ Artportalen — and eBird checklist comments plus unconfirmed/exotic flags); hov
 desktop, tap it on touch. Expanding a species in the table opens its records as an aligned
 sub-table.
 
+**Observation photos** — when the source ships the observer's own picture (iNaturalist, GBIF,
+Artsobservasjoner, Artportalen, Laji.fi) a small **📷** sits beside the source; it opens the photo
+full-size with its credit and a link to the original record. **Red-list codes** — sources that
+publish a national red list (Artsobservasjoner, Artportalen, Laji.fi) tag the species name with its
+category (**DD · NT · VU · EN · CR · RE**), coloured by severity, in both the species table and the
+record rows; the most severe category seen for a species is the one shown.
+
 **Defaults**: the list opens filtered to **Total ≥ 1** (only species actually observed) and
 sorted by **probability low → high**, so the locally-rarest observed species top the list — both
 fully adjustable. **Filtering** lives in the **filter pane** (funnel button next to the layout
