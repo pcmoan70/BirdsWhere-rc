@@ -150,7 +150,7 @@ window.GeoI18N = (function () {
         "gdrive.synced": "Synced with Google Drive.",
         "gdrive.reconnect": "Tap “Sync now” to reconnect Google Drive.",
         "gdrive.error": "Couldn’t reach Google Drive.",
-        "install.app": "⤓ Offline mode",
+        "install.app": "Offline mode",
         "install.label": "Offline mode",
         "install.ios": "Tap Share ⎙ → Add to Home Screen",
         "install.iosOther": "Open this page in Safari, then Share ⎙ → Add to Home Screen",

@@ -6694,7 +6694,7 @@
           '<p class="perf-keys" data-i18n="popup.keysTip"></p>' +
           '<p class="perf-feedback"><span data-i18n="popup.feedback"></span> <button type="button" class="feedback-open ico-btn">' + ico("mail") + '<span class="ico-label" data-i18n="feedback.send">Message</span></button></p>' +
           // Offline mode reads as a line of text with its icon in front, not a button.
-          '<div class="install-row"><button type="button" id="install-info" class="install-link ico-btn" hidden>' + ico("install") + '<span class="ico-label" data-i18n="install.app">Offline mode</span></button><div class="install-steps cu-hint" hidden></div></div>' +
+          '<div class="install-row"><button type="button" id="install-info" class="install-link ico-btn" hidden>' + ico("install") + '<span class="ico-label" data-i18n="install.app">Offline mode</span></button><div class="install-steps cu-hint"></div></div>' +
           '<div class="perf-version" id="perf-version" style="display:none"></div>' +
           '<div class="perf-btns"><a class="perf-about about-page-link" href="about/" target="_blank" rel="noopener" data-i18n="settings.aboutPage">About ↗</a>' +
           '<button id="perf-modal-cancel" class="btn btn-light" data-i18n="btn.cancel" hidden>Cancel</button>' +
@@ -7464,6 +7464,7 @@
     populateLangSelect();         // re-localize the "(System)" option
     populateSecondLangSelect();   // re-localize the "(none)" option
     refreshChecklists();    // re-localize the "Checklist (N)" button text
+    try { refreshInstallUI(); } catch (e) {}   // the offline-mode how-to is plain text, not data-i18n
     if (document.getElementById("field-page").style.display === "flex") renderFieldList();  // re-localize activity labels if open
     if (window.__refreshFilterCycle) window.__refreshFilterCycle();   // cycle-button text isn't covered by data-i18n
     if (typeof refreshDetections === "function") refreshDetections();   // re-localize plotted "Show in map" species names + legend
@@ -16249,11 +16250,18 @@
   function installIsIOSSafari() {
     return installIsIOS() && /safari/i.test(navigator.userAgent || "") && !/crios|fxios|edgios/i.test(navigator.userAgent || "");
   }
-  // Show/hide the two install buttons by install state (hidden once installed).
+  // The platform's own "add to home screen" route, in this UI language.
+  function installStepsText() {
+    return installIsIOS() ? (installIsIOSSafari() ? t("install.ios") : t("install.iosOther")) : t("install.manual");
+  }
+  // Show/hide the install line by install state (hidden once installed). The how-to
+  // is written out straight away — nothing to tap to find out what offline mode is.
   function refreshInstallUI() {
     var installed = installIsStandalone();
     var info = document.getElementById("install-info");
     if (info) info.hidden = installed;
+    var steps = document.querySelector(".install-steps");
+    if (steps) { steps.textContent = installed ? "" : installStepsText(); steps.hidden = installed; }
   }
   function initInstall() {
     window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); deferredInstall = e; refreshInstallUI(); });
@@ -16269,8 +16277,7 @@
       deferredInstall.userChoice.then(function () { deferredInstall = null; refreshInstallUI(); });
       return;
     }
-    var msg = installIsIOS() ? (installIsIOSSafari() ? t("install.ios") : t("install.iosOther")) : t("install.manual");
-    if (steps) { steps.textContent = msg; steps.hidden = false; }
+    if (steps) { steps.textContent = installStepsText(); steps.hidden = false; }   // already shown; re-assert in case it was emptied
   }
 
   // ---- Feedback (EmailJS) ---------------------------------------------------
