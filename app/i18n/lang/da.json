@@ -922,6 +922,7 @@
   "obs.people": "Observatører",
   "obs.infoLabel": "Observationsdetaljer",
   "obs.photo": "Foto af denne observation",
+  "obs.photoN": "{n} billeder af denne observation",
   "rl.src": "national rødliste",
   "rl.nt": "Næsten truet",
   "rl.vu": "Sårbar",

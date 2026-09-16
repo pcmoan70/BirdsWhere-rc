@@ -922,6 +922,7 @@
   "obs.people": "Waarnemers",
   "obs.infoLabel": "Waarnemingsdetails",
   "obs.photo": "Foto van deze waarneming",
+  "obs.photoN": "{n} foto's van deze waarneming",
   "rl.src": "nationale rode lijst",
   "rl.nt": "Gevoelig",
   "rl.vu": "Kwetsbaar",

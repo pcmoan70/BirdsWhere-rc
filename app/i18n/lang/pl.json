@@ -922,6 +922,7 @@
   "obs.people": "Obserwatorzy",
   "obs.infoLabel": "Szczegóły obserwacji",
   "obs.photo": "Zdjęcie tej obserwacji",
+  "obs.photoN": "{n} zdjęć tej obserwacji",
   "rl.src": "krajowa czerwona lista",
   "rl.nt": "Bliski zagrożenia",
   "rl.vu": "Narażony",

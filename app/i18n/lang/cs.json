@@ -922,6 +922,7 @@
   "obs.people": "Pozorovatelé",
   "obs.infoLabel": "Podrobnosti pozorování",
   "obs.photo": "Fotografie tohoto pozorování",
+  "obs.photoN": "{n} fotografií tohoto pozorování",
   "rl.src": "národní červený seznam",
   "rl.nt": "Téměř ohrožený",
   "rl.vu": "Zranitelný",

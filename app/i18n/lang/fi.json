@@ -922,6 +922,7 @@
   "obs.people": "Havainnoijat",
   "obs.infoLabel": "Havainnon tiedot",
   "obs.photo": "Tämän havainnon kuva",
+  "obs.photoN": "{n} kuvaa tästä havainnosta",
   "rl.src": "kansallinen uhanalaisuusluokitus",
   "rl.nt": "Silmälläpidettävä",
   "rl.vu": "Vaarantunut",

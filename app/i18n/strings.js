@@ -664,6 +664,7 @@ window.GeoI18N = (function () {
         "obs.people": "Observers",
         "obs.infoLabel": "Observation details",
         "obs.photo": "Photo of this observation",
+        "obs.photoN": "{n} photos of this observation",
         "rl.src": "national red list",
         "rl.nt": "Near threatened",
         "rl.vu": "Vulnerable",

@@ -922,6 +922,7 @@
   "obs.people": "Beobachter",
   "obs.infoLabel": "Beobachtungsdetails",
   "obs.photo": "Foto dieser Beobachtung",
+  "obs.photoN": "{n} Fotos dieser Beobachtung",
   "rl.src": "nationale Rote Liste",
   "rl.nt": "Potenziell gefährdet",
   "rl.vu": "Gefährdet",

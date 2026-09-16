@@ -922,6 +922,7 @@
   "obs.people": "Vaatlejad",
   "obs.infoLabel": "Vaatluse üksikasjad",
   "obs.photo": "Selle vaatluse foto",
+  "obs.photoN": "{n} pilti sellest vaatlusest",
   "rl.src": "riiklik punane nimestik",
   "rl.nt": "Ohulähedane",
   "rl.vu": "Ohualdis",

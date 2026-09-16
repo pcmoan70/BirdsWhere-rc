@@ -922,6 +922,7 @@
   "obs.people": "Stebėtojai",
   "obs.infoLabel": "Stebėjimo informacija",
   "obs.photo": "Šio stebėjimo nuotrauka",
+  "obs.photoN": "{n} šio stebėjimo nuotraukos",
   "rl.src": "nacionalinis raudonasis sąrašas",
   "rl.nt": "Beveik nykstanti",
   "rl.vu": "Pažeidžiama",

@@ -111,24 +111,52 @@ window.AppNormalize = (function () {
   // directly and tag a threatened species.
   //   photo     small image URL (thumbnail)      photoBig  larger version when derivable
   //   photoBy   credit line                      rl        red-list code (NT/VU/EN/CR/…)
+  // An observation often carries SEVERAL pictures — keep them all (capped), newest
+  // API order preserved: `photos` is every large URL, `photo`/`photoBig` the first one.
+  var PHOTO_CAP = 12;
+  function photoSet(list, by) {
+    var big = [], small = "";
+    for (var i = 0; i < list.length && big.length < PHOTO_CAP; i++) {
+      var p = list[i]; if (!p || !p.big) continue;
+      if (big.indexOf(p.big) >= 0) continue;
+      if (!big.length) small = p.small || p.big;
+      big.push(p.big);
+    }
+    if (!big.length) return null;
+    return { photo: small || big[0], photoBig: big[0], photoBy: String(by || "").trim(), photos: big };
+  }
   function inatPhoto(o) {
-    var ph = (o.photos && o.photos[0]) || (o.observation_photos && o.observation_photos[0] && o.observation_photos[0].photo);
-    var u = ph && ph.url; if (!u) return null;
-    return { photo: u, photoBig: u.replace(/\/square\.(jpe?g|png)/i, "/medium.$1"), photoBy: ph.attribution || "" };
+    var src = (o.photos && o.photos.length) ? o.photos
+      : (o.observation_photos || []).map(function (x) { return x && x.photo; });
+    var by = "", list = [];
+    (src || []).forEach(function (ph) {
+      var u = ph && ph.url; if (!u) return;
+      if (!by) by = ph.attribution || "";
+      list.push({ small: u, big: u.replace(/\/square\.(jpe?g|png)/i, "/medium.$1") });   // square thumb → the medium copy
+    });
+    return photoSet(list, by);
   }
   function gbifPhoto(o) {
-    var m = (o.media || []).filter(function (x) { return x && /StillImage/i.test(x.type || "") && x.identifier; })[0];
-    if (!m) return null;
-    return { photo: m.identifier, photoBig: m.identifier, photoBy: [m.creator, m.license].filter(Boolean).join(" · ") };
+    var by = "", list = [];
+    (o.media || []).forEach(function (m) {
+      if (!m || !m.identifier || !/StillImage/i.test(m.type || "")) return;
+      if (!by) by = [m.creator, m.license].filter(Boolean).join(" \u00b7 ");
+      list.push({ small: m.identifier, big: m.identifier });
+    });
+    return photoSet(list, by);
   }
   // Norway's Artsobservasjoner: ThumbImgUrls carries the record's images; Status is the
   // Norwegian Red List 2021 category (LC/NT/VU/EN/CR, NA/NE, SE for alien-species risk).
   var RL_CODES = { NT: 1, VU: 1, EN: 1, CR: 1, RE: 1, DD: 1 };
   function rlCode(v) { v = String(v || "").trim().toUpperCase(); return RL_CODES[v] ? v : ""; }
   function artsobsPhoto(o) {
-    var t = (o.ThumbImgUrls || [])[0];
-    var u = t && (t.ImageUrl || t.Url); if (!u) return null;
-    return { photo: u, photoBig: u, photoBy: (t.Collector || "").trim() };
+    var by = "", list = [];
+    (o.ThumbImgUrls || []).forEach(function (t) {
+      var u = t && (t.ImageUrl || t.Url); if (!u) return;
+      if (!by) by = (t.Collector || "").trim();
+      list.push({ small: u, big: u });
+    });
+    return photoSet(list, by);
   }
   // Sweden (SOS) and Finland (FinBIF) ship media and a red-list category too, under a few
   // different shapes depending on the endpoint version — accept any of them, ignore the rest.
@@ -138,13 +166,14 @@ window.AppNormalize = (function () {
     return String(v.url || v.identifier || v.imageUrl || v.ImageUrl || v.thumbnailURL || v.fullURL || v.largeURL || "");
   }
   function mediaPhoto(list, by) {
-    var arr = Array.isArray(list) ? list : (list ? [list] : []);
-    for (var i = 0; i < arr.length; i++) {
-      var u = anyUrl(arr[i]); if (!u) continue;
-      var m = arr[i] && typeof arr[i] === "object" ? arr[i] : {};
-      return { photo: u, photoBig: String(m.fullURL || m.largeURL || u), photoBy: String(by || m.author || m.creator || m.rightsHolder || "").trim() };
-    }
-    return null;
+    var arr = Array.isArray(list) ? list : (list ? [list] : []), out = [], cred = by || "";
+    arr.forEach(function (it) {
+      var u = anyUrl(it); if (!u) return;
+      var m = (it && typeof it === "object") ? it : {};
+      if (!cred) cred = String(m.author || m.creator || m.rightsHolder || "").trim();
+      out.push({ small: u, big: String(m.fullURL || m.largeURL || u) });
+    });
+    return photoSet(out, cred);
   }
   function normInat(arr) {
     var out = [];
@@ -166,7 +195,7 @@ window.AppNormalize = (function () {
           ? (+o.public_positional_accuracy || 28000)
           : (+o.positional_accuracy >= 1000 ? +o.positional_accuracy : 0),
         observer: (o.user && (o.user.login || o.user.name)) || "", count: "", note: o.description || "" });
-      var ip = inatPhoto(o); if (ip) { var last = out[out.length - 1]; last.photo = ip.photo; last.photoBig = ip.photoBig; last.photoBy = ip.photoBy; }
+      var ip = inatPhoto(o); if (ip) { var last = out[out.length - 1]; last.photo = ip.photo; last.photoBig = ip.photoBig; last.photoBy = ip.photoBy; last.photos = ip.photos; }
     });
     return out;
   }
@@ -226,7 +255,7 @@ window.AppNormalize = (function () {
         posFuzzM: (+o.coordinateUncertaintyInMeters >= 1000) ? +o.coordinateUncertaintyInMeters : 0,   // km-scale uncertainty (incl. republished obscured iNat records)
         observer: gbifObserver(o), count: o.individualCount != null ? o.individualCount : "",
         act: o.behavior || "", note: o.occurrenceRemarks || "" });
-      var gp = gbifPhoto(o); if (gp) { var glast = out[out.length - 1]; glast.photo = gp.photo; glast.photoBig = gp.photoBig; glast.photoBy = gp.photoBy; }
+      var gp = gbifPhoto(o); if (gp) { var glast = out[out.length - 1]; glast.photo = gp.photo; glast.photoBig = gp.photoBig; glast.photoBy = gp.photoBy; glast.photos = gp.photos; }
     });
     return out;
   }
@@ -264,7 +293,7 @@ window.AppNormalize = (function () {
         // to it); older fallbacks kept for other institutions the API aggregates.
         act: o.Activity || o.ActivityName || o.activity || "", note: o.Notes || o.Comment || o.Note || o.comment || o.Habitat || "" });
       var last = out[out.length - 1];
-      var ap = artsobsPhoto(o); if (ap) { last.photo = ap.photo; last.photoBig = ap.photoBig; last.photoBy = ap.photoBy; }
+      var ap = artsobsPhoto(o); if (ap) { last.photo = ap.photo; last.photoBig = ap.photoBig; last.photoBy = ap.photoBy; last.photos = ap.photos; }
       var rl = rlCode(o.Status);   // Norwegian Red List category on the record itself
       if (!rl && o.PropertyUrls) (o.PropertyUrls || []).forEach(function (p2) { if (!rl && /r.dliste/i.test(p2.Type || "")) rl = rlCode(p2.LinkTekst); });
       if (rl) last.rl = rl;
@@ -295,7 +324,7 @@ window.AppNormalize = (function () {
         act: (o.occurrence && o.occurrence.activity && (o.occurrence.activity.value || o.occurrence.activity)) || "",
         note: (o.occurrence && o.occurrence.occurrenceRemarks) || "" });
       var slast = out[out.length - 1], occ2 = o.occurrence || {}, tx = o.taxon || {}, ta = tx.attributes || {};
-      var sp = mediaPhoto(occ2.media || occ2.associatedMedia || o.media, ""); if (sp) { slast.photo = sp.photo; slast.photoBig = sp.photoBig; slast.photoBy = sp.photoBy; }
+      var sp = mediaPhoto(occ2.media || occ2.associatedMedia || o.media, ""); if (sp) { slast.photo = sp.photo; slast.photoBig = sp.photoBig; slast.photoBy = sp.photoBy; slast.photos = sp.photos; }
       var srl = rlCode(String(ta.redlistCategory || ta.redListCategory || tx.redlistCategory || "").split(/[\s(]/)[0]);
       if (srl) slast.rl = srl;
     });
@@ -339,7 +368,7 @@ window.AppNormalize = (function () {
         observer: "", count: (cnt != null ? cnt : ""),
         note: p["unit.notes"] || p["gathering.notes"] || "" });
       var flast = out[out.length - 1];
-      var fp = mediaPhoto(p["unit.media"] || p["unit.images"], ""); if (fp) { flast.photo = fp.photo; flast.photoBig = fp.photoBig; flast.photoBy = fp.photoBy; }
+      var fp = mediaPhoto(p["unit.media"] || p["unit.images"], ""); if (fp) { flast.photo = fp.photo; flast.photoBig = fp.photoBig; flast.photoBy = fp.photoBy; flast.photos = fp.photos; }
       // FinBIF codes the category as e.g. "MX.iucnVU" — take the trailing two letters.
       var frl = rlCode(String(p["unit.linkings.taxon.latestRedListStatusFinland.status"] || "").replace(/^.*iucn/i, ""));
       if (frl) flast.rl = frl;

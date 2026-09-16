@@ -1645,7 +1645,7 @@
         if (!detRowPasses(r)) return;
         rows.push({ key: key, name: nm, color: spCol, lat: r.lat, lon: r.lon, date: r.date || "", src: r.src || "", origin: r.origin || "",
           url: r.url || "", place: r.place || "", placeCoarse: !!r.placeCoarse, posFuzzM: +r.posFuzzM || 0, count: (r.count != null ? r.count : ""), act: r.act || "", note: r.note || "", flags: r.flags || "", observer: r.observer || "",
-          photo: r.photo || "", photoBig: r.photoBig || "", photoBy: r.photoBy || "", rl: r.rl || "",   // the observer's own picture + red-list code
+          photo: r.photo || "", photoBig: r.photoBig || "", photoBy: r.photoBy || "", photos: r.photos || null, rl: r.rl || "",   // the observer's own pictures + red-list code
           prob: (r._prob != null ? r._prob : -1) });
       });
     } else {
@@ -1864,10 +1864,14 @@
     var hasLink = /https?:\/\//i.test(infoNt);   // the note carries a web link → green "link out" arrow instead of ⓘ
     // The recorder's OWN photo of this bird (iNaturalist / GBIF / Artsobservasjoner and the
     // other Nordic portals): a camera button straight to the picture, no detour via the source.
+    // All of this observation's pictures (most sources ship several); the button carries
+    // the list so a hover can lay them out as a mosaic without another lookup.
+    var plist = (d.photos && d.photos.length) ? d.photos : (d.photo ? [d.photoBig || d.photo] : []);
     var photoIcon = d.photo
-      ? ' <span class="obs-photo" role="button" tabindex="0" aria-label="' + escapeHtml(t("obs.photo")) + '" title="' + escapeHtml(t("obs.photo")) +
+      ? '<span class="obs-photo" role="button" tabindex="0" aria-label="' + escapeHtml(t("obs.photo")) + '" title="' + escapeHtml(plist.length > 1 ? t("obs.photoN", { n: plist.length }) : t("obs.photo")) +
         '" data-photo="' + escapeHtml(d.photoBig || d.photo) + '" data-thumb="' + escapeHtml(d.photo) + '" data-by="' + escapeHtml(d.photoBy || "") +
-        '" data-name="' + escapeHtml(dispName) + '" data-url="' + escapeHtml(d.url || "") + '">' + ico("camera") + "</span>"
+        '" data-photos="' + escapeHtml(plist.join(" ")) + '" data-name="' + escapeHtml(dispName) + '" data-url="' + escapeHtml(d.url || "") + '">' + ico("camera") +
+        (plist.length > 1 ? '<span class="obs-photo-n">' + plist.length + "</span>" : "") + "</span>"
       : "";
     var infoIcon = (infoAl || infoNt || infoFl)
       ? ' <span class="obs-info' + (hasLink ? " obs-info-link" : "") + '" role="button" tabindex="0" aria-label="' + escapeHtml(t("obs.infoLabel")) + '" title="' + escapeHtml(t("obs.infoLabel")) +
@@ -1884,8 +1888,9 @@
       (opts.loc ? '<td class="sp-d-loc">' + (placeAccurate(d)
         ? '<span class="sp-loc-click" role="button" data-loc="' + escapeHtml(String(d.place).trim()) + '" title="' + escapeHtml(d.place) + '">' + escapeHtml(d.place) + "</span>"
         : rgeoSpanHtml(d.lat, d.lon, "sp-loc-click", "", ' role="button"', String(d.place || "").trim(), d.posFuzzM)) + "</td>" : "") +   // lat/lon-only or generic place → map-derived name
-      (opts.src ? '<td class="sp-d-src">' + srcClickHtml(srcLabel(d)) + photoIcon + infoIcon + "</td>" : "") +
-      (opts.info ? '<td class="sp-d-info">' + (timeSpan ? timeSpan + " " : "") + photoIcon + infoIcon + "</td>" : "") +   // ⓘ in its own column (obs list — dist/src live in the group subheading; rarity obs time beside it)
+      (opts.src ? '<td class="sp-d-src">' + srcClickHtml(srcLabel(d)) + infoIcon + "</td>" : "") +
+      (opts.photo !== false ? '<td class="sp-d-pho">' + photoIcon + "</td>" : "") +   // every record's pictures in ONE column
+      (opts.info ? '<td class="sp-d-info">' + (timeSpan ? timeSpan + " " : "") + infoIcon + "</td>" : "") +   // ⓘ in its own column (obs list — dist/src live in the group subheading; rarity obs time beside it)
       (opts.obs ? '<td class="sp-d-obs">' + obsCell + "</td>" : "") +
       (opts.dist !== false ? '<td class="num sp-d-dist">' + km + "</td>" : "") + "</tr>";   // distance rightmost
   }
@@ -1896,8 +1901,8 @@
     var hdr = "<thead><tr>" + spObsHeadCell("count", t("th.count"), true) +
       spObsHeadCell("prob", t("th.probAbbr"), true) + spObsHeadCell("date", t("th.date")) +
       spObsHeadCell("loc", t("th.location")) +
-      spObsHeadCell("src", t("th.source")) + spObsHeadCell("obs", t("th.obs")) +
-      spObsHeadCell("dist", t("th.dist"), true) + "</tr></thead>";   // distance rightmost
+      spObsHeadCell("src", t("th.source")) + '<th class="sp-obs-ph" aria-hidden="true"></th>' + spObsHeadCell("obs", t("th.obs")) +
+      spObsHeadCell("dist", t("th.dist"), true) + "</tr></thead>";   // photo column between source and observer; distance rightmost
     var body = rows.slice().sort(spObsCmp).map(function (d) { return spRecRowHtml(d, { name: false, date: true, loc: true, src: true, obs: true }); }).join("");
     // Column widths are pinned on the cells in CSS (.sp-detail-tbl is table-layout:fixed),
     // so EVERY expanded species' sub-table has identical columns and they line up
@@ -1908,14 +1913,15 @@
   // "Per observation": ONE columns table with the records grouped by date × observer ×
   // location (a spanning group-separator row per triple); columns sort WITHIN each group.
   function buildSpObsHtml(rows) {
-    var name2On = !!secondLang, ncols = 6 + (name2On ? 1 : 0);   // count name [name2] prob season peak ⓘ — dist/src moved to the group subheading
+    var name2On = !!secondLang, ncols = 7 + (name2On ? 1 : 0);   // count name [name2] prob season peak 📷 ⓘ — dist/src moved to the group subheading
     var hdr = "<thead><tr>" + spObsHeadCell("count", t("th.count"), true) +
       spObsHeadCell("name", t("th.species")) +
       (name2On ? spObsHeadCell("name2", window.GeoI18N.langByCode(secondLang).name) : "") +
       spObsHeadCell("prob", t("th.probAbbr"), true) +
       spObsHeadCell("season", t("th.season")) +
       spObsHeadCell("ytop", t("th.ytop"), true) +
-      '<th class="sp-obs-ih" aria-hidden="true"></th></tr></thead>';   // the per-row ⓘ column
+      '<th class="sp-obs-ph" aria-hidden="true"></th>' +
+      '<th class="sp-obs-ih" aria-hidden="true"></th></tr></thead>';   // the per-row 📷 and ⓘ columns
     var byDate = {}, dates = [];
     rows.forEach(function (d) { var k = d.date || ""; if (!byDate[k]) { byDate[k] = []; dates.push(k); } byDate[k].push(d); });
     dates.sort(function (a, b) { return b.localeCompare(a); });
@@ -2062,8 +2068,8 @@
   function llFromAttrs(el2) { return { lat: parseFloat(el2.getAttribute("data-lat")), lon: parseFloat(el2.getAttribute("data-lon")) }; }
   // The observation's own photo, full size, with its credit and a link to the source
   // record. Opened from the camera button on a record row (and the ☰ popover).
-  function showObsPhoto(btn) {
-    var url = btn.getAttribute("data-photo") || btn.getAttribute("data-thumb"); if (!url) return;
+  function showObsPhoto(btn, pickUrl) {
+    var url = pickUrl || btn.getAttribute("data-photo") || btn.getAttribute("data-thumb"); if (!url) return;
     var m = createModal({ boxClass: "obs-photo-box" });
     var by = btn.getAttribute("data-by") || "", src = btn.getAttribute("data-url") || "";
     m.box.innerHTML = '<div class="ui-modal-msg">' + escapeHtml(btn.getAttribute("data-name") || "") + "</div>" +
@@ -2072,9 +2078,58 @@
         (src ? (by ? " · " : "") + '<a href="' + escapeHtml(src) + '" target="_blank" rel="noopener">' + escapeHtml(t("det.openSource")) + "</a>" : "") + "</div>";
     var img = m.box.querySelector("img");
     img.addEventListener("error", function () {   // the big version may not exist → fall back to the thumbnail
-      var th = btn.getAttribute("data-thumb");
+      var th = pickUrl ? "" : btn.getAttribute("data-thumb");
       if (th && img.src !== th) img.src = th; else { img.remove(); m.box.querySelector(".obs-photo-wrap").textContent = t("spg.noImage"); }
     });
+  }
+  // ---- The observation's pictures as a mosaic -------------------------------
+  // Most sources ship SEVERAL pictures per record. Hovering the 📷 (tapping it on a
+  // phone) lays them all out as a small grid — loaded only when it opens, so a list
+  // of hundreds of records downloads nothing until you ask for a picture. A tile
+  // opens that one full-size.
+  var obsMosaicPop = null, obsMosaicTimer = null, obsMosaicWasOpen = false;
+  function obsPhotoList(btn) {
+    var raw = String(btn.getAttribute("data-photos") || "").trim();
+    var list = raw ? raw.split(/\s+/) : [];
+    if (!list.length) { var one = btn.getAttribute("data-photo") || btn.getAttribute("data-thumb"); if (one) list = [one]; }
+    return list;
+  }
+  function closeObsMosaic() {
+    clearTimeout(obsMosaicTimer);
+    if (obsMosaicPop && _anchMenuEl === obsMosaicPop) closeAnchoredMenu();
+    obsMosaicPop = null;
+  }
+  function scheduleObsMosaicClose() {
+    clearTimeout(obsMosaicTimer);
+    obsMosaicTimer = setTimeout(closeObsMosaic, 250);   // a gap to cross from the icon into the mosaic
+  }
+  function obsMosaicOpenFor(btn) { return !!(obsMosaicPop && obsMosaicPop._btn === btn && _anchMenuEl === obsMosaicPop); }
+  function showObsMosaic(btn) {
+    var list = obsPhotoList(btn); if (!list.length) return;
+    clearTimeout(obsMosaicTimer);
+    if (obsMosaicOpenFor(btn)) return;   // already up for this record
+    var r = btn.getBoundingClientRect();
+    var el = openAnchoredMenu("detrow-menu obs-mosaic");
+    el._btn = btn;
+    // One picture → show it whole. Otherwise square tiles in the shape that leaves no
+    // hole in the last row: 2 or 3 side by side, then two rows, up to 4 across.
+    var cols = list.length <= 3 ? list.length : Math.min(4, Math.ceil(list.length / 2));
+    el.style.setProperty("--mos-cols", cols);
+    var by = btn.getAttribute("data-by") || "", src = btn.getAttribute("data-url") || "";
+    el.innerHTML = '<div class="obs-mosaic-hdr">' + escapeHtml(btn.getAttribute("data-name") || "") +
+        (list.length > 1 ? ' <span class="obs-mosaic-n">(' + list.length + ")</span>" : "") + "</div>" +
+      '<div class="obs-mosaic-grid' + (list.length === 1 ? " one" : "") + '">' +
+        list.map(function (u, i) { return '<span class="obs-mos-tile" role="button" tabindex="0" data-i="' + i + '" title="' + escapeHtml(t("obs.photo")) + '"><img alt="" src="' + escapeHtml(u) + '"></span>'; }).join("") + "</div>" +
+      '<div class="obs-photo-cred">' + (by ? escapeHtml(by) : "") +
+        (src ? (by ? " · " : "") + '<a href="' + escapeHtml(src) + '" target="_blank" rel="noopener">' + escapeHtml(t("det.openSource")) + "</a>" : "") + "</div>";
+    Array.prototype.forEach.call(el.querySelectorAll(".obs-mos-tile"), function (tile) {
+      tile.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); closeObsMosaic(); showObsPhoto(btn, list[+this.getAttribute("data-i")]); });
+      tile.querySelector("img").addEventListener("error", function () { tile.classList.add("bad"); });   // a dead URL leaves no gap
+    });
+    el.addEventListener("mouseenter", function () { clearTimeout(obsMosaicTimer); });
+    el.addEventListener("mouseleave", scheduleObsMosaicClose);
+    obsMosaicPop = el;
+    positionAnchoredMenu(el, Math.round(r.left), Math.round(r.bottom + 4));
   }
   function wireSpDetail(container) {
     // Sortable column headers — sort applies WITHIN each date×observer×location group.
@@ -2117,8 +2172,22 @@
         this.parentNode && this.parentNode.removeChild(this);   // drop the "…" once expanded
       });
     });
+    var canHoverPh = !window.matchMedia || window.matchMedia("(hover: hover)").matches;
     Array.prototype.forEach.call(container.querySelectorAll(".obs-photo"), function (b) {
-      b.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showObsPhoto(this); });
+      b.addEventListener("click", function (e) {
+        e.preventDefault(); e.stopPropagation();
+        if (canHoverPh) { showObsPhoto(this); return; }            // mouse: the mosaic is already open from the hover
+        // Touch: tap opens the mosaic, tapping the same 📷 again closes it. Whether it WAS
+        // open is taken at touch-start — the anchored menu's own outside-click handler has
+        // already closed it by the time this click runs.
+        if (obsMosaicWasOpen) { obsMosaicWasOpen = false; closeObsMosaic(); return; }
+        showObsMosaic(this);
+      });
+      b.addEventListener("touchstart", function () { obsMosaicWasOpen = obsMosaicOpenFor(this); }, { passive: true });
+      if (canHoverPh) {
+        b.addEventListener("mouseenter", function () { showObsMosaic(this); });
+        b.addEventListener("mouseleave", scheduleObsMosaicClose);
+      }
     });
     Array.prototype.forEach.call(container.querySelectorAll(".dl-src-click"), function (s) {
       s.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showSrcFilterMenu(this.getAttribute("data-src"), e.clientX, e.clientY); });
@@ -9045,7 +9114,7 @@
       .map(function (r) { return { lat: +r.lat, lon: +r.lon, url: r.url || "", date: r.date || "", src: r.src || "", origin: r.origin || "", place: r.place || "", placeCoarse: r.placeCoarse ? 1 : undefined, posFuzzM: (+r.posFuzzM > 0) ? +r.posFuzzM : undefined, count: (r.count != null ? r.count : ""), act: r.act || "", note: String(r.note || "").slice(0, 1000), flags: r.flags || "", observer: r.observer || "",
         // The observer's own photo + the species' red-list code, when the source gives them.
         // Stored only when present (undefined serializes away); photoBig only when it differs.
-        photo: r.photo || undefined, photoBig: (r.photoBig && r.photoBig !== r.photo) ? r.photoBig : undefined, photoBy: r.photoBy ? String(r.photoBy).slice(0, 120) : undefined, rl: r.rl || undefined }; });   // note cap 1000 (was 160 — cut real observer notes; the ⓘ popup scrolls); undefined placeCoarse/posFuzzM serialize away
+        photo: r.photo || undefined, photoBig: (r.photoBig && r.photoBig !== r.photo) ? r.photoBig : undefined, photoBy: r.photoBy ? String(r.photoBy).slice(0, 120) : undefined, photos: (r.photos && r.photos.length > 1) ? r.photos.slice(0, 12) : undefined, rl: r.rl || undefined }; });   // note cap 1000 (was 160 — cut real observer notes; the ⓘ popup scrolls); undefined placeCoarse/posFuzzM serialize away
   }
   // Localized display name for a plotted species (re-derived from the key so it
   // follows the UI language); falls back to the name stored at plot time.
@@ -9410,7 +9479,7 @@
           if (map.distance(center, L.latLng(r.lat, r.lon)) > near.meters) return;
         }
         out.push({ key: k, name: nm, color: e.color, lat: r.lat, lon: r.lon, date: r.date || "", src: r.src || "", origin: r.origin || "", url: r.url || "", place: r.place || "", placeCoarse: !!r.placeCoarse, posFuzzM: +r.posFuzzM || 0, count: (r.count != null ? r.count : ""), act: r.act || "", note: r.note || "", flags: r.flags || "", observer: r.observer || "", listName: r._listName || "", mpId: r._mpId || "", rarity: !!r.rarity, alert: !!r._alert,
-          photo: r.photo || "", photoBig: r.photoBig || "", photoBy: r.photoBy || "", rl: r.rl || "",
+          photo: r.photo || "", photoBig: r.photoBig || "", photoBy: r.photoBy || "", photos: r.photos || null, rl: r.rl || "",
           prob: (r._prob != null ? r._prob : -1) });
       });
     });
@@ -11392,6 +11461,7 @@
         if ((ex.count == null || ex.count === "") && r.count != null && r.count !== "") ex.count = r.count;
         if (!ex.act && r.act) ex.act = r.act;
         if (!ex.photo && r.photo) { ex.photo = r.photo; ex.photoBig = r.photoBig; ex.photoBy = r.photoBy; }   // rows stored before photos were carried
+        if (!ex.photos && r.photos) ex.photos = r.photos;                                                       // … and before the EXTRA pictures were
         if (!ex.rl && r.rl) ex.rl = r.rl;
         if (r.rarity) ex.rarity = true;   // same observation is ALSO a rarity alert → keep the "!" on the merged row
         if (r._areas && r._areas.length) {   // fetched by another area too → union the owners

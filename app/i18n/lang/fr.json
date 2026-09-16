@@ -922,6 +922,7 @@
   "obs.people": "Observateurs",
   "obs.infoLabel": "Détails de l'observation",
   "obs.photo": "Photo de cette observation",
+  "obs.photoN": "{n} photos de cette observation",
   "rl.src": "liste rouge nationale",
   "rl.nt": "Quasi menacée",
   "rl.vu": "Vulnérable",
