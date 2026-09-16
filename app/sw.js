@@ -21,12 +21,12 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1749";
+var VERSION = "v1750";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
-  "• Rarity alerts can now be emailed to you: put your address under Settings → Rarity alerts, confirm it once from the first message, and new alerts arrive by mail while the app is open. The alerts page itself was rebuilt in the same style as the other pages, and unseen alerts stand out in bold.",
+  "• Rarity alerts can now be emailed to you: put your address under Settings → Rarity alerts and press Send test. The first message is a confirmation request from FormSubmit — click its link once (look in the spam folder) and alerts start arriving while the app is open. Settings now says what became of the last message. The alerts page was rebuilt in the style of the other pages, and unseen alerts stand out in bold.",
   "• An observation’s pictures now have a column of their own in the lists. Hover the camera (tap it on a phone) and every picture from that record opens as a small mosaic — tap one to see it full-size.",
   "• Rarity alerts now watch ALL your observation sources around every 🔔 location, not just eBird’s notable feed — anything the model finds unlikely there raises an alert, and it works without an eBird key. Turn it off under Settings → Rarity alerts. The background checks step aside for any fetch you start.",
   "• Observations that come with a photo now show a small camera next to the source — tap it for the observer’s own picture, with credit and a link to the record. Threatened species carry their national red-list code (NT/VU/EN/CR) beside the name in the lists.",

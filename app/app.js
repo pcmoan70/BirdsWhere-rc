@@ -16790,13 +16790,26 @@
     // and asks the relay to deliver one message, which is also what triggers the one-off
     // confirmation mail the first time.
     var rEm = document.getElementById("rarity-email"), rEmT = document.getElementById("rarity-email-test"), rEmN = document.getElementById("rarity-email-note");
+    // What happened to the last message, so a mail that never arrived explains itself
+    // (the commonest reason by far: the address was never confirmed).
+    function rarityEmailStateText() {
+      var c = rarityCfg();
+      if (!c.email) return "";
+      var when = c.emailAt ? new Date(c.emailAt).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+      if (c.emailState === "activate") return t("rarity.emailActivate");
+      if (c.emailState === "fail") return t("rarity.emailFail") + (when ? " (" + when + ")" : "");
+      if (c.emailState === "ok") return t("rarity.emailLast", { t: when });
+      return t("rarity.emailOn");
+    }
     if (rEm) {
       rEm.value = rarityCfg().email || "";
+      if (rEmN) rEmN.textContent = rarityEmailStateText();
       rEm.addEventListener("change", function () {
         var v = this.value.trim();
         if (v && !window.AppRarity.rarityEmailValid(v)) { if (rEmN) rEmN.textContent = t("rarity.emailBad"); return; }
-        raritySave({ email: v });
-        if (rEmN) rEmN.textContent = v ? t("rarity.emailOn") : "";
+        var changed = v !== (rarityCfg().email || "");
+        raritySave(changed ? { email: v, emailState: "", emailAt: 0 } : { email: v });   // a new address starts with a clean slate
+        if (rEmN) rEmN.textContent = v ? (changed ? t("rarity.emailOn") : rarityEmailStateText()) : "";
       });
     }
     if (rEmT) rEmT.addEventListener("click", function () {
@@ -16806,8 +16819,10 @@
       var btn = this; btn.disabled = true;
       if (rEmN) rEmN.textContent = t("rarity.emailSending");
       window.AppRarity.rarityEmailPost(v, t("rarity.emailTestSubj"), t("rarity.emailTestBody"))
-        .then(function (r) { if (rEmN) rEmN.textContent = r.activate ? t("rarity.emailActivate") : (r.ok ? t("rarity.emailSent") : t("rarity.emailFail")); },
-              function () { if (rEmN) rEmN.textContent = t("rarity.emailFail"); })
+        .then(function (r) {
+          window.AppRarity.rarityEmailState(r.ok ? "ok" : (r.activate ? "activate" : "fail"));
+          if (rEmN) rEmN.textContent = r.activate ? t("rarity.emailActivate") : (r.ok ? t("rarity.emailSent") : t("rarity.emailFail"));
+        }, function () { window.AppRarity.rarityEmailState("fail"); if (rEmN) rEmN.textContent = t("rarity.emailFail"); })
         .then(function () { btn.disabled = false; });
     });
     var rCw = document.getElementById("rarity-country-toggle");

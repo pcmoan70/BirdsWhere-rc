@@ -417,9 +417,10 @@ When a **never-seen-before** rarity arrives it:
   once when you switch it on; tapping the notification focuses the app on the sighting);
 - **emails you**, if you put an address under Settings → Rarity alerts. The app has no server of
   its own, so the message is handed to a relay (**formsubmit.co**) that accepts a request straight
-  from the browser: the first message asks the address to confirm itself once, and after that each
-  batch of new alerts arrives as one mail, at most one every five minutes. *Send test* checks the
-  whole path. Your address and the alert text pass through that service, and — like every other
+  from the browser: the first message is a **confirmation request from FormSubmit** — click its link
+  once (it often lands in the **spam folder**) and after that each batch of new alerts arrives as one
+  mail, at most one every five minutes. *Send test* checks the whole path, and the line under the
+  address always says what became of the last message (sent · not confirmed yet · failed). Your address and the alert text pass through that service, and — like every other
   alert — mail only goes out **while the app is open**.
 
 The **first** check of each location arms silently (everything already reported is marked

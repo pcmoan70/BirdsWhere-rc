@@ -79,6 +79,8 @@ window.AppRarity = (function () {
     // last message went out (the send is rate-limited).
     if (typeof c.email !== "string") c.email = "";
     if (!isFinite(+c.lastEmail)) c.lastEmail = 0;
+    if (typeof c.emailState !== "string") c.emailState = "";   // "" | "ok" | "activate" | "fail" — what became of the last message
+    if (!isFinite(+c.emailAt)) c.emailAt = 0;
     if (c.sound == null) c.sound = true;
     if (c.sysNotif == null) c.sysNotif = false;
     if (!c.seen) c.seen = {};
@@ -659,6 +661,10 @@ window.AppRarity = (function () {
   }
   // One mail per batch of new alerts, rate-limited; failures are silent (the bell,
   // the list and the chirp have already done their job).
+  // What became of the last message — so a mail that never arrived can be explained
+  // in Settings instead of failing silently. "activate" = the relay is still waiting
+  // for the address to confirm itself, so nothing is being delivered yet.
+  function rarityEmailState(state) { raritySave({ emailState: state, emailAt: Date.now() }); }
   function rarityEmailAlerts(fresh) {
     var to = rarityEmailTo();
     if (!fresh.length || !rarityEmailValid(to)) return;
@@ -667,7 +673,10 @@ window.AppRarity = (function () {
     raritySave({ lastEmail: Date.now() });
     var subject = t("rarity.emailSubject", { n: fresh.length });
     var body = subject + "\n\n" + fresh.map(rarityAlertLine).join("\n") + "\n\n" + t("rarity.emailFoot");
-    rarityEmailPost(to, subject, body).catch(function () {});
+    rarityEmailPost(to, subject, body).then(function (r) {
+      rarityEmailState(r.ok ? "ok" : (r.activate ? "activate" : "fail"));
+      if (!r.ok) setStatus(t(r.activate ? "rarity.emailActivate" : "rarity.emailFail"));   // say it once, where the alert was announced
+    }, function () { rarityEmailState("fail"); });
   }
   // Live-alert marker on its own layer — independent of the detections pipeline,
   // its filters and the red-× clear. Session-only (the seen-set is the persistence).
@@ -1055,7 +1064,7 @@ window.AppRarity = (function () {
     rarityChirp: rarityChirp,
     ensureAudioUnlocked: ensureAudioUnlocked,
     harvestLocalRarities: harvestLocalRarities,
-    rarityEmailPost: rarityEmailPost, rarityEmailValid: rarityEmailValid,
+    rarityEmailPost: rarityEmailPost, rarityEmailValid: rarityEmailValid, rarityEmailState: rarityEmailState,
     initRarityAlerts: initRarityAlerts,
     // the group key behind the currently-open rarity window (app.js clears it
     // when a non-rarity window opens, and reads it when the red ✕ is pressed)
