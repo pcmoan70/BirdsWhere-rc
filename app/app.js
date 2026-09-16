@@ -80,7 +80,7 @@
   var TAX_URL = "taxonomy-base.csv";        // species_code + English name + class (split from taxonomy.csv)
   var TAX_NAMES_BASE = "i18n/names/";       // per-language name packs, line-aligned to taxonomy-base.csv rows
   var CONFUSION_URL = "confusion.csv";      // per-bird look-alike (confusion) partner codes; fetched on first use
-  var CONFUSION_REV = 14;                     // bump when confusion.csv changes — busts the runtime (cache-first) copy
+  var CONFUSION_REV = 15;                     // bump when confusion.csv changes — busts the runtime (cache-first) copy
   var TRAITS_URL = "species-traits.json";   // per-species characteristics (AVONET morphology/ecology + HBW colour)
   var TRAITS_REV = 2;                        // bump when species-traits.json changes
 
@@ -6693,7 +6693,8 @@
           '<p class="perf-privacy" data-i18n="popup.privacy">Private by design: there is no account and no server of ours. Your searches, saved lists and settings stay on this device — nothing is sent anywhere except the direct requests to the observation sources you query.</p>' +
           '<p class="perf-keys" data-i18n="popup.keysTip"></p>' +
           '<p class="perf-feedback"><span data-i18n="popup.feedback"></span> <button type="button" class="feedback-open ico-btn">' + ico("mail") + '<span class="ico-label" data-i18n="feedback.send">Message</span></button></p>' +
-          '<div class="install-row"><button type="button" id="install-info" class="btn btn-light ico-btn" hidden>' + ico("install") + '<span class="ico-label" data-i18n="install.app">Offline mode</span></button><div class="install-steps cu-hint" hidden></div></div>' +
+          // Offline mode reads as a line of text with its icon in front, not a button.
+          '<div class="install-row"><button type="button" id="install-info" class="install-link ico-btn" hidden>' + ico("install") + '<span class="ico-label" data-i18n="install.app">Offline mode</span></button><div class="install-steps cu-hint" hidden></div></div>' +
           '<div class="perf-version" id="perf-version" style="display:none"></div>' +
           '<div class="perf-btns"><a class="perf-about about-page-link" href="about/" target="_blank" rel="noopener" data-i18n="settings.aboutPage">About ↗</a>' +
           '<button id="perf-modal-cancel" class="btn btn-light" data-i18n="btn.cancel" hidden>Cancel</button>' +

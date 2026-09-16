@@ -3051,6 +3051,14 @@ table.chk-table .chk-text { min-width: 100px; }
    Explicit hide rules because the hidden attribute alone is overridden by the
    .ctrl-group / .btn display values. */
 #install-info[hidden], #install-wrap[hidden] { display: none !important; }
+/* "Offline mode" is a plain line of text with its icon in front (no button chrome),
+   like the Feedback line above it — it still opens the install prompt / the steps. */
+.install-link {
+  border: none; background: none; padding: 0; margin: 0; font: inherit;
+  color: var(--brand); cursor: pointer; gap: 7px;
+}
+.install-link:hover { color: var(--brand-strong, var(--brand)); }
+.install-link .btn-ico { width: var(--ico-m, 18px); height: var(--ico-m, 18px); flex: 0 0 auto; }
 .install-row { margin: 4px 0 16px; }
 .install-steps { margin-top: 8px; font-size: var(--fs-s); line-height: 1.45; color: var(--ink-muted); }
 .install-steps[hidden] { display: none; }
