@@ -1275,8 +1275,16 @@ body.fs-apple #site-header { padding-left: calc(64px + env(safe-area-inset-left)
   color: #fff; font-size: 9px; font-weight: 700; line-height: 14px; text-align: center;
 }
 .rarity-onoff { display: flex; align-items: center; gap: 6px; margin: 2px 0 2px; font-size: var(--fs-b); }
-.rarity-title { display: flex; align-items: center; gap: 7px; }
-.rarity-title .btn-ico { width: var(--ico-m); height: var(--ico-m); flex: 0 0 auto; }
+/* The pane wears the same page furniture as the Species list / Migration pages:
+   ‹ page bar + title, a muted "last check" line, then one row of controls. */
+.rarity-bar h3 { display: flex; align-items: center; gap: 7px; margin: 0; }
+.rarity-bar h3 .btn-ico { width: var(--ico-m); height: var(--ico-m); flex: 0 0 auto; }
+.rarity-bar .fp-back { display: inline-flex; margin-top: 2px; flex: 0 0 auto; }
+.rarity-panel .rarity-sub { margin-bottom: 0; display: flex; align-items: center; gap: 6px; }
+.rarity-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 8px 0 4px; }
+.rarity-controls .ctrl-check { margin: 0; font-size: var(--fs-b); }
+.rarity-controls .rt-days { display: inline-flex; align-items: center; gap: 5px; font-size: var(--fs-b); }
+.rarity-controls .rt-clear { margin-left: auto; }
 .rarity-lastpull { font-size: var(--fs-xs); color: var(--ink-muted, #888); margin: 0 0 6px; }
 #rarity-badge {
   position: absolute; top: -2px; right: -4px; display: none; min-width: 15px; height: 15px;
@@ -1308,11 +1316,12 @@ body.fs-apple #site-header { padding-left: calc(64px + env(safe-area-inset-left)
    table scrolls inside it (title/toggles pinned above, buttons below). */
 .ui-modal.rarity-panel {
   width: 100vw; height: 100vh; height: 100dvh; max-width: none; max-height: none;
-  border-radius: 0; box-shadow: none;
+  border-radius: 0; box-shadow: none; background: var(--page-bg);   /* the page background, like the other full-screen views */
   display: flex; flex-direction: column; overflow: hidden;
   padding: calc(12px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
 }
-.rarity-panel .rarity-list { flex: 1 1 auto; min-height: 0; max-height: none; overflow-y: auto; margin: 6px 0; }
+.rarity-panel .rarity-list { flex: 1 1 auto; min-height: 0; max-height: none; overflow-y: auto; margin: 4px 0 0; }
+.rarity-panel .rarity-tbl { background: var(--surface); }
 .rarity-panel .rarity-empty { flex: 1 1 auto; }
 .rarity-list { max-height: min(55vh, 400px); overflow-y: auto; margin: 6px 0; }
 /* Detections window opened from a RARITY dot: the same narrow orange frame. */
@@ -1332,6 +1341,9 @@ body.fs-apple #site-header { padding-left: calc(64px + env(safe-area-inset-left)
 .rarity-tbl .rt-row { cursor: pointer; }
 /* Red "!" left of the species dot: this group carries the alert(s) behind the red bell. */
 .rarity-tbl .rt-new { color: var(--danger, #d61f2c); font-weight: 800; margin-right: 4px; }
+/* New since you last looked = the whole row in bold; everything already seen is normal. */
+.rarity-tbl .rt-row td { font-weight: 400; }
+.rarity-tbl .rt-row.rt-fresh td, .rarity-tbl .rt-row.rt-fresh .sp-link { font-weight: 700; }
 /* ✕-dismissed rows stay listed, dimmed; ⊘ restores the map dot. */
 .rarity-tbl .rt-dismissed td { opacity: 0.55; }
 .rarity-tbl .rt-unhide { border: none; background: none; color: var(--danger, #c0392b); font-size: var(--fs-h); line-height: 1; cursor: pointer; padding: 0 4px 0 0; vertical-align: -1px; }

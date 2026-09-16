@@ -402,7 +402,10 @@ When a **never-seen-before** rarity arrives it:
   default 7), grouped **species × location** with the last-seen date and a record tally —
   **every** notable record from the polls joins it, not just the new ones. **▸ expands** a
   group to its individual records (time, observer, count, comments, links); tapping a row
-  pans the map there. Opening marks all read, *Clear alerts* wipes list + stars, and an
+  pans the map there. The page carries the same furniture as the Species list and Migration
+  pages — back arrow, title, a "last check" line with ↻, then one row of controls. Alerts you
+  have **not seen yet are bold**; everything already read is in the normal weight. Opening marks
+  all read, *Clear alerts* wipes list + stars, and an
   **Alerts on** toggle pauses/resumes the whole function — the bell dims while paused.
   A single **Rarity threshold** (Settings → Rarity alerts, default **15%**) defines what counts as
   rare: a bird qualifies when the model's probability at its own spot and week is **below** that %.
@@ -411,7 +414,13 @@ When a **never-seen-before** rarity arrives it:
   finds common where you are don't clutter the list);
 - plays a short **alarm chirp** (synthesized on-device, toggleable, *Test* button) and — if
   enabled — shows a **system notification** even from a background tab (permission is asked
-  once when you switch it on; tapping the notification focuses the app on the sighting).
+  once when you switch it on; tapping the notification focuses the app on the sighting);
+- **emails you**, if you put an address under Settings → Rarity alerts. The app has no server of
+  its own, so the message is handed to a relay (**formsubmit.co**) that accepts a request straight
+  from the browser: the first message asks the address to confirm itself once, and after that each
+  batch of new alerts arrives as one mail, at most one every five minutes. *Send test* checks the
+  whole path. Your address and the alert text pass through that service, and — like every other
+  alert — mail only goes out **while the app is open**.
 
 The **first** check of each location arms silently (everything already reported is marked
 seen), so subscribing never triggers a storm of old alerts; the seen-set persists, so a

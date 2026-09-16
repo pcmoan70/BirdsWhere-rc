@@ -75,6 +75,10 @@ window.AppRarity = (function () {
     // portals / eBird / BirdWeather) around each 🔔 location and alert on anything the
     // model finds unlikely there — eBird's notable feed only covers what eBird itself flags.
     if (c.allSources == null) c.allSources = true;
+    // Email delivery: the address the alerts are mailed to (empty = off) and when the
+    // last message went out (the send is rate-limited).
+    if (typeof c.email !== "string") c.email = "";
+    if (!isFinite(+c.lastEmail)) c.lastEmail = 0;
     if (c.sound == null) c.sound = true;
     if (c.sysNotif == null) c.sysNotif = false;
     if (!c.seen) c.seen = {};
@@ -619,7 +623,51 @@ window.AppRarity = (function () {
           rarityId(o), o.lat, o.lng);
       });
     }
+    try { rarityEmailAlerts(fresh); } catch (e) {}
     setStatus(t("rarity.newMany", { n: fresh.length }));
+  }
+  // ---- Email delivery -------------------------------------------------------
+  // The app has no server of its own, so a mail can only be handed to a relay that
+  // accepts a browser request. FormSubmit takes the user's OWN address as the
+  // endpoint: the first message triggers a one-off "activate" mail to that address,
+  // and everything after it is delivered. Nothing is stored anywhere but this device
+  // — and, like every other alert, it only goes out while the app is open.
+  var RARITY_MAIL_URL = "https://formsubmit.co/ajax/";
+  var RARITY_MAIL_GAP_MS = 5 * 60000;    // never more than one mail per 5 minutes
+  function rarityEmailTo() { return String(rarityCfg().email || "").trim(); }
+  function rarityEmailValid(a) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(a || "").trim()); }
+  // Resolves with { ok, activate } — `activate` when the relay is still waiting for the
+  // address to confirm. Rejects only on a transport failure.
+  function rarityEmailPost(to, subject, body) {
+    return fetch(RARITY_MAIL_URL + encodeURIComponent(to), {
+      method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ _subject: subject, _captcha: "false", _template: "box", message: body })
+    }).then(function (r) { return r.json().catch(function () { return {}; }); })
+      .then(function (j) {
+        var ok = String(j && j.success) === "true";
+        return { ok: ok, activate: !ok && /activat/i.test(String((j && j.message) || "")) };
+      });
+  }
+  function rarityAlertLine(f) {
+    var o = f.raw || {};
+    return "• " + (o.comName || o.sciName || "?") +
+      (o.locName ? " — " + o.locName : "") +
+      (o.obsDt ? " — " + o.obsDt : "") +
+      (o._mprob != null && isFinite(o._mprob) ? " — " + o._mprob + "%" : "") +
+      (f.area ? " — " + f.area : "") +
+      (o.subId ? "\n  https://ebird.org/checklist/" + o.subId : (o._url ? "\n  " + o._url : ""));
+  }
+  // One mail per batch of new alerts, rate-limited; failures are silent (the bell,
+  // the list and the chirp have already done their job).
+  function rarityEmailAlerts(fresh) {
+    var to = rarityEmailTo();
+    if (!fresh.length || !rarityEmailValid(to)) return;
+    var cfg = rarityCfg();
+    if (Date.now() - (+cfg.lastEmail || 0) < RARITY_MAIL_GAP_MS) return;
+    raritySave({ lastEmail: Date.now() });
+    var subject = t("rarity.emailSubject", { n: fresh.length });
+    var body = subject + "\n\n" + fresh.map(rarityAlertLine).join("\n") + "\n\n" + t("rarity.emailFoot");
+    rarityEmailPost(to, subject, body).catch(function () {});
   }
   // Live-alert marker on its own layer — independent of the detections pipeline,
   // its filters and the red-× clear. Session-only (the seen-set is the persistence).
@@ -765,7 +813,8 @@ window.AppRarity = (function () {
         // Species cell: the standard status/colour dot + a clickable .sp-link name
         // (opens the unified species menu, like everywhere else).
         var k2 = rarityModelKey(e.sci) || "";
-        var html = '<tr class="rt-row' + (e.dismissed ? " rt-dismissed" : "") + '" data-k="' + escapeHtml(e.k) + '">' +
+        // Unseen alerts stand out in bold; everything already known reads in the normal weight.
+        var html = '<tr class="rt-row' + (newKeys[e.k] ? " rt-fresh" : "") + (e.dismissed ? " rt-dismissed" : "") + '" data-k="' + escapeHtml(e.k) + '">' +
           '<td class="rt-name">' + (newKeys[e.k] ? '<span class="rt-new" aria-hidden="true">!</span>' : "") +
             // ✕-dismissed groups stay listed (dimmed) with an ⊘ control to bring the dot back.
             (e.dismissed ? '<button type="button" class="rt-unhide" data-k="' + escapeHtml(e.k) + '" title="' + escapeHtml(t("rarity.unhide")) + '" aria-label="' + escapeHtml(t("rarity.unhide")) + '">⊘</button>' : "") +
@@ -773,7 +822,7 @@ window.AppRarity = (function () {
             '<span class="sp-link" data-key="' + escapeHtml(k2) + '" data-name="' + escapeHtml(e.name || e.sci) +
             '" data-sci="' + escapeHtml(e.sci || "") + '" data-lat="' + (+e.lat) + '" data-lon="' + (+e.lon) +
             '" data-date="' + escapeHtml(String(e.dt || "").slice(0, 10)) + '" data-url="' + escapeHtml(e.url || "") +
-            '"><b>' + escapeHtml(e.name || e.sci) + "</b></span> " + badge + "</td>" +
+            '">' + escapeHtml(e.name || e.sci) + "</span> " + badge + "</td>" +
           (getShowSci() ? '<td class="sci">' + escapeHtml(e.sci && e.sci !== e.name ? e.sci : "") + "</td>" : "") +
           '<td class="rt-loc-cell">' + (e.place
             ? '<span class="rt-loc" role="button" data-lat="' + (+e.lat) + '" data-lon="' + (+e.lon) + '">' + escapeHtml(e.place) + "</span>"
@@ -791,31 +840,33 @@ window.AppRarity = (function () {
         }
         return html;
       }).join("");
-      m.box.innerHTML = '<div class="ui-modal-msg rarity-title">' + ico("bell") + " <b>" + escapeHtml(t("rarity.bellTitle")) + "</b></div>" +
-        '<label class="ctrl-check rarity-onoff"><input type="checkbox" id="rarity-onoff"' + (cfg.enabled ? " checked" : "") + '> <span>' +
-          escapeHtml(t("rarity.enable")) + "</span></label>" +
-        '<label class="ctrl-check rarity-onoff"><input type="checkbox" id="rarity-showmap"' + (cfg.showMap ? " checked" : "") + '> <span>' +
-          escapeHtml(t("rarity.showMap")) + "</span></label>" +
-        '<label class="ctrl-check rarity-onoff" title="' + escapeHtml(t("rarity.countryWideTip")) + '"><input type="checkbox" id="rarity-country"' + (cfg.countryWide ? " checked" : "") + '> <span>' +
-          escapeHtml(t("rarity.countryWide")) + "</span></label>" +
-        '<div class="rarity-lastpull">' + escapeHtml(t("rarity.lastPoll", { t: lpTxt })) +
-          ' <button type="button" id="rarity-refresh" class="rt-refresh' + (rarityPollBusy ? " busy" : "") + '" title="' + escapeHtml(t("rarity.checkNow")) + '" aria-label="' + escapeHtml(t("rarity.checkNow")) + '"' + (rarityPollBusy ? " disabled" : "") + ">↻</button>" +
-          ' · <label class="rt-days">' + escapeHtml(t("rarity.days")) + ' <select id="rarity-days">' +
-          [0, 1, 2, 3, 7, 14, 21].map(function (n) {
-            return '<option value="' + n + '"' + (+cfg.showDays === n ? " selected" : "") + ">" +
-              (n === 0 ? escapeHtml(t("rarity.today")) : n) + "</option>";
-          }).join("") +
-          "</select></label></div>" +
+      // Laid out like the app's other full-screen pages: a ‹ page bar with the title
+      // and the "last check" line under it, then ONE row of controls, then the table.
+      m.box.innerHTML = '<div class="sp-page-bar rarity-bar">' +
+          '<button type="button" id="rarity-back" class="fp-back" title="' + escapeHtml(t("btn.close")) + '" aria-label="' + escapeHtml(t("btn.close")) + '">' + ico("back") + "</button>" +
+          '<div class="sp-head-lines">' +
+            "<h3>" + ico("bell") + " " + escapeHtml(t("rarity.bellTitle")) + "</h3>" +
+            '<div class="sp-coords rarity-sub">' + escapeHtml(t("rarity.lastPoll", { t: lpTxt })) +
+              ' <button type="button" id="rarity-refresh" class="rt-refresh' + (rarityPollBusy ? " busy" : "") + '" title="' + escapeHtml(t("rarity.checkNow")) + '" aria-label="' + escapeHtml(t("rarity.checkNow")) + '"' + (rarityPollBusy ? " disabled" : "") + ">↻</button></div>" +
+          "</div></div>" +
+        '<div class="rarity-controls">' +
+          '<label class="rt-days">' + escapeHtml(t("rarity.days")) + ' <select id="rarity-days" class="detlist-sort-sel">' +
+            [0, 1, 2, 3, 7, 14, 21].map(function (n) {
+              return '<option value="' + n + '"' + (+cfg.showDays === n ? " selected" : "") + ">" +
+                (n === 0 ? escapeHtml(t("rarity.today")) : n) + "</option>";
+            }).join("") + "</select></label>" +
+          '<label class="ctrl-check"><input type="checkbox" id="rarity-onoff"' + (cfg.enabled ? " checked" : "") + '> <span>' + escapeHtml(t("rarity.enable")) + "</span></label>" +
+          '<label class="ctrl-check"><input type="checkbox" id="rarity-showmap"' + (cfg.showMap ? " checked" : "") + '> <span>' + escapeHtml(t("rarity.showMap")) + "</span></label>" +
+          '<label class="ctrl-check" title="' + escapeHtml(t("rarity.countryWideTip")) + '"><input type="checkbox" id="rarity-country"' + (cfg.countryWide ? " checked" : "") + '> <span>' + escapeHtml(t("rarity.countryWide")) + "</span></label>" +
+          (rows ? '<button type="button" class="btn btn-light rt-clear" id="rarity-clear">' + escapeHtml(t("rarity.clear")) + "</button>" : "") +
+        "</div>" +
         (rows ? '<div class="rarity-list"><table class="sp-style-tbl rarity-tbl"><thead><tr><th>' + escapeHtml(t("th.species")) + "</th>" +
             (getShowSci() ? "<th>" + escapeHtml(t("th.sci")) + "</th>" : "") +
             "<th>" + escapeHtml(t("th.location")) + "</th><th class=\"num\">" + escapeHtml(t("th.total")) +
             "</th><th class=\"num\">" + escapeHtml(t("th.last")) + "</th><th>" + escapeHtml(t("th.source")) + "</th><th></th></tr></thead><tbody>" +
             rows + "</tbody></table></div>"
-          : '<div class="rarity-empty">' + escapeHtml(t("rarity.bellEmpty")).replace(/🔔/g, ico("bell")) + "</div>") +
-        '<div class="ui-modal-btns">' +
-          (rows ? '<button type="button" class="btn btn-light" id="rarity-clear">' + escapeHtml(t("rarity.clear")) + "</button>" : "") +
-          '<button type="button" class="btn" id="rarity-close">' + escapeHtml(t("popup.ok")) + "</button></div>";
-      m.box.querySelector("#rarity-close").addEventListener("click", m.close);
+          : '<div class="rarity-empty">' + escapeHtml(t("rarity.bellEmpty")).replace(/🔔/g, ico("bell")) + "</div>");
+      m.box.querySelector("#rarity-back").addEventListener("click", m.close);
       var oo = m.box.querySelector("#rarity-onoff");
       if (oo) oo.addEventListener("change", function () {
         raritySave({ enabled: !!this.checked });
@@ -833,7 +884,8 @@ window.AppRarity = (function () {
       var rf = m.box.querySelector("#rarity-refresh");
       if (rf) rf.addEventListener("click", function () {
         if (rarityPollBusy) return;
-        if (!rarityLocs().length || !ebirdKey()) { setStatus(t("rarity.needKey")); return; }
+        if (!rarityLocs().length) return;
+        if (!ebirdKey() && !rarityAllSources()) { setStatus(t("rarity.needKey")); return; }   // nothing could deliver an alert
         rarityBadKey = null;
         runRarityPoll();
         render();   // show the busy state on the button immediately
@@ -957,7 +1009,8 @@ window.AppRarity = (function () {
         function fire() {
           lpFired = true;
           if (rarityPollBusy) return;
-          if (!rarityLocs().length || !ebirdKey()) { setStatus(t("rarity.needKey")); return; }
+          if (!rarityLocs().length) return;
+        if (!ebirdKey() && !rarityAllSources()) { setStatus(t("rarity.needKey")); return; }   // nothing could deliver an alert
           rarityBadKey = null;
           runRarityPoll();
           setStatus(t("rarity.checkNow") + "…");
@@ -1002,6 +1055,7 @@ window.AppRarity = (function () {
     rarityChirp: rarityChirp,
     ensureAudioUnlocked: ensureAudioUnlocked,
     harvestLocalRarities: harvestLocalRarities,
+    rarityEmailPost: rarityEmailPost, rarityEmailValid: rarityEmailValid,
     initRarityAlerts: initRarityAlerts,
     // the group key behind the currently-open rarity window (app.js clears it
     // when a non-rarity window opens, and reads it when the red ✕ is pressed)

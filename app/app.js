@@ -6368,6 +6368,15 @@
                 '<p class="cu-hint" data-i18n="rarity.allSrcHint">Also search your ordinary observation sources (GBIF, iNaturalist, the national databases…) around every 🔔 point, and alert on anything the model finds unlikely there. Catches rarities eBird never flagged, and works without an eBird key. These background checks step aside for any fetch you start.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
+                '<label for="rarity-email" data-i18n="rarity.email">Email me new alerts</label>' +
+                '<div class="ctrl-inline rarity-email-row">' +
+                  '<input id="rarity-email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" />' +
+                  '<button type="button" id="rarity-email-test" class="btn btn-light" data-i18n="rarity.emailTest">Send test</button>' +
+                '</div>' +
+                '<p class="cu-hint" id="rarity-email-note"></p>' +
+                '<p class="cu-hint" data-i18n="rarity.emailHint">New alerts are also sent to this address, at most one message per 5 minutes. The first message asks you to confirm the address — click the link in it once and later alerts arrive. The mail is relayed by formsubmit.co, so the address and the alert text pass through that service, and (like every alert) it only goes out while the app is open.</p>' +
+              '</div>' +
+              '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="rarity-country-toggle"> <span data-i18n="rarity.countryWide">Whole-country alerts</span></label>' +
                 '<p class="cu-hint" data-i18n="rarity.countryWideTip">For every 🔔 point, fetch rare-bird alerts for its entire country instead of just the radius around it. Points that share a country are fetched once. Uses more of your eBird API budget.</p>' +
               '</div>' +
@@ -7022,7 +7031,9 @@
       // Keyless first tap on the rarity bell → the one-time eBird-key nudge
       // (alongside the bell popup's own key hint).
       var bellEl = document.getElementById("rarity-bell");
-      if (bellEl) bellEl.addEventListener("click", function () { maybeEbirdNudge(); });
+      // Only nag about the eBird key when eBird is the ONLY thing that could deliver
+      // alerts — with the all-sources sweep on, the bell works without a key.
+      if (bellEl) bellEl.addEventListener("click", function () { if (rarityCfg().allSources === false) maybeEbirdNudge(); });
       if (!hasHere && !hasLocParam && !sharedOpen) restoreSession();   // return to the view we left (reload-safe)
       countPageVisit();    // one anonymous tick on the page-visit counter per app open (live site only)
       countPosterScan();   // ?from=poster (the /f/ QR link) → one anonymous tick on the scan counter
@@ -16775,6 +16786,30 @@
       rAll.checked = rarityCfg().allSources !== false;
       rAll.addEventListener("change", function () { raritySave({ allSources: !!this.checked }); rarityAlertsChanged(); });   // re-checks the bell (alerts work without an eBird key now) and polls
     }
+    // Email delivery: the address lives in the rarity settings; "Send test" both saves it
+    // and asks the relay to deliver one message, which is also what triggers the one-off
+    // confirmation mail the first time.
+    var rEm = document.getElementById("rarity-email"), rEmT = document.getElementById("rarity-email-test"), rEmN = document.getElementById("rarity-email-note");
+    if (rEm) {
+      rEm.value = rarityCfg().email || "";
+      rEm.addEventListener("change", function () {
+        var v = this.value.trim();
+        if (v && !window.AppRarity.rarityEmailValid(v)) { if (rEmN) rEmN.textContent = t("rarity.emailBad"); return; }
+        raritySave({ email: v });
+        if (rEmN) rEmN.textContent = v ? t("rarity.emailOn") : "";
+      });
+    }
+    if (rEmT) rEmT.addEventListener("click", function () {
+      var v = rEm ? rEm.value.trim() : "";
+      if (!window.AppRarity.rarityEmailValid(v)) { if (rEmN) rEmN.textContent = t("rarity.emailBad"); return; }
+      raritySave({ email: v });
+      var btn = this; btn.disabled = true;
+      if (rEmN) rEmN.textContent = t("rarity.emailSending");
+      window.AppRarity.rarityEmailPost(v, t("rarity.emailTestSubj"), t("rarity.emailTestBody"))
+        .then(function (r) { if (rEmN) rEmN.textContent = r.activate ? t("rarity.emailActivate") : (r.ok ? t("rarity.emailSent") : t("rarity.emailFail")); },
+              function () { if (rEmN) rEmN.textContent = t("rarity.emailFail"); })
+        .then(function () { btn.disabled = false; });
+    });
     var rCw = document.getElementById("rarity-country-toggle");
     if (rCw) {
       rCw.checked = !!rarityCfg().countryWide;
@@ -19453,7 +19488,7 @@
         escapeHtml(fooOn ? t("loc.loadOnOpenHint") : t("loc.loadOnOpenOff")) + "<br>" +
         escapeHtml("⤓ = " + t("loc.goFetch")) + "<br>" +
         escapeHtml("✓ = " + t("loc.include") + " (“" + t("loc.fetch") + "”)") + "<br>" +
-        ico("bell") + " = " + escapeHtml(t("loc.alertCol")) + (ebirdKey() ? "" : " — " + escapeHtml(t("rarity.needKey"))) + "</div>" +
+        ico("bell") + " = " + escapeHtml(t("loc.alertCol")) + ((ebirdKey() || rarityCfg().allSources !== false) ? "" : " — " + escapeHtml(t("rarity.needKey"))) + "</div>" +
       // Master alerts on/off — the same toggle as in the bell popup.
       '<label class="ctrl-check slp-alerts-onoff"><input type="checkbox" id="slp-alerts-onoff"' + (rarityCfg().enabled ? " checked" : "") + '> <span>' +
         escapeHtml(t("rarity.enable")) + "</span></label>" +
@@ -19480,7 +19515,7 @@
     hereWire("slp-here-gofetch", "goFetch");
     hereWire("slp-here-on", "on", function () { renderStoredLocFrames(); });
     hereWire("slp-here-alert", "alert", function (el) {
-      if (el.checked && !ebirdKey()) setStatus(t("rarity.needKey"));
+      if (el.checked && !ebirdKey() && rarityCfg().allSources === false) setStatus(t("rarity.needKey"));
       rarityAlertsChanged();
     });
     hereWire("slp-here-radius", "radius", function () { renderStoredLocFrames(); });
@@ -19532,7 +19567,7 @@
     panel.querySelectorAll(".slp-alert[data-i]").forEach(function (cb) {
       cb.addEventListener("change", function () {
         updateStoredLocation(+this.getAttribute("data-i"), { alert: this.checked });
-        if (this.checked && !ebirdKey()) setStatus(t("rarity.needKey"));   // tick persists; alerts start once a key exists
+        if (this.checked && !ebirdKey() && rarityCfg().allSources === false) setStatus(t("rarity.needKey"));   // tick persists; alerts start once a key exists
         rarityAlertsChanged();
       });
     });
