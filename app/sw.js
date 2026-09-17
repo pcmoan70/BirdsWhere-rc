@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1770";
+var VERSION = "v1771";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• The Images list now answers to the filters like the table does: the funnel turns orange (with its kept/removed bar) when a filter narrows a model-only list, and the name search really narrows the cards.",
   "• Species groups (Raptors, Ducks & geese, Waders …) are back in the list filters on a spot with no observations: the groups are now built from whatever the list shows, so the model’s own species can be narrowed to one group just like fetched ones.",
   "• Rarity alerts, audited end to end: locally-rare birds from your OWN fetches now reach the list (a class-name mismatch had silently blocked every one), the same sighting reported by two sources alerts once, Clear alerts really clears the map, and the bell appears whenever there is a list to open.",
   "• Map popups now always fit: zoomed right out (or in the far north) they no longer run off an edge — they are capped to the map height and nudged back inside. And on the rarity-alerts page, a tap on the bell closes it again; press-and-hold still checks now.",
   "• Click a place where nothing has been reported and the list now fills with the species the model expects there, likeliest first, instead of coming back empty. A line says so, and [!] switches back to observed species only.",
-  "• Rarity alerts can now be emailed to you: put your address under Settings → Rarity alerts and press Send test. The first message is a confirmation request from FormSubmit — click its link once (look in the spam folder) and alerts start arriving while the app is open. Settings now says what became of the last message. The alerts page was rebuilt in the style of the other pages, and unseen alerts stand out in bold.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

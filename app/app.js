@@ -2450,6 +2450,7 @@
     repaintDotsOutsideTable(rareAll);   // Images cards / observation rows / the ☰ popover
     updateRecencyNote();
     filterSpRows();          // re-apply the name search on top of the other filters
+    _detRemovedMemo = null;  // row visibility just changed → the funnel's stats must be recounted
   }
   // In-app name search for the species-list table. Uses a CSS class (display:none
   // !important) so it composes with applyAgeFilter's inline show/hide instead of
@@ -13292,8 +13293,17 @@
   var _detRemovedMemo = null;
   function detFilteredStats() {
     if (_detRemovedMemo) return _detRemovedMemo;
-    var removed = 0, total = 0;
-    Object.keys(detPlot).forEach(function (k) {
+    var removed = 0, total = 0, plotted = Object.keys(detPlot);
+    // Model-only list (nothing plotted): the filters narrow LISTED SPECIES, not
+    // observations, so count those instead — otherwise the funnel has nothing to
+    // report and stays grey however much the list is narrowed.
+    if (!plotted.length) {
+      var tb = document.getElementById("sp-tbody");
+      if (tb) Array.prototype.forEach.call(tb.querySelectorAll("tr.sp-pool"), function (tr) {
+        total++;
+        if (tr.style.display === "none" || tr.classList.contains("sp-hide-search")) removed++;
+      });
+    } else plotted.forEach(function (k) {
       var tot = detTotalCount(k); total += tot;
       removed += detIsVisible(k) ? Math.max(0, tot - countPassing(k, false)) : tot;
     });
@@ -21247,7 +21257,11 @@
     // (default sort: rarest first) — as cards that would be a wall of exotic species whose
     // photos start downloading. Wait for the fetch instead; [?] (predictions wanted) still shows.
     if (!tbody._sightingsAgg && !spMissingOn()) return '<div class="dl-empty spg-wait"><div class="spinner"></div>' + escapeHtml(t("status.loadingDet")) + "</div>";
-    var rows = Array.prototype.filter.call(tbody.children, function (tr) { return tr.style.display !== "none" && !tr.classList.contains("sp-detail-row"); });
+    // The name search hides table rows with a CLASS (it composes with the inline
+    // show/hide) — the cards are built from the rows, so they must honour it too.
+    var rows = Array.prototype.filter.call(tbody.children, function (tr) {
+      return tr.style.display !== "none" && !tr.classList.contains("sp-hide-search") && !tr.classList.contains("sp-detail-row");
+    });
     if (!rows.length) return '<div class="dl-empty">' + escapeHtml(t("detlist.empty")) + "</div>";
     var lbl = { total: t("th.total"), last: t("th.last"), dist: t("th.dist"), prob: t("th.prob") };
     return '<div class="sp-gallery">' + rows.map(function (tr) {
@@ -21597,26 +21611,30 @@
       Array.prototype.forEach.call(cards, function (c, i) { if (i >= SPG_PRELOAD) spGalleryObs.observe(c); });
     } else Array.prototype.forEach.call(cards, fill);
   }
+  // The funnel's own state: orange + kept/removed bar. Run AFTER the rows have been
+  // re-filtered — on a model-only list the stats are counted from the listed rows, so
+  // reading them first would show the previous render's answer.
+  function renderSpFilterBtn() {
+    var fb = document.getElementById("sp-filter-btn");
+    if (!fb) return;
+    fb.title = t("filters.open"); fb.setAttribute("aria-label", t("filters.open"));
+    var fbSet = detHasFilter() || speciesFilterActive();
+    var fbSt = fbSet ? detFilteredStats() : null;
+    // Orange only when the filters actually REMOVE something (not for a set-but-harmless
+    // filter or a sort override) — except the probability range, which marks the funnel
+    // whenever it isn't the full 0–100.
+    fb.classList.toggle("on", !!(fbSt && fbSt.removed > 0) || probFilterActive());
+    // Kept/removed bar: the fraction the active filters keep (green) vs remove (red).
+    var fbB = fb.querySelector(".fx-bar");
+    if (fbB) fbB.parentNode.removeChild(fbB);
+    if (fbSet) fb.insertAdjacentHTML("beforeend", fxBarHtml(fbSt));
+    updateFilterBusy();
+  }
   function renderSpControls() {
     var ctrls = document.getElementById("sp-controls");
     if (!speciesPanelPopulated()) { if (ctrls) ctrls.style.display = "none"; return; }
     if (ctrls) ctrls.style.display = "";
     renderSpLayoutSelect();
-    var fb = document.getElementById("sp-filter-btn");
-    if (fb) {
-      fb.title = t("filters.open"); fb.setAttribute("aria-label", t("filters.open"));
-      var fbSet = detHasFilter() || speciesFilterActive();
-      var fbSt = fbSet ? detFilteredStats() : null;
-      // Orange only when the filters actually REMOVE observations (not for a
-      // set-but-harmless filter or a sort override) — except the probability
-      // range, which marks the funnel whenever it isn't the full 0–100.
-      fb.classList.toggle("on", !!(fbSt && fbSt.removed > 0) || probFilterActive());
-      // Kept/removed bar: the fraction of observations the active filters keep (green) vs remove (red).
-      var fbB = fb.querySelector(".fx-bar");
-      if (fbB) fbB.parentNode.removeChild(fbB);
-      if (fbSet) fb.insertAdjacentHTML("beforeend", fxBarHtml(fbSt));
-      updateFilterBusy();
-    }
     // The observation filter bar (day/date · mode · observer) applies to the detailed
     // record layouts; the prediction table keeps its own flag columns + age cycle.
     // [?] (table + Images layouts; the observation list has no predictions): also show the
@@ -21639,6 +21657,7 @@
       renderSpFilterBar();
     }
     renderSpBody();
+    renderSpFilterBtn();   // after the rows: the model-only stats are read off them
     updateRecencyNote();
   }
   // ---- Species-list column-header filter+sort panels ------------------------
