@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1787";
+var VERSION = "v1788";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• In the Images list, press and hold a Probability / Season / Yr-peak bar to see that species' year curve — the little popup a mouse gets on hover. The gesture existed only on phones without a mouse; on a computer (or a touch laptop) holding did nothing. Holding the ☰ button likewise opens the species' records everywhere now. A normal click still opens the Migration view.",
   "• Names now behave the same everywhere. A species name, an observer name and a place name each open their own menu — and a place name always offers the lot: find on map, save as a point, add to the route, and show only this location. That includes two places it never worked before: the title of the observation window (which IS that spot's name) and the place beside the observer in each record. One shared implementation now drives all three kinds, so nowhere can quietly miss out again.",
   "• The storage line in Settings now says what the app can actually measure: “Settings & saved lists · cached data · browser estimate”. The browser's own figure can read tens of GB for a few hundred MB, because it pads every cached map tile for privacy — that is explained under the line, and the “storage nearly full” warning no longer fires on padding (a genuinely full device still warns). Each cache row now shows 0 rather than nothing when it is empty.",
   "• “Compare to” (the species list's comparison column) is now an Experimental extra: it sits directly under that toggle in Settings and appears only when Experimental features are on. Its default is Annual max. The splash screen's install line also leads with WHY you would: “For offline use: browser menu → Install app / Add to Home Screen”, in every language and on each platform.",
   "• Settings is shorter by two things you did not need: the paragraph describing the app at the very top (About and “How it works” say it better) and the whole Density heatmap section — the dots do that job, so the heatmap, its Off/Species/Observers/Counts button and the “Show dots” checkbox are gone, along with the code behind them.",
-  "• The probability-range slider is gone from Settings — it belongs with the other filters, and it is still there under the funnel → Probability in any list. The range also starts at the full 0–100 again, so a bound left over from the old slider cannot keep filtering your lists from a place you can no longer see.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

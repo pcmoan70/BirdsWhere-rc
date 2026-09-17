@@ -21595,11 +21595,38 @@
           var to = e.relatedTarget; if (to && to.closest && (to.closest(".spg-sub") === b || to.closest(".spg-recpop"))) return;
           clearTimeout(hoverT); scheduleSpgPopClose();
         });
-      } else {
-        // Touch: press-and-hold ☰ → the table view; press-and-hold a Prob / Season / Yr-peak
-        // bar → the species' year curve (the popup the mouse gets on hover). Both give the
-        // click sensation the moment they fire, and swallow the click that follows.
+      }
+      {
+        // Press-and-hold ☰ → the table view; press-and-hold a Prob / Season / Yr-peak bar
+        // → the species' year curve (the popup a mouse gets on hover). Bound on EVERY
+        // device, not just touch-only ones: with a mouse (or on a touch laptop, where the
+        // app reports hover) the hold used to do nothing at all. Both give the click
+        // sensation the moment they fire, and swallow the click that follows.
         var lpT = null, lpX = 0, lpY = 0;
+        // What a completed hold does — shared by the touch and mouse paths.
+        function spgHoldFire(b, bar) {
+          spgHoldAt = Date.now();
+          if (b) { holdFeedback(b); closeAnchoredMenu(); openSpGalleryRecords(b.getAttribute("data-key")); return; }
+          var card = bar.closest(".spg-card"); if (!card) return;
+          holdFeedback(bar);
+          showSpgProbTip(bar, card.getAttribute("data-key"), card.getAttribute("data-date") || "");
+          armSpgTipDismiss();   // the next touch anywhere puts it away
+        }
+        rec.addEventListener("mousedown", function (e) {
+          if (e.button !== 0) return;
+          var b = e.target.closest && e.target.closest(".spg-sub");
+          var bar = b ? null : (e.target.closest && e.target.closest(".spg-bar"));
+          spgPopWasOpen = !!(b && spgRecPop && _anchMenuEl === spgRecPop && spgRecPop.getAttribute("data-key") === b.getAttribute("data-key"));
+          if (!b && !bar) return;
+          lpX = e.clientX; lpY = e.clientY;
+          clearTimeout(lpT);
+          lpT = setTimeout(function () { spgHoldFire(b, bar); }, holdDelay());
+        });
+        rec.addEventListener("mousemove", function (e) {
+          if (lpT && (Math.abs(e.clientX - lpX) > 12 || Math.abs(e.clientY - lpY) > 12)) { clearTimeout(lpT); lpT = null; }
+        });
+        rec.addEventListener("mouseup", function () { clearTimeout(lpT); lpT = null; });
+        rec.addEventListener("mouseleave", function () { clearTimeout(lpT); lpT = null; });
         rec.addEventListener("touchstart", function (e) {
           var b = e.target.closest && e.target.closest(".spg-sub");
           var bar = b ? null : (e.target.closest && e.target.closest(".spg-bar"));
@@ -21609,14 +21636,7 @@
           if (!b && !bar) return;
           var tt = e.touches && e.touches[0]; lpX = tt ? tt.clientX : 0; lpY = tt ? tt.clientY : 0;
           clearTimeout(lpT);
-          lpT = setTimeout(function () {
-            spgHoldAt = Date.now();
-            if (b) { holdFeedback(b); closeAnchoredMenu(); openSpGalleryRecords(b.getAttribute("data-key")); return; }
-            var card = bar.closest(".spg-card"); if (!card) return;
-            holdFeedback(bar);
-            showSpgProbTip(bar, card.getAttribute("data-key"), card.getAttribute("data-date") || "");
-            armSpgTipDismiss();   // the next touch anywhere puts it away
-          }, holdDelay());
+          lpT = setTimeout(function () { spgHoldFire(b, bar); }, holdDelay());
         }, { passive: true });
         rec.addEventListener("touchmove", function (e) {
           var tt = e.touches && e.touches[0];
