@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1778";
+var VERSION = "v1779";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• Drive sync now keeps a history: every sync leaves a DATED copy in the app's private Drive folder and the ten most recent are kept, so a bad day is recoverable — “Earlier backups…” in the sync dialog lists them and restores one (its settings win, lists from both sides merge). A download always reads the newest. And the app now nags gently: when your saved points have grown and it has been over an hour since the last sync, the gear shows a small orange ! and the Sync button turns orange, with a “last backed up” line in the Points panel.",
   "• Point lists: an extra safety catch. If the app ever holds an empty list of lists for a moment, that can no longer delete your saved ones from the device database — only a real deletion can. Old Drive files and old JSON backups import unchanged, and what the app writes back is still exactly the same format, point for point.",
   "• Your saved point lists have moved out of the small browser store into the device database, one record per list — so they no longer share a ~5 MB ceiling with everything else, and a Drive sync (which has to write BOTH devices' lists at once) fits again. Nothing to do: they move themselves the next time you open the app, and the Drive backup format is unchanged. Only a list you actually change is rewritten, so editing a big route stays quick.",
   "• Google Drive sync no longer fails on a full device. The merge writes BOTH devices' data, so on a full store it could not be saved at all — and the app blamed the Drive connection, sending you back through sign-in for something only free space could fix. The save now drops rebuildable caches (species photos, looked-up names) before giving up, keeping every list, point and setting, and if it still cannot fit it says so plainly and names what is taking the room.",
   "• The rarity-alert texts now describe the feature as it actually is: it watches every source, not just eBird, it needs no eBird key, and your own fetched observations feed the same list. Settings, the alerts page, the 🔔 column and the in-app help were all still describing the eBird-only version from three weeks ago — in English and in all 14 languages.",
-  "• Rarity alerts, hardened: the watch can no longer die mid-check (a GPS fix that never answered used to stop it until you reloaded), Manual really means manual, and going offline no longer costs you a whole interval. One rule now decides what counts as rare — at 0 % or 100 % the threshold is off everywhere, where it used to let your own fetches flood the list — and one bird found twice is one entry. The bell only turns red for alerts the page will actually show you, switching the map off leaves no ghost dots behind, a full storage no longer loses your other settings, and a failed alert mail no longer burns the five-minute window. ↻ on the alerts page now checks wherever you are looking, even with nothing subscribed.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

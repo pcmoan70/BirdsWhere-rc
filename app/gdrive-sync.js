@@ -33,6 +33,32 @@ window.GDriveSync = (function () {
 
   var SCOPE = "https://www.googleapis.com/auth/drive.appdata";
   var FILE_NAME = "migration_calendar.json";
+  // Every push also leaves a DATED copy beside the current file, so the app-data
+  // folder carries a history instead of one endlessly overwritten file. The newest
+  // of them is what a download reads; the rest are backups (restorable from the
+  // sync dialog — Drive's own UI cannot show app-data files). The current file keeps
+  // its plain name so builds that look for it by name keep working.
+  var SNAP_PREFIX = "migration_calendar-";
+  var SNAP_KEEP = 10;               // newest kept; older copies are deleted on push
+  function pad2(n) { return (n < 10 ? "0" : "") + n; }
+  // "migration_calendar-2026-09-17_1830.json" — sortable by name as well as by time.
+  function snapName(ts) {
+    var d = new Date(ts || Date.now());
+    return SNAP_PREFIX + d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) +
+      "_" + pad2(d.getHours()) + pad2(d.getMinutes()) + ".json";
+  }
+  // Newest first, by modifiedTime (falling back to the name, which sorts the same way).
+  function byNewest(files) {
+    return (files || []).slice().sort(function (a, b) {
+      var ta = Date.parse(a.modifiedTime) || 0, tb = Date.parse(b.modifiedTime) || 0;
+      return tb - ta || String(b.name || "").localeCompare(String(a.name || ""));
+    });
+  }
+  // Which dated copies to delete: everything past the newest `keep`.
+  function snapsToPrune(files, keep) {
+    return byNewest((files || []).filter(function (f) { return f && String(f.name || "").indexOf(SNAP_PREFIX) === 0; }))
+      .slice(Math.max(0, keep == null ? SNAP_KEEP : keep));
+  }
   var LS_CONNECTED = "gdrive-connected";
   var LS_FILE_ID = "gdrive-file-id";
   var LS_CLIENT_ID = "gdrive-client-id";
@@ -57,7 +83,9 @@ window.GDriveSync = (function () {
   var localDirty = false;            // a real user change happened this session → local scalars win
   var lastStatus = "idle";           // idle | syncing | error | reconnect
   var lastError = "";                // human-readable detail of the last failure (surfaced in the UI)
-  var lastSyncAt = 0;                // ms epoch of the last successful sync
+  // ms epoch of the last successful sync — PERSISTED, so after a reload the app still
+  // knows whether the lists have outgrown their last backup.
+  var lastSyncAt = (function () { try { return +window.GeoState.get("gdriveLastSync", 0) || 0; } catch (e) { return 0; } })();
   var statusListeners = [];
 
   // ---- small helpers --------------------------------------------------------
@@ -145,19 +173,41 @@ window.GDriveSync = (function () {
     return r;
   }
 
-  async function findFile() {
-    var q = encodeURIComponent("name='" + FILE_NAME + "' and trashed=false");
-    var r = await driveFetch("https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id,modifiedTime)&orderBy=" +
-      encodeURIComponent("modifiedTime desc") + "&q=" + q, {});
+  // Every file of ours in the app-data folder: the current one plus the dated copies.
+  async function listOurFiles() {
+    var q = encodeURIComponent("trashed=false and (name='" + FILE_NAME + "' or name contains '" + SNAP_PREFIX + "')");
+    var r = await driveFetch("https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&pageSize=100" +
+      "&fields=files(id,name,modifiedTime,size)&orderBy=" + encodeURIComponent("modifiedTime desc") + "&q=" + q, {});
     if (!r.ok) throw new Error("Drive list failed (" + r.status + ")");
     var j = await r.json();
-    var files = (j.files || []).slice();
-    if (!files.length) return null;
-    // Defensive: if two app-data files exist (created concurrently on two devices)
-    // bind to the NEWEST so we don't ping-pong overwrites onto a stale copy — even
-    // if orderBy was ignored. trashed=false above keeps deleted copies out.
-    files.sort(function (a, b) { return (Date.parse(b.modifiedTime) || 0) - (Date.parse(a.modifiedTime) || 0); });
-    return files[0];
+    return (j.files || []).slice();
+  }
+  // What a DOWNLOAD reads: the most recent of everything we hold — normally the last
+  // dated copy, or the current file when another build wrote it more recently.
+  async function findFile() {
+    var files = byNewest(await listOurFiles());
+    return files.length ? files[0] : null;
+  }
+  // What a PUSH writes to: the plain-named current file (never a dated backup).
+  async function findCurrentFile() {
+    var files = byNewest((await listOurFiles()).filter(function (f) { return f && f.name === FILE_NAME; }));
+    return files.length ? files[0] : null;
+  }
+  // Leave a dated copy of what was just pushed, then drop the oldest beyond the cap.
+  // A copy is a Drive-side operation: no second upload of the payload. History is a
+  // bonus — a failure here must never fail the sync.
+  async function snapshotAfterPush(id) {
+    try {
+      var r = await driveFetch("https://www.googleapis.com/drive/v3/files/" + id + "/copy?fields=id", {
+        method: "POST", headers: { "Content-Type": "application/json; charset=UTF-8" },
+        body: JSON.stringify({ name: snapName(Date.now()), parents: ["appDataFolder"] })
+      });
+      if (!r.ok) return;
+      var old = snapsToPrune(await listOurFiles(), SNAP_KEEP);
+      for (var i = 0; i < old.length; i++) {
+        try { await driveFetch("https://www.googleapis.com/drive/v3/files/" + old[i].id, { method: "DELETE" }); } catch (e) {}
+      }
+    } catch (e) { /* the sync itself already succeeded */ }
   }
 
   async function downloadFile(id) {
@@ -207,8 +257,10 @@ window.GDriveSync = (function () {
     var inc = (options && options.cats) || { settings: 1, lists: 1, trips: 1, checklists: 1, fetched: 1 };
     syncing = true; emit("syncing");
     try {
-      var meta = await findFile();
-      if (meta && meta.id !== fileId) { fileId = meta.id; try { localStorage.setItem(LS_FILE_ID, fileId); } catch (e) {} }
+      var meta = await findFile();                 // newest of ours — the last dated copy, normally
+      var cur = await findCurrentFile();           // the plain-named file a push writes to
+      if (cur && cur.id !== fileId) { fileId = cur.id; try { localStorage.setItem(LS_FILE_ID, fileId); } catch (e) {} }
+      if (!cur) { fileId = ""; try { localStorage.removeItem(LS_FILE_ID); } catch (e) {} }
       var remote = meta ? await downloadFile(meta.id) : null;
 
       // Scalar-settings direction (collections always union regardless). Two-way:
@@ -242,11 +294,19 @@ window.GDriveSync = (function () {
         var str = JSON.stringify(merged);
         if (fileId) { await updateFile(fileId, str); }
         else { var created = await createFile(str); fileId = created.id; try { localStorage.setItem(LS_FILE_ID, fileId); } catch (e) {} }
+        await snapshotAfterPush(fileId);   // dated copy + prune (never fails the sync)
       }
 
       localDirty = false;
       lastSyncAt = Date.now();
       lastError = "";        // clear any previous failure on success
+      // Record what is now safely on Drive (when, and how many points) so the app can
+      // tell when the lists have grown past their last backup. A download-only sync
+      // put nothing THERE, so it only stamps the time.
+      try {
+        if (dir !== "download" && needPush) window.AppData.markBackedUp();
+        else window.GeoState.save({ gdriveLastSync: lastSyncAt });
+      } catch (e) {}
       emit("idle");
 
       // A pull that overwrote scalar settings the UI already rendered needs a
@@ -295,8 +355,45 @@ window.GDriveSync = (function () {
       emit(lastStatus);
     },
 
+    // The dated history, newest first: [{ id, name, at (ms), size }]. Needs a token,
+    // so it is called from an explicit user gesture (the sync dialog's Backups view),
+    // never on load. Resolves [] when there is nothing yet.
+    listBackups: async function () {
+      if (!clientId() || !navigator.onLine) return [];
+      try {
+        await waitForGis(); initTokenClient(); connected = true;   // same gesture sequence as syncNow
+        await ensureToken();
+        var files = byNewest((await listOurFiles()).filter(function (f) { return f && String(f.name || "").indexOf(SNAP_PREFIX) === 0; }));
+        return files.map(function (f) { return { id: f.id, name: f.name, at: Date.parse(f.modifiedTime) || 0, size: +f.size || 0 }; });
+      } catch (e) { fail("reconnect", e); return []; }
+      finally { teardown(); emit(lastStatus); }
+    },
+    // Put one dated backup back on this device: its settings win, collections are
+    // unioned (so nothing on this device is deleted). Pull only — no push.
+    restoreBackup: async function (id) {
+      if (!id || !clientId() || !navigator.onLine || syncing) return false;
+      syncing = true; emit("syncing");
+      try {
+        await waitForGis(); initTokenClient(); connected = true;
+        await ensureToken();
+        var data = await downloadFile(id);
+        if (!data) throw new Error("backup could not be read");
+        window.AppData.applyRemote(data, { incomingWins: true, interactive: false });
+        lastSyncAt = Date.now(); lastError = "";
+        try { window.AppData.markBackedUp(); } catch (e) {}   // restored → in step with Drive
+        emit("idle");
+        return true;
+      } catch (e) {
+        var msg = (e && e.message) ? String(e.message) : "";
+        fail(/storage/i.test(msg) ? "storagefull" : "reconnect", e);
+        return false;
+      } finally { syncing = false; teardown(); emit(lastStatus); }
+    },
     // Kept for the (now hidden) Connect button — same one-shot behaviour.
     connect: function () { return this.syncNow(); },
+
+    // Pure helpers, exposed for verification (naming / ordering / prune choice).
+    _snapName: snapName, _byNewest: byNewest, _snapsToPrune: snapsToPrune,
 
     disconnect: function () {
       try { if (accessToken && window.google && google.accounts && google.accounts.oauth2) google.accounts.oauth2.revoke(accessToken, function () {}); } catch (e) {}

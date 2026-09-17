@@ -5256,6 +5256,54 @@
       artdbKey: localStorage.getItem(ART_KEY_LS) || ""
     };
   }
+  // ---- "your lists have grown since the last backup" -------------------------
+  // Point lists are the data users mind losing most, and nothing in the browser
+  // survives an uninstall — so when they have grown since the last sync and an hour
+  // has passed, the gear shows a small orange ! and the Sync button turns orange.
+  var BACKUP_DUE_MS = 3600000;
+  function storedPointCount() {
+    var n = 0;
+    try {
+      n += (mpState.mapPoints() || []).length;
+      (mpState.mpCollections() || []).forEach(function (c) { n += ((c && c.points) || []).length; });
+    } catch (e) {}
+    return n;
+  }
+  // Called by the sync transport when a push (or a restore) has put this device and
+  // Drive in step: remember when, and how much was in it.
+  function markBackedUp() {
+    window.GeoState.save({ gdriveLastSync: Date.now(), gdriveSyncPts: storedPointCount() });
+    try { updateBackupNudge(); } catch (e) {}
+  }
+  function backupState() {
+    var at = +window.GeoState.get("gdriveLastSync", 0) || 0;
+    var was = +window.GeoState.get("gdriveSyncPts", 0) || 0;
+    var now = storedPointCount();
+    // Nothing stored yet → nothing to nag about. Never backed up, but points saved →
+    // due straight away; otherwise only when the lists have GROWN and an hour passed.
+    var due = now > 0 && (at ? (now > was && Date.now() - at > BACKUP_DUE_MS) : true);
+    return { at: at, pts: now, was: was, due: due };
+  }
+  function backupLineText(st) {
+    if (!st.at) return t("sync.neverBackedUp");
+    var d = new Date(st.at);
+    return t("sync.lastBackup", { t: d.toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) });
+  }
+  function updateBackupNudge() {
+    var st = backupState();
+    var gear = document.getElementById("settings-toggle");
+    if (gear) {
+      gear.classList.toggle("backup-due", st.due);
+      if (st.due) gear.title = t("sync.backupDue"); else gear.title = t("ctrl.settingsHold");
+    }
+    var sb = document.getElementById("gd-sync");
+    if (sb) { sb.classList.toggle("backup-due", st.due); sb.title = st.due ? t("sync.backupDue") : ""; }
+    var line = document.getElementById("mp-backup-line");
+    if (line) {
+      line.textContent = backupLineText(st) + (st.due ? " · " + t("sync.backupDue") : "");
+      line.classList.toggle("backup-due", st.due);
+    }
+  }
   function exportAppData() {
     downloadCsv("BirdsWhere_backup_" + new Date().toISOString().slice(0, 10) + ".json", JSON.stringify(buildPayload(), null, 2), "application/json;charset=utf-8;");
   }
@@ -5678,6 +5726,7 @@
   // copies through the exact same code path as the file Export/Import.
   window.AppData = {
     buildPayload: buildPayload,
+    markBackedUp: markBackedUp,
     applyRemote: applyRemote,
     ebirdKey: ebirdKey,
     setEbirdKey: setEbirdKey,
@@ -8345,7 +8394,8 @@
     if (clearGroupEl && clearGroupEl.parentNode) clearGroupEl.parentNode.appendChild(clearGroupEl);
     loadDetections();      // restore any "Show in map" detection points
     restoreFetchedAreas(); // ...and their fetched-area outlines (per-area red × needs them)
-    loadMapPoints();       // user-added pins + saved named lists (from localStorage)
+    loadMapPoints();       // user-added pins + saved named lists (IndexedDB, hydrated above)
+    try { updateBackupNudge(); } catch (e) {}   // gear/Sync go orange when the lists have outgrown the last backup
     loadRoute(); updateRouteChip(); renderRoutePoints();   // restore the route basket, its pill + on-map stops
     ensureMpLayer();
     renderMapPoints();
@@ -15307,6 +15357,7 @@
         '<button type="button" id="mp-import-share" class="btn btn-light" title="' + escapeHtml(tLabel("share.importFile")) + '" data-i18n="points.loadFile">' + escapeHtml(t("points.loadFile")) + "</button>" +
         '<input type="file" id="share-file-input" accept=".share,.mcshare,.txt,text/plain" style="display:none" />' +
       "</div>" +
+      '<div id="mp-backup-line" class="mp-backup-line"></div>' +
       collSection +
       (mpHasUnsaved() ? '<div class="mp-unsaved">' + escapeHtml(t("points.unsaved", { n: mpState.mapPoints().length })) +
         ' <button type="button" id="mp-saveas" class="mp-saveas-btn">' + escapeHtml(t("points.saveAsList")) + "</button></div>" : "") +
@@ -15449,6 +15500,7 @@
     });
     var shareDet = panel.querySelector("#mp-share-det");
     if (shareDet) shareDet.addEventListener("click", function (e) { e.stopPropagation(); shareCurrentDetections(); });
+    try { updateBackupNudge(); } catch (e) {}   // the "last backed up" line lives in this panel
   }
 
   // ---- Sticky fan-out for overlapping detection markers ---------------------
@@ -17367,7 +17419,7 @@
         gdStatus.classList.toggle("gd-syncing", st.status === "syncing");
         gdStatus.classList.toggle("gd-error", failed);
       };
-      window.GDriveSync.onStatus(renderGd);
+      window.GDriveSync.onStatus(function (st) { renderGd(st); try { updateBackupNudge(); } catch (e) {} });
 
       // The sync dialog: pick which categories + one global direction, then run.
       // Defaults (all categories, two-way) reproduce the old one-tap behaviour.
@@ -17387,6 +17439,10 @@
           '<div class="so-sec">' + escapeHtml(t("sync.include")) + "</div>" +
           catRow("settings", "sync.catSettings") + catRow("lists", "sync.catLists") + catRow("trips", "sync.catTrips") + catRow("checklists", "sync.catChecklists") + catRow("fetched", "sync.catFetched") +
           '<p class="cu-hint">' + escapeHtml(t("sync.mergeNote")) + "</p>" +
+          // Each sync leaves a dated copy in Drive's app-data folder, which Drive's own
+          // interface cannot show — so the history is reachable only from here.
+          '<button type="button" class="btn btn-light so-backups">' + escapeHtml(t("sync.backups")) + "</button>" +
+          '<div class="so-baklist" style="display:none"></div>' +
           '<div class="so-actions"><button type="button" class="btn btn-light so-cancel">' + escapeHtml(t("btn.cancel")) + '</button><button type="button" class="btn so-go">' + escapeHtml(t("gdrive.syncNow")) + "</button></div>" +
           "</div>";
         document.body.appendChild(ov);
@@ -17402,6 +17458,40 @@
           close();
           gdStatus.textContent = "⟳ " + t("gdrive.syncing"); gdStatus.classList.add("gd-syncing");
           window.GDriveSync.syncNow({ direction: chosenDir, cats: chosenCats });
+        });
+        // "Earlier backups…": list the dated copies (one sign-in), then restore one.
+        // A restore lets the backup's settings win and UNIONS the collections, so
+        // nothing that exists only on this device is lost.
+        var bakBtn = ov.querySelector(".so-backups"), bakList = ov.querySelector(".so-baklist");
+        // Same short "17 Sep, 18:30" shape the alerts page uses for its last check.
+        var fmtBackupWhen = function (ms) {
+          var d = new Date(+ms || 0);
+          if (!isFinite(d.getTime())) return "";
+          return d.toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+        };
+        bakBtn.addEventListener("click", function () {
+          bakBtn.disabled = true;
+          bakList.style.display = "";
+          bakList.textContent = t("gdrive.syncing");
+          window.GDriveSync.listBackups().then(function (list) {
+            bakBtn.disabled = false;
+            if (!list.length) { bakList.textContent = t("sync.backupsNone"); return; }
+            bakList.innerHTML = list.map(function (b) {
+              return '<div class="so-bak"><span class="so-bak-when">' + escapeHtml(fmtBackupWhen(b.at)) + "</span>" +
+                '<span class="so-bak-size">' + escapeHtml(fmtBytes(b.size)) + "</span>" +
+                '<button type="button" class="btn btn-light so-bak-go" data-id="' + escapeHtml(b.id) + '" data-at="' + b.at + '">' + escapeHtml(t("sync.restore")) + "</button></div>";
+            }).join("");
+            Array.prototype.forEach.call(bakList.querySelectorAll(".so-bak-go"), function (btn) {
+              btn.addEventListener("click", function () {
+                var when = fmtBackupWhen(+this.getAttribute("data-at"));
+                if (!window.confirm(t("sync.restoreConfirm", { t: when }))) return;
+                var id = this.getAttribute("data-id");
+                close();
+                gdStatus.textContent = "⟳ " + t("gdrive.syncing"); gdStatus.classList.add("gd-syncing");
+                window.GDriveSync.restoreBackup(id).then(function (ok) { if (ok) setStatus(t("sync.restored", { t: when })); });
+              });
+            });
+          });
         });
       }
       gdConnect.addEventListener("click", function () { window.GDriveSync.connect().catch(function () {}); });

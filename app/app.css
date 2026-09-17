@@ -2793,6 +2793,25 @@ button.dd-name:hover { text-decoration: underline; }
 .sync-opts-box .so-dir, .sync-opts-box .so-cat { display: flex; align-items: center; gap: 8px; padding: 5px 2px; cursor: pointer; }
 .sync-opts-box .so-dir input, .sync-opts-box .so-cat input { flex: 0 0 auto; }
 .sync-opts-box .so-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+/* Dated backups in Drive's app-data folder — Drive's own UI cannot list them, so
+   this is the only way to reach the history. */
+.sync-opts-box .so-backups { margin-top: 10px; }
+.sync-opts-box .so-baklist { margin: 8px 0 2px; max-height: 190px; overflow-y: auto; font-size: var(--fs-s); }
+.sync-opts-box .so-bak { display: flex; align-items: center; gap: 8px; padding: 4px 2px; border-top: 1px solid var(--border, rgba(0,0,0,.08)); }
+.sync-opts-box .so-bak-when { flex: 1 1 auto; }
+.sync-opts-box .so-bak-size { color: var(--ink-muted, #777); font-variant-numeric: tabular-nums; }
+/* "Your lists have grown since the last backup": the gear gets a small orange !,
+   and the Sync button turns orange, until a sync catches up. */
+.settings-icon-btn { position: relative; }
+.settings-icon-btn.backup-due::after {
+  content: "!"; position: absolute; top: -2px; right: -2px;
+  font-size: 10px; font-weight: 800; line-height: 1;
+  color: var(--warn, #e8801f); background: var(--surface, #fff);
+  border-radius: 50%; padding: 1px 3px; pointer-events: none;
+}
+#gd-sync.backup-due { color: var(--warn, #e8801f); border-color: var(--warn, #e8801f); }
+.mp-backup-line { font-size: var(--fs-xs); color: var(--ink-muted, #888); padding: 2px 4px 6px; }
+.mp-backup-line.backup-due { color: var(--warn, #e8801f); }
 /* Overlays suspended via press-and-hold on the layers button → the button goes
    palette-orange (--warn, like an active filter) until the set is restored. */
 .leaflet-control-layers-toggle.ovl-suspended { background-color: var(--warn); }
