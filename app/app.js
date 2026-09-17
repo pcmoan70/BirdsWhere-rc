@@ -5389,6 +5389,11 @@
       if (attempt >= caps.length) return null;
       var o = {}; for (var k in state) if (Object.prototype.hasOwnProperty.call(state, k)) o[k] = state[k];
       o.mapDetections = capDetections(o.mapDetections, caps[attempt]);
+      // The rarity list is the other store that grows on its own (500 groups × 15
+      // records, with notes and photo URLs). It was never in this ladder, so a fat
+      // alert list made EVERY write fail — stars, lists, settings — not just its own.
+      var rarCaps = [500, 300, 200, 100, 50, 25];
+      if (o.rarityList && o.rarityList.length > rarCaps[attempt]) o.rarityList = o.rarityList.slice(0, rarCaps[attempt]);
       return o;
     });
   }

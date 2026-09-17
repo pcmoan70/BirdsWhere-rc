@@ -100,12 +100,33 @@ window.AppRarity = (function () {
   // OWN point and found-week is above this is discarded (the model thinks the bird is
   // common there, so it isn't really rare). 100 = gate off.
   function rarityProbMaxPct() { var v = +rarityCfg().probPct; return isFinite(v) ? v : 15; }   // the single rarity threshold (was a separate probMaxPct; unified onto probPct)
+  // ONE answer to "is this rare enough", for all four places that used to decide it
+  // themselves (the eBird gate, the all-sources sweep, the harvest from your own
+  // fetches, and the display filter). 0 and 100 both mean OFF, as the Settings hint
+  // says — before this, 100 switched three of them off and let the fourth ingest
+  // every fetched observation.
+  function rarityThOn() { var th = rarityProbMaxPct(); return th > 0 && th < 100; }
+  function rarityIsRareProb(p) {   // p = 0..1 model probability at the record's own point/week
+    return rarityThOn() && isFinite(p) && p >= 0 && p * 100 < rarityProbMaxPct();
+  }
+  function rarityProbPasses(pct) {   // pct = 0..100 already-scored value; null/unscored always passes
+    return !rarityThOn() || pct == null || !isFinite(+pct) || +pct < rarityProbMaxPct();
+  }
   function rarityLocs() {
     var a = getStoredLocations().filter(function (l) { return l.alert && isFinite(+l.lat) && isFinite(+l.lon); });
     // 🔔 on the built-in Here row: a placeholder without coordinates — the poll
     // loop resolves the GPS fix when it reaches it.
     if (hereCfg().alert) a.unshift({ here: true, name: t("loc.here") });
     return a;
+  }
+  // "Check here now" with nothing subscribed: the place you are looking at, at the
+  // usual radius. A deliberate check should never be a dead button — but it is not a
+  // subscription either, so its seed key is cleaned up by finish()'s prune like any
+  // other location that carries no 🔔.
+  function rarityViewLoc() {
+    var m = getMap(); if (!m || !m.getCenter) return null;
+    var c = m.getCenter(); if (!c || !isFinite(+c.lat) || !isFinite(+c.lng)) return null;
+    return { lat: +c.lat, lon: +c.lng, name: "", radius: recentRadiusKm() };
   }
   // One stable seen/seeded key per location. Here uses a FIXED key on purpose:
   // moving somewhere new should alert on that area's rarities, not re-seed.
@@ -191,6 +212,11 @@ window.AppRarity = (function () {
     a.sort(function (x, y) { return String(y.dt || "").localeCompare(String(x.dt || "")); });
     if (a.length > RARITY_LIST_CAP) a = a.slice(0, RARITY_LIST_CAP);
     window.GeoState.save({ rarityList: a });
+    // A quota-failed write keeps nothing: say so once instead of letting the list
+    // quietly vanish on the next reload. (The trim ladder in app.js shrinks the list
+    // first, so reaching this means storage is full even after that.)
+    if (window.GeoState.lastSaveOk && !window.GeoState.lastSaveOk() && typeof appErrLog === "function")
+      appErrLog("rarity list not saved: storage full (" + a.length + " groups)");
     pruneRarityFeed();   // the 30-day prune / group cap above can retire a group the map still blinks for
     updateRarityBell();  // a list that just gained (or lost) entries decides whether the bell shows at all
     if (typeof onRarityListChanged === "function") { try { onRarityListChanged(); } catch (e) {} }   // refresh legend/map so alert species surface as list rows
@@ -261,6 +287,18 @@ window.AppRarity = (function () {
     if (+cfg.showDays === 0) { var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(); }
     return Date.now() - cfg.showDays * 86400000;
   }
+  // Does this group count RIGHT NOW: not dismissed, still inside the display window,
+  // still under the threshold, and placeable on the map. The map rows, the alerts page
+  // and the bell's unread count all ask this one question, so they cannot disagree.
+  // (`keepDismissed`: the alerts page lists ✕-dismissed groups dimmed rather than
+  // hiding them, so it asks the same question with that one clause relaxed.)
+  function rarityGroupVisible(e, cfg, keepDismissed) {
+    if (!e || (e.dismissed && !keepDismissed)) return false;
+    if (!rarityProbPasses(e.prob)) return false;
+    var ts = Date.parse(String(e.dt || "").replace(" ", "T"));
+    if (!isFinite(ts) || ts < rarityCutTs(cfg || rarityCfg())) return false;
+    return isFinite(+e.lat);
+  }
   // Why a record is in the rarity list — shown per detection in the ⓘ details:
   // eBird's notable-sightings report, or the model-probability threshold.
   function rarityWhy(e, r) {
@@ -294,8 +332,6 @@ window.AppRarity = (function () {
     var out = [];
     if (!getMap()) return out;
     var cfg = rarityCfg();
-    var cut = rarityCutTs(cfg);
-    var probGate = rarityProbMaxPct();
     var dLat = 0, dLon = 0;
     if (near) {
       dLat = near.meters / 111320;
@@ -307,13 +343,7 @@ window.AppRarity = (function () {
       // even when the star sits away from the group's stored (newest-record)
       // coordinates or its date just left the display window.
       var keyMatch = !!(near && near.rarityKey && near.rarityKey === e.k);
-      if (!keyMatch) {
-        if (e.dismissed) return;   // ✕-dismissed → out of the lists until new activity revives it
-        if (probGate < 100 && e.prob != null && +e.prob > probGate) return;   // model finds it common here → not a rarity
-        var ts = Date.parse(String(e.dt || "").replace(" ", "T"));
-        if (!isFinite(ts) || ts < cut) return;
-        if (!isFinite(+e.lat)) return;
-      }
+      if (!keyMatch && !rarityGroupVisible(e, cfg)) return;   // dismissed · above threshold · outside the window · unplaceable
       var key = rarityModelKey(e.sci) || ("x:" + (e.sci || e.name));
       var color = speciesColor(key);
       (e.recs || []).forEach(function (r) {
@@ -351,12 +381,11 @@ window.AppRarity = (function () {
   // observation under the threshold joins the rarity list (deduped via the
   // seen-set, so refetching the same area doesn't inflate the tallies).
   function harvestLocalRarities(keys) {
-    var cfg = rarityCfg(), th = +cfg.probPct;
-    if (!(th > 0)) return;
+    var cfg = rarityCfg();
+    if (!rarityThOn()) return;
     var adds = [], changed = false;
     keys.forEach(function (k) {
       var e = getDetPlot()[k]; if (!e) return;
-      if (e.alert) return;   // injected rarity-alert species — never re-harvest (would loop)
       // Birds only: rarity alerts are a bird feature. Model species (the only ones
       // with probabilities) are birds by construction — this guards the day other
       // classes ever gain probabilities.
@@ -365,15 +394,20 @@ window.AppRarity = (function () {
       var sci = (lbl && lbl.sci) || k;
       var name = detName(e) || e.name || sci;
       (e.rows || []).forEach(function (r) {
+        // Skip the ROWS the pipeline injected (rarity alerts, shared-list imports) —
+        // not the whole species, as before: one alert used to cost this species every
+        // other observation the user had actually fetched. Re-harvesting an injected
+        // row would mint a new id from our own output and loop.
+        if (r._alert || r._list) return;
         var p = r._prob;
-        if (!(isFinite(p) && p >= 0 && p * 100 < th)) return;
+        if (!rarityIsRareProb(p)) return;
         if (!isFinite(+r.lat) || !isFinite(+r.lon)) return;
         // Only recent observations qualify — a historic fetch shouldn't flood the
         // 30-day rarity list (its entries would be pruned instantly anyway).
         var ts = Date.parse(String(r.date || "").slice(0, 10));
         if (!isFinite(ts) || Date.now() - ts > 30 * 86400000) return;
-        var id = localRarityId(sci, r.date, r.lat, r.lon, r.observer);   // same id the sweep uses — one entry either way
-        if (cfg.seen[id]) return;
+        var id = localRarityId(sci, r.date, r.lat, r.lon);   // same id the sweep uses — one entry either way
+        if (rarityRecSeen(cfg, id, legacyRarityId(sci, r.date, r.lat, r.lon, r.observer))) return;
         cfg.seen[id] = Date.now(); changed = true;
         adds.push({ k: rarityGroupKey(sci, r.lat, r.lon), rid: id, sci: sci, name: name, dt: r.date || "",
           place: r.place || "", observer: r.observer || "", count: r.count != null ? r.count : "",
@@ -398,10 +432,21 @@ window.AppRarity = (function () {
   // touches none of the fetch UI (see rarityFetchSources in app.js).
   var RARITY_SWEEP_DAYS = 7;          // the notable feed's window — recent birds only
   var RARITY_SCORE_CHUNK = 64;        // the model returns the WHOLE species vector per row: score in bounded slices
+  // The pre-v1774 id (raw species + observer). Records already in the seen-set carry
+  // it, so both spellings are checked before anything counts as new — changing the id
+  // format must never re-announce birds the user has already been told about.
+  function legacyRarityId(sci, date, lat, lon, observer) {
+    return "loc|" + sci + "|" + (date || "") + "|" + (+lat).toFixed(3) + "," + (+lon).toFixed(3) + "|" + (observer || "");
+  }
+  function rarityRecSeen(cfg, id, legacy) { return !!(cfg.seen[id] || (legacy && cfg.seen[legacy])); }
   // The synthetic record id shared with harvestLocalRarities, so an observation the
   // user fetched and the sweep found is ONE entry, whichever arrived first.
-  function localRarityId(sci, date, lat, lon, observer) {
-    return "loc|" + sci + "|" + (date || "") + "|" + (+lat).toFixed(3) + "," + (+lon).toFixed(3) + "|" + (observer || "");
+  // One recipe, so the sweep and the harvest cannot mint two ids for one bird: the
+  // species lower-cased (the two paths resolve it from different places), the date
+  // alone, and the rounded spot. The OBSERVER is deliberately out — the same sighting
+  // cross-posted to GBIF and a national portal carries different observer strings.
+  function localRarityId(sci, date, lat, lon) {
+    return "loc|" + String(sci || "").toLowerCase() + "|" + String(date || "").slice(0, 10) + "|" + (+lat).toFixed(3) + "," + (+lon).toFixed(3);
   }
   function scoreInChunks(items) {
     var out = [], i = 0;
@@ -433,8 +478,8 @@ window.AppRarity = (function () {
   // new ones, unless this is the location's first sweep — then it seeds silently,
   // exactly like a first notable poll).
   function ingestSweep(recs, seedKey, areaName, done) {
-    var cfg = rarityCfg(), th = rarityProbMaxPct(), now = Date.now();
-    if (!(th < 100) || typeof rarityScoreProbs !== "function") { if (done) done(); return; }
+    var cfg = rarityCfg(), now = Date.now();
+    if (!rarityThOn() || typeof rarityScoreProbs !== "function") { if (done) done(); return; }
     var byId = Object.create(null), order = [];
     recs.forEach(function (r) {
       if (!r || !r.sciName || !isFinite(+r.lat) || !isFinite(+r.lon)) return;
@@ -443,9 +488,10 @@ window.AppRarity = (function () {
       if (!isFinite(ts) || now - ts > 30 * 86400000) return;                   // the list prunes at 30 days anyway
       var key = rarityModelKey(r.sciName); if (!key) return;                   // not a model species → no probability to judge it by
       var lbl = getLabelsByKey()[key], sci = (lbl && lbl.sci) || r.sciName;
-      var id = localRarityId(sci, r.date, r.lat, r.lon, r.observer);
+      var id = localRarityId(sci, r.date, r.lat, r.lon);
       if (byId[id]) return;                                                    // same observation from several sources
-      byId[id] = { r: r, id: id, sci: sci, name: (lbl && speciesName(lbl)) || r.comName || sci };
+      byId[id] = { r: r, id: id, sci: sci, legacy: legacyRarityId(sci, r.date, r.lat, r.lon, r.observer),
+        name: (lbl && speciesName(lbl)) || r.comName || sci };
       order.push(id);
     });
     if (!order.length) { if (done) done(); return; }
@@ -462,9 +508,9 @@ window.AppRarity = (function () {
       var seeding = !cfg.seeded[seedKey], adds = [], fresh = [], changed = false;
       order.forEach(function (id, i) {
         var p = probs[cells[i]];
-        if (!(isFinite(p) && p >= 0 && p * 100 < th)) return;                  // the model finds it likely here → not a rarity
+        if (!rarityIsRareProb(p)) return;                                      // the model finds it likely here → not a rarity
         var c = byId[id], r = c.r, pct = Math.round(p * 1000) / 10;
-        var isNew = !cfg.seen[id];
+        var isNew = !rarityRecSeen(cfg, id, c.legacy);
         if (isNew) { cfg.seen[id] = Date.now(); changed = true; }
         adds.push({ fresh: isNew && !seeding, k: rarityGroupKey(c.sci, r.lat, r.lon), rid: id, sci: c.sci, name: c.name,
           dt: r.date || "", place: r.place || "", observer: r.observer || "", count: r.count != null ? r.count : "",
@@ -498,18 +544,30 @@ window.AppRarity = (function () {
   }
   // One poll cycle: each 🔔 location in turn (polite ~1.2 s gaps, per-location
   // abort + catch so one failure never kills the chain), then announce what's new.
-  function runRarityPoll() {
+  function runRarityPoll(oneOff) {
     if (rarityPollBusy) return;
     var locs = rarityLocs();
+    if (!locs.length && oneOff) locs = [oneOff];   // a deliberate "check here now", no 🔔 needed
     if (!locs.length || !rarityCfg().enabled) { scheduleRarityPoll(); return; }
     var tok = ebirdKey();
     // eBird's notable feed needs a working key; the ordinary-source sweep doesn't —
     // so a poll is worth running as long as ONE of the two can deliver something.
     var ebirdOn = !!tok && tok !== rarityBadKey, sweepOn = rarityAllSources();
-    if ((!ebirdOn && !sweepOn) || navigator.onLine === false) { raritySave({ lastPoll: Date.now() }); scheduleRarityPoll(); return; }
+    if (!ebirdOn && !sweepOn) { raritySave({ lastPoll: Date.now() }); scheduleRarityPoll(); return; }
+    // Offline: nothing was checked, so lastPoll must NOT move — it is what
+    // rarityPollIfOverdue and scheduleRarityPoll measure from, and stamping it here
+    // made reconnecting wait out a whole interval. Retry shortly; the `online` event
+    // beats the timer when the connection comes back sooner.
+    if (navigator.onLine === false) { clearTimeout(rarityTimer); rarityTimer = setTimeout(runRarityPoll, 60000); return; }
     rarityPollBusy = true;
     updateRarityBell();   // bell shows the fetching state (orange) for the whole cycle
     var cfg = rarityCfg(), fresh = [], listAdds = [], i = 0;
+    // A cycle that never reaches finish() leaves rarityPollBusy set, and every later
+    // poll returns at the top: the watch is dead until reload, bell stuck orange. Each
+    // network step has its own abort, but a callback that simply never fires (the GPS
+    // fix below, a wedged promise) has nothing else to catch it.
+    var finished = false;
+    var watchTm = setTimeout(function () { finish(); }, 60000 + locs.length * 90000);
     var countryWide = rarityCountryWide(), doneRegions = {}, locale = EBIRD_SPP_LOCALE[getLang()] || "en";
     // Fold one fetch's notable records into the persisted list + the "fresh" alert set.
     // EVERY returned record is offered on every poll — the upsert dedupes by record id and
@@ -520,6 +578,10 @@ window.AppRarity = (function () {
       (obs || []).forEach(function (o) {
         var id = rarityId(o);
         if (!id) return;
+        // A record without usable coordinates cannot be grouped, drawn or clicked:
+        // (+NaN).toFixed(2) made the group key "NaN,NaN", which collected every
+        // coordinate-less record of that species into one nonsense entry.
+        if (!isFinite(+o.lat) || !isFinite(+o.lng)) return;
         var mp = (o._mprob != null && isFinite(o._mprob)) ? o._mprob : null;   // model prob % (own point + found-week), null when not a model species
         listAdds.push({ fresh: !cfg.seen[id] && !seeding, k: rarityGroupKey(o.sciName, o.lat, o.lng), rid: id, sci: o.sciName || "",
           name: o.comName || o.sciName || "?", dt: o.obsDt || "", place: o.locName || "",
@@ -540,8 +602,7 @@ window.AppRarity = (function () {
     // advance to the next location.
     function handleObs(obs, seedKey, areaName, done) {
       obs = obs || [];
-      var th = rarityProbMaxPct();
-      if (!(th < 100) || typeof rarityScoreProbs !== "function" || !obs.length) { ingestObs(obs, seedKey, areaName); if (done) done(); return; }
+      if (!rarityThOn() || typeof rarityScoreProbs !== "function" || !obs.length) { ingestObs(obs, seedKey, areaName); if (done) done(); return; }
       var items = obs.map(function (o) { return { sci: o.sciName, lat: +o.lat, lon: +o.lng, dt: o.obsDt }; });
       Promise.resolve(rarityScoreProbs(items)).then(function (probs) {
         var kept = [];
@@ -549,7 +610,7 @@ window.AppRarity = (function () {
           var p = probs && probs[j];   // 0..1, or -1 when not a model species
           if (isFinite(p) && p >= 0) {
             o._mprob = Math.round(p * 1000) / 10;   // %
-            if (o._mprob > th) return;   // model says common here → not a rarity
+            if (!rarityIsRareProb(p)) return;   // model says common here → not a rarity
           }
           kept.push(o);
         });
@@ -564,11 +625,17 @@ window.AppRarity = (function () {
       var l = locs[i++];
       // The Here placeholder resolves its GPS fix first; unresolvable → skip this cycle.
       if (l.here && !isFinite(+l.lat)) {
-        getHereFix(function (fix) {
+        // getHereFix has no timeout of its own: a permission prompt left hanging (or a
+        // fix that never resolves) would stop the chain here. Same guard as the
+        // country lookup below — after 12 s, carry on without Here.
+        var hereRan = false, hereGo = function (fix) {
+          if (hereRan) return; hereRan = true;
           if (!fix) { next(); return; }
           var h = hereAsLoc(fix); h.here = true;
           poll(h);
-        });
+        };
+        setTimeout(function () { hereGo(null); }, 12000);
+        getHereFix(hereGo);
         return;
       }
       poll(l);
@@ -606,6 +673,8 @@ window.AppRarity = (function () {
       }
     })();
     function finish() {
+      if (finished) return;              // watchdog and the normal end can both arrive
+      finished = true; clearTimeout(watchTm);
       // Prune: seen-ids past eBird's max lookback (can't reappear), then hard-cap;
       // seeded entries whose location lost its 🔔.
       var now = Date.now(), ids = Object.keys(cfg.seen);
@@ -690,10 +759,17 @@ window.AppRarity = (function () {
   // Resolves with { ok, activate } — `activate` when the relay is still waiting for the
   // address to confirm. Rejects only on a transport failure.
   function rarityEmailPost(to, subject, body) {
-    return fetch(RARITY_MAIL_URL + encodeURIComponent(to), {
+    var opts = {
       method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({ _subject: subject, _captcha: "false", _template: "box", message: body })
-    }).then(function (r) { return r.json().catch(function () { return {}; }); })
+    };
+    // Through the app's own timeout helper: a relay that never answers used to leave
+    // the send hanging for as long as the browser allowed, with the 5-minute window
+    // already spent and no state ever reported.
+    var req = (window.AppFetch && window.AppFetch.fetchWithTimeout)
+      ? window.AppFetch.fetchWithTimeout(RARITY_MAIL_URL + encodeURIComponent(to), opts, 20000)
+      : fetch(RARITY_MAIL_URL + encodeURIComponent(to), opts);
+    return req.then(function (r) { return r.json().catch(function () { return {}; }); })
       .then(function (j) {
         var ok = String(j && j.success) === "true";
         return { ok: ok, activate: !ok && /activat/i.test(String((j && j.message) || "")) };
@@ -731,10 +807,12 @@ window.AppRarity = (function () {
     var batch = mailQueue.slice(); mailQueue.length = 0;
     var to = rarityEmailTo();
     if (!batch.length || !rarityEmailValid(to)) return;
-    raritySave({ lastEmail: Date.now() });
     var subject = t("rarity.emailSubject", { n: batch.length });
     var body = subject + "\n\n" + batch.map(function (f, i) { return rarityAlertLine(f, i < RARITY_MAIL_LINKS); }).join("\n") + "\n\n" + t("rarity.emailFoot");
     rarityEmailPost(to, subject, body).then(function (r) {
+      // The window is spent on a message the relay actually answered for. A transport
+      // failure used to burn it too, so the next batch waited five minutes for nothing.
+      raritySave({ lastEmail: Date.now() });
       rarityEmailState(r.ok ? "ok" : (r.activate ? "activate" : "fail"), "alert", batch.length);
       if (!r.ok) setStatus(t(r.activate ? "rarity.emailActivate" : "rarity.emailFail"));   // say it once, where the alert was announced
     }, function () { rarityEmailState("fail", "alert", batch.length); });
@@ -765,7 +843,18 @@ window.AppRarity = (function () {
   // Live-alert marker on its own layer — independent of the detections pipeline,
   // its filters and the red-× clear. Session-only (the seen-set is the persistence).
   function addRarityMarker(o, area) {
-    if (!getMap() || !isFinite(+o.lat) || !isFinite(+o.lng)) return;
+    // The feed entry is what the badge counts and what ages out, so it is pushed even
+    // when no marker can be drawn (map not ready, no coordinates, "show on the map"
+    // off). Without this, rarityAnnounce's count had nothing to decrement: the bell
+    // stayed red with nothing behind it.
+    var mk = null;
+    var canDraw = !!getMap() && isFinite(+o.lat) && isFinite(+o.lng) && rarityCfg().showMap !== false && rarityCfg().enabled !== false;
+    if (canDraw) mk = rarityMarkerFor(o);
+    rarityFeedPush(o, area, mk);
+  }
+  // The live pulsing marker for a just-arrived alert (the list's own dots come from the
+  // detection pipeline, which honours the filters).
+  function rarityMarkerFor(o) {
     if (!rarityLayer) rarityLayer = L.layerGroup().addTo(getMap());
     // Same coloured-circle + pulsating-core design as the list layer; NEW alerts
     // additionally get the expanding ring (in the species colour) until read.
@@ -787,6 +876,9 @@ window.AppRarity = (function () {
     mk.on("mouseover", function () { showDetHover(mk.getLatLng(), true); });
     mk.on("mouseout", hideDetHover);
     rarityLayer.addLayer(mk);
+    return mk;
+  }
+  function rarityFeedPush(o, area, mk) {
     rarityFeed.unshift({ id: rarityId(o), name: o.comName || o.sciName || "?", sci: o.sciName || "",
       dt: o.obsDt || "", place: o.locName || "", observer: o.userDisplayName || "",
       count: o.howMany != null ? o.howMany : "", url: o.subId ? "https://ebird.org/checklist/" + o.subId : (o._url || ""),
@@ -827,11 +919,30 @@ window.AppRarity = (function () {
   // app to re-sync so the pipeline redraws — keeping every existing caller working.
   function rarityPlotList() {
     if (rarityListLayer) { try { rarityListLayer.clearLayers(); } catch (e) {} }
+    // Live alert markers are drawn outside the pipeline, so the gates the pipeline
+    // honours have to be applied to them here: switching alerts (or "show on the map")
+    // off used to leave pulsing ghosts nothing could remove.
+    var rc = rarityCfg();
+    if (rarityLayer && (rc.enabled === false || rc.showMap === false)) {
+      try { rarityLayer.clearLayers(); } catch (e) {}
+      rarityFeed.forEach(function (f) { f.marker = null; });
+    }
     if (typeof onRarityListChanged === "function") { try { onRarityListChanged(); } catch (e) {} }
+  }
+  // Unread the user could actually SEE: an unread alert whose group the alerts page
+  // would list right now (inside the day window, under the threshold, not dismissed).
+  // The badge used to count raw feed entries, so the bell could be red over an empty
+  // page — and opening it zeroed a count that pointed at nothing.
+  function rarityUnreadShown() {
+    var cfg = rarityCfg(), byKey = Object.create(null), n = 0;
+    getRarityList().forEach(function (e) { if (rarityGroupVisible(e, cfg, true)) byKey[e.k] = 1; });
+    rarityFeed.forEach(function (f) { if (f.unread && byKey[rarityGroupKey(f.sci, f.lat, f.lon)]) n++; });
+    return n;
   }
   // Header bell: hidden entirely while nothing is subscribed; red badge = unread.
   function updateRarityBell() {
-    setTabAlert("rarity", rarityUnread > 0 && rarityCfg().enabled);   // ❗ on the tab until the list is opened
+    var unread = rarityUnreadShown();
+    setTabAlert("rarity", unread > 0 && rarityCfg().enabled);   // ❗ on the tab until the list is opened
     var btn = document.getElementById("rarity-bell");
     if (!btn) return;
     // Hidden when alerts are switched off, or when there is nothing to open: no 🔔 location
@@ -839,11 +950,11 @@ window.AppRarity = (function () {
     // without any subscription, and the bell is the only way in — so it shows for those too.
     btn.style.display = (rarityCfg().enabled && (rarityLocs().length || getRarityList().length)) ? "" : "none";
     btn.title = t("rarity.bellTitle");
-    btn.classList.toggle("alert", rarityUnread > 0);   // new (unread) rarity → the bell turns RED until the list is opened
+    btn.classList.toggle("alert", unread > 0);         // new (unread) rarity → the bell turns RED until the list is opened
     btn.classList.toggle("busy", rarityPollBusy);      // orange + pulsing while a poll is fetching
     btn.classList.toggle("off", !rarityCfg().enabled); // paused → dimmed (still clickable to re-enable)
     var b = document.getElementById("rarity-badge");
-    if (b) { b.textContent = rarityUnread > 99 ? "99+" : String(rarityUnread); b.style.display = rarityUnread > 0 ? "" : "none"; }
+    if (b) { b.textContent = unread > 99 ? "99+" : String(unread); b.style.display = unread > 0 ? "" : "none"; }
     // While a poll runs, a small subscript counts the location fetches still to go.
     var rem = document.getElementById("rarity-remain");
     if (rem) {
@@ -889,13 +1000,9 @@ window.AppRarity = (function () {
           ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
           : d.toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
       }
-      // Species×location groups from the persisted list, within the day window.
-      var cut = rarityCutTs(cfg), gate = rarityProbMaxPct();
-      var list = getRarityList().filter(function (e) {
-        if (gate < 100 && e.prob != null && +e.prob > gate) return false;   // the gate the map applies, so the two agree
-        var ts = Date.parse(String(e.dt || "").replace(" ", "T"));
-        return isFinite(ts) && ts >= cut;
-      });
+      // Species×location groups from the persisted list — the same question the map
+      // rows and the bell ask (dismissed ones stay, dimmed).
+      var list = getRarityList().filter(function (e) { return rarityGroupVisible(e, cfg, true); });
       // Species-LIST layout (the real table look), one row per SPECIES × LOCATION
       // group; clicking a row expands its detections beneath (sp-detail style).
       // showSci = the module-level Scientific-names setting, same as the species list.
@@ -971,10 +1078,13 @@ window.AppRarity = (function () {
       var rf = m.box.querySelector("#rarity-refresh");
       if (rf) rf.addEventListener("click", function () {
         if (rarityPollBusy) return;
-        if (!rarityLocs().length) return;
         if (!ebirdKey() && !rarityAllSources()) { setStatus(t("rarity.needKey")); return; }   // nothing could deliver an alert
+        // With no 🔔 location this used to do nothing at all — a dead button at exactly
+        // the moment someone tries the feature. Check where the map is looking instead.
+        var one = rarityLocs().length ? null : rarityViewLoc();
+        if (!rarityLocs().length && !one) return;
         rarityBadKey = null;
-        runRarityPoll();
+        runRarityPoll(one);
         render();   // show the busy state on the button immediately
       });
       var cl = m.box.querySelector("#rarity-clear");
@@ -1103,10 +1213,11 @@ window.AppRarity = (function () {
         function fire() {
           lpFired = true;
           if (rarityPollBusy) return;
-          if (!rarityLocs().length) return;
           if (!ebirdKey() && !rarityAllSources()) { setStatus(t("rarity.needKey")); return; }   // nothing could deliver an alert
+          var one = rarityLocs().length ? null : rarityViewLoc();
+          if (!rarityLocs().length && !one) return;
           rarityBadKey = null;
-          runRarityPoll();
+          runRarityPoll(one);
           setStatus(t("rarity.checkNow") + "…");
         }
         // Capture-phase guard swallows the hold's trailing click so it doesn't also open the popup.
@@ -1133,7 +1244,10 @@ window.AppRarity = (function () {
     updateRarityBell();
     rarityPlotList();   // restore the ★ layer when "show as map points" is on
     // Offset from the fetch-on-open start (1.2 s) so the two loops don't collide.
-    if (rarityLocs().length) rarityTimer = setTimeout(runRarityPoll, 3000);
+    // Go through the scheduler, not straight to a poll: it honours Manual
+    // (intervalMin 0) and measures from lastPoll, so a reload minutes after the last
+    // check no longer costs a full network cycle.
+    setTimeout(scheduleRarityPoll, 3000);
   }
 
   return {
