@@ -2172,9 +2172,6 @@
         } else showDateFilterMenu(this.getAttribute("data-date"), e.clientX, e.clientY);
       });
     });
-    Array.prototype.forEach.call(container.querySelectorAll(".sp-obs-filter"), function (s) {
-      s.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); observerClickMenu(this.getAttribute("data-obs"), this); });
-    });
     // "+N" → reveal the truncated rest of a long observer list inline (as the usual list).
     Array.prototype.forEach.call(container.querySelectorAll(".sp-obs-more"), function (m) {
       m.addEventListener("click", function (e) {
@@ -2204,20 +2201,6 @@
     });
     Array.prototype.forEach.call(container.querySelectorAll(".dl-src-click"), function (s) {
       s.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showSrcFilterMenu(this.getAttribute("data-src"), e.clientX, e.clientY); });
-    });
-    Array.prototype.forEach.call(container.querySelectorAll(".sp-loc-click"), function (s) {
-      s.addEventListener("click", function (e) {
-        e.preventDefault(); e.stopPropagation();
-        hideLocHoverMap();
-        var c = locClickCoords(this);
-        showLocPointMenu(c.lat, c.lon, this.textContent, e.clientX, e.clientY, null, { locName: this.getAttribute("data-loc") || "" });
-      });
-      // Hovering a place name previews it on a small map without leaving the list.
-      s.addEventListener("mouseenter", function (e) {
-        var c = locClickCoords(this);
-        scheduleLocHoverMap(c.lat, c.lon, e.clientX, e.clientY);
-      });
-      s.addEventListener("mouseleave", hideLocHoverMap);
     });
     var isPerObs = container.id === "sp-records";
     Array.prototype.forEach.call(container.querySelectorAll(".sp-d-row"), function (r) {
@@ -11381,9 +11364,15 @@
           ? ' <span class="dl-obs">· ' + escapeHtml(g.obs) + "</span>"
           : ' <span class="dl-obs dl-obs-add" role="button" data-obs="' + escapeHtml(g.obs) + '" title="' + escapeHtml(t("obs.addToList")) + '">· ' + escapeHtml(g.obs) + "</span>");
         var gLL = (items[0] && isFinite(+items[0].lat) && isFinite(+items[0].lon)) ? items[0] : null;
-        var locSpan = g.loc ? ' <span class="dl-loc"' + (gLL ? ' data-lat="' + (+gLL.lat) + '" data-lon="' + (+gLL.lon) + '"' : "") + ">· " + escapeHtml(g.loc) + "</span>"
+        // The place beside the observer carries the same menu as any other place name
+        // (find on map · save as a point · add to the route · filter to it) whenever the
+        // record has coordinates; a place with no coordinates stays plain text.
+        var locSpan = g.loc
+          ? (gLL
+            ? ' <span class="dl-loc sp-loc-click" role="button" data-lat="' + (+gLL.lat) + '" data-lon="' + (+gLL.lon) + '" data-loc="' + escapeHtml(String(g.loc).trim()) + '" title="' + escapeHtml(g.loc) + '">· ' + escapeHtml(g.loc) + "</span>"
+            : ' <span class="dl-loc" title="' + escapeHtml(g.loc) + '">· ' + escapeHtml(g.loc) + "</span>")
           : (gLL
-            ? " " + rgeoSpanHtml(items[0].lat, items[0].lon, "dl-loc", "· ", "", g.fb,
+            ? " " + rgeoSpanHtml(items[0].lat, items[0].lon, "dl-loc sp-loc-click", "· ", ' role="button"', g.fb,
               items.reduce(function (mx, it) { return Math.max(mx, +it.posFuzzM || 0); }, 0))   // lat/lon-only or generic place → map-derived name
             : (g.fb ? ' <span class="dl-loc">· ' + escapeHtml(g.fb) + "</span>" : ""));
         var full = (fmtDate(dt) || t("detlist.noDate")) + (g.obs ? " · " + g.obs : "") + (g.loc ? " · " + g.loc : "");
@@ -11397,9 +11386,6 @@
   function wireRecordList(body, reRender) {
     Array.prototype.forEach.call(body.querySelectorAll(".dl-sp-head"), function (b) {
       b.addEventListener("click", function () { var k = this.getAttribute("data-key"); if (detListOpenSp[k]) delete detListOpenSp[k]; else detListOpenSp[k] = true; reRender(); });
-    });
-    Array.prototype.forEach.call(body.querySelectorAll(".dl-obs-add"), function (s) {
-      s.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); observerClickMenu(this.getAttribute("data-obs"), this); });
     });
     Array.prototype.forEach.call(body.querySelectorAll(".dl-date-click"), function (s) {
       s.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showDateFilterMenu(this.getAttribute("data-date"), e.clientX, e.clientY); });
@@ -11483,6 +11469,25 @@
       }
       titleEl.textContent = titleTxt;
       titleEl.title = titleTxt; fitDetTitle();
+      // The title IS this spot's place name, so give it the same powers every other
+      // place name has: find on map, save as a point, add to the route, filter to it.
+      // Only when it is a real place (not the generic fallback) and the window belongs
+      // to one spot.
+      var namedPlace = (explicit || firstPlace) || "";
+      var canAct = !!(namedPlace && detListNear && isFinite(+detListNear.lat) && isFinite(+detListNear.lon));
+      // The shared place-name class is what makes it act: the delegated handler above
+      // gives it the menu and the hover preview, like every other place name.
+      titleEl.classList.toggle("detlist-title-loc", canAct);
+      titleEl.classList.toggle("sp-loc-click", canAct);
+      if (canAct) {
+        titleEl.setAttribute("data-lat", +detListNear.lat);
+        titleEl.setAttribute("data-lon", +detListNear.lon);
+        titleEl.setAttribute("data-loc", namedPlace);
+        titleEl.setAttribute("role", "button");
+      } else {
+        titleEl.removeAttribute("data-lat"); titleEl.removeAttribute("data-lon");
+        titleEl.removeAttribute("data-loc"); titleEl.removeAttribute("role");
+      }
     }
     var emptyMsg = t("detlist.empty");
     // Mirror a legend species-selection so the list matches the dots on screen.
@@ -18284,6 +18289,45 @@
         if (sci && sci !== el.getAttribute("data-name")) el.title = sci;   // sci tooltip (skip when the name already IS the sci)
       });
     }
+    // ---- The three kinds of NAME, wired once for the whole app --------------
+    // A species name, an observer name and a place name each open their own menu, and
+    // they appear in a dozen surfaces (species records, the observation window, the
+    // alerts page, panels…). Rather than every surface wiring its own handlers — which
+    // is how surfaces kept ending up with dead names — the classes below are handled
+    // here by delegation: emit `.sp-link`, `.sp-obs-filter`/`.dl-obs-add` or
+    // `.sp-loc-click` with the right data-* and the menu works, anywhere, for free.
+    // (A surface that needs something extra still adds its own listener and stops
+    // propagation; this handler then never sees the click.)
+    document.addEventListener("click", function (e) {
+      if (!e.target.closest) return;
+      var loc = e.target.closest(".sp-loc-click");
+      if (loc) {
+        e.preventDefault(); e.stopPropagation();
+        hideLocHoverMap();
+        var c = locClickCoords(loc);
+        if (isFinite(c.lat) && isFinite(c.lon)) {
+          showLocPointMenu(c.lat, c.lon, (loc.textContent || "").replace(/^\s*·\s*/, "").trim(), e.clientX, e.clientY, null,
+            { locName: loc.getAttribute("data-loc") || "" });
+        }
+        return;
+      }
+      var obs = e.target.closest(".sp-obs-filter, .dl-obs-add");
+      if (obs) { e.preventDefault(); e.stopPropagation(); observerClickMenu(obs.getAttribute("data-obs"), obs); return; }
+    }, false);
+    // Hovering a place name previews it on a small map — delegated for the same reason.
+    document.addEventListener("mouseover", function (e) {
+      if (!e.target.closest) return;
+      var loc = e.target.closest(".sp-loc-click"); if (!loc) return;
+      var c = locClickCoords(loc);
+      if (isFinite(c.lat) && isFinite(c.lon)) scheduleLocHoverMap(c.lat, c.lon, e.clientX, e.clientY);
+    });
+    document.addEventListener("mouseout", function (e) {
+      if (!e.target.closest) return;
+      var loc = e.target.closest(".sp-loc-click"); if (!loc) return;
+      var to = e.relatedTarget;
+      if (to && to.closest && to.closest(".sp-loc-click") === loc) return;   // still inside the same name
+      hideLocHoverMap();
+    });
     document.addEventListener("click", function (e) {
       var link = e.target.closest ? e.target.closest(".sp-link") : null;
       if (link) {

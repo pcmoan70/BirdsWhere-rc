@@ -3578,6 +3578,10 @@ table.sp-detail-tbl.sp-obs-tbl.has-n2 th:nth-child(8) { width: 26px; }    /* ⓘ
 .sp-detail-tbl .sp-d-row:hover { background: var(--surface, rgba(0,0,0,.05)); }
 .sp-obs-filter, .sp-loc-click, .sp-detail-tbl .dl-date-click, .sp-obs-head .dl-date-click { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 2px; }
 .sp-obs-filter:hover, .sp-loc-click:hover, .sp-detail-tbl .dl-date-click:hover, .sp-obs-head .dl-date-click:hover { color: var(--brand); }
+/* The observation window's title is that spot's place name: when it can act as one
+   (a named place, one spot) it carries the same dotted-underline affordance. */
+#detlist-title.detlist-title-loc { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
+#detlist-title.detlist-title-loc:hover { color: var(--brand); }
 /* "+N" to reveal the rest of a truncated observer list. */
 .sp-obs-more { cursor: pointer; color: var(--brand); font-weight: 700; white-space: nowrap; margin-left: 3px; }   /* "…" → tap for all observers */
 .sp-obs-more:hover { text-decoration: underline; }

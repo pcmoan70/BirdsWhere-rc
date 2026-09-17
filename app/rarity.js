@@ -1050,7 +1050,7 @@ window.AppRarity = (function () {
             '">' + escapeHtml(e.name || e.sci) + "</span> " + badge + "</td>" +
           (getShowSci() ? '<td class="sci">' + escapeHtml(e.sci && e.sci !== e.name ? e.sci : "") + "</td>" : "") +
           '<td class="rt-loc-cell">' + (e.place
-            ? '<span class="rt-loc" role="button" data-lat="' + (+e.lat) + '" data-lon="' + (+e.lon) + '">' + escapeHtml(e.place) + "</span>"
+            ? '<span class="rt-loc sp-loc-click" role="button" data-lat="' + (+e.lat) + '" data-lon="' + (+e.lon) + '" data-loc="' + escapeHtml(String(e.place).trim()) + '">' + escapeHtml(e.place) + "</span>"
             : "") + "</td>" +
           '<td class="num rt-n">' + (e.n || 1) + "</td>" +
           '<td class="num rt-last">' + escapeHtml(String(e.dt || "").slice(0, 10)) + "</td>" +
@@ -1120,16 +1120,6 @@ window.AppRarity = (function () {
           var k = this.getAttribute("data-k");
           expanded[k] = !expanded[k];
           render();
-        });
-      });
-      m.box.querySelectorAll(".rt-loc").forEach(function (el) {
-        wireLocHover(el, llFromAttrs);   // PC hover → the preview map
-        el.addEventListener("click", function (ev) {
-          ev.stopPropagation();
-          var la = +this.getAttribute("data-lat"), lo = +this.getAttribute("data-lon");
-          if (!isFinite(la) || !isFinite(lo)) return;
-          m.close();
-          if (getMap()) getMap().setView([la, lo], Math.max(getMap().getZoom() || 0, 12));
         });
       });
       // ⊘ on a dismissed row → bring its dot back.
