@@ -191,19 +191,37 @@ window.AppRarity = (function () {
     a.sort(function (x, y) { return String(y.dt || "").localeCompare(String(x.dt || "")); });
     if (a.length > RARITY_LIST_CAP) a = a.slice(0, RARITY_LIST_CAP);
     window.GeoState.save({ rarityList: a });
+    pruneRarityFeed();   // the 30-day prune / group cap above can retire a group the map still blinks for
     if (typeof onRarityListChanged === "function") { try { onRarityListChanged(); } catch (e) {} }   // refresh legend/map so alert species surface as list rows
   }
   // Drop the fetch-derived LOCAL rarities (harvested low-probability detections, src
   // "local") — called when the map's fetched detections are cleared, so they don't
   // outlive their source and keep showing in the legend/lists/map. Genuine eBird
   // notable alerts (src "ebird") are kept. Returns true if anything was removed.
+  // The live-alert markers are SESSION state while the list is persisted, so dropping
+  // groups from the list has to take their blinking dots with it — otherwise the map keeps
+  // offering alerts that exist nowhere any more, and clicking one opens an empty window.
+  function pruneRarityFeed() {
+    var live = Object.create(null), dropped = 0;
+    getRarityList().forEach(function (e) { live[e.k] = 1; });
+    for (var i = rarityFeed.length - 1; i >= 0; i--) {
+      var f = rarityFeed[i];
+      if (live[rarityGroupKey(f.sci, f.lat, f.lon)]) continue;
+      if (f.marker && rarityLayer) rarityLayer.removeLayer(f.marker);
+      if (f.unread) rarityUnread = Math.max(0, rarityUnread - 1);
+      rarityFeed.splice(i, 1); dropped++;
+    }
+    if (dropped) updateRarityBell();
+    return dropped;
+  }
   function clearLocalRarities() {
     var a = getRarityList();
     if (!a.length) return false;
     var keep = a.filter(function (e) { return e.src === "ebird"; });
     if (keep.length === a.length) return false;   // nothing local to drop
     window.GeoState.save({ rarityList: keep });
-    rarityPlotList();   // refresh the pulsing rarity dots to match
+    rarityPlotList();     // refresh the pulsing rarity dots to match
+    pruneRarityFeed();    // …and the live markers of the groups that just went
     return true;
   }
   // Dismiss one rarity group (the red ✕ in a rarity-opened window): mark it seen
