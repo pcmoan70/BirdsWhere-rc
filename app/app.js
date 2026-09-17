@@ -5261,12 +5261,12 @@
   // survives an uninstall — so when they have grown since the last sync and an hour
   // has passed, the gear shows a small orange ! and the Sync button turns orange.
   var BACKUP_DUE_MS = 3600000;
+  // Points SAVED INTO A LIST — the data this nudge is about. Loose working pins are
+  // not counted (the panel already shows its own "unsaved" banner for those), and
+  // fetched observations are not points at all.
   function storedPointCount() {
     var n = 0;
-    try {
-      n += (mpState.mapPoints() || []).length;
-      (mpState.mpCollections() || []).forEach(function (c) { n += ((c && c.points) || []).length; });
-    } catch (e) {}
+    try { (mpState.mpCollections() || []).forEach(function (c) { n += ((c && c.points) || []).length; }); } catch (e) {}
     return n;
   }
   // Called by the sync transport when a push (or a restore) has put this device and
@@ -5279,10 +5279,17 @@
     var at = +window.GeoState.get("gdriveLastSync", 0) || 0;
     var was = +window.GeoState.get("gdriveSyncPts", 0) || 0;
     var now = storedPointCount();
-    // Nothing stored yet → nothing to nag about. Never backed up, but points saved →
-    // due straight away; otherwise only when the lists have GROWN and an hour passed.
-    var due = now > 0 && (at ? (now > was && Date.now() - at > BACKUP_DUE_MS) : true);
-    return { at: at, pts: now, was: was, due: due };
+    // No stamp means UNKNOWN, not "never backed up": before v1779 the sync time was
+    // never persisted, so every device that had synced for years looked unsynced and
+    // lit the warning at once. With no stamp we start watching from now — the baseline
+    // is today's count — and only speak up once the lists GROW past it.
+    var from = at;
+    if (!at) {
+      from = +window.GeoState.get("gdriveWatchFrom", 0) || 0;
+      if (!from) { from = Date.now(); window.GeoState.save({ gdriveWatchFrom: from, gdriveSyncPts: now }); was = now; }
+    }
+    var due = now > 0 && now > was && Date.now() - from > BACKUP_DUE_MS;
+    return { at: at, pts: now, was: was, due: due, from: from };
   }
   function backupLineText(st) {
     if (!st.at) return t("sync.neverBackedUp");
@@ -17427,7 +17434,10 @@
         if (document.getElementById("sync-opts-modal")) return;
         var saved = window.GeoState.get("syncOpts", null) || {};
         var dir = saved.direction || "two";
-        var cats = saved.cats || { settings: 1, lists: 1, trips: 1, checklists: 1, fetched: 1 };
+        // "Fetched points" (the raw observation dots) default OFF: they are re-fetchable
+        // and bulky, and a backup is for what the user MADE — lists, trips, checklists.
+        // Tick it to include them; saving a fetch as a trip backs it up either way.
+        var cats = saved.cats || { settings: 1, lists: 1, trips: 1, checklists: 1, fetched: 0 };
         var catRow = function (id, lbl) { return '<label class="so-cat"><input type="checkbox" class="so-cat-cb" data-cat="' + id + '"' + (cats[id] ? " checked" : "") + "> " + escapeHtml(t(lbl)) + "</label>"; };
         var dirRow = function (val, lbl) { return '<label class="so-dir"><input type="radio" name="so-dir" value="' + val + '"' + (dir === val ? " checked" : "") + "> " + escapeHtml(t(lbl)) + "</label>"; };
         var ov = document.createElement("div"); ov.id = "sync-opts-modal"; ov.className = "kml-modal";

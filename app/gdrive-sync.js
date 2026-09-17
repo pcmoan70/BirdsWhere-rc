@@ -254,7 +254,9 @@ window.GDriveSync = (function () {
   async function sync(options) {
     if (!connected || syncing || !clientId() || !navigator.onLine) return;
     var dir = (options && options.direction) || "two";
-    var inc = (options && options.cats) || { settings: 1, lists: 1, trips: 1, checklists: 1, fetched: 1 };
+    // Fetched observation dots are excluded unless asked for: re-fetchable, bulky, and
+    // not something the user made. Anything already on Drive is left as it is.
+    var inc = (options && options.cats) || { settings: 1, lists: 1, trips: 1, checklists: 1, fetched: 0 };
     syncing = true; emit("syncing");
     try {
       var meta = await findFile();                 // newest of ours — the last dated copy, normally
