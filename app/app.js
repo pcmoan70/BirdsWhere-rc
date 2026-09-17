@@ -6608,6 +6608,7 @@
               '<div class="ctrl-group">' +
                 '<label data-i18n="ctrl.storage">Storage</label>' +
                 '<p class="cu-hint" id="storage-usage"></p>' +
+                '<p class="cu-hint" data-i18n="ctrl.storageEstimate">Browsers pad every cached map tile for privacy, so their estimate can read far higher than the sizes listed below — those are measured.</p>' +
                 '<p class="cu-hint storage-warn" id="storage-warn" style="display:none"></p>' +
                 '<button type="button" id="errlog-open" class="btn btn-light" data-i18n="errlog.title">Error log</button>' +
               '</div>' +
@@ -9573,28 +9574,46 @@
     try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); n += (k.length + (localStorage.getItem(k) || "").length) * 2; } } catch (e) {}
     return n;
   }
+  // What each "clear cached data" row last measured, keyed by its data-clear name;
+  // the sum is the app's own view of what it stores.
+  var cacheBytesSeen = {};
+  function measuredCacheBytes() {
+    var n = 0; for (var k in cacheBytesSeen) n += +cacheBytesSeen[k] || 0;
+    return n;
+  }
+  // Browsers pad every OPAQUE (cross-origin, no-CORS) cached response — map tiles,
+  // mostly — by megabytes each, so navigator.storage's `usage` can read tens of GB for
+  // a few hundred MB of real data, and the "nearly full" warning would fire on padding
+  // alone. Treat the report as padded only when it exceeds what we measured by more
+  // than a GIGABYTE: our measurement covers every big cache, so a gap that size is
+  // padding, while an ordinary full device (a few MB over) still warns properly.
+  var USAGE_PAD_GAP = 1073741824;
+  function effectiveUsage(reported) {
+    var real = localStorageBytes() + measuredCacheBytes();
+    return (real > 0 && reported - real > USAGE_PAD_GAP) ? real : reported;
+  }
   function renderStorageUsage() {
     var el = document.getElementById("storage-usage"); if (!el) return;
-    var app = fmtBytes(localStorageBytes());
-    el.textContent = t("ctrl.storageLine", { app: app, used: "…", quota: "…" });
+    var app = fmtBytes(localStorageBytes()), cache = fmtBytes(measuredCacheBytes());
+    el.textContent = t("ctrl.storageLine", { app: app, cache: cache, used: "…", quota: "…" });
     var warn = document.getElementById("storage-warn");
     if (navigator.storage && navigator.storage.estimate) {
       navigator.storage.estimate().then(function (est) {
         var e2 = document.getElementById("storage-usage"); if (!e2) return;
-        e2.textContent = t("ctrl.storageLine", { app: app, used: fmtBytes(est.usage || 0), quota: fmtBytes(est.quota || 0) });
+        e2.textContent = t("ctrl.storageLine", { app: app, cache: cache, used: fmtBytes(est.usage || 0), quota: fmtBytes(est.quota || 0) });
         // Caching is unlimited, so warn when the device's storage quota is getting full —
         // the "Clear cached data" buttons below are how the user frees space.
         if (warn) {
-          var q = +est.quota || 0, u = +est.usage || 0, pct = q > 0 ? u / q : 0;
+          var q = +est.quota || 0, u = effectiveUsage(+est.usage || 0), pct = q > 0 ? u / q : 0;
           if (pct >= 0.80) {
             warn.style.display = "";
             warn.textContent = t("storage.warnFull", { pct: Math.round(pct * 100) });
             warn.classList.toggle("storage-warn-crit", pct >= 0.92);
           } else warn.style.display = "none";
         }
-      }).catch(function () { el.textContent = t("ctrl.storageLine", { app: app, used: "—", quota: "—" }); if (warn) warn.style.display = "none"; });
+      }).catch(function () { el.textContent = t("ctrl.storageLine", { app: app, cache: cache, used: "—", quota: "—" }); if (warn) warn.style.display = "none"; });
     } else {
-      el.textContent = t("ctrl.storageLine", { app: app, used: "—", quota: "—" });   // no StorageManager
+      el.textContent = t("ctrl.storageLine", { app: app, cache: cache, used: "—", quota: "—" });   // no StorageManager
       if (warn) warn.style.display = "none";
     }
   }
@@ -9605,7 +9624,7 @@
   function checkStoragePressure() {
     if (!(navigator.storage && navigator.storage.estimate)) return;
     navigator.storage.estimate().then(function (est) {
-      var q = +est.quota || 0, u = +est.usage || 0; if (!q) return;
+      var q = +est.quota || 0, u = effectiveUsage(+est.usage || 0); if (!q) return;
       var pct = u / q;
       if (pct >= 0.90 && Date.now() - _storageWarnedAt > 60000) {
         _storageWarnedAt = Date.now();
@@ -16859,10 +16878,15 @@
     function updateClearCacheCounts() {
       var grid = document.querySelector(".clear-cache-grid"); if (!grid) return;
       function setCnt(what, n, bytes, approx) {
+        // Every row's measurement also feeds the summary line above — the only honest
+        // total available, since the browser's own estimate counts cross-origin map
+        // tiles with a large privacy padding and reads wildly high.
+        cacheBytesSeen[what] = +bytes || 0;
+        try { renderStorageUsage(); } catch (e) {}
         var b = grid.querySelector('.clear-cache-btn[data-clear="' + what + '"]'); if (!b) return;
         var c = b.querySelector(".clear-cnt"); if (!c) return;
         var sz = fmtCacheBytes(bytes);
-        c.textContent = (n != null && n > 0) ? String(n) + (sz ? " · " + (approx ? "~" : "") + sz : "") : "";
+        c.textContent = (n != null && n > 0) ? String(n) + (sz ? " · " + (approx ? "~" : "") + sz : "") : "0";
       }
       var hs = loadHotspotStore();
       setCnt("hotspots", Object.keys(hs).length, jsonBytes(hs));
