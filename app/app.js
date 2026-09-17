@@ -2018,9 +2018,13 @@
   // The preview only makes sense in the full-page LIST modes (species list /
   // per-observation page, Close-by list) — in map mode the real map is right
   // there, so the popup would just be noise over it.
+  // "A full page is covering the map" — the place-name preview only makes sense there
+  // (in map mode the real map is already on screen).
   function inListView() {
     var sp = document.getElementById("species-panel");
     if (sp && sp.classList.contains("as-page") && sp.style.display !== "none") return true;
+    var rp = document.getElementById("rarity-page");
+    if (rp && rp.style.display !== "none") return true;   // the rarity-alerts page hides the map too
     if (document.body.getAttribute("data-nearby")) return true;
     return false;
   }
