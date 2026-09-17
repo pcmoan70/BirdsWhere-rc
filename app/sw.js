@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1781";
+var VERSION = "v1782";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• Settings is a long panel, so the gear now takes you back to the top of it: tap the gear while Settings is open and scrolled down and it scrolls up instead of closing (tap again, at the top, to close). Opening Settings always starts at the top too, rather than where you last left it. Press-and-hold still opens the species-group picker.",
   "• Two sync corrections: fetched observation dots are no longer backed up unless you tick “Fetched points” in the sync dialog — a backup is for what you made, and dots can be fetched again (save a fetch as a trip and it is backed up as before). And the orange ! no longer appears out of nowhere: before this the last-sync time was never remembered, so every device looked as if it had never been backed up. With no record of a sync the app now takes today's count as the baseline and speaks up only once your saved points actually grow past it. Loose pins you have not filed into a list never trigger it.",
   "• Rarity alert mail: every alert is now a LINK on its own description — the bird, the place, the date, how unlikely the model finds it — instead of a list with bare URLs under the first few entries. eBird sightings link to their checklist; everything else links to the record at its own source. All of them, not just three.",
   "• Drive sync now keeps a history: every sync leaves a DATED copy in the app's private Drive folder and the ten most recent are kept, so a bad day is recoverable — “Earlier backups…” in the sync dialog lists them and restores one (its settings win, lists from both sides merge). A download always reads the newest. And the app now nags gently: when your saved points have grown and it has been over an hour since the last sync, the gear shows a small orange ! and the Sync button turns orange, with a “last backed up” line in the Points panel.",
   "• Point lists: an extra safety catch. If the app ever holds an empty list of lists for a moment, that can no longer delete your saved ones from the device database — only a real deletion can. Old Drive files and old JSON backups import unchanged, and what the app writes back is still exactly the same format, point for point.",
-  "• Your saved point lists have moved out of the small browser store into the device database, one record per list — so they no longer share a ~5 MB ceiling with everything else, and a Drive sync (which has to write BOTH devices' lists at once) fits again. Nothing to do: they move themselves the next time you open the app, and the Drive backup format is unchanged. Only a list you actually change is rewritten, so editing a big route stays quick.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -18046,7 +18046,9 @@
       render();
     });
     document.getElementById("settings-toggle").addEventListener("click", function () {
-      if (document.getElementById("settings-panel").style.display !== "none") {
+      var sp = document.getElementById("settings-panel");
+      if (sp.style.display !== "none") {
+        sp.scrollTop = 0;   // Settings is long: a fresh open starts at the top, not where you left off
         renderStorageUsage(); updateClearCacheCounts(); updateRarityEmailNote();
         try { if (window.SWUpdate && window.SWUpdate.checkNow) window.SWUpdate.checkNow(); } catch (e) {}
       }
@@ -18091,6 +18093,17 @@
       btn.addEventListener("mouseleave", function () { clearTimeout(lpT); });
       btn.addEventListener("contextmenu", function (e) { e.preventDefault(); openGroupQuickMenu(); });
     })();
+
+    // The gear while Settings is open and scrolled DOWN: return to the top rather than
+    // close. Tapping it again (already at the top) closes, as before. Capture phase, and
+    // registered after the press-and-hold guard above so a hold still opens the group
+    // picker instead of scrolling.
+    document.getElementById("settings-toggle").addEventListener("click", function (e) {
+      var sp = document.getElementById("settings-panel");
+      if (!sp || sp.style.display === "none" || !sp.scrollTop) return;
+      e.stopImmediatePropagation(); e.preventDefault();
+      try { sp.scrollTo({ top: 0, behavior: "smooth" }); } catch (err) { sp.scrollTop = 0; }
+    }, true);
 
     // About (model & methodology) opens from the Settings dropdown as a modal.
     document.getElementById("about-open").addEventListener("click", function () {
