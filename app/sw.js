@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1784";
+var VERSION = "v1785";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• “Compare to” (the species list's comparison column) is now an Experimental extra: it sits directly under that toggle in Settings and appears only when Experimental features are on. Its default is Annual max. The splash screen's install line also leads with WHY you would: “For offline use: browser menu → Install app / Add to Home Screen”, in every language and on each platform.",
   "• Settings is shorter by two things you did not need: the paragraph describing the app at the very top (About and “How it works” say it better) and the whole Density heatmap section — the dots do that job, so the heatmap, its Off/Species/Observers/Counts button and the “Show dots” checkbox are gone, along with the code behind them.",
   "• The probability-range slider is gone from Settings — it belongs with the other filters, and it is still there under the funnel → Probability in any list. The range also starts at the full 0–100 again, so a bound left over from the old slider cannot keep filtering your lists from a place you can no longer see.",
   "• Settings is a long panel, so the gear now takes you back to the top of it: tap the gear while Settings is open and scrolled down and it scrolls up instead of closing (tap again, at the top, to close). Opening Settings always starts at the top too, rather than where you last left it. Press-and-hold still opens the species-group picker.",
   "• Two sync corrections: fetched observation dots are no longer backed up unless you tick “Fetched points” in the sync dialog — a backup is for what you made, and dots can be fetched again (save a fetch as a trip and it is backed up as before). And the orange ! no longer appears out of nowhere: before this the last-sync time was never remembered, so every device looked as if it had never been backed up. With no record of a sync the app now takes today's count as the baseline and speaks up only once your saved points actually grow past it. Loose pins you have not filed into a list never trigger it.",
-  "• Rarity alert mail: every alert is now a LINK on its own description — the bird, the place, the date, how unlikely the model finds it — instead of a list with bare URLs under the first few entries. eBird sightings link to their checklist; everything else links to the record at its own source. All of them, not just three.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

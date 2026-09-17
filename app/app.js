@@ -6455,18 +6455,6 @@
               '<div class="ctrl-group" id="week-select-wrap" style="display:none">' +
                 '<select id="week-select" aria-hidden="true" tabindex="-1"></select>' +
               '</div>' +
-              '<div class="ctrl-group" id="compare-wrap" style="display:none">' +
-                '<label for="compare-select" data-i18n="ctrl.compare">Compare to</label>' +
-                '<select id="compare-select">' +
-                  '<option value="" data-i18n="compare.none">\u2014 none \u2014</option>' +
-                  '<option value="prev" data-i18n="compare.prev">Previous week</option>' +
-                  '<option value="next" data-i18n="compare.next">Next week</option>' +
-                  '<option value="mean" data-i18n="compare.mean">Annual mean</option>' +
-                  '<option value="annualmax" data-i18n="compare.max">Annual max</option>' +
-                  '<option value="annualtop" selected data-i18n="compare.annualtop">Annual Top</option>' +
-                '</select>' +
-                '<p class="cu-hint" data-i18n="ctrl.compareHint">Adds a column to the species list comparing the current week with another week or the annual mean/peak, so you can see what’s arriving or at its best now.</p>' +
-              '</div>' +
               '<div class="ctrl-group" id="maptype-wrap">' +
                 '<label for="maptype-select" data-i18n="ctrl.basemap">Map type</label>' +
                 '<select id="maptype-select">' +
@@ -6665,6 +6653,20 @@
               '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="experimental-toggle"> <span data-i18n="ctrl.experimental">Experimental features</span></label>' +
                 '<p class="cu-hint" data-i18n="ctrl.experimentalHint">Off (default). On: unlocks less-polished extras — currently the NBN Atlas link in the species menu; more may appear here over time.</p>' +
+              '</div>' +
+              // Experimental-gated, so it lives under that toggle: the species list's
+              // comparison column, defaulting to Annual max.
+              '<div class="ctrl-group" id="compare-wrap" style="display:none">' +
+                '<label for="compare-select" data-i18n="ctrl.compare">Compare to</label>' +
+                '<select id="compare-select">' +
+                  '<option value="" data-i18n="compare.none">\u2014 none \u2014</option>' +
+                  '<option value="prev" data-i18n="compare.prev">Previous week</option>' +
+                  '<option value="next" data-i18n="compare.next">Next week</option>' +
+                  '<option value="mean" data-i18n="compare.mean">Annual mean</option>' +
+                  '<option value="annualmax" selected data-i18n="compare.max">Annual max</option>' +
+                  '<option value="annualtop" data-i18n="compare.annualtop">Annual Top</option>' +
+                '</select>' +
+                '<p class="cu-hint" data-i18n="ctrl.compareHint">Adds a column to the species list comparing the current week with another week or the annual mean/peak, so you can see what’s arriving or at its best now.</p>' +
               '</div>' +
               // Feedback form, just above the QR code (the delegated ".feedback-open" click handler opens it).
               '<div class="settings-toprow">' +
@@ -8530,6 +8532,10 @@
   // toggle). The Checklist button is a standard feature again — always shown; the
   // experimental menu links are gated at render time.
   function applyExperimentalUi() {
+    // "Compare to" is experimental-gated now, so the toggle shows/hides it at once;
+    // refreshModeUi applies the mode half of the same rule.
+    var cw = document.getElementById("compare-wrap");
+    if (cw) { if (!experimentalOn()) cw.style.display = "none"; else try { updateModeVisibility(); } catch (e) { cw.style.display = ""; } }
     var b = document.getElementById("sp-checklist-btn");
     if (b) b.style.display = "";   // always visible (was experimental-gated in v868)
     if (typeof syncExperimentalOverlays === "function") syncExperimentalOverlays();   // Birding spots + GBIF are experimental-only
@@ -16355,7 +16361,7 @@
     // The 2nd-name preference, by contrast, affects names app-wide (species lists AND
     // the detections list / species menus), so it stays available in every mode.
     var listish = currentMode === "list" || currentMode === "range";
-    document.getElementById("compare-wrap").style.display = listish ? "" : "none";
+    document.getElementById("compare-wrap").style.display = (listish && experimentalOn()) ? "" : "none";
     // (The probability range used to be a Settings slider shown in these modes; it is
     // the Filters pane's business now, and its inputs stay hidden as the register.)
     // Historic observations: a GBIF date-range search instead of the model — show
