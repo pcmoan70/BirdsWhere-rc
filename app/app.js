@@ -2440,7 +2440,11 @@
       var missingCut = spMissingAuto ? Math.max(floor, autoCut) : (floor > 0 ? floor : rarePct() / 100);
       var missingOk = spMissingOn() && !!agg && !entry && !extra &&
         (+tr.getAttribute("data-prob") || 0) >= missingCut;
-      tr.style.display = ((missingOk || (recencyOk && countOk && !obsFilteredOut)) && rareOk && buildOk && selOk && excOk) ? "" : "none";
+      // What the list offers BEFORE the species selection narrows it — the pool the
+      // lists/groups picker works from when nothing is plotted (see listPool).
+      var pooled = (missingOk || (recencyOk && countOk && !obsFilteredOut)) && rareOk && buildOk;
+      tr.classList.toggle("sp-pool", pooled);
+      tr.style.display = (pooled && selOk && excOk) ? "" : "none";
     });
     refreshSpExpansions();   // keep expanded detail sub-rows under their (visible) species
     repaintDotsOutsideTable(rareAll);   // Images cards / observation rows / the ☰ popover
@@ -8843,10 +8847,31 @@
   function hasManualSelOverride() { return !sameKeySet(detSelected, detSelBase.sel) || !sameKeySet(detExcluded, detSelBase.exc); }
   function revertSelToBase() { detSelected = Object.assign({}, detSelBase.sel); detExcluded = Object.assign({}, detSelBase.exc); }
   var deletedSpecies = Object.create(null);   // key → name of species deleted from the map (grey tombstone in the legend + list)
-  // A list's tri-state from the current selection/exclusion: "include" (all its plotted
+  // The species the list-side filters (saved lists, premade groups, the selection)
+  // can act on: the plotted detections when there are any, else — on an empty spot,
+  // where the model's own ranking stands in for the missing observations — the
+  // species the table currently offers. Rows carry .sp-pool = "listed before the
+  // species selection narrows it", so picking one group doesn't hide the others.
+  function listPool() {
+    if (Object.keys(detPlot).length) return detPlot;
+    var pool = Object.create(null), tb = document.getElementById("sp-tbody");
+    if (!tb) return pool;
+    var rows = tb.querySelectorAll("tr.sp-pool");
+    if (!rows.length) rows = tb.querySelectorAll("tr:not(.sp-detail-row)");   // before the first filter pass
+    Array.prototype.forEach.call(rows, function (tr) {
+      if (tr.style.display === "none" && !tr.classList.contains("sp-pool")) return;
+      var a = tr.querySelector(".sp-link[data-key]"), k = a && a.getAttribute("data-key");
+      if (k) pool[k] = true;
+    });
+    return pool;
+  }
+  // Display name for a species key that may be listed without any observation.
+  function spKeyName(k) { return (detPlot[k] && detName(detPlot[k])) || (labelsByKey[k] && speciesName(labelsByKey[k])) || k; }
+  // A list's tri-state from the current selection/exclusion: "include" (all its listed
   // species selected), "exclude" (all excluded), else "empty".
-  function listTriState(keys) {
-    var p = (keys || []).filter(function (k) { return detPlot[k]; });
+  function listTriState(keys, pool) {
+    pool = pool || listPool();
+    var p = (keys || []).filter(function (k) { return pool[k]; });
     if (!p.length) return "empty";
     if (p.every(function (k) { return detExcluded[k]; })) return "exclude";
     if (p.every(function (k) { return detSelected[k]; })) return "include";
@@ -8855,8 +8880,9 @@
   // Cycle a list through empty → include (green ✓) → exclude (red ✕) → empty, applying it
   // to the selection/exclusion sets and refreshing the map, legend and species table.
   function cycleListTri(keys) {
-    var p = (keys || []).filter(function (k) { return detPlot[k]; });
-    var next = { empty: "include", include: "exclude", exclude: "empty" }[listTriState(keys)];
+    var pool = listPool();
+    var p = (keys || []).filter(function (k) { return pool[k]; });
+    var next = { empty: "include", include: "exclude", exclude: "empty" }[listTriState(keys, pool)];
     p.forEach(function (k) { delete detSelected[k]; delete detExcluded[k]; });   // clear this list's contribution first
     if (next === "include") p.forEach(function (k) { detSelected[k] = true; });
     else if (next === "exclude") p.forEach(function (k) { detExcluded[k] = true; });
@@ -12786,9 +12812,10 @@
     if (def.f && def.f.indexOf(tx.family) >= 0) return true;
     return false;
   }
-  // Plotted species matching a premade group (its dynamic key set).
-  function premadeKeys(def) {
-    return Object.keys(detPlot).filter(function (k) { return speciesInPremade(k, def); });
+  // Listed species matching a premade group (its dynamic key set) — the plotted
+  // detections, or the model's own list on an empty spot (see listPool).
+  function premadeKeys(def, pool) {
+    return Object.keys(pool || listPool()).filter(function (k) { return speciesInPremade(k, def); });
   }
   function premadeById(id) { for (var i = 0; i < PREMADE_LISTS.length; i++) if (PREMADE_LISTS[i].id === id) return PREMADE_LISTS[i]; return null; }
   // Apply premade group `id` as the selection filter (toggle: tapping the active one clears).
@@ -14262,9 +14289,10 @@
 
     // Species selection (currently-isolated species names). The Hidden toggle is its own
     // row at the very bottom of the pane (below).
-    var selKeys = Object.keys(detSelected).filter(function (k) { return detPlot[k]; });
-    var exKeys = Object.keys(detExcluded).filter(function (k) { return detPlot[k]; });
-    var selNames = selKeys.length ? '<div class="aff-sel-names">' + selKeys.map(function (k) { return escapeHtml(detName(detPlot[k])); }).join(", ") + "</div>" : "";
+    var affPool = listPool();
+    var selKeys = Object.keys(detSelected).filter(function (k) { return affPool[k]; });
+    var exKeys = Object.keys(detExcluded).filter(function (k) { return affPool[k]; });
+    var selNames = selKeys.length ? '<div class="aff-sel-names">' + selKeys.map(function (k) { return escapeHtml(spKeyName(k)); }).join(", ") + "</div>" : "";
     var selActive = selKeys.length > 0 || exKeys.length > 0;
     var selSum = selKeys.length ? t("filters.nSelected", { n: selKeys.length }) : t("det.allSpecies");
     var secSel = affSection("sel", t("th.species"), selActive, selSum, selNames);
@@ -21688,7 +21716,8 @@
       return '<button type="button" class="sp-spf-chip' + (spFilters[m[0]] ? " on" : "") + '" data-flag="' + m[0] + '" title="' + escapeHtml(spfTip[m[0]]) + '">' + m[1] + "</button>";
     }).join("") + "</div>";
     // Species currently isolated by the selection filter — each removable.
-    var sel = Object.keys(detSelected).filter(function (k) { return detPlot[k]; });
+    var selPool = listPool();
+    var sel = Object.keys(detSelected).filter(function (k) { return selPool[k]; });
     if (sel.length) {
       html += '<div class="sp-spf-list">' + sel.map(function (k) {
         var nm = (labelsByKey[k] && speciesName(labelsByKey[k])) || (detPlot[k] && detPlot[k].name) || k;
@@ -21708,14 +21737,15 @@
   function spListsPickerHtml(sel, force) {
     sel = sel || [];
     var spLists = getSpeciesLists();
-    var pm = iocReady ? PREMADE_LISTS.map(function (def) { return { def: def, keys: premadeKeys(def) }; }).filter(function (x) { return x.keys.length; }) : (ensureIocLoaded(), []);
+    var pool = listPool();
+    var pm = iocReady ? PREMADE_LISTS.map(function (def) { return { def: def, keys: premadeKeys(def, pool) }; }).filter(function (x) { return x.keys.length; }) : (ensureIocLoaded(), []);
     pm.sort(function (a, b) { return b.keys.length - a.keys.length; });   // biggest groups first
     if (!force && !(spLists.length || pm.length || sel.length)) return "";
     var html = '<div class="sp-splist-head">' + escapeHtml(t("sp.speciesLists")) +
       ' <button type="button" class="sp-lists-manage" title="' + escapeHtml(t("sp.manageLists")) + '" aria-label="' + escapeHtml(t("sp.manageLists")) + '">✎</button></div>';
     // Each list has a 3-state box: empty → include (green ✓) → exclude (red ✕) → empty.
     function triRow(cls, dataAttr, keys, label, n) {
-      var st = listTriState(keys), glyph = st === "include" ? "✓" : st === "exclude" ? "✕" : "";
+      var st = listTriState(keys, pool), glyph = st === "include" ? "✓" : st === "exclude" ? "✕" : "";
       return '<div class="sp-list-row"><button type="button" class="sp-tri sp-tri-' + st + " " + cls + '" ' + dataAttr + ' title="' + escapeHtml(t("sp.triCycle")) + '" aria-label="' + escapeHtml(t("sp.triCycle")) + '">' + glyph + "</button>" +
         ' <span class="sp-list-nm">' + escapeHtml(label) + '</span> <span class="sp-list-n">(' + n + ")</span></div>";
     }
