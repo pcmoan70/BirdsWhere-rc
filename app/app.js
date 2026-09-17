@@ -11906,7 +11906,10 @@
     // A clicked-point species list, OR — with no point (e.g. after Fetch on open) —
     // whenever there are detections on the map (toggle opens their "By observation" list).
     if (currentSpView && isFinite(+currentSpView.lat) && isFinite(+currentSpView.lon)) return true;
-    return hasPlottedDetections() || Object.keys(alertPlot).length > 0;   // alerts alone are enough to open the "By observation" list
+    if (hasPlottedDetections() || Object.keys(alertPlot).length > 0) return true;   // alerts alone are enough to open the "By observation" list
+    // Nothing fetched at all: the list still has something to say — the model's own species
+    // for the middle of the map (see showListView).
+    return groupHasModel() && !!(labels && labels.length);
   }
   function onListView() {
     var sp = document.getElementById("species-panel");
@@ -11965,6 +11968,14 @@
       try { renderPlottedObsPage(); } catch (e) {}
     }
   }
+  // Which point an un-fetched list should describe: the placed pin, else the point the last
+  // list was about, else the middle of the map.
+  function listRefPoint() {
+    try { if (marker && marker.getLatLng) { var ll = marker.getLatLng(); if (ll && isFinite(ll.lat)) return { lat: ll.lat, lon: ll.lng }; } } catch (e) {}
+    if (currentSpView && isFinite(+currentSpView.lat) && isFinite(+currentSpView.lon)) return { lat: +currentSpView.lat, lon: +currentSpView.lon };
+    try { if (map && map.getCenter) { var c = map.getCenter(); if (c && isFinite(c.lat)) return { lat: c.lat, lon: c.lng }; } } catch (e2) {}
+    return null;
+  }
   function showListView() {
     if (!viewToggleAvail()) return;
     var sp = document.getElementById("species-panel"); if (!sp) return;
@@ -11972,7 +11983,19 @@
     // the funnels blink while it runs (see withFunnelBusy).
     withFunnelBusy(function () {
       var bc = document.getElementById("barchart-panel"); if (bc) bc.style.display = "none";
-      if (!speciesPanelPopulated()) renderPlottedObsPage();   // no clicked point → list the plotted detections
+      if (!speciesPanelPopulated()) {
+        var refPt = hasPlottedDetections() ? null : listRefPoint();
+        // Dots on the map → their "By observation" list. Nothing fetched at all → the model's
+        // own species for the pin / map centre, commonest first (renderSpeciesList's noFetch
+        // path ends in applySightings with an empty result, which is what turns that on).
+        if (refPt) {
+          try {
+            urlForceView = "list";   // the list was asked for — skip renderSpeciesList's map-first default
+            renderSpeciesList(refPt.lat, refPt.lon, null, { noFetch: true });
+          } catch (e) { urlForceView = null; renderPlottedObsPage(); }
+        }
+        else renderPlottedObsPage();
+      }
       sp.classList.add("as-page"); sp.style.display = "block"; sp.scrollTop = 0;
       navOpen("page", closeAnyFullPage);
       if (speciesPanelPopulated()) {

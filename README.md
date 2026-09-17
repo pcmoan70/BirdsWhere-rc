@@ -285,8 +285,10 @@ record rows; the most severe category seen for a species is the one shown.
 
 **Defaults**: the list opens filtered to **Total ≥ 1** (only species actually observed) and
 sorted by **probability low → high**, so the locally-rarest observed species top the list — both
-fully adjustable. **When a spot has no observations at all** the list fills with the model's own
-expectation for that place instead of coming back empty — **likeliest first**, everything it puts
+fully adjustable. **With nothing fetched at all**, opening the list (species table or Images) answers with the
+model's species for the **placed pin — or, with no pin, the middle of the map** — likeliest first,
+so the list is useful before you have fetched anything. **When a spot has no observations at all**
+the list fills with the model's own expectation for that place instead of coming back empty — **likeliest first**, everything it puts
 at 1 % or better (and, where even that is empty, its best 25 anyway), with a line saying so. The
 **[!]** button switches back to observed-only; your own **[?]** setting is left as you had it. **Filtering** lives in the **filter pane** (funnel button next to the layout
 selector; it keeps its scroll position as you tick things). The **name search** there matches
