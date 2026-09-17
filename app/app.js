@@ -6440,14 +6440,15 @@
                 '<div class="radius-row"><input type="range" id="recent-radius" min="0" max="18" step="1" /></div>' +
                 '<p class="cu-hint" data-i18n="ctrl.recentradiusHint">How far around a clicked point or stored location each source is searched for recent observations.</p>' +
               '</div>' +
-              '<div class="ctrl-group" id="barchart-threshold-wrap" style="display:none">' +
-                '<div class="ctrl-label-row"><label data-i18n="ctrl.bcthreshold">Probability range</label><span id="prob-range-vals" class="radius-val"><span id="prob-min-val">0%</span> – <span id="prob-max-val">100%</span></span></div>' +
-                '<div id="prob-range">' +
-                  '<div class="pr-track"></div>' +
-                  '<input type="range" id="prob-min" min="0" max="100" step="1" value="0" />' +
-                  '<input type="range" id="prob-max" min="0" max="100" step="1" value="100" />' +
-                '</div>' +
-                '<p class="cu-hint" data-i18n="ctrl.bcthresholdHint">Lower and upper model-probability bounds — species (and plotted observations) outside this range are hidden from the list and the map.</p>' +
+              // The probability range is no longer a Settings control — it lives in the
+              // list's own Filters pane (the funnel → Probability), where the other
+              // filters are. These inputs stay as the app's internal register: the
+              // pane, the analysis tabs, the checklist builder and the share links all
+              // read and write them. Never shown.
+              '<div class="ctrl-group" id="barchart-threshold-wrap" style="display:none" aria-hidden="true">' +
+                '<input type="range" id="prob-min" min="0" max="100" step="1" value="0" tabindex="-1" />' +
+                '<input type="range" id="prob-max" min="0" max="100" step="1" value="100" tabindex="-1" />' +
+                '<span id="prob-min-val">0%</span><span id="prob-max-val">100%</span>' +
               '</div>' +
               // The week is always the current week (no user override). The <select> stays
               // as the app's internal week register — Range/Migration playback, the
@@ -16372,10 +16373,8 @@
     // the detections list / species menus), so it stays available in every mode.
     var listish = currentMode === "list" || currentMode === "range";
     document.getElementById("compare-wrap").style.display = listish ? "" : "none";
-    // The probability min–max slider (in Settings) applies to the Species List,
-    // the checklist (derived from it), the analysis tabs and the field checklist.
-    var probVisible = (currentMode === "range" || currentMode === "list" || currentMode === "barchart");
-    document.getElementById("barchart-threshold-wrap").style.display = probVisible ? "" : "none";
+    // (The probability range used to be a Settings slider shown in these modes; it is
+    // the Filters pane's business now, and its inputs stay hidden as the register.)
     // Historic observations: a GBIF date-range search instead of the model — show
     // its From/To range and hide the model-week selector.
     var isHist = currentMode === "historic";
@@ -22999,6 +22998,12 @@
 
     // Probability range: restore the saved bounds (default 0–100 = no filter).
     (function () {
+      // One-off on upgrade: the Settings slider is gone, so a range narrowed with it
+      // would filter invisibly. Reset to the full 0–100 once; ranges chosen afterwards
+      // in the Filters pane persist as before.
+      if (!window.GeoState.get("probRangeReset", 0)) {
+        window.GeoState.save({ probMin: 0, probMax: 100, probRangeReset: 1 });
+      }
       var pl = Math.max(0, Math.min(100, +window.GeoState.get("probMin", 0) || 0));
       var ph = Math.max(0, Math.min(100, +window.GeoState.get("probMax", 100) || 0));
       if (ph < pl) ph = pl;
