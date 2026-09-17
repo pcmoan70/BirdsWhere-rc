@@ -197,10 +197,64 @@ window.AppPoints = (function () {
     return String(s || "").split(",").map(function (t) { return t.trim(); }).filter(function (t, i, a) { return t && a.indexOf(t) === i; });
   }
   function mpUid() { return "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  // ---- Named lists in IndexedDB ---------------------------------------------
+  // A single imported route can be megabytes, and every named list used to sit in
+  // the one localStorage blob (~5 MB for the WHOLE app). That capped the app, and it
+  // broke Drive sync outright: a sync writes the MERGED state — both devices' lists —
+  // so the write could not fit and the sync failed every time. Lists now live in
+  // IndexedDB, one record per list ("pts:<name>"), exactly like saved trips
+  // (initDetSetStore in app.js). The Drive payload shape is unchanged: buildPayload
+  // re-attaches them, so existing backups stay compatible.
+  var mpIdbReady = false;
+  async function initMpSetStore() {
+    if (!(window.AppIDB && window.AppIDB.available())) return;   // no IDB → the blob stays the store
+    try {
+      var blobSets = window.GeoState.get("mapPointSets", null);
+      if (Array.isArray(blobSets) && blobSets.length) {
+        for (var i = 0; i < blobSets.length; i++) { var c = blobSets[i]; if (c && c.name) await window.AppIDB.put("pts:" + c.name, c); }
+        window.GeoState.save({ mapPointSets: undefined });   // confirmed in IDB → free the blob
+      }
+      var all = await window.AppIDB.getAll();
+      mpCollections = Object.keys(all).filter(function (k) { return k.indexOf("pts:") === 0; })
+        .map(function (k) { return all[k]; }).filter(function (c) { return c && c.name; });
+      mpCollections.forEach(function (c) { try { mpSetSig[c.name] = mpSig(JSON.stringify(c)); } catch (e) {} });
+      mpIdbReady = true;
+    } catch (e) { mpIdbReady = false; }
+  }
+  // Write the current lists to IndexedDB and retire the records of any that are gone.
+  // Only the lists that actually CHANGED are written: these run to megabytes, and
+  // every pin edit calls through here — rewriting all of them each time would make
+  // editing a big list crawl.
+  var mpSetSig = Object.create(null);
+  function mpSig(str) {
+    var h = 0;
+    for (var i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
+    return str.length + ":" + h;
+  }
+  function persistMpSets(list) {
+    if (!mpIdbReady || !window.AppIDB) return;
+    var keep = Object.create(null), gone = false;
+    (list || []).forEach(function (c) {
+      if (!c || !c.name) return;
+      keep[c.name] = 1;
+      var sig;
+      try { sig = mpSig(JSON.stringify(c)); } catch (e) { sig = null; }
+      if (sig && mpSetSig[c.name] === sig) return;   // unchanged since the last write
+      window.AppIDB.put("pts:" + c.name, c).then(function () { if (sig) mpSetSig[c.name] = sig; },
+        function () { setStatus(t("err.storageFull")); });
+    });
+    Object.keys(mpSetSig).forEach(function (n) { if (!keep[n]) { gone = true; delete mpSetSig[n]; } });
+    if (!gone) return;   // nothing was deleted → no need to scan the store for orphans
+    window.AppIDB.getAll().then(function (all) {
+      Object.keys(all).forEach(function (k) { if (k.indexOf("pts:") === 0 && !keep[k.slice(4)]) window.AppIDB.del(k).catch(function () {}); });
+    }).catch(function () {});
+  }
   function loadMapPoints() {
     mapPoints = (window.GeoState.get("mapPoints", []) || []).filter(function (p) { return p && isFinite(p.lat) && isFinite(p.lon); });
     mpFilter = window.GeoState.get("mapPointsFilter", []) || [];
-    mpCollections = (window.GeoState.get("mapPointSets", []) || []).filter(function (c) { return c && c.name; });
+    // With IndexedDB as the store the lists are already hydrated (initMpSetStore) and
+    // the blob no longer carries them — reading it here would wipe them.
+    if (!mpIdbReady) mpCollections = (window.GeoState.get("mapPointSets", []) || []).filter(function (c) { return c && c.name; });
     mpActiveName = window.GeoState.get("mapPointSetActive", "") || "";
     mpLastColor = window.GeoState.get("mpLastColor", "") || "";
     mpSort = window.GeoState.get("mapPointsSort", "dist") === "name" ? "name" : "dist";
@@ -215,13 +269,20 @@ window.AppPoints = (function () {
       var ac = mpCollections.filter(function (c) { return c.name === mpActiveName; })[0];
       if (ac) { if (mapPoints.length) ac.points = mapPoints.slice(); shownColls[mpActiveName] = true; }
       mapPoints = []; mpActiveName = "";
-      window.GeoState.save({ mapPoints: [], mapPointSetActive: "", mapPointSets: mpCollections, mapPointsShownColls: Object.keys(shownColls) });
+      saveChecked({ mapPoints: [], mapPointSetActive: "", mapPointSets: mpCollections, mapPointsShownColls: Object.keys(shownColls) });
     }
   }
   // Persist a patch and, if the write hit the localStorage quota (lastSaveOk false),
   // surface a storage-full toast — otherwise these bulky collections (map points /
   // lists / blogs) fail silently and are gone on reload. Mirrors persistDetSet.
   function saveChecked(patch) {
+    // Named lists are IndexedDB's business when it is available: persist them there
+    // and let the blob drop the key (undefined removes it), so the ~5 MB cap applies
+    // only to the small state again.
+    if (mpIdbReady && patch && Object.prototype.hasOwnProperty.call(patch, "mapPointSets")) {
+      persistMpSets(patch.mapPointSets);
+      patch.mapPointSets = undefined;
+    }
     window.GeoState.save(patch);
     if (window.GeoState.lastSaveOk && !window.GeoState.lastSaveOk()) { setStatus(t("err.storageFull")); return false; }
     return true;
@@ -946,6 +1007,7 @@ window.AppPoints = (function () {
 
   return {
     init: init,
+    initMpSetStore: initMpSetStore, persistMpSets: persistMpSets,
     // ---- points, lists, collections ----
     loadMapPoints: loadMapPoints, saveMapPoints: saveMapPoints, saveChecked: saveChecked,
     saveShownState: saveShownState, addMapPoint: addMapPoint, updateMapPoint: updateMapPoint,
@@ -979,6 +1041,7 @@ window.AppPoints = (function () {
     mpLayer: function () { return mpLayer; },
     mpPins: function () { return mpPins; },
     mpCollections: function () { return mpCollections; },
+    mpIdbReady: function () { return mpIdbReady; },
     setMpCollections: function (v) { mpCollections = v; },
     mpActiveName: function () { return mpActiveName; },
     setMpActiveName: function (v) { mpActiveName = v; },

@@ -5244,6 +5244,9 @@
     // Saved trips now live in IndexedDB (mirrored in detSetStore), not the blob —
     // re-attach them so the Drive payload shape is unchanged.
     try { if (typeof detSetStore !== "undefined") state.mapDetectionSets = detSetStore.filter(function (s) { return s && s.name; }); } catch (e) {}
+    // Named point lists moved to IndexedDB too — re-attach them so the Drive payload
+    // shape (and every existing backup) is unchanged.
+    try { if (mpState.mpIdbReady && mpState.mpIdbReady()) state.mapPointSets = mpState.mpCollections().filter(function (c) { return c && c.name; }); } catch (e) {}
     return {
       app: "migration_calendar",
       version: 1,
@@ -5451,6 +5454,9 @@
     var local = {}; try { local = JSON.parse(localStorage.getItem(window.GeoState.storageKey) || "{}"); } catch (e) {}
     // Saved trips live in IndexedDB now, not the blob — merge against the live mirror.
     try { if (typeof detSetStore !== "undefined") local.mapDetectionSets = detSetStore.filter(function (s) { return s && s.name; }); } catch (e) {}
+    // Named point lists too: without this the merge would see NO local lists (the blob
+    // no longer carries them) and "merge" would mean "replace with the other device's".
+    try { if (mpState.mpIdbReady && mpState.mpIdbReady()) local.mapPointSets = mpState.mpCollections().filter(function (c) { return c && c.name; }); } catch (e) {}
     var incoming = data.state || {};
     var mergedCl = mergeChecklists(local.fieldChecklists, incoming.fieldChecklists);
     // Map points: merge rather than overwrite. Loose pins from both sides are
@@ -5519,7 +5525,13 @@
     }
     // The merged collections override either side's copy.
     newState.fieldChecklists = mergedCl;
-    newState.mapPointSets = mergedSets;
+    // Merged lists go to IndexedDB (and out of the blob) when that is the store — the
+    // union of two devices' lists is exactly the write that used to break the sync.
+    if (mpState.mpIdbReady && mpState.mpIdbReady()) {
+      mpState.setMpCollections(mergedSets);
+      try { window.AppPoints.persistMpSets(mergedSets); } catch (e) {}
+      delete newState.mapPointSets;
+    } else newState.mapPointSets = mergedSets;
     newState.mapDetections = mergedDet;
     newState.interesting = Object.keys(interestUnion);
     newState.lifeList = Object.keys(lifeUnion);
@@ -6255,6 +6267,7 @@
     // Hydrate saved trips from IndexedDB (and migrate any still in the localStorage
     // blob) before anything reads them. Never block startup on a storage hiccup.
     try { await initDetSetStore(); } catch (e) {}
+    try { if (window.AppPoints && window.AppPoints.initMpSetStore) await window.AppPoints.initMpSetStore(); } catch (e) {}   // named point lists → IndexedDB (same pattern as trips)
     try { await loadPersistedSightings(); } catch (e) {}   // so a reopen reuses the last downloads instead of refetching
     try { hydrateHotspotStore(); hydrateVernacCache(); } catch (e) {}   // fire-and-forget: the general cache's IDB stores (hotspots, iNat names)
     ensurePersistentStorage();   // keep offline-map tiles + saved data from being evicted
