@@ -20251,6 +20251,10 @@
   function renderSpCoordsAreas(el, lat, lon, summary) {
     if (!el) return;
     lastSpCoords = { el: el, lat: lat, lon: lon, summary: summary };
+    // A model-only list describes ONE point — the pin, or the middle of the map. Naming the
+    // squares fetched earlier somewhere else would answer a question nobody asked (a pin in
+    // Iceland under a header reading "Åfjord"), so that list gets its own point's place.
+    if (spMissingAuto && isFinite(lat) && isFinite(lon)) { setCoordsWithPlace(el, lat, lon, summary); return; }
     var raw = (fetchedAreas || []).map(function (a) {
       var c = a.bounds && a.bounds.getCenter ? a.bounds.getCenter() : null;
       return { id: a.id, name: a.name || "", clat: c ? c.lat : NaN, clon: c ? c.lng : NaN };
