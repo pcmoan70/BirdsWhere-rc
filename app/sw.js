@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1765";
+var VERSION = "v1766";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• Rarity alerts, audited end to end: locally-rare birds from your OWN fetches now reach the list (a class-name mismatch had silently blocked every one), the same sighting reported by two sources alerts once, Clear alerts really clears the map, and the bell appears whenever there is a list to open.",
   "• Map popups now always fit: zoomed right out (or in the far north) they no longer run off an edge — they are capped to the map height and nudged back inside. And on the rarity-alerts page, a tap on the bell closes it again; press-and-hold still checks now.",
   "• Click a place where nothing has been reported and the list now fills with the species the model expects there, likeliest first, instead of coming back empty. A line says so, and [!] switches back to observed species only.",
   "• Rarity alerts can now be emailed to you: put your address under Settings → Rarity alerts and press Send test. The first message is a confirmation request from FormSubmit — click its link once (look in the spam folder) and alerts start arriving while the app is open. Settings now says what became of the last message. The alerts page was rebuilt in the style of the other pages, and unseen alerts stand out in bold.",
   "• An observation’s pictures now have a column of their own in the lists. Hover the camera (tap it on a phone) and every picture from that record opens as a small mosaic — tap one to see it full-size.",
-  "• Rarity alerts now watch ALL your observation sources around every 🔔 location, not just eBird’s notable feed — anything the model finds unlikely there raises an alert, and it works without an eBird key. Turn it off under Settings → Rarity alerts. The background checks step aside for any fetch you start.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

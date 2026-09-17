@@ -7243,6 +7243,9 @@
       worker.postMessage({ type: "init", modelUrl: new URL(MODEL_URL, SCRIPT_BASE).href });
     });
 
+    // The plotted-detection probabilities may have been attempted before the model existed
+    // (nothing retries that on its own) — ask once now that it does.
+    try { maybeComputeDetProbs(); } catch (e2) {}
     worker.onmessage = function (e) {
       var msg = e.data;
       if (msg.type !== "infer") return;
@@ -12127,6 +12130,10 @@
       // dashed green), which is what the red ×'s per-area delete acts on.
       var org = result.origin || currentSpView;
       if (org && isFinite(+org.lat) && isFinite(+org.lon)) currentFetchAreaId = rememberFetchedArea(+org.lat, +org.lon, result.origin && result.origin.rkm, org.name || org.locName);
+      // Per-observation probabilities drive the ◉ rare marker, the legend order AND the
+      // local-rarity harvest. They used to be computed only when the map legend rendered, so
+      // a fetch read from the species-list page never harvested anything.
+      setTimeout(function () { try { maybeComputeDetProbs(); } catch (e3) {} }, 0);
       entries.sort(function (a, b) { return b.count - a.count; });
       // Which species are NEW to the map with this fetch — the rarest-finds intro
       // shows only those, never ones an earlier fetch already put there.
@@ -19879,7 +19886,7 @@
       clearLocalRarities = window.AppRarity.clearLocalRarities,
       initRarityAlerts = window.AppRarity.initRarityAlerts;
   window.AppRarity.init({
-    createModal: createModal, detIsRare: detIsRare, detName: detName,
+    detIsRare: detIsRare, detName: detName,
     ebirdKey: ebirdKey, escapeHtml: escapeHtml, fmtDate: fmtDate, getHereFix: getHereFix,
     getStoredLocations: getStoredLocations, hereAsLoc: hereAsLoc, hereCfg: hereCfg,
     hideDetHover: hideDetHover, holdDelay: holdDelay, ico: ico,
@@ -19888,7 +19895,7 @@
     setTabAlert: setTabAlert, showDetHover: showDetHover,
     spDetailTableHtml: spDetailTableHtml, spListDot: spListDot,
     speciesColor: speciesColor, t: t, wireLocHover: wireLocHover,
-    wireSpDetail: wireSpDetail, rarityMapVisible: rarityMapVisible, rarityScoreProbs: rarityScoreProbs, onRarityListChanged: onRarityListChanged,
+    wireSpDetail: wireSpDetail, rarityScoreProbs: rarityScoreProbs, onRarityListChanged: onRarityListChanged,
     rarityFetchSources: rarityFetchSources, abortRaritySweep: abortRaritySweep, userFetchActive: userFetchActive, speciesName: speciesName,
     rarityPageEl: rarityPageEl, openRarityPage: rarityPageOpen, closeRarityPage: rarityPageClose, appErrLog: appErrLog,
     getMap: function () { return map; },
