@@ -2075,12 +2075,14 @@
   // record. Opened from the camera button on a record row (and the ☰ popover).
   function showObsPhoto(btn, pickUrl) {
     var url = pickUrl || btn.getAttribute("data-photo") || btn.getAttribute("data-thumb"); if (!url) return;
-    var m = createModal({ boxClass: "obs-photo-box" });
+    var m = createModal({ boxClass: "obs-photo-box", escClose: true });
     var by = btn.getAttribute("data-by") || "", src = btn.getAttribute("data-url") || "";
-    m.box.innerHTML = '<div class="ui-modal-msg">' + escapeHtml(btn.getAttribute("data-name") || "") + "</div>" +
+    m.box.innerHTML = '<button type="button" class="conf-close obs-photo-x" aria-label="' + escapeHtml(t("btn.close")) + '" title="' + escapeHtml(t("btn.close")) + '">×</button>' +
+      '<div class="ui-modal-msg">' + escapeHtml(btn.getAttribute("data-name") || "") + "</div>" +
       '<div class="obs-photo-wrap"><img alt="" src="' + escapeHtml(url) + '" /></div>' +
       '<div class="obs-photo-cred">' + (by ? escapeHtml(by) : "") +
         (src ? (by ? " · " : "") + '<a href="' + escapeHtml(src) + '" target="_blank" rel="noopener">' + escapeHtml(t("det.openSource")) + "</a>" : "") + "</div>";
+    m.box.querySelector(".obs-photo-x").addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); m.close(); });
     var img = m.box.querySelector("img");
     img.addEventListener("error", function () {   // the big version may not exist → fall back to the thumbnail
       var th = pickUrl ? "" : btn.getAttribute("data-thumb");

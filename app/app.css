@@ -4484,7 +4484,11 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .obs-photo { display: inline-flex; align-items: center; vertical-align: middle; color: var(--brand, #2e8b74); cursor: pointer; }
 .obs-photo svg { width: 15px; height: 15px; }
 .obs-photo:hover { color: var(--brand-deep, #14504a); }
-.obs-photo-box { max-width: min(96vw, 760px); }
+/* The box is a flex item in the overlay (static), so `relative` only gives the × a
+   containing block — it changes no layout. */
+.obs-photo-box { position: relative; max-width: min(96vw, 760px); }
+.obs-photo-box .ui-modal-msg { padding-right: 28px; }   /* room for the × */
+.obs-photo-x { top: 6px; right: 8px; font-size: var(--fs-glyph, 20px); }
 .obs-photo-wrap { display: flex; justify-content: center; align-items: center; min-height: 120px; margin: 6px 0 4px; }
 .obs-photo-wrap img { max-width: 100%; max-height: min(70vh, 620px); border-radius: 8px; display: block; }
 .obs-photo-cred { font-size: var(--fs-xs); color: var(--ink-muted, #777); text-align: center; }
