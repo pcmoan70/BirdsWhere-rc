@@ -545,6 +545,7 @@
   "gdrive.connect": "☁ Connecter Google Drive",
   "gdrive.disconnect": "Déconnecter",
   "gdrive.error": "Impossible de joindre Google Drive.",
+  "gdrive.storageFull": "Le stockage de cet appareil est plein : les données fusionnées n'ont pas pu être enregistrées — rien n'a été perdu, mais la synchronisation n'est pas allée au bout. Libérez de l'espace dans Réglages → Stockage (Effacer les données en cache), puis synchronisez à nouveau.",
   "gdrive.hint": "Touchez « Synchroniser » pour synchroniser vos réglages, listes et points vers un dossier privé de votre Google Drive (et récupérer les changements des autres appareils). Manuel uniquement — il synchronise et se connecte seulement quand vous touchez, jamais en arrière-plan.",
   "gdrive.reconnect": "Touchez « Synchroniser » pour reconnecter Google Drive.",
   "gdrive.syncNow": "⟳ Synchroniser",

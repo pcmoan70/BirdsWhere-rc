@@ -545,6 +545,7 @@
   "gdrive.connect": "☁ Forbind Google Drive",
   "gdrive.disconnect": "Afbryd",
   "gdrive.error": "Kunne ikke nå Google Drive.",
+  "gdrive.storageFull": "Lagerpladsen på denne enhed er fuld, så de flettede data kunne ikke gemmes — intet gik tabt, men synkroniseringen blev ikke fuldført. Frigør plads under Indstillinger → Lagring (Ryd cachelagrede data), og synkronisér igen.",
   "gdrive.hint": "Tryk på „Synk nu“ for at synkronisere dine indstillinger, tjeklister og punkter til en privat mappe i din Google Drive (og hente andre enheders ændringer). Kun manuelt — den synkroniserer og logger kun ind, når du trykker, aldrig i baggrunden.",
   "gdrive.reconnect": "Tryk på „Synk nu“ for at genoprette forbindelse til Google Drive.",
   "gdrive.syncNow": "⟳ Synk nu",

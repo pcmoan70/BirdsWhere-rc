@@ -5369,15 +5369,45 @@
   // detection cap, then progressively smaller caps on a quota error, only ever
   // trimming mapDetections (oldest first). Lists, year/life lists, checklists,
   // points and settings are written untouched. Returns the rows actually kept.
+  // Keys that are pure CACHES: dropping one costs a re-fetch and nothing else.
+  // Same set the Settings → Storage "clear cached data" buttons offer, minus the
+  // ones that live in IndexedDB or the Cache API.
+  var REBUILDABLE_KEYS = ["spImages", "extraVernac", "ebirdHotspots", "errorLog", "gbifLearnedScopes"];
+  function dropRebuildable(o) {
+    var n = 0;
+    REBUILDABLE_KEYS.forEach(function (k) { if (o[k] != null) { delete o[k]; n++; } });
+    return n;
+  }
+  // The biggest keys in a state object — named in the error when a write cannot be
+  // made to fit, so "storage full" says WHAT is full.
+  function biggestStateKeys(o, n) {
+    var sizes = Object.keys(o || {}).map(function (k) {
+      var b = 0; try { b = JSON.stringify(o[k]).length; } catch (e) {}
+      return { k: k, b: b };
+    }).sort(function (a, b) { return b.b - a.b; }).slice(0, n || 3);
+    return sizes.map(function (x) { return x.k + " " + fmtBytes(x.b); }).join(", ");
+  }
   function writeStateCapped(obj) {
-    var caps = [DET_CAP, 8000, 4000, 1500, 0];
-    for (var i = 0; i < caps.length; i++) {
+    // Each rung frees more than the last: the oldest plotted detections first, then
+    // the rebuildable caches, then the rarity list. Lists, year/life lists,
+    // checklists, points and settings are NEVER trimmed — that is the whole point of
+    // this ladder. (A sync merges BOTH devices' data, so the write it has to make fit
+    // is bigger than either side alone; before the cache rungs existed, a full store
+    // meant a sync that could never succeed, reported as a Drive problem.)
+    var steps = [
+      { cap: DET_CAP }, { cap: 8000 }, { cap: 4000 }, { cap: 1500 }, { cap: 0 },
+      { cap: 0, caches: 1 }, { cap: 0, caches: 1, rar: 200 }, { cap: 0, caches: 1, rar: 50 }, { cap: 0, caches: 1, rar: 0 }
+    ];
+    for (var i = 0; i < steps.length; i++) {
+      var st = steps[i];
       var o = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k)) o[k] = obj[k];
-      o.mapDetections = capDetections(obj.mapDetections, caps[i]);
+      o.mapDetections = capDetections(obj.mapDetections, st.cap);
+      if (st.caches) dropRebuildable(o);
+      if (st.rar != null && o.rarityList && o.rarityList.length > st.rar) o.rarityList = o.rarityList.slice(0, st.rar);
       try { localStorage.setItem(window.GeoState.storageKey, JSON.stringify(o)); window.GeoState.invalidate(); return detRowCount(o.mapDetections); }
-      catch (e) { /* quota — drop more (older) detections and retry */ }
+      catch (e) { /* quota — free more and retry */ }
     }
-    throw new Error("storage full even with no detections");
+    throw new Error("storage full; biggest: " + biggestStateKeys(obj, 3));
   }
   // Quota safety net for EVERY GeoState.save: if a write is too big, drop the
   // oldest plotted detections (never the lists/starred/points/settings) and retry
@@ -5394,6 +5424,7 @@
       // alert list made EVERY write fail — stars, lists, settings — not just its own.
       var rarCaps = [500, 300, 200, 100, 50, 25];
       if (o.rarityList && o.rarityList.length > rarCaps[attempt]) o.rarityList = o.rarityList.slice(0, rarCaps[attempt]);
+      if (attempt >= 3) dropRebuildable(o);   // last resorts: the caches cost only a re-fetch
       return o;
     });
   }
@@ -17310,8 +17341,9 @@
         gdDisconnect.style.display = "none";
         gdSync.disabled = !!st.busy;
         var msg = "";
-        var failed = st.status === "reconnect" || st.status === "error";
+        var failed = st.status === "reconnect" || st.status === "error" || st.status === "storagefull";
         if (st.status === "syncing") msg = "⟳ " + t("gdrive.syncing");
+        else if (st.status === "storagefull") msg = "⚠ " + t("gdrive.storageFull");
         else if (st.status === "reconnect") msg = "⚠ " + t("gdrive.reconnect");
         else if (st.status === "error") msg = "⚠ " + t("gdrive.error");
         else if (st.lastSyncAt) msg = "✓ " + t("gdrive.synced") + " · " + fmtClock(st.lastSyncAt);

@@ -545,6 +545,7 @@
   "gdrive.connect": "☁ Ühenda Google Drive",
   "gdrive.disconnect": "Katkesta ühendus",
   "gdrive.error": "Google Drive’i ei õnnestunud kätte saada.",
+  "gdrive.storageFull": "Selle seadme mälu on täis, nii et ühendatud andmeid ei õnnestunud salvestada — midagi ei läinud kaotsi, kuid sünkroonimine jäi pooleli. Vabasta ruumi jaotises Seaded → Salvestusruum (Tühjenda vahemälu) ja sünkrooni uuesti.",
   "gdrive.hint": "Puuduta „Sünkrooni nüüd”, et sünkroonida oma seaded, kontroll-loendid ja punktid privaatsesse kausta sinu Google Drive’is (ja tuua sisse teiste seadmete muudatused). Ainult käsitsi — sünkroonib ja logib sisse vaid siis, kui puudutad, mitte kunagi taustal.",
   "gdrive.reconnect": "Puuduta „Sünkrooni nüüd”, et Google Drive uuesti ühendada.",
   "gdrive.syncNow": "⟳ Sünkrooni nüüd",

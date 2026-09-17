@@ -545,6 +545,7 @@
   "gdrive.connect": "☁ Connetti Google Drive",
   "gdrive.disconnect": "Disconnetti",
   "gdrive.error": "Impossibile raggiungere Google Drive.",
+  "gdrive.storageFull": "La memoria di questo dispositivo è piena, quindi i dati uniti non sono stati salvati — non è andato perso nulla, ma la sincronizzazione non si è conclusa. Libera spazio in Impostazioni → Memoria (Cancella i dati nella cache) e sincronizza di nuovo.",
   "gdrive.hint": "Tocca «Sincronizza ora» per sincronizzare impostazioni, checklist e punti in una cartella privata del tuo Google Drive (e importare le modifiche degli altri dispositivi). Solo manuale — sincronizza e accede solo quando tocchi, mai in background.",
   "gdrive.reconnect": "Tocca «Sincronizza ora» per riconnettere Google Drive.",
   "gdrive.syncNow": "⟳ Sincronizza ora",

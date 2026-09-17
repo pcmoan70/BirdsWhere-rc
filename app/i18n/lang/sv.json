@@ -234,6 +234,7 @@
   "gdrive.synced": "Synkad med Google Drive.",
   "gdrive.reconnect": "Tryck på ”Synka nu” för att återansluta Google Drive.",
   "gdrive.error": "Kunde inte nå Google Drive.",
+  "gdrive.storageFull": "Lagringen på den här enheten är full, så de sammanslagna data kunde inte sparas — inget gick förlorat, men synkroniseringen slutfördes inte. Frigör utrymme under Inställningar → Lagring (Rensa cachade data) och synkronisera igen.",
   "install.label": "Offline-läge",
   "install.ios": "Tryck Dela ⎙ → Lägg till på hemskärmen",
   "install.iosOther": "Öppna sidan i Safari, tryck sedan Dela ⎙ → Lägg till på hemskärmen",

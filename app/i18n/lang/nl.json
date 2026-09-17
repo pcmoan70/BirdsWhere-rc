@@ -545,6 +545,7 @@
   "gdrive.connect": "☁ Google Drive verbinden",
   "gdrive.disconnect": "Verbinding verbreken",
   "gdrive.error": "Kon Google Drive niet bereiken.",
+  "gdrive.storageFull": "De opslag van dit apparaat is vol, dus de samengevoegde gegevens konden niet worden opgeslagen — er ging niets verloren, maar de synchronisatie is niet voltooid. Maak ruimte vrij onder Instellingen → Opslag (Gegevens in cache wissen) en synchroniseer opnieuw.",
   "gdrive.hint": "Tik op „Nu synchroniseren” om je instellingen, checklists en punten te synchroniseren met een privémap in je Google Drive (en wijzigingen van andere apparaten op te halen). Alleen handmatig — er wordt alleen gesynchroniseerd en ingelogd wanneer je tikt, nooit op de achtergrond.",
   "gdrive.reconnect": "Tik op „Nu synchroniseren” om Google Drive opnieuw te verbinden.",
   "gdrive.syncNow": "⟳ Nu synchroniseren",

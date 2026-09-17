@@ -545,6 +545,7 @@
   "gdrive.connect": "☁ Prijungti Google Drive",
   "gdrive.disconnect": "Atjungti",
   "gdrive.error": "Nepavyko pasiekti Google Drive.",
+  "gdrive.storageFull": "Šio įrenginio atmintis pilna, todėl sujungtų duomenų nepavyko įrašyti — niekas neprarasta, bet sinchronizavimas nebaigtas. Atlaisvinkite vietos Nustatymai → Atmintis (Išvalyti podėlio duomenis) ir sinchronizuokite dar kartą.",
   "gdrive.hint": "Bakstelėkite „Sinchronizuoti dabar“, kad sinchronizuotumėte savo nustatymus, kontrolinius sąrašus ir taškus su privačiu aplanku jūsų Google Drive (ir gautumėte kitų įrenginių pakeitimus). Tik rankiniu būdu — sinchronizuoja ir prisijungia tik kai bakstelite, niekada fone.",
   "gdrive.reconnect": "Bakstelėkite „Sinchronizuoti dabar“, kad iš naujo prijungtumėte Google Drive.",
   "gdrive.syncNow": "⟳ Sinchronizuoti dabar",

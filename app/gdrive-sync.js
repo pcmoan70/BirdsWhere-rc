@@ -263,7 +263,11 @@ window.GDriveSync = (function () {
         } catch (e) {}
       }
     } catch (e) {
-      fail("reconnect", e);
+      // A storage failure is NOT a connection problem: reporting it as "reconnect"
+      // sent the user back through Google sign-in over and over for something only
+      // freeing space on the device can fix.
+      var msg = (e && e.message) ? String(e.message) : "";
+      fail(/storage/i.test(msg) ? "storagefull" : "reconnect", e);
     } finally {
       syncing = false;
     }

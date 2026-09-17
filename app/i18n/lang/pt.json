@@ -545,6 +545,7 @@
   "gdrive.connect": "☁ Ligar o Google Drive",
   "gdrive.disconnect": "Desligar",
   "gdrive.error": "Não foi possível contactar o Google Drive.",
+  "gdrive.storageFull": "O armazenamento deste dispositivo está cheio, por isso os dados combinados não puderam ser guardados — nada se perdeu, mas a sincronização não terminou. Liberte espaço em Definições → Armazenamento (Limpar dados em cache) e sincronize novamente.",
   "gdrive.hint": "Toque em “Sincronizar agora” para sincronizar as suas definições, listas e pontos para uma pasta privada no seu Google Drive (e obter as alterações de outros dispositivos). Apenas manual — sincroniza e inicia sessão só quando toca, nunca em segundo plano.",
   "gdrive.reconnect": "Toque em “Sincronizar agora” para voltar a ligar o Google Drive.",
   "gdrive.syncNow": "⟳ Sincronizar agora",

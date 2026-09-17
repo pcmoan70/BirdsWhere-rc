@@ -150,6 +150,7 @@ window.GeoI18N = (function () {
         "gdrive.synced": "Synced with Google Drive.",
         "gdrive.reconnect": "Tap “Sync now” to reconnect Google Drive.",
         "gdrive.error": "Couldn’t reach Google Drive.",
+        "gdrive.storageFull": "This device's storage is full, so the merged data could not be saved — nothing was lost, but the sync did not finish. Free space under Settings → Storage (Clear cached data), then sync again.",
         "install.label": "Offline mode",
         "install.ios": "Tap Share ⎙ → Add to Home Screen",
         "install.iosOther": "Open this page in Safari, then Share ⎙ → Add to Home Screen",
