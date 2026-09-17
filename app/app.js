@@ -6446,8 +6446,8 @@
               '</div>' +
               '<div class="settings-section" data-i18n="settings.secRarity">Rarity alerts</div>' +
               '<div class="ctrl-group">' +
-                '<p class="cu-hint" data-i18n="rarity.hint">While the app is open, checks eBird\'s notable-sightings feed around every stored location marked with 🔔 (press-and-hold the 🔍 search button to manage them). New rarities appear as pulsing ★ on the map and under the header bell. The app cannot alert while the browser is closed.</p>' +
-                '<p class="cu-hint" id="rarity-key-hint" style="display:none" data-i18n="rarity.needKey">Needs a free eBird API key — enter it under Settings → Data sources → eBird.</p>' +
+                '<p class="cu-hint" data-i18n="rarity.hint">While the app is open, the places you mark with 🔔 (press and hold the 🔍 search button to manage them) are checked for birds the model finds unlikely there — eBird\'s notable sightings AND, unless you switch it off below, your ordinary observation sources. Rarities among the observations you fetch yourself join the same list, so no eBird key is required. The app cannot alert while the browser is closed.</p>' +
+                '<p class="cu-hint" id="rarity-key-hint" style="display:none" data-i18n="rarity.needKey">Nothing can check right now — either switch on “Check all sources” below, or add a free eBird API key under Settings → Data sources → eBird.</p>' +
                 '<label class="ctrl-check"><input type="checkbox" id="rarity-onoff-toggle" checked> <span data-i18n="rarity.enable">Alerts on (checks while the app is open)</span></label>' +
                 '<label class="ctrl-check"><input type="checkbox" id="rarity-showmap-toggle" checked> <span data-i18n="rarity.showMap">Show rarities on the map</span></label>' +
                 '<label for="rarity-interval" data-i18n="rarity.interval">Check every (minutes)</label>' +

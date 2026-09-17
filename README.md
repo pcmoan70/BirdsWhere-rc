@@ -397,8 +397,10 @@ running**, and they **abort themselves** if you start one — the next check pic
 
 When a **never-seen-before** rarity arrives it:
 
-- lands on the map as a **pulsing red ★** (own layer — untouched by the legend filters and
-  the red ×), with a popup: localized name, date, place, observer, count and checklist link.
+- lands on the map as a **pulsing red ★** (its own layer: it ignores the legend filters, but it is
+  retired when the group leaves the list — the red × or an aged-out alert — and it is not drawn at
+  all while *Show rarities on the map* is off), with a popup: localized name, date, place, observer,
+  count and checklist link.
   Every rarity in the list also plots as an **ordinary dot** in the species' colour with a
   centre that pulses **black↔white** (Settings → Rarity alerts → *Show rarities on the map*,
   on by default) — these obey the normal species/date filters and open the co-located list on
@@ -413,7 +415,9 @@ When a **never-seen-before** rarity arrives it:
   pans the map there. It is a **full page in the same framework as the Species list and Migration
   pages** — it opens under the green header bar (which stays usable), carries the same furniture
   (back arrow, title, a "last check" line with ↻, then one row of controls), and its ‹ — like the
-  browser's Back — returns to the view you opened it from. Alerts you
+  browser's Back — returns to the view you opened it from. A **tap on the header bell** closes the
+  page again and returns you to where you were (press-and-hold still checks straight away), and the
+  page's **↻ checks the area you are looking at** when no location is marked with 🔔 at all. Alerts you
   have **not seen yet are bold**; everything already read is in the normal weight. Opening marks
   all read and *Clear alerts* wipes list + stars; the switches themselves (**Alerts on**, *Show
   rarities on the map*, *Whole-country alerts*) live in Settings → Rarity alerts, so the page is
@@ -422,7 +426,12 @@ When a **never-seen-before** rarity arrives it:
   rare: a bird qualifies when the model's probability at its own spot and week is **below** that %.
   It governs both sources — your own **fetched** observations below it join the list (badged with
   their probability), and **eBird notable** alerts above it are dropped (so "notable" birds the model
-  finds common where you are don't clutter the list);
+  finds common where you are don't clutter the list). **0 or 100 switches the threshold off**
+  entirely — in both directions, so nothing is harvested from your fetches either. The bell shows
+  whenever there is a list to open, so your own fetches alone can fill it with no subscription and
+  no eBird key; its red badge counts only alerts the page will actually show you (a bird outside the
+  day window or above the threshold never lights it). One sighting reported by two sources — eBird
+  and a national database, say — is **one entry**, matched on species × ~1 km × date;
 - plays a short **alarm chirp** (synthesized on-device, toggleable, *Test* button) and — if
   enabled — shows a **system notification** even from a background tab (permission is asked
   once when you switch it on; tapping the notification focuses the app on the sighting);

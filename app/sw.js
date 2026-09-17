@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1774";
+var VERSION = "v1775";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• The rarity-alert texts now describe the feature as it actually is: it watches every source, not just eBird, it needs no eBird key, and your own fetched observations feed the same list. Settings, the alerts page, the 🔔 column and the in-app help were all still describing the eBird-only version from three weeks ago — in English and in all 14 languages.",
   "• Rarity alerts, hardened: the watch can no longer die mid-check (a GPS fix that never answered used to stop it until you reloaded), Manual really means manual, and going offline no longer costs you a whole interval. One rule now decides what counts as rare — at 0 % or 100 % the threshold is off everywhere, where it used to let your own fetches flood the list — and one bird found twice is one entry. The bell only turns red for alerts the page will actually show you, switching the map off leaves no ghost dots behind, a full storage no longer loses your other settings, and a failed alert mail no longer burns the five-minute window. ↻ on the alerts page now checks wherever you are looking, even with nothing subscribed.",
   "• The Images gallery can be sorted at last: the funnel's Sort section was hidden in that layout, so the cards were stuck in whatever order the table had. Sort now shows there and the cards follow it — by name, total, last seen, probability, distance or season. On the model's own list only the orders that have values are offered.",
   "• Finnish observations are back: the Laji.fi query asked for two field names the FinBIF warehouse does not have (added with the photo feature on 16 Sep), and it answered the WHOLE query with HTTP 400 — no Finnish records at all. The picture fields are now the ones the warehouse actually publishes, and a rejected field can only cost the extras, never the observations.",
   "• The Images list now answers to the filters like the table does: the funnel turns orange (with its kept/removed bar) when a filter narrows a model-only list, and the name search really narrows the cards.",
-  "• Species groups (Raptors, Ducks & geese, Waders …) are back in the list filters on a spot with no observations: the groups are now built from whatever the list shows, so the model’s own species can be narrowed to one group just like fetched ones.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
