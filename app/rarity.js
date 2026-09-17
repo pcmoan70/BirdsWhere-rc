@@ -1042,7 +1042,13 @@ window.AppRarity = (function () {
       var btn = document.createElement("button");
       btn.type = "button"; btn.id = "rarity-bell"; btn.className = "hdr-icon-btn";   // white line icon in the standard bordered header button
       btn.innerHTML = ico("bell") + '<span id="rarity-badge"></span><span id="rarity-remain"></span>';
-      btn.addEventListener("click", showRarityPanel);
+      // A tap opens the alerts page — and closes it again when it is the page you are on,
+      // returning to whatever you came from. (Press-and-hold still polls; see below.)
+      btn.addEventListener("click", function () {
+        var page = rarityPageEl && rarityPageEl();
+        if (page && page.style.display !== "none") closeRarityPage();
+        else showRarityPanel();
+      });
       hdr.appendChild(btn);
       // Press-and-hold (or right-click) the bell = poll all 🔔 locations right now
       // (same as the popup's ↻ button); a plain tap still opens the rarity list.
@@ -1052,7 +1058,7 @@ window.AppRarity = (function () {
           lpFired = true;
           if (rarityPollBusy) return;
           if (!rarityLocs().length) return;
-        if (!ebirdKey() && !rarityAllSources()) { setStatus(t("rarity.needKey")); return; }   // nothing could deliver an alert
+          if (!ebirdKey() && !rarityAllSources()) { setStatus(t("rarity.needKey")); return; }   // nothing could deliver an alert
           rarityBadKey = null;
           runRarityPoll();
           setStatus(t("rarity.checkNow") + "…");

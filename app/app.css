@@ -4344,6 +4344,8 @@ a.place-search-btn.is-open { background: var(--brand-soft, #e6f0ee); }
 
 /* Hover mini-map: previews a place name from the species list without leaving
    it. Non-interactive; the centre dot marks the exact location. */
+/* A popup pushed down to clear the top edge no longer points at its marker — drop the tail. */
+.leaflet-popup.popup-shifted .leaflet-popup-tip-container { display: none; }
 #loc-hover-map { position: fixed; right: 12px; bottom: 12px; z-index: 9500; width: 220px; height: 220px; display: none; border: 1px solid var(--border, #ccc); border-radius: 8px; overflow: hidden; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28); pointer-events: none; background: #e8e8e8; }
 #loc-hover-map .lhm-map { position: absolute; inset: 0; }
 #loc-hover-map .lhm-dot { position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--danger, #d33); border: 2px solid #fff; box-shadow: 0 0 4px rgba(0, 0, 0, 0.5); z-index: 500; }

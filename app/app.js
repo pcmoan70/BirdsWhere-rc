@@ -8295,8 +8295,11 @@
     map.on("movestart zoomstart click", clearSpotFan);   // same for the spot-marker fan
     map.on("movestart zoomstart", function () { clearTimeout(mapClickDelayTimer); });   // a pan/zoom cancels a pending tap→popup
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") { clearSpider(); clearSpotFan(); } });
-    map.on("popupopen", function () {
+    map.on("popupopen", function (e) {
       closeModals();   // a map popup opened — close any open modal overlay
+      var pop = e && e.popup;
+      fitPopupInView(pop);                                            // zoomed out: no autoPan to wait for
+      setTimeout(function () { fitPopupInView(pop, true); }, 350);    // and again once autoPan has settled
     });
 
     // The map view is transient (only needed to restore on reload) but a save()
@@ -15034,6 +15037,42 @@
     enableMenuKeys(wrap, function () { map.closePopup(); });   // PC: ↑/↓ + Enter through the actions
   }
 
+  // A Leaflet popup opens ABOVE its point and relies on autoPan to make room. Zoomed all
+  // the way out — or at the top of the projection (northern Greenland, Svalbard) — there is
+  // no map left to pan into, so the popup runs off an edge and only part of it shows. Fit it
+  // by hand instead: cap the height to what the map can hold (Leaflet then scrolls the
+  // content), and nudge whatever still sticks out back inside on either axis. The tail is
+  // dropped once it has moved, since it no longer points at the marker.
+  function fitPopupInView(pop, again) {
+    if (!pop || !pop.getElement) return;
+    if (pop._fitted && !again) return;
+    var mapEl = map && map.getContainer(); if (!mapEl) return;
+    var el = pop.getElement(); if (!el) return;
+    pop._fitted = true;
+    var PAD = 6, mr = mapEl.getBoundingClientRect(), pr = el.getBoundingClientRect();
+    if (!pr.height) return;
+    // Taller than the map itself → scroll inside instead of overflowing. Leaflet's maxHeight
+    // caps the CONTENT, so take off what the frame (padding, tail, close button) adds first.
+    var avail = Math.round(mr.height - 2 * PAD);
+    if (pr.height > avail) {
+      var ce = el.querySelector(".leaflet-popup-content");
+      var frame = ce ? Math.max(0, Math.round(pr.height - ce.getBoundingClientRect().height)) : 40;
+      pop.options.maxHeight = Math.max(90, avail - frame);
+      pop.update();
+      pr = el.getBoundingClientRect();
+    }
+    var off = pop.options.offset || [0, 0];
+    var ox = (off.x != null ? off.x : off[0]) || 0, oy = (off.y != null ? off.y : off[1]) || 0;
+    var dx = 0, dy = 0;
+    if (pr.left < mr.left + PAD) dx = (mr.left + PAD) - pr.left;
+    else if (pr.right > mr.right - PAD) dx = (mr.right - PAD) - pr.right;
+    if (pr.top < mr.top + PAD) dy = (mr.top + PAD) - pr.top;
+    else if (pr.bottom > mr.bottom - PAD) dy = (mr.bottom - PAD) - pr.bottom;
+    if (!dx && !dy) return;
+    pop.options.offset = L.point(ox + Math.round(dx), oy + Math.round(dy));
+    el.classList.add("popup-shifted");
+    pop.update();
+  }
   // ---- Points dropdown panel ----
   function refreshMpPanel() {
     var panel = document.getElementById("mp-panel"); if (!panel) return;
