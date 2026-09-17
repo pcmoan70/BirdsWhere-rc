@@ -6404,7 +6404,6 @@
           '<div class="ctrl-group" id="settings-wrap">' +
             '<button type="button" id="settings-toggle" class="settings-icon-btn" aria-haspopup="true" aria-label="Settings" data-i18n-title="ctrl.settingsHold" title="Settings"></button>' +
             '<div id="settings-panel" class="dd-panel settings-panel" style="display:none">' +
-              '<p class="settings-intro" data-i18n="settings.appIntro">BirdsWhere shows where species live, migrate, and are being seen right now — the BirdNET habitat model runs entirely in your browser, overlaid with live observations from eBird, GBIF, iNaturalist and national databases.</p>' +
               // "About ↗" (the short web summary, in the UI language) beside "How it works" (the in-app panel).
               '<div class="settings-aboutrow">' +
                 '<a class="settings-about about-page-link" href="about/" target="_blank" rel="noopener" data-i18n="settings.aboutPage">About ↗</a>' +
@@ -6488,14 +6487,6 @@
                   '<input type="text" id="maptiler-key-input" autocomplete="off" spellcheck="false" data-i18n-ph="ph.maptilerKey" placeholder="MapTiler API key (for MapTiler Outdoor)" />' +
                   '<p class="cu-hint" data-i18n="ctrl.maptilerKeyHint">MapTiler Outdoor (trails + terrain) needs a free personal MapTiler API key from maptiler.com — paste it here to use it. Until then a plain Streets map is shown.</p>' +
                 '</div>' +
-              '</div>' +
-              '<div class="ctrl-group" id="hotspot-wrap">' +
-                '<label data-i18n="ctrl.hotspot">Density heatmap</label>' +
-                '<div class="hs-row">' +
-                  '<button type="button" class="hs-cycle" id="hotspot-cycle" data-hs="off" data-i18n="ctrl.hsOff">Off</button>' +
-                  '<label class="ctrl-check hs-dots"><input type="checkbox" id="showdots-toggle" checked> <span data-i18n="ctrl.showDots">Show dots</span></label>' +
-                '</div>' +
-                '<p class="cu-hint" data-i18n="ctrl.hotspotHint">Shades the map by how much activity each area has — tap to cycle Off → species per area → distinct observers → total counts. A smooth, zoom-steady heat cloud; use “Show dots” to see the heatmap alone, the dots alone, or both.</p>' +
               '</div>' +
               '<div class="settings-section" data-i18n="settings.secFetch">Fetching &amp; detections</div>' +
               '<div class="ctrl-group">' +
@@ -11768,10 +11759,6 @@
   // only zooming does. Rows honour the exact same filters the ordinary dots do.
   var DOT_CLUSTER_PX = 16;   // ≈ one dot footprint (radius 5–9 px) → "they touch"
   var detClusterLayer = null, dotClusterTimer = null, dotClusterHiddenN = 0;
-  // Observation dots on/off (independent "Show dots" checkbox) and the density-
-  // heatmap metric (Off/Species/Observers/Counts) — both live here so the dot
-  // rebuild below and the hotspot painter further down share one source of truth.
-  var dotsShown = true, hotMode = "off";
   var DOT_CLUSTER = true;   // crowded dots always merge into count markers (the Settings toggle is gone)
   function dotClusterOn() { return DOT_CLUSTER; }
   function clearDotClusterLayers() {
@@ -11913,7 +11900,6 @@
     ensureDedup();
     reconcileObsFilter();   // drop a stale observer filter that no longer matches any plotted observer
     reconcileLocFilter();   // …and likewise a stale location filter
-    if (typeof scheduleHotspot === "function") scheduleHotspot();   // refresh the hotspot heatmap when the plotted set changes
 
     if (detFocusKey && !detPlot[detFocusKey]) detFocusKey = null;   // focused species gone → don't mute everything
     recolorDetections();
@@ -11941,7 +11927,6 @@
     keys.forEach(function (k) {
       var e = detPlot[k];
       if (e.group) { map.removeLayer(e.group); e.group = null; }
-      if (!dotsShown) return;                                 // "Show dots" off — heatmap only
       // Legend hover OVERRIDES the selection: while a species is focused, draw ONLY
       // it (regardless of what's selected); otherwise apply the normal selection.
       // The detections-list search (debounced) narrows the drawn dots to matching
@@ -11957,8 +11942,7 @@
       e.group = renderDetGroup(detName(e), rows, e.color, isInteresting(e.key), detIsRare(k), allowed, e.key);
       e.group.addTo(map);
     });
-    if (!dotsShown) { if (detClusterLayer) { try { map.removeLayer(detClusterLayer); } catch (e) {} detClusterLayer = null; } }
-    else if (dotDC && dotDC.clusters.length) renderDotClusters(dotDC.clusters);
+    if (dotDC && dotDC.clusters.length) renderDotClusters(dotDC.clusters);
   }
   // While a legend hover isolates a species/observer, the spot overlays (eBird
   // hotspots, Best sites and birding spots all render in spotsPane) hide too —
@@ -16204,7 +16188,6 @@
       dotClusterTimer = setTimeout(function () { try { rebuildDetLayers(); } catch (e) {} }, 150);
     }
     map.on("zoomend moveend", dotViewKick);
-    map.on("moveend zoomend", scheduleHotspot);   // repaint the hotspot heatmap for the new view
     map.on("moveend", function () { if (legendStackCtrl) scheduleClcQuery(); });   // re-limit the CORINE legend to the new view
     map.on("moveend", function () {   // "far migrant HERE" depends on the viewing region — re-filter when it changes
       if (detRegionMode !== "far") return;
@@ -17064,25 +17047,6 @@
     if (rtCb) {
       rtCb.checked = rarityTickerOn();
       rtCb.addEventListener("change", function () { window.GeoState.save({ rarityTicker: !!this.checked }); });
-    }
-    var hsCycle = document.getElementById("hotspot-cycle");
-    if (hsCycle) {
-      var HS_MODES = ["off", "species", "observers", "counts"];
-      var HS_KEYS = { off: "ctrl.hsOff", species: "ctrl.hsSpecies", observers: "ctrl.hsObservers", counts: "ctrl.hsCounts" };
-      var hsPaint = function () { hsCycle.setAttribute("data-hs", hotMode); hsCycle.setAttribute("data-i18n", HS_KEYS[hotMode]); hsCycle.textContent = t(HS_KEYS[hotMode]); };
-      setHotMode((window.GeoState.get && window.GeoState.get("hotspotMode")) || "off"); hsPaint();
-      hsCycle.addEventListener("click", function () {
-        var next = HS_MODES[(HS_MODES.indexOf(hotMode) + 1) % HS_MODES.length];
-        window.GeoState.save({ hotspotMode: next });
-        setHotMode(next); hsPaint();
-      });
-    }
-    var sdCb = document.getElementById("showdots-toggle");
-    if (sdCb) {
-      var savedDots = window.GeoState.get && window.GeoState.get("showDots");
-      sdCb.checked = (savedDots === undefined || savedDots === null) ? true : !!savedDots;
-      dotsShown = sdCb.checked;
-      sdCb.addEventListener("change", function () { window.GeoState.save({ showDots: !!this.checked }); setShowDots(this.checked); });
     }
     // Rarity alerts: interval + sound (with a test chirp — the click doubles as
     // the audio-unlock gesture) + system notifications (permission asked only on
@@ -18814,185 +18778,6 @@
   function clearOverlay() {
     cachedRender = null;
     if (overlayCanvas) { overlayCanvas.width = 0; overlayCanvas.height = 0; }
-  }
-
-  // ---------- Hotspot heatmap ----------
-  // An alternative view of the fetched observations: a smooth heat cloud whose
-  // intensity blends three "how good a birding spot is here" signals per area —
-  // distinct species, distinct observers and total individuals counted — h3-binned.
-  // Toggled from the top of Settings. Reads the plotted detections (detPlot).
-  var hotCanvas = null, _hotRAF = 0;   // hotMode lives up with the dot state
-  function hotHeatmapOn() { return hotMode !== "off"; }
-  function ensureHotCanvas() {
-    if (hotCanvas) return;
-    if (!map.getPane("hotspotPane")) {
-      map.createPane("hotspotPane");
-      var hp = map.getPane("hotspotPane"); hp.style.zIndex = 342; hp.style.pointerEvents = "none";
-    }
-    hotCanvas = document.createElement("canvas");
-    hotCanvas.className = "hotspot-heatmap";
-    hotCanvas.style.position = "absolute"; hotCanvas.style.pointerEvents = "none";
-    map.getPane("hotspotPane").appendChild(hotCanvas);
-  }
-  // warm "birding hotspot" ramp: quiet blue -> teal -> green -> amber -> red
-  function hotRamp(t) {
-    var s = [[0, [26, 52, 120]], [0.30, [32, 150, 160]], [0.55, [110, 190, 90]],
-             [0.78, [240, 196, 64]], [1, [226, 58, 48]]];
-    for (var i = 1; i < s.length; i++) if (t <= s[i][0]) {
-      var a = s[i - 1], b = s[i], f = (t - a[0]) / ((b[0] - a[0]) || 1);
-      return [Math.round(a[1][0] + (b[1][0] - a[1][0]) * f),
-              Math.round(a[1][1] + (b[1][1] - a[1][1]) * f),
-              Math.round(a[1][2] + (b[1][2] - a[1][2]) * f)];
-    }
-    return s[s.length - 1][1];
-  }
-  // Bin plotted observations into h3 cells: distinct species, distinct observers,
-  // summed individual count. Respects ALL the active detection filters (species
-  // selection/status/group/count/prob/hidden + the date window + observer/source/
-  // New/dedup row filters) via the same detIsVisible + detRowPasses predicates the
-  // map dots use, so the density cloud always matches the dots on screen.
-  function hotspotBins(res) {
-    var cells = Object.create(null), keys = Object.keys(detPlot);
-    var selActive = detSelectionActive();
-    for (var k = 0; k < keys.length; k++) {
-      var sk = keys[k];
-      if (!detIsVisible(sk, selActive)) continue;          // species filtered out (legend/status/group/count/prob/selection)
-      var rows = (detPlot[sk] && detPlot[sk].rows) || [];
-      for (var i = 0; i < rows.length; i++) {
-        var r = rows[i];
-        if (!r || !isFinite(+r.lat) || !isFinite(+r.lon)) continue;
-        if (!detRowPasses(r)) continue;                    // date window + observer + source + New + dedup
-        var cell = window.h3.latLngToCell(Math.max(-89.9, Math.min(89.9, +r.lat)), wrapLon(+r.lon), res);
-        var c = cells[cell] || (cells[cell] = { sp: Object.create(null), ob: Object.create(null), tot: 0, nSp: 0, nOb: 0, sLa: 0, sLo: 0, n: 0 });
-        c.sLa += (+r.lat); c.sLo += (+r.lon); c.n++;   // running centroid so the blob sits ON the actual dots, not the H3 cell's geometric centre
-        if (!c.sp[sk]) { c.sp[sk] = 1; c.nSp++; }
-        var cnt = +r.count; c.tot += (isFinite(cnt) && cnt > 0) ? cnt : 1;   // no count -> presence counts as 1
-        var obs = detObsSplit(r.observer);
-        if (obs.length) { for (var o = 0; o < obs.length; o++) if (!c.ob[obs[o]]) { c.ob[obs[o]] = 1; c.nOb++; } }
-        else if (!c.ob[""]) { c.ob[""] = 1; c.nOb++; }
-      }
-    }
-    return cells;
-  }
-  // Resolution from the DATA extent (NOT the view), so the binning — and therefore
-  // the whole density pattern — is fixed in geography and doesn't reshuffle/rotate
-  // when you zoom. (h3 child cells sit ~19° rotated from their parents, so a
-  // view-following resolution re-orients the grid at every zoom level — the bug.)
-  function hotspotRes() {
-    var minLa = 90, maxLa = -90, minLo = 180, maxLo = -180, any = false, keys = Object.keys(detPlot);
-    var selActive = detSelectionActive();
-    for (var k = 0; k < keys.length; k++) {
-      if (!detIsVisible(keys[k], selActive)) continue;   // extent follows the FILTERED data, matching hotspotBins
-      var rows = (detPlot[keys[k]] && detPlot[keys[k]].rows) || [];
-      for (var i = 0; i < rows.length; i++) {
-        if (!detRowPasses(rows[i])) continue;
-        var la = +rows[i].lat, lo = +rows[i].lon; if (!isFinite(la) || !isFinite(lo)) continue;
-        any = true;
-        if (la < minLa) minLa = la; if (la > maxLa) maxLa = la;
-        if (lo < minLo) minLo = lo; if (lo > maxLo) maxLo = lo;
-      }
-    }
-    if (!any) return 5;
-    var midLa = (minLa + maxLa) / 2;
-    var spanM = Math.max((maxLa - minLa) * 111320, (maxLo - minLo) * 111320 * Math.cos(midLa * Math.PI / 180), 2000);
-    var target = spanM / 45;                    // ~45 cells across the data's larger dimension
-    var best = 5, bestD = Infinity;
-    for (var res = 0; res <= 12; res++) {
-      var d = Math.abs(Math.log(window.h3.getHexagonEdgeLengthAvg(res, "m") / target));
-      if (d < bestD) { bestD = d; best = res; }
-    }
-    return best;
-  }
-  // Cache (res, bins, normalisation) so a pure zoom/pan reuses them: the pattern stays
-  // put and only the projection changes. Recompute only when the data or the observer/
-  // dup filter changes (cheap signature).
-  // A compact fingerprint of every COMMITTED detection filter that gates
-  // detIsVisible + detRowPasses, so the binned density recomputes whenever the
-  // user changes a filter — but NOT on a pure pan/zoom (none of these change) nor
-  // on a transient legend/histogram HOVER preview (detDayHover / detFocusSrc /
-  // detFocusObs are deliberately excluded, so the cloud doesn't flicker on brush-over).
-  function detFilterSig() {
-    function ks(o) { return o ? Object.keys(o).sort().join(",") : ""; }
-    var pm = document.getElementById("prob-min"), px = document.getElementById("prob-max"), dr = detDateRange();
-    return [
-      ks(detExcluded), ks(detSelected),
-      detStarFilter, detRareFilter, detYearFilter, detLifeFilter, detAlertFilter,
-      speciesGroup, spCountMin, spCountMax, spCountMetric,
-      (pm ? pm.value : ""), (px ? px.value : ""), detLegendRows,
-      (detDaySuspend ? 1 : 0), ks(detDaySel), (dr ? dr.from + "~" + dr.to : ""), detRecencyDays(), detMonths().join(""),
-      (detObsFilter ? ("obs" + detObsNames.slice().sort().join("|") + (detObsAllowNone ? "n" : "")) : "all"),
-      (detSrcFilter ? ("src" + Array.from(detSrcFilter).sort().join("|")) : "all"),
-      (detNewFilter ? ("new" + detNewSince + (detTodayFilter ? "t" : "")) : "")
-    ].join("¦");
-  }
-  var _hotCache = null;
-  function hotspotData() {
-    var keys = Object.keys(detPlot), nrows = 0;
-    for (var k = 0; k < keys.length; k++) nrows += ((detPlot[keys[k]] && detPlot[keys[k]].rows) || []).length;
-    var sig = keys.length + ":" + nrows + ":" +
-      (typeof detDupHidden !== "undefined" && detDupHidden ? detDupHidden.size : 0) + ":" + detFilterSig();
-    if (_hotCache && _hotCache.sig === sig) return _hotCache;
-    var res = hotspotRes(), bins = hotspotBins(res), ids = Object.keys(bins);
-    var mS = 1, mO = 1, mT = 1, e;
-    for (var i = 0; i < ids.length; i++) { e = bins[ids[i]]; if (e.nSp > mS) mS = e.nSp; if (e.nOb > mO) mO = e.nOb; if (e.tot > mT) mT = e.tot; }
-    _hotCache = { sig: sig, res: res, bins: bins, ids: ids, lS: Math.log1p(mS), lO: Math.log1p(mO), lT: Math.log1p(mT) };
-    return _hotCache;
-  }
-  function paintHotspot() {
-    if (!hotHeatmapOn() || !map || !window.h3) return;
-    ensureHotCanvas();
-    var size = map.getSize();
-    if (hotCanvas.width !== size.x || hotCanvas.height !== size.y) { hotCanvas.width = size.x; hotCanvas.height = size.y; }
-    L.DomUtil.setPosition(hotCanvas, map.containerPointToLayerPoint([0, 0]));
-    var ctx = hotCanvas.getContext("2d"); ctx.clearRect(0, 0, size.x, size.y);
-    if (!hasPlottedDetections()) return;
-    var i, data = hotspotData(), ids = data.ids, cells = data.bins;
-    if (!ids.length) return;
-    // Single selected metric — Species (distinct), Observers (distinct) or Counts
-    // (summed individuals) — normalised by its own max so the ramp spans the data.
-    var lmax = hotMode === "observers" ? data.lO : hotMode === "counts" ? data.lT : data.lS;
-    var mpp = TILE_SIZE_M * Math.cos(map.getCenter().lat * Math.PI / 180) / Math.pow(2, map.getZoom());
-    var radius = Math.max(12, window.h3.getHexagonEdgeLengthAvg(data.res, "m") / mpp * 1.7);
-    var acc = document.createElement("canvas"); acc.width = size.x; acc.height = size.y;
-    var ac = acc.getContext("2d"); ac.globalCompositeOperation = "lighter";
-    for (i = 0; i < ids.length; i++) {                 // pass 1: accumulate intensity blobs
-      var c = cells[ids[i]];
-      var val = hotMode === "observers" ? c.nOb : hotMode === "counts" ? c.tot : c.nSp;
-      var idx = Math.log1p(val) / lmax;
-      if (!(idx > 0.02)) continue;
-      var ll = c.n ? [c.sLa / c.n, c.sLo / c.n] : window.h3.cellToLatLng(ids[i]);   // centroid of the cell's dots → blob sits ON the dots, not the hex centre
-      var pt = map.latLngToContainerPoint([ll[0], ll[1]]);
-      if (pt.x < -radius || pt.y < -radius || pt.x > size.x + radius || pt.y > size.y + radius) continue;
-      var g = ac.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, radius);
-      g.addColorStop(0, "rgba(0,0,0," + Math.min(1, idx).toFixed(3) + ")");
-      g.addColorStop(1, "rgba(0,0,0,0)");
-      ac.fillStyle = g; ac.beginPath(); ac.arc(pt.x, pt.y, radius, 0, 7); ac.fill();
-    }
-    var src = ac.getImageData(0, 0, size.x, size.y).data;   // pass 2: colourise
-    var out = ctx.createImageData(size.x, size.y), od = out.data;
-    for (i = 0; i < src.length; i += 4) {
-      var a = src[i + 3] / 255; if (a <= 0.03) continue;
-      var t = Math.min(1, a), col = hotRamp(t);
-      od[i] = col[0]; od[i + 1] = col[1]; od[i + 2] = col[2]; od[i + 3] = Math.round(Math.min(1, t * 1.25) * 205);
-    }
-    ctx.putImageData(out, 0, 0);
-  }
-  function scheduleHotspot() {
-    if (!hotHeatmapOn()) return;
-    if (_hotRAF) return;
-    if (typeof requestAnimationFrame === "undefined") { paintHotspot(); return; }
-    _hotRAF = requestAnimationFrame(function () { _hotRAF = 0; paintHotspot(); });
-  }
-  // Density-heatmap metric: "off" | "species" | "observers" | "counts".
-  function setHotMode(mode) {
-    hotMode = (mode === "species" || mode === "observers" || mode === "counts") ? mode : "off";
-    if (hotHeatmapOn()) { ensureHotCanvas(); paintHotspot(); }
-    else if (hotCanvas) { hotCanvas.width = 0; hotCanvas.height = 0; }
-  }
-  // "Show dots" checkbox — independent of the heatmap metric.
-  function setShowDots(on) {
-    dotsShown = !!on;
-    rebuildDetLayers();
   }
 
   // Bilinear sample of the cached probability field at a lat/lon — the same

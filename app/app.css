@@ -2458,26 +2458,11 @@ button.dd-name:hover { text-decoration: underline; }
 .settings-section { margin: 16px 0 6px; padding-top: 13px; border-top: 1px solid var(--border, #e3e3e3);
   font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--brand, #0b7a5a); }
 .settings-panel .settings-section:first-of-type { margin-top: 8px; }
-/* Density-heatmap control: one button that cycles Off -> Species -> Observers ->
-   Counts on each click. Off is black-on-white; the three active metrics are
-   white-on-green. The independent "Show dots" checkbox sits on the same row. */
-.hs-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
-.hs-cycle { appearance: none; border: 1px solid var(--border, #d5d5d5); border-radius: 7px;
-  background: #fff; color: #222; font: inherit; font-size: var(--fs-xs); font-weight: 600;
-  padding: 4px 12px; cursor: pointer; line-height: 1.4; min-width: 6.5em; text-align: center; }
-.hs-cycle[data-hs="species"], .hs-cycle[data-hs="observers"], .hs-cycle[data-hs="counts"] {
-  background: var(--brand, #2e8b74); color: #fff; border-color: var(--brand, #2e8b74); }
-.hs-dots { display: inline-flex; align-items: center; gap: 5px; margin: 0; white-space: nowrap;
-  text-transform: none; letter-spacing: 0; font-weight: 600; }
-.hs-dots input { margin: 0; }
 /* "What's new" — dated list of major features at the bottom of Settings. */
 .whatsnew-list { display: flex; flex-direction: column; gap: 9px; margin-top: 4px; }
 .wn-item { display: flex; flex-direction: column; gap: 2px; font-size: var(--fs-s); line-height: 1.3; }
 .wn-head { font-weight: 700; color: var(--ink, #222); font-variant-numeric: tabular-nums; }
 .wn-text { color: var(--ink, #222); }
-.settings-intro {
-  margin: 2px 6px 8px; font-size: var(--fs-s); line-height: 1.45; color: var(--ink-muted, #5b6f69);
-}
 .settings-about {
   display: block;
   width: 100%;

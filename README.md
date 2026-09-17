@@ -477,12 +477,6 @@ per species:
 Clicking a dot opens the co-located-species list for that spot; **Save** stores those points
 into a named point-list.
 
-**Density heatmap** (Settings → *View*). A button cycles the fetched observations through three
-zoom-invariant heatmaps of where the activity concentrates — **distinct Species**, **distinct
-Observers** and total **Counts** per area — and honours every active filter (species, date,
-source…). A separate **Show dots** checkbox lets you view the heatmap alone, the dots alone, or
-both together.
-
 ---
 
 ## The map legend & filters
