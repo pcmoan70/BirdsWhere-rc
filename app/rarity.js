@@ -518,7 +518,8 @@ window.AppRarity = (function () {
           why: "prob", recProb: pct, prob: pct,
           photo: r.photo || "", photoBig: r.photoBig || "", photoBy: r.photoBy || "", rl: r.rl || "" });
         if (isNew && !seeding) fresh.push({ area: areaName, raw: { obsId: id, sciName: c.sci, comName: c.name, lat: +r.lat, lng: +r.lon,
-          obsDt: r.date || "", locName: r.place || "", userDisplayName: r.observer || "", howMany: (r.count != null ? r.count : ""), _url: r.url || "" } });
+          obsDt: r.date || "", locName: r.place || "", userDisplayName: r.observer || "", howMany: (r.count != null ? r.count : ""),
+          _url: r.url || "", _mprob: pct } });
       });
       cfg.seeded[seedKey] = 1;
       window.GeoState.save({ rarityAlerts: cfg });
@@ -775,17 +776,29 @@ window.AppRarity = (function () {
         return { ok: ok, activate: !ok && /activat/i.test(String((j && j.message) || "")) };
       });
   }
-  // Mail clients and relays treat a wall of links as spam, and that is the likeliest reason a
-  // message that the relay accepted never lands — so only the first few alerts carry theirs.
-  var RARITY_MAIL_LINKS = 3;
-  function rarityAlertLine(f, withLink) {
-    var o = f.raw || {};
-    return "• " + (o.comName || o.sciName || "?") +
-      (o.locName ? " — " + o.locName : "") +
-      (o.obsDt ? " — " + o.obsDt : "") +
-      (o._mprob != null && isFinite(o._mprob) ? " — " + o._mprob + "%" : "") +
-      (f.area ? " — " + f.area : "") +
-      (!withLink ? "" : (o.subId ? "\n  https://ebird.org/checklist/" + o.subId : (o._url ? "\n  " + o._url : "")));
+  // One alert as { text, url }: the species, where, when, how unlikely the model finds
+  // it, and which watched area it belongs to — with the record's own link. eBird's own
+  // records link to their checklist; everything else carries the link its source gave.
+  function rarityMailEntry(f) {
+    var o = (f && f.raw) || {};
+    var bits = [o.comName || o.sciName || "?"];
+    if (o.locName) bits.push(o.locName);
+    if (o.obsDt) bits.push(o.obsDt);
+    if (o._mprob != null && isFinite(o._mprob)) bits.push(o._mprob + "%");
+    if (f && f.area) bits.push(f.area);
+    return { text: bits.join(" — "), url: o.subId ? "https://ebird.org/checklist/" + o.subId : (o._url || "") };
+  }
+  // The message body. The DESCRIPTIVE TEXT is the link, so the mail carries no wall of
+  // URLs — and EVERY alert gets one, not just the first few. The same lines follow in
+  // plain text, for a client (or relay) that does not render HTML.
+  function rarityMailBody(entries, headline) {
+    var rows = entries.map(function (e) {
+      var txt = escapeHtml(e.text);
+      return "<li>" + (e.url ? '<a href="' + escapeHtml(safeHref(e.url)) + '">' + txt + "</a>" : txt) + "</li>";
+    }).join("");
+    var plain = entries.map(function (e) { return "• " + e.text; }).join("\n");
+    return "<p>" + escapeHtml(headline) + "</p><ul>" + rows + "</ul><p>" + escapeHtml(t("rarity.emailFoot")) + "</p>" +
+      "\n\n" + headline + "\n" + plain + "\n\n" + t("rarity.emailFoot");
   }
   // One mail per batch of new alerts, rate-limited; failures are silent (the bell,
   // the list and the chirp have already done their job).
@@ -808,7 +821,7 @@ window.AppRarity = (function () {
     var to = rarityEmailTo();
     if (!batch.length || !rarityEmailValid(to)) return;
     var subject = t("rarity.emailSubject", { n: batch.length });
-    var body = subject + "\n\n" + batch.map(function (f, i) { return rarityAlertLine(f, i < RARITY_MAIL_LINKS); }).join("\n") + "\n\n" + t("rarity.emailFoot");
+    var body = rarityMailBody(batch.map(rarityMailEntry), subject);
     rarityEmailPost(to, subject, body).then(function (r) {
       // The window is spent on a message the relay actually answered for. A transport
       // failure used to burn it too, so the next batch waited five minutes for nothing.
@@ -832,11 +845,15 @@ window.AppRarity = (function () {
     var list = getRarityList().slice(0, 5), subject, body;
     if (list.length) {
       subject = t("rarity.emailSubject", { n: list.length });
-      body = subject + "\n\n" + list.map(function (e, i) {
-        return "• " + (e.name || e.sci) + (e.place ? " — " + e.place : "") +
-          (e.dt ? " — " + String(e.dt).slice(0, 10) : "") + (e.prob != null ? " — " + e.prob + "%" : "") +
-          (e.url && i < RARITY_MAIL_LINKS ? "\n  " + e.url : "");
-      }).join("\n") + "\n\n" + t("rarity.emailFoot");
+      // Through the same builder as a real alert, so a test shows exactly what an alert
+      // will look like — linked text, no bare URLs.
+      body = rarityMailBody(list.map(function (e) {
+        var bits = [e.name || e.sci];
+        if (e.place) bits.push(e.place);
+        if (e.dt) bits.push(String(e.dt).slice(0, 10));
+        if (e.prob != null) bits.push(e.prob + "%");
+        return { text: bits.join(" — "), url: e.url || "" };
+      }), subject);
     } else { subject = t("rarity.emailTestSubj"); body = t("rarity.emailTestBody"); }
     return rarityEmailPost(to, subject, body);
   }
