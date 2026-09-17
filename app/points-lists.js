@@ -245,6 +245,11 @@ window.AppPoints = (function () {
     });
     Object.keys(mpSetSig).forEach(function (n) { if (!keep[n]) { gone = true; delete mpSetSig[n]; } });
     if (!gone) return;   // nothing was deleted → no need to scan the store for orphans
+    // Never let an EMPTY list wipe the store. A user deleting their last list is one
+    // thing; a transient empty mirror (a failed hydrate, a code path that resets it
+    // before a save) must not take every saved list with it. Deleting the last list
+    // still works — it just leaves its record for the next real save to retire.
+    if (!Object.keys(keep).length) return;
     window.AppIDB.getAll().then(function (all) {
       Object.keys(all).forEach(function (k) { if (k.indexOf("pts:") === 0 && !keep[k.slice(4)]) window.AppIDB.del(k).catch(function () {}); });
     }).catch(function () {});
