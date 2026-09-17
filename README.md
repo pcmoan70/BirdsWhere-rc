@@ -456,6 +456,9 @@ per species:
 - When several dots share a pixel, the **highest-priority** one draws on top (life list +2,
   year list +1, starred +1, rare +1; ties alphabetical).
 - Each fetch leaves a **thin dashed green outline** of the area it covered; these accumulate.
+  A fetch that finds **nothing** is kept too — "nothing here" is a result, so the square is
+  outlined, listed in the header with 0 obs, re-fetched by **✓ Update** and removable by its
+  red **×** like any other. (A fetch whose sources all *failed* is not kept: it never looked.)
 
 Clicking a dot opens the co-located-species list for that spot; **Save** stores those points
 into a named point-list.

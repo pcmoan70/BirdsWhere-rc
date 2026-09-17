@@ -12108,7 +12108,18 @@
           if (hasFail) {   // nothing plotted because sources failed → red, clickable
             setStatusHtml('<span class="status-err" role="button" tabindex="0" title="' + escapeHtml(t("fetch.clickErr")) + '">' + escapeHtml(t("fetch.failed", { sources: failedNames(result.failed) })) + "</span>");
             wireStatusFetchErrs(result.failed, result.timedOut, result.timedOutInfo, result.truncInfo);
-          } else setStatus(t("det.none"));
+          } else {
+            setStatus(t("det.none"));
+            // "Nothing here" is a RESULT, not a non-event: the square was searched, so keep it
+            // like any other — outlined on the map, listed in the header (0 obs), re-fetchable by
+            // the ✓ update and removable by its red ×. A FAILED fetch is not registered: it never
+            // actually looked.
+            var org0 = result.origin || currentSpView;
+            if (org0 && isFinite(+org0.lat) && isFinite(+org0.lon)) {
+              rememberFetchedArea(+org0.lat, +org0.lon, result.origin && result.origin.rkm, org0.name || org0.locName);
+              try { refreshSpCoords(); } catch (e) {}   // the header lists the new (empty) square
+            }
+          }
         }
         return;
       }
