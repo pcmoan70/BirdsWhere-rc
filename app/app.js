@@ -11983,8 +11983,13 @@
     // the funnels blink while it runs (see withFunnelBusy).
     withFunnelBusy(function () {
       var bc = document.getElementById("barchart-panel"); if (bc) bc.style.display = "none";
-      if (!speciesPanelPopulated()) {
-        var refPt = hasPlottedDetections() ? null : listRefPoint();
+      // A model-only list belongs to ONE point: if the pin (or, with no pin, the map) has moved
+      // since it was built, it describes the wrong place and must be rebuilt for the new one.
+      var refNow = hasPlottedDetections() ? null : listRefPoint();
+      var movedAway = !!(spMissingAuto && refNow && currentSpView &&
+        (Math.abs(refNow.lat - +currentSpView.lat) > 1e-4 || Math.abs(refNow.lon - +currentSpView.lon) > 1e-4));
+      if (!speciesPanelPopulated() || movedAway) {
+        var refPt = refNow;
         // Dots on the map → their "By observation" list. Nothing fetched at all → the model's
         // own species for the pin / map centre, commonest first (renderSpeciesList's noFetch
         // path ends in applySightings with an empty result, which is what turns that on).
