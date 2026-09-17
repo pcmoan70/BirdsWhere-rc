@@ -198,7 +198,10 @@ The fetch can be shown three ways (layout dropdown above the list — the choice
 device; a `layout=` link parameter applies to that visit only; changing the UI or second-name language
 relabels the open list in place): the ranked **Species list** table,
 the **Observation list** (one row per record) and **Images** — a gallery with one card per species in
-the table's current order: photo, name with the scientific name in parentheses, a compact
+the table's current order (the funnel's **Sort** section reorders the cards exactly as it reorders the
+table — by name, total, last seen, probability, distance, season or scientific name; on the model's
+own list, where nothing has been fetched, only the orders that have values are offered): photo, name
+with the scientific name in parentheses, a compact
 "#total(n) · last seen · distance" line, then **Probability · Season · Yr peak** as three bar cells on one line (the same cells as the
 lists; any of them opens the Migration view, and hovering shows the year curve). Photos are the lead image of the species' Wikipedia article, loaded from
 Wikimedia Commons as cards scroll into view (nothing bundled or stored beyond the browser cache) and

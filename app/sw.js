@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1772";
+var VERSION = "v1773";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• The Images gallery can be sorted at last: the funnel's Sort section was hidden in that layout, so the cards were stuck in whatever order the table had. Sort now shows there and the cards follow it — by name, total, last seen, probability, distance or season. On the model's own list only the orders that have values are offered.",
   "• Finnish observations are back: the Laji.fi query asked for two field names the FinBIF warehouse does not have (added with the photo feature on 16 Sep), and it answered the WHOLE query with HTTP 400 — no Finnish records at all. The picture fields are now the ones the warehouse actually publishes, and a rejected field can only cost the extras, never the observations.",
   "• The Images list now answers to the filters like the table does: the funnel turns orange (with its kept/removed bar) when a filter narrows a model-only list, and the name search really narrows the cards.",
   "• Species groups (Raptors, Ducks & geese, Waders …) are back in the list filters on a spot with no observations: the groups are now built from whatever the list shows, so the model’s own species can be narrowed to one group just like fetched ones.",
   "• Rarity alerts, audited end to end: locally-rare birds from your OWN fetches now reach the list (a class-name mismatch had silently blocked every one), the same sighting reported by two sources alerts once, Clear alerts really clears the map, and the bell appears whenever there is a list to open.",
-  "• Map popups now always fit: zoomed right out (or in the far north) they no longer run off an edge — they are capped to the map height and nudged back inside. And on the rarity-alerts page, a tap on the bell closes it again; press-and-hold still checks now.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

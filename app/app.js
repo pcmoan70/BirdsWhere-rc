@@ -2340,7 +2340,10 @@
     // Always reorder IN PLACE (sortSpeciesList now handles the "off" state as the
     // natural probability ranking) — never re-render via refreshCurrentView, which
     // would drop the user back to the map. The view only changes via the header toggle.
-    sortSpeciesList();
+    // The Images cards are BUILT from the rows, so they have to be rebuilt in the new
+    // order; renderSpBody sorts first, then lays the cards out.
+    if (spLayout === "gallery") renderSpBody();
+    else sortSpeciesList();
   }
   // Apply the count-driven filters to the per-point species list: the n(d) age
   // threshold and the status column's ◉ "rare here" mode. Both hide rows via the
@@ -14274,7 +14277,15 @@
       escapeHtml(label) + ' <span class="aff-sort-gly">' + glyph + "</span></button>";
   }
   function affSortHtml() {
-    var cols = [["name", t("th.species")], ["total", t("th.total")], ["last", t("th.last")], ["prob", t("th.prob")], ["dist", t("th.dist")], ["season", t("th.season")]];
+    // Total / Last / Dist come from observations: on the model's own list (nothing
+    // plotted) those cells are empty, so offering to sort by them would be a button
+    // that cannot move anything.
+    var obs = Object.keys(detPlot).length > 0;
+    var cols = [["name", t("th.species")]];
+    if (obs) cols.push(["total", t("th.total")], ["last", t("th.last")]);
+    cols.push(["prob", t("th.prob")]);
+    if (obs) cols.push(["dist", t("th.dist")]);
+    cols.push(["season", t("th.season")]);
     if (showSci) cols.push(["sci", t("th.sci")]);
     return '<div class="aff-sort-row">' + cols.map(function (c) { return affSortBtnHtml(c[0], c[1]); }).join("") + "</div>";
   }
@@ -14362,11 +14373,12 @@
     var srcSum = !detSrcFilter ? t("src.all") : (Array.from(detSrcFilter).filter(function (s) { return present.indexOf(s) >= 0; }).length + "/" + present.length);
     var secSrc = affSection("src", t("th.source"), !!detSrcFilter, srcSum, affSrcHtml());
 
-    // Sort (multi-column table layout only — the record layout keeps its own ordering)
+    // Sort (the table and the Images cards, which are those same rows as pictures and
+    // follow their order — the record layout keeps its own ordering).
     // The DEFAULT ordering (probability low → high) reads as "not filtered" —
     // only a user-chosen override marks the section active.
     var sortNonDefault = !!speciesListSort.col && !(speciesListSort.col === "prob" && speciesListSort.dir === "asc");
-    var secSort = (spLayout === "table")
+    var secSort = (spLayout === "table" || spLayout === "gallery")
       ? affSection("sort", t("sort.title"), sortNonDefault, affSortSummary(), affSortHtml())
       : "";
     // Probability range
