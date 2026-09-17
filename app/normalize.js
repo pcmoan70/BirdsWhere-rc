@@ -334,6 +334,30 @@ window.AppNormalize = (function () {
   // Waterbirds…). A taxon may carry the broad group or only a leaf, so we test
   // membership against the whole set.
   var LAJI_BIRD_GROUPS = { "MVL.1": 1, "MVL.1141": 1, "MVL.1161": 1, "MVL.1162": 1, "MVL.1241": 1 };
+  // A record's images. The warehouse only lets the LEAVES of unit.media be selected
+  // (unit.media.fullURL etc.), and its geojson output flattens each one into a dotted
+  // key — so the pictures arrive as parallel arrays, not as an array of objects. Zip
+  // them back together; an array of objects (should the shape ever change) still works.
+  function lajiMedia(p) {
+    if (p["unit.media"]) return p["unit.media"];
+    function arr(v) { return v == null || v === "" ? [] : (Array.isArray(v) ? v : [v]); }
+    var out = [];
+    // Pictures hang off the unit (one determination) or off the whole document (the
+    // form the observer filled in) — take both, the unit's own first.
+    ["unit.media.", "document.media."].forEach(function (pre) {
+      var thumbs = arr(p[pre + "squareThumbnailURL"]);
+      if (!thumbs.length) thumbs = arr(p[pre + "thumbnailURL"]);
+      var fulls = arr(p[pre + "fullURL"]), types = arr(p[pre + "mediaType"]), by = arr(p[pre + "author"]);
+      var n = Math.max(thumbs.length, fulls.length);
+      for (var i = 0; i < n; i++) {
+        if (types.length && types[i] && !/IMAGE/i.test(String(types[i]))) continue;   // photos only (sounds/videos are listed too)
+        var full = fulls[i] || "", th = thumbs[i] || full;
+        if (!th && !full) continue;
+        out.push({ thumbnailURL: th, fullURL: full || th, author: by[i] || by[0] || "" });
+      }
+    });
+    return out;
+  }
   function normLaji(arr) {
     var out = [];
     (arr || []).forEach(function (ft) {
@@ -368,7 +392,7 @@ window.AppNormalize = (function () {
         observer: "", count: (cnt != null ? cnt : ""),
         note: p["unit.notes"] || p["gathering.notes"] || "" });
       var flast = out[out.length - 1];
-      var fp = mediaPhoto(p["unit.media"] || p["unit.images"], ""); if (fp) { flast.photo = fp.photo; flast.photoBig = fp.photoBig; flast.photoBy = fp.photoBy; flast.photos = fp.photos; }
+      var fp = mediaPhoto(lajiMedia(p), ""); if (fp) { flast.photo = fp.photo; flast.photoBig = fp.photoBig; flast.photoBy = fp.photoBy; flast.photos = fp.photos; }
       // FinBIF codes the category as e.g. "MX.iucnVU" — take the trailing two letters.
       var frl = rlCode(String(p["unit.linkings.taxon.latestRedListStatusFinland.status"] || "").replace(/^.*iucn/i, ""));
       if (frl) flast.rl = frl;

@@ -544,24 +544,51 @@ window.AppFetch = (function () {
   // personal access_token. GeoJSON output (coords from the feature geometry);
   // filtered by a WGS84 bounding box + a date range. Field paths are the valid
   // warehouse "selected" fields (verified against FinBIF's own tooling).
-  var LAJI_FIELDS = "unit.linkings.taxon.scientificName,unit.linkings.taxon.nameEnglish,unit.linkings.taxon.nameFinnish,unit.interpretations.individualCount,gathering.displayDateTime,gathering.locality,gathering.interpretations.municipalityDisplayname,gathering.interpretations.coordinateAccuracy,document.documentId,unit.linkings.taxon.kingdomScientificName,unit.linkings.taxon.informalTaxonGroups,unit.notes,gathering.notes,unit.media,unit.images,unit.linkings.taxon.latestRedListStatusFinland.status";   // media = the observer's own photo; red-list status for the rarity tag
+  // The warehouse validates every "selected" path against its own list and answers a
+  // whole query with HTTP 400 if one is unknown — so the record fields (LAJI_CORE) and
+  // the nice-to-haves (LAJI_EXTRA: the observer's photo + the red-list status behind
+  // the rarity tag) are kept apart, and a rejected selection falls back to the core.
+  // "unit.media" is NOT selectable: its leaves are (unit.media.fullURL etc.).
+  var LAJI_CORE = "unit.linkings.taxon.scientificName,unit.linkings.taxon.nameEnglish,unit.linkings.taxon.nameFinnish,unit.interpretations.individualCount,gathering.displayDateTime,gathering.locality,gathering.interpretations.municipalityDisplayname,gathering.interpretations.coordinateAccuracy,document.documentId,unit.linkings.taxon.kingdomScientificName,unit.linkings.taxon.informalTaxonGroups,unit.notes,gathering.notes";
+  var LAJI_EXTRA = "unit.media.squareThumbnailURL,unit.media.thumbnailURL,unit.media.fullURL,unit.media.mediaType,unit.media.author," +
+    "document.media.squareThumbnailURL,document.media.thumbnailURL,document.media.fullURL,document.media.mediaType,document.media.author," +
+    "unit.linkings.taxon.latestRedListStatusFinland.status";
+  var lajiNoExtra = false;   // set for the session once the warehouse rejects the extras
+  // The API answers an error with {"status":400,"message":"..."} — quote it, so a
+  // rejected parameter says what it was instead of just its number.
+  async function lajiErrText(resp) {
+    if (!resp) return "unreachable";
+    var msg = "";
+    try { msg = ((await resp.clone().json()) || {}).message || ""; } catch (e) {}
+    return "HTTP " + resp.status + (msg ? " — " + String(msg).slice(0, 140) : "");
+  }
   async function fetchLajiAll(lat, lon, d1, d2, rkm, key, ep, signal) {
     if (!key) throw new Error("Laji.fi: no API key");   // surfaced as a failed source
     var dLat = rkm / 111.32, cos = Math.cos(lat * Math.PI / 180);
     var dLon = rkm / (111.32 * (cos > 0.01 ? cos : 0.01));
     var box = (lat - dLat).toFixed(4) + ":" + (lat + dLat).toFixed(4) + ":" + (lon - dLon).toFixed(4) + ":" + (lon + dLon).toFixed(4) + ":WGS84";
-    var base = (ep || "https://api.laji.fi/v0/warehouse/query/unit/list") +
-      "?format=geojson&featureType=CENTER_POINT&crs=WGS84" +
-      "&selected=" + encodeURIComponent(LAJI_FIELDS) +
-      "&wgs84CenterPoint=" + encodeURIComponent(box) +   // latMin:latMax:lonMin:lonMax:WGS84
-      "&time=" + encodeURIComponent(d1 + "/" + d2) +
-      "&pageSize=1000&access_token=" + encodeURIComponent(key);
+    function urlFor(fields) {
+      return (ep || "https://api.laji.fi/v0/warehouse/query/unit/list") +
+        "?format=geojson&featureType=CENTER_POINT&crs=WGS84" +
+        "&selected=" + encodeURIComponent(fields) +
+        "&wgs84CenterPoint=" + encodeURIComponent(box) +   // latMin:latMax:lonMin:lonMax:WGS84
+        "&time=" + encodeURIComponent(d1 + "/" + d2) +
+        "&pageSize=1000&access_token=" + encodeURIComponent(key);
+    }
+    var base = urlFor(lajiNoExtra ? LAJI_CORE : LAJI_CORE + "," + LAJI_EXTRA);
     var all = [];
     for (var p = 1; p <= 6; p++) {
       if (signal && signal.aborted) break;   // fetch timeout → keep the pages we have
       var resp = await fetchRetry(base + "&page=" + p, null, signal);
+      // A rejected selection (400) must not cost Finland its observations: drop the
+      // extras once for the session and ask again for the records alone.
+      if (resp && resp.status === 400 && p === 1 && !lajiNoExtra && !(signal && signal.aborted)) {
+        lajiNoExtra = true;
+        base = urlFor(LAJI_CORE);
+        resp = await fetchRetry(base + "&page=" + p, null, signal);
+      }
       if (!resp || !resp.ok) {
-        if (p === 1 && !(signal && signal.aborted)) throw new Error("Laji.fi " + (resp ? "HTTP " + resp.status : "unreachable"));
+        if (p === 1 && !(signal && signal.aborted)) throw new Error("Laji.fi " + (await lajiErrText(resp)));
         break;   // page 1 fails loudly (unless aborted); later pages keep partial
       }
       var res = ((await resp.json().catch(function () { return null; })) || {}).features || [];
