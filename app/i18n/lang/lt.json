@@ -270,6 +270,8 @@
   "rarity.emailBad": "Tai nepanašu į el. pašto adresą.",
   "rarity.emailOn": "Nauji įspėjimai bus siunčiami ir šiuo adresu.",
   "rarity.emailLast": "Paskutinis įspėjimo laiškas išsiųstas {t}.",
+  "rarity.emailLastN": "Paskutinis įspėjimų laiškas: {n} įspėjimai, {t}.",
+  "rarity.emailNone": "Kol kas nieko neišsiųsta — laiškas išsiunčiamas, kai patikrinimas randa ką nors NAUJO (sąraše jau esantys paukščiai jo nesukelia). Paspauskite Siųsti bandomąjį, kad gautumėte dabartinį sąrašą.",
   "rarity.emailTestOk": "Bandomasis laiškas išsiųstas {t}. Nauji įspėjimai siunčiami vos gavus.",
   "rarity.emailSubject": "BirdsWhere: {n} nauji retenybių įspėjimai",
   "rarity.emailFoot": "Išsiuntė BirdsWhere, kol programa buvo atidaryta jūsų įrenginyje.",

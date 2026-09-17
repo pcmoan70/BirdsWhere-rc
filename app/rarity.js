@@ -20,7 +20,7 @@ window.AppRarity = (function () {
       recentRadiusKm, safeHref, setStatus, setTabAlert, showDetHover, spDetailTableHtml,
       spListDot, speciesColor, t, wireLocHover, wireSpDetail, rarityMapVisible, rarityScoreProbs, onRarityListChanged,
       rarityFetchSources, abortRaritySweep, userFetchActive, speciesName,
-      rarityPageEl, openRarityPage, closeRarityPage;
+      rarityPageEl, openRarityPage, closeRarityPage, appErrLog;
   // … and getters for app state that is reassigned after load (the map is built
   // long after this file runs; the language and the two lookup tables change).
   var getMap, getLang, getShowSci, getDetPlot, getLabelsByKey;
@@ -40,6 +40,7 @@ window.AppRarity = (function () {
     rarityFetchSources = ctx.rarityFetchSources; abortRaritySweep = ctx.abortRaritySweep; userFetchActive = ctx.userFetchActive;
     speciesName = ctx.speciesName;
     rarityPageEl = ctx.rarityPageEl; openRarityPage = ctx.openRarityPage; closeRarityPage = ctx.closeRarityPage;
+    appErrLog = ctx.appErrLog;
     getMap = ctx.getMap; getLang = ctx.getLang; getShowSci = ctx.getShowSci;
     getDetPlot = ctx.getDetPlot; getLabelsByKey = ctx.getLabelsByKey;
   }
@@ -83,6 +84,7 @@ window.AppRarity = (function () {
     if (!isFinite(+c.lastEmail)) c.lastEmail = 0;
     if (typeof c.emailState !== "string") c.emailState = "";   // "" | "ok" | "activate" | "fail" — what became of the last message
     if (typeof c.emailKind !== "string") c.emailKind = "";     // "test" | "alert" — which kind it was
+    if (!isFinite(+c.emailCount)) c.emailCount = 0;            // how many alerts the last message carried
     if (!isFinite(+c.emailAt)) c.emailAt = 0;
     if (c.sound == null) c.sound = true;
     if (c.sysNotif == null) c.sysNotif = false;
@@ -656,21 +658,29 @@ window.AppRarity = (function () {
         return { ok: ok, activate: !ok && /activat/i.test(String((j && j.message) || "")) };
       });
   }
-  function rarityAlertLine(f) {
+  // Mail clients and relays treat a wall of links as spam, and that is the likeliest reason a
+  // message that the relay accepted never lands — so only the first few alerts carry theirs.
+  var RARITY_MAIL_LINKS = 3;
+  function rarityAlertLine(f, withLink) {
     var o = f.raw || {};
     return "• " + (o.comName || o.sciName || "?") +
       (o.locName ? " — " + o.locName : "") +
       (o.obsDt ? " — " + o.obsDt : "") +
       (o._mprob != null && isFinite(o._mprob) ? " — " + o._mprob + "%" : "") +
       (f.area ? " — " + f.area : "") +
-      (o.subId ? "\n  https://ebird.org/checklist/" + o.subId : (o._url ? "\n  " + o._url : ""));
+      (!withLink ? "" : (o.subId ? "\n  https://ebird.org/checklist/" + o.subId : (o._url ? "\n  " + o._url : "")));
   }
   // One mail per batch of new alerts, rate-limited; failures are silent (the bell,
   // the list and the chirp have already done their job).
   // What became of the last message — so a mail that never arrived can be explained
   // in Settings instead of failing silently. "activate" = the relay is still waiting
   // for the address to confirm itself, so nothing is being delivered yet.
-  function rarityEmailState(state, kind) { raritySave({ emailState: state, emailKind: kind || "test", emailAt: Date.now() }); }
+  function rarityEmailState(state, kind, n) {
+    raritySave({ emailState: state, emailKind: kind || "test", emailAt: Date.now(), emailCount: +n || 0 });
+    // Every attempt leaves a line in Settings → Error log, so "no mail arrived" can be
+    // traced to the step that failed instead of guessed at.
+    if (typeof appErrLog === "function") appErrLog("rarity mail: " + (kind || "test") + " " + state + (n ? " (" + n + ")" : ""));
+  }
   // A cycle announces more than once — the ordinary-source sweep does it per location,
   // eBird's notable batch at the end — so alerts are QUEUED and sent together. Anything
   // arriving inside the rate-limit window waits for it instead of being thrown away.
@@ -682,11 +692,11 @@ window.AppRarity = (function () {
     if (!batch.length || !rarityEmailValid(to)) return;
     raritySave({ lastEmail: Date.now() });
     var subject = t("rarity.emailSubject", { n: batch.length });
-    var body = subject + "\n\n" + batch.map(rarityAlertLine).join("\n") + "\n\n" + t("rarity.emailFoot");
+    var body = subject + "\n\n" + batch.map(function (f, i) { return rarityAlertLine(f, i < RARITY_MAIL_LINKS); }).join("\n") + "\n\n" + t("rarity.emailFoot");
     rarityEmailPost(to, subject, body).then(function (r) {
-      rarityEmailState(r.ok ? "ok" : (r.activate ? "activate" : "fail"), "alert");
+      rarityEmailState(r.ok ? "ok" : (r.activate ? "activate" : "fail"), "alert", batch.length);
       if (!r.ok) setStatus(t(r.activate ? "rarity.emailActivate" : "rarity.emailFail"));   // say it once, where the alert was announced
-    }, function () { rarityEmailState("fail", "alert"); });
+    }, function () { rarityEmailState("fail", "alert", batch.length); });
   }
   function rarityEmailAlerts(fresh) {
     if (!fresh.length || !rarityEmailValid(rarityEmailTo())) return;
@@ -703,10 +713,10 @@ window.AppRarity = (function () {
     var list = getRarityList().slice(0, 5), subject, body;
     if (list.length) {
       subject = t("rarity.emailSubject", { n: list.length });
-      body = subject + "\n\n" + list.map(function (e) {
+      body = subject + "\n\n" + list.map(function (e, i) {
         return "• " + (e.name || e.sci) + (e.place ? " — " + e.place : "") +
           (e.dt ? " — " + String(e.dt).slice(0, 10) : "") + (e.prob != null ? " — " + e.prob + "%" : "") +
-          (e.url ? "\n  " + e.url : "");
+          (e.url && i < RARITY_MAIL_LINKS ? "\n  " + e.url : "");
       }).join("\n") + "\n\n" + t("rarity.emailFoot");
     } else { subject = t("rarity.emailTestSubj"); body = t("rarity.emailTestBody"); }
     return rarityEmailPost(to, subject, body);

@@ -270,6 +270,8 @@
   "rarity.emailBad": "Das sieht nicht nach einer E-Mail-Adresse aus.",
   "rarity.emailOn": "Neue Meldungen gehen auch an diese Adresse.",
   "rarity.emailLast": "Letzte Meldungs-E-Mail gesendet {t}.",
+  "rarity.emailLastN": "Letzte Meldungs-E-Mail: {n} Meldungen, {t}.",
+  "rarity.emailNone": "Noch nichts gesendet — eine Mail geht raus, wenn eine Prüfung etwas NEUES findet (Vögel, die schon auf der Liste stehen, lösen keine aus). Drücke Test senden für die aktuelle Liste.",
   "rarity.emailTestOk": "Testnachricht gesendet {t}. Neue Meldungen gehen raus, sobald sie eintreffen.",
   "rarity.emailSubject": "BirdsWhere: {n} neue Seltenheitsmeldungen",
   "rarity.emailFoot": "Von BirdsWhere gesendet, während die App auf deinem Gerät offen war.",

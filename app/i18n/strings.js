@@ -1216,6 +1216,8 @@ window.GeoI18N = (function () {
         "rarity.emailBad": "That does not look like an email address.",
         "rarity.emailOn": "New alerts will also be emailed to this address.",
         "rarity.emailLast": "Last alert mail sent {t}.",
+        "rarity.emailLastN": "Last alert mail: {n} alerts, {t}.",
+        "rarity.emailNone": "Nothing sent yet — mail goes out when a check finds something NEW (birds already on the list don't send one). Press Send test for the current list.",
         "rarity.emailTestOk": "Test message sent {t}. New alerts are mailed as they arrive.",
         "rarity.emailSubject": "BirdsWhere: {n} new rarity alerts",
         "rarity.emailFoot": "Sent by BirdsWhere while the app was open on your device.",

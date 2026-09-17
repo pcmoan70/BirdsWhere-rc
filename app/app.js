@@ -2670,6 +2670,24 @@
     try { r.go(); } catch (e) {} finally { viewRestoring = false; }
     return true;
   }
+  // What became of the last rarity mail, in words — so "no mail arrived" can be traced
+  // to the step that stopped it (address unconfirmed · nothing new to send · send failed).
+  function rarityEmailStateText() {
+    var c = rarityCfg();
+    if (!c.email) return "";
+    var when = c.emailAt ? new Date(c.emailAt).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+    if (c.emailState === "activate") return t("rarity.emailActivate");
+    if (c.emailState === "fail") return t("rarity.emailFail") + (when ? " (" + when + ")" : "");
+    if (c.emailState === "ok") {
+      if (c.emailKind !== "alert") return t("rarity.emailTestOk", { t: when });
+      return c.emailCount > 0 ? t("rarity.emailLastN", { n: c.emailCount, t: when }) : t("rarity.emailLast", { t: when });
+    }
+    return t("rarity.emailNone");   // address set, nothing sent yet — the commonest case by far
+  }
+  function updateRarityEmailNote() {
+    var el = document.getElementById("rarity-email-note");
+    if (el) el.textContent = rarityEmailStateText();
+  }
   // ---- The rarity-alerts page ----------------------------------------------
   // Opened from the header bell. Same framework as the other full pages: one page
   // at a time, registered in the "page" nav slot, and the view it was opened from
@@ -16855,28 +16873,16 @@
     // and asks the relay to deliver one message, which is also what triggers the one-off
     // confirmation mail the first time.
     var rEm = document.getElementById("rarity-email"), rEmT = document.getElementById("rarity-email-test"), rEmN = document.getElementById("rarity-email-note");
-    // What happened to the last message, so a mail that never arrived explains itself
-    // (the commonest reason by far: the address was never confirmed).
-    function rarityEmailStateText() {
-      var c = rarityCfg();
-      if (!c.email) return "";
-      var when = c.emailAt ? new Date(c.emailAt).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
-      if (c.emailState === "activate") return t("rarity.emailActivate");
-      if (c.emailState === "fail") return t("rarity.emailFail") + (when ? " (" + when + ")" : "");
-      // A confirmed address that has only ever had the test message says so plainly —
-      // otherwise "last alert mail" would claim an alert that never went out.
-      if (c.emailState === "ok") return t(c.emailKind === "alert" ? "rarity.emailLast" : "rarity.emailTestOk", { t: when });
-      return t("rarity.emailOn");
-    }
     if (rEm) {
       rEm.value = rarityCfg().email || "";
-      if (rEmN) rEmN.textContent = rarityEmailStateText();
+      updateRarityEmailNote();
       rEm.addEventListener("change", function () {
         var v = this.value.trim();
         if (v && !window.AppRarity.rarityEmailValid(v)) { if (rEmN) rEmN.textContent = t("rarity.emailBad"); return; }
         var changed = v !== (rarityCfg().email || "");
         raritySave(changed ? { email: v, emailState: "", emailAt: 0 } : { email: v });   // a new address starts with a clean slate
-        if (rEmN) rEmN.textContent = v ? (changed ? t("rarity.emailOn") : rarityEmailStateText()) : "";
+        if (rEmN) rEmN.textContent = v ? (changed ? t("rarity.emailOn") : "") : "";
+        if (!changed) updateRarityEmailNote();
       });
     }
     if (rEmT) rEmT.addEventListener("click", function () {
@@ -17733,7 +17739,7 @@
     });
     document.getElementById("settings-toggle").addEventListener("click", function () {
       if (document.getElementById("settings-panel").style.display !== "none") {
-        renderStorageUsage(); updateClearCacheCounts();
+        renderStorageUsage(); updateClearCacheCounts(); updateRarityEmailNote();
         try { if (window.SWUpdate && window.SWUpdate.checkNow) window.SWUpdate.checkNow(); } catch (e) {}
       }
     });
@@ -19811,7 +19817,7 @@
     speciesColor: speciesColor, t: t, wireLocHover: wireLocHover,
     wireSpDetail: wireSpDetail, rarityMapVisible: rarityMapVisible, rarityScoreProbs: rarityScoreProbs, onRarityListChanged: onRarityListChanged,
     rarityFetchSources: rarityFetchSources, abortRaritySweep: abortRaritySweep, userFetchActive: userFetchActive, speciesName: speciesName,
-    rarityPageEl: rarityPageEl, openRarityPage: rarityPageOpen, closeRarityPage: rarityPageClose,
+    rarityPageEl: rarityPageEl, openRarityPage: rarityPageOpen, closeRarityPage: rarityPageClose, appErrLog: appErrLog,
     getMap: function () { return map; },
     getLang: function () { return lang; },
     getShowSci: function () { return showSci; },

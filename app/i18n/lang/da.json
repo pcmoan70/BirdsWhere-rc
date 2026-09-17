@@ -270,6 +270,8 @@
   "rarity.emailBad": "Det ligner ikke en e-mailadresse.",
   "rarity.emailOn": "Nye alarmer sendes også til denne adresse.",
   "rarity.emailLast": "Seneste alarm-e-mail sendt {t}.",
+  "rarity.emailLastN": "Seneste alarm-e-mail: {n} alarmer, {t}.",
+  "rarity.emailNone": "Intet sendt endnu — e-mail sendes, når et tjek finder noget NYT (fugle, der allerede står på listen, udløser ingen). Tryk Send test for den aktuelle liste.",
   "rarity.emailTestOk": "Testbesked sendt {t}. Nye alarmer sendes, efterhånden som de kommer.",
   "rarity.emailSubject": "BirdsWhere: {n} nye sjældenhedsalarmer",
   "rarity.emailFoot": "Sendt af BirdsWhere, mens appen var åben på din enhed.",
