@@ -911,9 +911,6 @@ window.AppRarity = (function () {
               return '<option value="' + n + '"' + (+cfg.showDays === n ? " selected" : "") + ">" +
                 (n === 0 ? escapeHtml(t("rarity.today")) : n) + "</option>";
             }).join("") + "</select></label>" +
-          '<label class="ctrl-check"><input type="checkbox" id="rarity-onoff"' + (cfg.enabled ? " checked" : "") + '> <span>' + escapeHtml(t("rarity.enable")) + "</span></label>" +
-          '<label class="ctrl-check"><input type="checkbox" id="rarity-showmap"' + (cfg.showMap ? " checked" : "") + '> <span>' + escapeHtml(t("rarity.showMap")) + "</span></label>" +
-          '<label class="ctrl-check" title="' + escapeHtml(t("rarity.countryWideTip")) + '"><input type="checkbox" id="rarity-country"' + (cfg.countryWide ? " checked" : "") + '> <span>' + escapeHtml(t("rarity.countryWide")) + "</span></label>" +
           (rows ? '<button type="button" class="btn btn-light rt-clear" id="rarity-clear">' + escapeHtml(t("rarity.clear")) + "</button>" : "") +
         "</div>" +
         (rows ? '<div class="rarity-list"><table class="sp-style-tbl rarity-tbl"><thead><tr><th>' + escapeHtml(t("th.species")) + "</th>" +
@@ -923,17 +920,6 @@ window.AppRarity = (function () {
             rows + "</tbody></table></div>"
           : '<div class="rarity-empty">' + escapeHtml(t("rarity.bellEmpty")).replace(/🔔/g, ico("bell")) + "</div>");
       m.box.querySelector("#rarity-back").addEventListener("click", m.close);
-      var oo = m.box.querySelector("#rarity-onoff");
-      if (oo) oo.addEventListener("change", function () {
-        raritySave({ enabled: !!this.checked });
-        if (this.checked) rarityAlertsChanged();   // resume with an immediate check
-        else scheduleRarityPoll();                 // cancels the timer; bell dims
-        rarityPlotList();                          // re-sync the pipeline now: off → drop injected alerts from lists/map
-      });
-      var sm = m.box.querySelector("#rarity-showmap");
-      if (sm) sm.addEventListener("change", function () { raritySave({ showMap: !!this.checked }); rarityPlotList(); });
-      var cw = m.box.querySelector("#rarity-country");
-      if (cw) cw.addEventListener("change", function () { raritySave({ countryWide: !!this.checked }); rarityAlertsChanged(); });   // re-seed + re-check under the new scope
       var ds = m.box.querySelector("#rarity-days");
       if (ds) ds.addEventListener("change", function () { raritySave({ showDays: Math.max(0, +this.value || 0) }); rarityPlotList(); render(); });
       // ↻ = poll eBird right now (all 🔔 locations); the finish hook re-renders the list.

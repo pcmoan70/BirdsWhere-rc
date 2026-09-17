@@ -6435,6 +6435,8 @@
               '<div class="ctrl-group">' +
                 '<p class="cu-hint" data-i18n="rarity.hint">While the app is open, checks eBird\'s notable-sightings feed around every stored location marked with 🔔 (press-and-hold the 🔍 search button to manage them). New rarities appear as pulsing ★ on the map and under the header bell. The app cannot alert while the browser is closed.</p>' +
                 '<p class="cu-hint" id="rarity-key-hint" style="display:none" data-i18n="rarity.needKey">Needs a free eBird API key — enter it under Settings → Data sources → eBird.</p>' +
+                '<label class="ctrl-check"><input type="checkbox" id="rarity-onoff-toggle" checked> <span data-i18n="rarity.enable">Alerts on (checks while the app is open)</span></label>' +
+                '<label class="ctrl-check"><input type="checkbox" id="rarity-showmap-toggle" checked> <span data-i18n="rarity.showMap">Show rarities on the map</span></label>' +
                 '<label for="rarity-interval" data-i18n="rarity.interval">Check every (minutes)</label>' +
                 '<select id="rarity-interval"><option value="10">10</option><option value="30">30</option><option value="60">60</option><option value="0" data-i18n="rarity.manual">Manual (long-press the bell)</option></select>' +
               '</div>' +
@@ -16851,6 +16853,23 @@
         raritySave({ intervalMin: v === 0 ? 0 : Math.max(10, v || 10) });   // 0 = manual (long-press only); 10 min is the fastest auto interval
         scheduleRarityPoll();
       });
+    }
+    // Master on/off and the map dots — the two the alerts page used to carry (the
+    // stored-locations panel keeps its own copy of the master toggle).
+    var rOn = document.getElementById("rarity-onoff-toggle");
+    if (rOn) {
+      rOn.checked = rarityCfg().enabled !== false;
+      rOn.addEventListener("change", function () {
+        raritySave({ enabled: !!this.checked });
+        if (this.checked) rarityAlertsChanged();   // resume with an immediate check
+        else scheduleRarityPoll();                 // cancels the timer; the bell dims
+        rarityPlotList();                          // off → drop the injected alerts from the lists/map
+      });
+    }
+    var rMap = document.getElementById("rarity-showmap-toggle");
+    if (rMap) {
+      rMap.checked = rarityCfg().showMap !== false;
+      rMap.addEventListener("change", function () { raritySave({ showMap: !!this.checked }); rarityPlotList(); });
     }
     var rSnd = document.getElementById("rarity-sound-toggle");
     if (rSnd) {

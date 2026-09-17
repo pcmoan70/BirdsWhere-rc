@@ -410,8 +410,9 @@ When a **never-seen-before** rarity arrives it:
   (back arrow, title, a "last check" line with ↻, then one row of controls), and its ‹ — like the
   browser's Back — returns to the view you opened it from. Alerts you
   have **not seen yet are bold**; everything already read is in the normal weight. Opening marks
-  all read, *Clear alerts* wipes list + stars, and an
-  **Alerts on** toggle pauses/resumes the whole function — the bell dims while paused.
+  all read and *Clear alerts* wipes list + stars; the switches themselves (**Alerts on**, *Show
+  rarities on the map*, *Whole-country alerts*) live in Settings → Rarity alerts, so the page is
+  just the alerts. **Alerts on** pauses/resumes the whole function — the bell dims while paused.
   A single **Rarity threshold** (Settings → Rarity alerts, default **15%**) defines what counts as
   rare: a bird qualifies when the model's probability at its own spot and week is **below** that %.
   It governs both sources — your own **fetched** observations below it join the list (badged with
