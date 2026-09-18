@@ -9321,6 +9321,47 @@
     try { if (navigator.vibrate) navigator.vibrate(15); } catch (e) {}
     if (el && el.classList) { el.classList.add("hold-fired"); setTimeout(function () { try { el.classList.remove("hold-fired"); } catch (e) {} }, 220); }
   }
+  // Tap vs press-and-hold on a header button. Touch makes this harder than it looks,
+  // in two ways the locate crosshair already had to solve (see crossHold above):
+  //   1. After our timer fires, the browser emits EMULATED mouse events — mousedown,
+  //      mouseup, click. The mousedown restarted the gesture and cleared `lpFired`, so
+  //      the emulated click then read as an ordinary TAP. With the hold opening Settings
+  //      and the tap closing it, the panel opened and shut in the same gesture.
+  //   2. On Android a long-press ALSO fires a native `contextmenu`, so `onHold` ran
+  //      twice — invisible when it opens something, fatal when it toggles.
+  // `holdAt` guards a short window after the RELEASE (the emulated burst follows
+  // touchend, so a long hold must not let the window lapse), touchend preventDefaults
+  // where the browser honours it, and `firedAt` makes one hold call `onHold` once.
+  function wireHoldButton(btn, onHold) {
+    if (!btn) return;
+    var lpT = null, lpFired = false, lpX = 0, lpY = 0, holdAt = 0, firedAt = 0;
+    var HOLD_GUARD_MS = 800;
+    function fire() {
+      if (Date.now() - firedAt < 1000) return;
+      firedAt = holdAt = Date.now();
+      lpFired = true;
+      holdFeedback(btn);
+      onHold();
+    }
+    function start(x, y) {
+      if (Date.now() - holdAt < HOLD_GUARD_MS) return;   // emulated press right after a hold → ignore
+      lpFired = false; clearTimeout(lpT); lpX = x; lpY = y;
+      lpT = setTimeout(fire, holdDelay());
+    }
+    // Capture phase: swallow the hold's own click AND its emulated twin before the
+    // button's ordinary tap handler (or anything else) sees them.
+    btn.addEventListener("click", function (e) {
+      if (!lpFired && Date.now() - holdAt >= HOLD_GUARD_MS) return;
+      lpFired = false; e.stopImmediatePropagation(); e.preventDefault();
+    }, true);
+    btn.addEventListener("touchstart", function (e) { var tt = e.touches && e.touches[0]; start(tt ? tt.clientX : 0, tt ? tt.clientY : 0); }, { passive: true });
+    btn.addEventListener("touchmove", function (e) { var tt = e.touches && e.touches[0]; if (tt && (Math.abs(tt.clientX - lpX) > 12 || Math.abs(tt.clientY - lpY) > 12)) clearTimeout(lpT); }, { passive: true });
+    btn.addEventListener("touchend", function (e) { clearTimeout(lpT); if (lpFired) { holdAt = Date.now(); if (e.cancelable) e.preventDefault(); } });
+    btn.addEventListener("mousedown", function (e) { if (e.button === 0) start(e.clientX, e.clientY); });
+    btn.addEventListener("mouseup", function () { clearTimeout(lpT); if (lpFired) holdAt = Date.now(); });
+    btn.addEventListener("mouseleave", function () { clearTimeout(lpT); });
+    btn.addEventListener("contextmenu", function (e) { e.preventDefault(); e.stopPropagation(); fire(); });
+  }
   function detSelectionActive() { return Object.keys(detSelected).some(function (k) { return detPlot[k] && detPassesStatus(k) && detPassesGroup(k); }); }
   function detExclusionActive() { return Object.keys(detExcluded).some(function (k) { return detPlot[k]; }); }
   // `selActive` lets a render loop compute detSelectionActive() ONCE and pass it
@@ -16343,17 +16384,8 @@
       map.on("overlayadd", function (ev) { if (ev && ev.layer === hotspotsLayer) maybeEbirdNudge(); });
       map.on("overlayremove", updateOverlayBtnState);
       updateOverlayBtnState();   // reload while suspended → keep the orange cue
-      var lpT = null, lpFired = false, lpX = 0, lpY = 0;
-      // Swallow the hold's trailing click so it doesn't also expand the layers list.
-      btn.addEventListener("click", function (e) { if (lpFired) { lpFired = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
-      function start(x, y) { lpFired = false; clearTimeout(lpT); lpX = x; lpY = y; lpT = setTimeout(function () { lpFired = true; holdFeedback(btn); toggleAllOverlays(); }, holdDelay()); }
-      btn.addEventListener("touchstart", function (e) { var tt = e.touches && e.touches[0]; start(tt ? tt.clientX : 0, tt ? tt.clientY : 0); }, { passive: true });
-      btn.addEventListener("touchmove", function (e) { var tt = e.touches && e.touches[0]; if (tt && (Math.abs(tt.clientX - lpX) > 12 || Math.abs(tt.clientY - lpY) > 12)) clearTimeout(lpT); }, { passive: true });
-      btn.addEventListener("touchend", function () { clearTimeout(lpT); });
-      btn.addEventListener("mousedown", function (e) { if (e.button === 0) start(e.clientX, e.clientY); });
-      btn.addEventListener("mouseup", function () { clearTimeout(lpT); });
-      btn.addEventListener("mouseleave", function () { clearTimeout(lpT); });
-      btn.addEventListener("contextmenu", function (e) { e.preventDefault(); e.stopPropagation(); toggleAllOverlays(); });
+      // Hold = suspend/restore every ticked overlay; the tap still expands the list.
+      wireHoldButton(btn, toggleAllOverlays);
     })();
     setupAreaHover();
   }
@@ -18048,22 +18080,8 @@
       setTimeout(refreshMpPanel, 0);
     });
     // Press-and-hold (touch OR mouse) or right-click the Points button → the map-point
-    // lists admin popup (edit / protect / delete). A capture-phase click guard stops
-    // the hold's trailing click from also toggling the dropdown behind the popup.
-    (function () {
-      var btn = document.getElementById("mp-toggle");
-      if (!btn) return;
-      var lpT = null, lpFired = false, lpX = 0, lpY = 0;
-      btn.addEventListener("click", function (e) { if (lpFired) { lpFired = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
-      function start(x, y) { lpFired = false; clearTimeout(lpT); lpX = x; lpY = y; lpT = setTimeout(function () { lpFired = true; holdFeedback(btn); openMpAdmin(); }, holdDelay()); }
-      btn.addEventListener("touchstart", function (e) { var tt = e.touches && e.touches[0]; start(tt ? tt.clientX : 0, tt ? tt.clientY : 0); }, { passive: true });
-      btn.addEventListener("touchmove", function (e) { var tt = e.touches && e.touches[0]; if (tt && (Math.abs(tt.clientX - lpX) > 12 || Math.abs(tt.clientY - lpY) > 12)) clearTimeout(lpT); }, { passive: true });
-      btn.addEventListener("touchend", function () { clearTimeout(lpT); });
-      btn.addEventListener("mousedown", function (e) { if (e.button === 0) start(e.clientX, e.clientY); });
-      btn.addEventListener("mouseup", function () { clearTimeout(lpT); });
-      btn.addEventListener("mouseleave", function () { clearTimeout(lpT); });
-      btn.addEventListener("contextmenu", function (e) { e.preventDefault(); openMpAdmin(); });
-    })();
+    // lists admin popup (edit / protect / delete); the tap keeps toggling the dropdown.
+    wireHoldButton(document.getElementById("mp-toggle"), openMpAdmin);
     // The gear's two gestures are swapped (v1795): a TAP opens the quick panel — species
     // group, fetch radius, fetch window, the three things that decide what a tap on the
     // map brings back — and a PRESS-AND-HOLD (or right-click) opens full Settings, which
@@ -18196,26 +18214,14 @@
         dIn.addEventListener("touchstart", function (e) { e.stopPropagation(); }, { passive: true });
       }
     }
-    (function () {
-      var btn = document.getElementById("settings-toggle");
-      if (!btn) return;
-      var lpT = null, lpFired = false, lpX = 0, lpY = 0;
-      // A capture-phase guard swallows the hold's trailing click so it doesn't also open Settings.
-      btn.addEventListener("click", function (e) { if (lpFired) { lpFired = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
-      function start(x, y) { lpFired = false; clearTimeout(lpT); lpX = x; lpY = y; lpT = setTimeout(function () { lpFired = true; holdFeedback(btn); toggleSettingsPanel(); }, holdDelay()); }
-      btn.addEventListener("touchstart", function (e) { var tt = e.touches && e.touches[0]; start(tt ? tt.clientX : 0, tt ? tt.clientY : 0); }, { passive: true });
-      btn.addEventListener("touchmove", function (e) { var tt = e.touches && e.touches[0]; if (tt && (Math.abs(tt.clientX - lpX) > 12 || Math.abs(tt.clientY - lpY) > 12)) clearTimeout(lpT); }, { passive: true });
-      btn.addEventListener("touchend", function () { clearTimeout(lpT); });
-      btn.addEventListener("mousedown", function (e) { if (e.button === 0) start(e.clientX, e.clientY); });
-      btn.addEventListener("mouseup", function () { clearTimeout(lpT); });
-      btn.addEventListener("mouseleave", function () { clearTimeout(lpT); });
-      btn.addEventListener("contextmenu", function (e) { e.preventDefault(); toggleSettingsPanel(); });
-    })();
+    // Hold = the full Settings panel. Registered BEFORE the scroll-to-top guard below,
+    // so a hold never reaches it (both are capture-phase, so they run in this order).
+    wireHoldButton(document.getElementById("settings-toggle"), toggleSettingsPanel);
 
     // The gear while Settings is open and scrolled DOWN: return to the top rather than
     // close. Tapping it again (already at the top) closes, as before. Capture phase, and
-    // registered after the press-and-hold guard above so a hold still opens the group
-    // picker instead of scrolling.
+    // registered after the press-and-hold guard above so a hold still opens Settings
+    // instead of scrolling.
     document.getElementById("settings-toggle").addEventListener("click", function (e) {
       var sp = document.getElementById("settings-panel");
       if (!sp || sp.style.display === "none" || !sp.scrollTop) return;
