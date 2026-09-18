@@ -3381,6 +3381,14 @@
   function radiusLabel(km) { var r = (km == null) ? recentRadiusKm() : km; return r < 1 ? Math.round(r * 1000) + " m" : r + " km"; }
   // Quasi-exponential slider stops for the fetch radius (km), 100 m → 150 km.
   var RADIUS_STEPS = [0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8, 10, 15, 25, 30, 50, 75, 100, 150];
+  // Slider stops for the fetch window (days back): a day to a full season.
+  var DAYS_STEPS = [1, 2, 3, 7, 14, 21, 28, 42, 91];
+  function daysStepIndex(d) {
+    var best = 0, bd = Infinity;
+    for (var i = 0; i < DAYS_STEPS.length; i++) { var x = Math.abs(DAYS_STEPS[i] - d); if (x < bd) { bd = x; best = i; } }
+    return best;
+  }
+  function daysLabel(d) { return d + " " + t("det.days"); }   // "14 days" — reuses the existing noun
   function radiusStepIndex(km) {
     var best = 0, bd = Infinity;
     for (var i = 0; i < RADIUS_STEPS.length; i++) { var d = Math.abs(RADIUS_STEPS[i] - km); if (d < bd) { bd = d; best = i; } }
@@ -16820,7 +16828,7 @@
         var stog = document.getElementById("settings-toggle");
         if (stog) {
           stog.classList.toggle("has-update", !!SW.pending);
-          stog.title = SW.pending ? t("settings.updateReady", { v: SW.version || "" }) : "Settings";
+          stog.title = SW.pending ? t("settings.updateReady", { v: SW.version || "" }) : t("ctrl.settingsHold");
         }
         if (!upBtn) return;
         var notesEl = document.getElementById("settings-update-notes");
@@ -18056,9 +18064,25 @@
       btn.addEventListener("mouseleave", function () { clearTimeout(lpT); });
       btn.addEventListener("contextmenu", function (e) { e.preventDefault(); openMpAdmin(); });
     })();
-    wireDropdown("settings-toggle", "settings-panel");
-    // Refresh the storage readout each time Settings opens (figures change as you cache),
-    // and check for a new version immediately (non-blocking; a no-op offline).
+    // The gear's two gestures are swapped (v1795): a TAP opens the quick panel — species
+    // group, fetch radius, fetch window, the three things that decide what a tap on the
+    // map brings back — and a PRESS-AND-HOLD (or right-click) opens full Settings, which
+    // is the rarer errand. `wireDropdown` is therefore not used here; the handlers below
+    // drive #settings-panel directly.
+    function toggleSettingsPanel() {
+      var p = document.getElementById("settings-panel");
+      var willOpen = p.style.display === "none";
+      closeDropdowns();
+      if (willOpen) { closeContextMenus(); closeMapPopups(); }
+      p.style.display = willOpen ? "block" : "none";
+      if (willOpen) {
+        p.scrollTop = 0;   // a long panel always opens at the top
+        // Refresh the storage readout on each open (figures change as you cache), and
+        // check for a new version immediately (non-blocking; a no-op offline).
+        renderStorageUsage(); updateClearCacheCounts(); updateRarityEmailNote();
+        try { if (window.SWUpdate && window.SWUpdate.checkNow) window.SWUpdate.checkNow(); } catch (e) {}
+      }
+    }
     document.getElementById("errlog-open").addEventListener("click", function () {
       closeDropdowns();
       var m = createModal({ escClose: true });
@@ -18078,16 +18102,19 @@
       }
       render();
     });
-    document.getElementById("settings-toggle").addEventListener("click", function () {
+    // A TAP on the gear: close Settings if it is open (scrolling it to the top first when
+    // it is scrolled down — the v1782 behaviour), else toggle the quick panel.
+    document.getElementById("settings-toggle").addEventListener("click", function (e) {
+      e.stopPropagation();   // else the document's outside-click closer undoes the open
       var sp = document.getElementById("settings-panel");
-      if (sp.style.display !== "none") {
-        sp.scrollTop = 0;   // Settings is long: a fresh open starts at the top, not where you left off
-        renderStorageUsage(); updateClearCacheCounts(); updateRarityEmailNote();
-        try { if (window.SWUpdate && window.SWUpdate.checkNow) window.SWUpdate.checkNow(); } catch (e) {}
-      }
+      if (sp.style.display !== "none") { sp.style.display = "none"; return; }
+      var qp = document.getElementById("group-quick-panel");
+      if (qp && qp.style.display === "block") { qp.style.display = "none"; return; }
+      openGroupQuickMenu();
     });
-    // Press-and-hold (or right-click) the Settings gear → a quick "Species group" picker,
-    // so you can switch groups without opening (and scrolling) the whole Settings panel.
+    // A tap on the Settings gear → the quick panel: species group, fetch radius and how
+    // far back to fetch — the three settings that decide what the next tap on the map
+    // brings back, without opening (and scrolling) the whole Settings panel.
     function openGroupQuickMenu() {
       var wrap = document.getElementById("settings-wrap"), sel = document.getElementById("group-select");
       if (!wrap || !sel) return;
@@ -18111,6 +18138,17 @@
           ' <span class="gq-radius-val">' + escapeHtml(radiusLabel(RADIUS_STEPS[+rrEl.value])) + "</span></div>" +
           '<div class="gq-radius"><input type="range" class="gq-radius-in" min="' + rrEl.min + '" max="' + rrEl.max +
           '" step="' + rrEl.step + '" value="' + rrEl.value + '" aria-label="' + escapeHtml(t("ctrl.recentradius")) + '" /></div>';
+      }
+      // How far back a fetch reaches — the third thing that decides what a tap on the
+      // map brings home. Fixed stops rather than a free number: these are the windows
+      // worth asking for, and they read straight off the slider.
+      var ddEl = document.getElementById("download-days");
+      if (ddEl) {
+        var dNow = downloadDays() || 30;
+        html += '<div class="gq-head gq-head-2">' + escapeHtml(t("ctrl.downloadDays")) +
+          ' <span class="gq-days-val">' + escapeHtml(daysLabel(dNow)) + "</span></div>" +
+          '<div class="gq-radius"><input type="range" class="gq-days-in" min="0" max="' + (DAYS_STEPS.length - 1) +
+          '" step="1" value="' + daysStepIndex(dNow) + '" aria-label="' + escapeHtml(t("ctrl.downloadDays")) + '" /></div>';
       }
       panel.innerHTML = html;
       panel.style.display = "block";
@@ -18140,6 +18178,21 @@
         rIn.addEventListener("mousedown", function (e) { e.stopPropagation(); });
         rIn.addEventListener("touchstart", function (e) { e.stopPropagation(); }, { passive: true });
       }
+      var dIn = panel.querySelector(".gq-days-in"), dOut = panel.querySelector(".gq-days-val");
+      if (dIn && ddEl) {
+        dIn.addEventListener("input", function (e) {
+          e.stopPropagation();
+          if (dOut) dOut.textContent = daysLabel(DAYS_STEPS[+this.value]);
+        });
+        dIn.addEventListener("change", function (e) {
+          e.stopPropagation();
+          ddEl.value = String(DAYS_STEPS[+this.value]);
+          ddEl.dispatchEvent(new Event("change", { bubbles: true }));   // its own handler saves + relabels
+        });
+        dIn.addEventListener("click", function (e) { e.stopPropagation(); });
+        dIn.addEventListener("mousedown", function (e) { e.stopPropagation(); });
+        dIn.addEventListener("touchstart", function (e) { e.stopPropagation(); }, { passive: true });
+      }
     }
     (function () {
       var btn = document.getElementById("settings-toggle");
@@ -18147,14 +18200,14 @@
       var lpT = null, lpFired = false, lpX = 0, lpY = 0;
       // A capture-phase guard swallows the hold's trailing click so it doesn't also open Settings.
       btn.addEventListener("click", function (e) { if (lpFired) { lpFired = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
-      function start(x, y) { lpFired = false; clearTimeout(lpT); lpX = x; lpY = y; lpT = setTimeout(function () { lpFired = true; holdFeedback(btn); openGroupQuickMenu(); }, holdDelay()); }
+      function start(x, y) { lpFired = false; clearTimeout(lpT); lpX = x; lpY = y; lpT = setTimeout(function () { lpFired = true; holdFeedback(btn); toggleSettingsPanel(); }, holdDelay()); }
       btn.addEventListener("touchstart", function (e) { var tt = e.touches && e.touches[0]; start(tt ? tt.clientX : 0, tt ? tt.clientY : 0); }, { passive: true });
       btn.addEventListener("touchmove", function (e) { var tt = e.touches && e.touches[0]; if (tt && (Math.abs(tt.clientX - lpX) > 12 || Math.abs(tt.clientY - lpY) > 12)) clearTimeout(lpT); }, { passive: true });
       btn.addEventListener("touchend", function () { clearTimeout(lpT); });
       btn.addEventListener("mousedown", function (e) { if (e.button === 0) start(e.clientX, e.clientY); });
       btn.addEventListener("mouseup", function () { clearTimeout(lpT); });
       btn.addEventListener("mouseleave", function () { clearTimeout(lpT); });
-      btn.addEventListener("contextmenu", function (e) { e.preventDefault(); openGroupQuickMenu(); });
+      btn.addEventListener("contextmenu", function (e) { e.preventDefault(); toggleSettingsPanel(); });
     })();
 
     // The gear while Settings is open and scrolled DOWN: return to the top rather than

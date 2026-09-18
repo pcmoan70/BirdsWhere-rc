@@ -139,7 +139,7 @@ holding a button:
 | the **overlays** (layers) button | hide/show all ticked overlays in one go (button turns orange while they're suspended) |
 | the **🔍** search button | the **stored locations** popup |
 | the **locate crosshair** | continuous **GPS-follow** (hold again = red read cursor) |
-| the **Settings ⚙** gear | a quick **species-group** picker |
+| the **Settings ⚙** gear | the full **Settings** panel (a *tap* gives the quick panel instead) |
 | the **⤓ offline-maps** button | the offline-areas manager |
 | the **Points** button | the point-lists admin |
 | the **funnel / ×** | the all-filters pane |
@@ -902,6 +902,11 @@ no direction can delete data on the other device.
 
 ## Persistence, settings & languages
 
+- **The gear's two gestures** — a **tap** on the ⚙ opens a small quick panel with the three
+  settings that decide what the next tap on the map brings back: the **species group**, the
+  **fetch radius** and **how many days back** to fetch (1 · 2 · 3 · 7 · 14 · 21 · 28 · 42 · 91).
+  **Press-and-hold** (or right-click) opens the full **Settings** panel. Both sliders drive the
+  same controls that live in Settings, so a change made either way is saved the same way.
 - **Persistence** — settings, view, species/year/life lists, checklists, points and plotted
   detections survive across visits. Small settings live in **localStorage**; bulky per-list data
   (saved sets, detections) lives in **IndexedDB** to avoid the ~5 MB cap, hydrated into memory once
