@@ -926,6 +926,8 @@ window.GeoI18N = (function () {
         "link.mapant": "MapAnt",
         "link.spInCountry": "Species in country",
         "ctrl.countryres": "Country sampling resolution",
+        "ctrl.fetchGroups": "Species types to fetch",
+        "ctrl.fetchGroupsHint": "Every source has one page budget per fetch, shared across the types you ask for \u2014 so fetching fewer types returns more of each in a busy place. The type you are viewing is always fetched.",
         "ctrl.recentradius": "Sightings radius",
         "ctrl.radiusSet": "Sightings radius: {r}",
         "ctrl.downloadDays": "Download — last N days",

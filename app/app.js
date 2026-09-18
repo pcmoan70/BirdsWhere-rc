@@ -160,6 +160,7 @@
   // ---- Species-group filter (taxonomic class) ------------------------------
   // Groups present in the model: aves, mammalia, amphibia, insecta.
   var speciesGroup = "all";   // "all" or a class_name value
+  var fetchGroupsRender = null;   // re-renders the Settings fetch-type ticks (set when they are wired)
   // Per-group source filters: GBIF backbone class taxonKeys + iNat iconic-taxon
   // names. "all" unions every supported group. eBird/BirdWeather are bird-only
   // feeds (queried only for Birds/All); the Nordic DBs can't filter by taxon at
@@ -200,29 +201,43 @@
     if (hint) hint.style.display = hasModel ? "none" : "";
   }
   // WHAT A FETCH RETRIEVES, as opposed to what the app is currently showing. Since
-  // v1809 every fetch retrieves the superset — every kingdom — whatever group is
-  // selected, and the active group filters what is DISPLAYED (detPassesGroup,
-  // extraInGroup, the legend, the lists). So a location behaves the same whether you
-  // are looking at birds, plants or fungi, switching group is instant instead of
-  // leaving an empty map, and whether the model covers a group stops mattering to the
-  // fetch. The cost, deliberately accepted: each source's paging budget is shared
-  // across six taxa, so a very dense spot truncates sooner than a birds-only fetch did.
-  function fetchScopeGroup() { return "all"; }
+  // v1809 a fetch is not limited to the group on screen: the active group filters what
+  // is DISPLAYED (detPassesGroup, extraInGroup, the legend, the lists), so switching
+  // group is instant instead of leaving an empty map, and a location behaves the same
+  // whatever you are looking at.
+  //
+  // Which types a fetch asks for is a Settings choice (v1811) — every source shares one
+  // paging budget across the types requested, so fetching fewer of them returns more of
+  // each before a source's limit is reached. Default: all six, as in v1809.
+  var FETCH_GROUP_IDS = ["aves", "mammalia", "amphibia", "insecta", "plantae", "fungi"];
+  function fetchGroupsOn() {
+    var saved = window.GeoState.get("fetchGroups", null);
+    var out = {};
+    FETCH_GROUP_IDS.forEach(function (g) { out[g] = saved && typeof saved === "object" ? saved[g] !== false : true; });
+    // Never fetch nothing: an empty selection falls back to the group on screen (or birds).
+    if (!FETCH_GROUP_IDS.some(function (g) { return out[g]; })) out[speciesGroup === "all" ? "aves" : speciesGroup] = true;
+    // The group being VIEWED is always fetched, whatever the ticks say — otherwise
+    // selecting it would show an empty map with no way to see why.
+    if (speciesGroup !== "all" && out[speciesGroup] === false) out[speciesGroup] = true;
+    return out;
+  }
+  function fetchGroupList() { var on = fetchGroupsOn(); return FETCH_GROUP_IDS.filter(function (g) { return on[g]; }); }
+  // "all" while more than one type is requested (the per-dataset gating in fetch.js reads
+  // this), else that single type.
+  function fetchScopeGroup() { var l = fetchGroupList(); return l.length === 1 ? l[0] : "all"; }
   function groupTaxaList() {
     // "All" now spans every supported kingdom (animals + plants + fungi) so a
     // cached All fetch is a true superset — All → any single group can be derived
     // by filtering instead of refetching. (Heavier: it shares the sources' paging
     // budget across more taxa, so a dense spot can truncate sooner.)
-    var g = fetchScopeGroup();
-    if (g === "all") return [GROUP_TAXA.aves, GROUP_TAXA.mammalia, GROUP_TAXA.amphibia, GROUP_TAXA.insecta, GROUP_TAXA.plantae, GROUP_TAXA.fungi];
-    return [GROUP_TAXA[g] || GROUP_TAXA.aves];
+    return fetchGroupList().map(function (g) { return GROUP_TAXA[g]; }).filter(Boolean);
   }
   function gbifTaxonParam() { return groupTaxaList().map(function (g) { return "&taxonKey=" + g.gbif; }).join(""); }   // GBIF ORs repeated taxonKey
   function inatIconicTaxa() { return groupTaxaList().map(function (g) { return g.inat; }).join(","); }
   // Bird-only feeds (eBird, BirdWeather, NBN): queried whenever the FETCH covers birds,
   // which under the superset policy is always — their records are filtered out of the
   // view like any other when a non-bird group is selected.
-  function groupIsBirds() { var g = fetchScopeGroup(); return g === "all" || g === "aves"; }
+  function groupIsBirds() { return !!fetchGroupsOn().aves; }
   var hiResFactor = 0;        // detail offset in zoom levels / H3 resolutions (0 = auto, ±N = coarser/finer)
   var distMapToken = 0;       // guards against stale distribution-map fetches
   var recentToken = 0;        // guards against stale recent-detections fetches
@@ -4487,7 +4502,8 @@
   function sightConfigSig() {
     try {
       var srcs = obsSources().filter(function (s) { return s.enabled(); }).map(function (s) { return s.name; }).sort().join(",");
-      return srcs + "|bw" + window.GeoState.get("bwMinDet", 2) + "," + window.GeoState.get("bwMinConf", 0) + "|ds" + ((gbifDatasets || []).length);
+      return srcs + "|bw" + window.GeoState.get("bwMinDet", 2) + "," + window.GeoState.get("bwMinConf", 0) + "|ds" + ((gbifDatasets || []).length) +
+        "|g" + fetchGroupList().join("+");   // a narrower tick set holds less: don't serve it as a wider one
     } catch (e) { return ""; }
   }
   function loadPersistedSightings() {
@@ -6510,6 +6526,14 @@
                 '</div>' +
                 '<p class="cu-hint" id="group-nomodel-hint" style="display:none" data-i18n="group.noModelHint">No habitat model for this group — observation search only (no range, richness or migration).</p>' +
                 '<p class="cu-hint" data-i18n="ctrl.groupHint">Limit the whole app — lists, Range, Richness and observation search — to one group: birds, mammals, amphibians, insects, plants or fungi.</p>' +
+              '</div>' +
+              // Which TYPES a fetch asks for (the group picker above only decides what is
+              // shown). Every source shares one paging budget across the types requested,
+              // so fewer ticks = more records of each before a source's limit is reached.
+              '<div class="ctrl-group">' +
+                '<label data-i18n="ctrl.fetchGroups">Species types to fetch</label>' +
+                '<div class="fetch-groups" id="fetch-groups"></div>' +
+                '<p class="cu-hint" data-i18n="ctrl.fetchGroupsHint">Every source has one page budget per fetch, shared across the types you ask for — so fetching fewer types returns more of each in a busy place. The type you are viewing is always fetched.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<div class="ctrl-label-row"><label for="recent-radius" data-i18n="ctrl.recentradius">Sightings radius</label><span id="recent-radius-val" class="radius-val"></span></div>' +
@@ -17492,6 +17516,35 @@
         if (slp && slp.style.display === "block" && storedLocAnchor) showStoredLocations(storedLocAnchor);
       });
     }
+    // The fetch-type ticks: the same six groups the picker offers, minus "all".
+    (function () {
+      var box = document.getElementById("fetch-groups"); if (!box) return;
+      function render() {
+        var on = fetchGroupsOn(), saved = window.GeoState.get("fetchGroups", null);
+        box.innerHTML = FETCH_GROUP_IDS.map(function (g) {
+          // A type forced on because it is the one being viewed is shown ticked and
+          // disabled, so the rule explains itself rather than looking like a bug.
+          var forced = speciesGroup === g;
+          return '<label class="ctrl-check fg-item"><input type="checkbox" data-fg="' + g + '"' +
+            ((saved && typeof saved === "object" ? saved[g] !== false : true) || forced ? " checked" : "") +
+            (forced ? " disabled" : "") + "> " + settingsIconHtml(g) +
+            "<span>" + escapeHtml(t("group." + g)) + "</span></label>";
+        }).join("");
+      }
+      render();
+      box.addEventListener("change", function (e) {
+        var cb = e.target && e.target.closest ? e.target.closest("input[data-fg]") : null;
+        if (!cb) return;
+        var cur = window.GeoState.get("fetchGroups", null) || {};
+        FETCH_GROUP_IDS.forEach(function (g) { if (!(g in cur)) cur[g] = true; });
+        cur[cb.getAttribute("data-fg")] = !!cb.checked;
+        window.GeoState.save({ fetchGroups: cur });
+        allSightingsCache = {};   // a different tick set is different data: don't reuse this session's answers
+                                  // (the persisted cache is keyed by sightConfigSig, which now carries the set)
+        render();
+      });
+      fetchGroupsRender = render;   // re-tick when the viewed group changes (see the group picker)
+    })();
     wireNumSetting("download-days", downloadDays, 0, 92, 30, function (v) { window.GeoState.save({ downloadDays: v }); refreshRecentModeLabel(); }, null);
     wireNumSetting("fetchonopen-days", fetchOnOpenDays, 1, 92, 30, function (v) { window.GeoState.save({ fetchOnOpenDays: v }); }, null);
 
@@ -17881,6 +17934,7 @@
       // Plants/Fungi have no model → hide the model-only modes (may switch the
       // active mode to the observation list, which re-renders on its own).
       refreshGroupModeOptions();
+      if (typeof fetchGroupsRender === "function") fetchGroupsRender();   // the viewed type is always fetched
       // Re-render whatever depends on the species set.
       if (currentMode === "richness") triggerRender();
       else if (currentMode === "barchart" && analysisData) renderActiveTab();

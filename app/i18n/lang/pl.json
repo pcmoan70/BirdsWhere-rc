@@ -1065,6 +1065,8 @@
   "link.mapant": "MapAnt",
   "link.spInCountry": "Gatunki w kraju",
   "ctrl.countryres": "Rozdzielczość próbkowania kraju",
+  "ctrl.fetchGroups": "Pobierane typy gatunków",
+  "ctrl.fetchGroupsHint": "Każde źródło ma jeden budżet stron na pobranie, dzielony między wybrane typy — mniej typów oznacza więcej rekordów każdego z nich w ruchliwym miejscu. Oglądany typ jest pobierany zawsze.",
   "ctrl.recentradius": "Promień obserwacji",
   "sources.colTimeout": "Limit czasu pobierania (s)",
   "sources.timeoutHint": "Źródło wciąż pobierające po tylu sekundach zostaje zatrzymane; już wczytane obserwacje są zachowane, a jego etykieta robi się czerwona. 0 = bez limitu.",

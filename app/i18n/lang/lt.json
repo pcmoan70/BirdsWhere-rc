@@ -1065,6 +1065,8 @@
   "link.mapant": "MapAnt",
   "link.spInCountry": "Rūšys šalyje",
   "ctrl.countryres": "Šalies imties skiriamoji geba",
+  "ctrl.fetchGroups": "Gaunami rūšių tipai",
+  "ctrl.fetchGroupsHint": "Kiekvienas šaltinis turi vieną puslapių biudžetą vienam gavimui, dalijamą tarp pasirinktų tipų — todėl mažiau tipų duoda daugiau kiekvieno įrašų judrioje vietoje. Žiūrimas tipas gaunamas visada.",
   "ctrl.recentradius": "Stebėjimų spindulys",
   "sources.colTimeout": "Gavimo skirtasis laikas (s)",
   "sources.timeoutHint": "Šaltinis, vis dar gaunantis duomenis po tiek sekundžių, sustabdomas; jau įkelti stebėjimai išsaugomi, o jo etiketė tampa raudona. 0 = be skirtojo laiko.",

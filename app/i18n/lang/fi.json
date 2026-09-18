@@ -1065,6 +1065,8 @@
   "link.mapant": "MapAnt",
   "link.spInCountry": "Maan lajit",
   "ctrl.countryres": "Maan näytteenoton resoluutio",
+  "ctrl.fetchGroups": "Haettavat lajityypit",
+  "ctrl.fetchGroupsHint": "Jokaisella lähteellä on yksi sivubudjetti hakua kohden, jaettuna pyytämiesi tyyppien kesken — harvemmat tyypit tuovat siis kutakin enemmän vilkkaassa paikassa. Katselemasi tyyppi haetaan aina.",
   "ctrl.recentradius": "Havaintojen säde",
   "sources.colTimeout": "Haun aikakatkaisu (s)",
   "sources.timeoutHint": "Lähde, joka hakee yhä näiden sekuntien jälkeen, pysäytetään; jo ladatut havainnot säilytetään ja sen nimi muuttuu punaiseksi. 0 = ei aikakatkaisua.",

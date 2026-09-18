@@ -1065,6 +1065,8 @@
   "link.mapant": "MapAnt",
   "link.spInCountry": "Espécies no país",
   "ctrl.countryres": "Resolução de amostragem do país",
+  "ctrl.fetchGroups": "Tipos de espécies a obter",
+  "ctrl.fetchGroupsHint": "Cada fonte tem um orçamento de páginas por busca, repartido pelos tipos que pedir — pedir menos tipos devolve mais de cada um num local movimentado. O tipo que está a ver é sempre obtido.",
   "ctrl.recentradius": "Raio de observações",
   "sources.colTimeout": "Tempo limite (s)",
   "sources.timeoutHint": "Uma fonte ainda a obter dados após estes segundos é interrompida; as observações já carregadas são mantidas e o seu rótulo fica vermelho. 0 = sem tempo limite.",

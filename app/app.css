@@ -4552,3 +4552,10 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .rl-en { background: #d4522a; }
 .rl-cr, .rl-re { background: #b3261e; }
 
+
+/* Settings → "Species types to fetch": the six ticks, two per row, each with its group icon. */
+.fetch-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 2px 10px; margin: 4px 0 2px; }
+.fetch-groups .fg-item { display: flex; align-items: center; gap: 6px; }
+.fetch-groups .fg-item .bird-ico { width: var(--ico-m, 16px); height: var(--ico-m, 16px); flex: 0 0 auto; color: var(--brand-deep, #1f5b48); }
+.fetch-groups .fg-item input[disabled] + .bird-ico,
+.fetch-groups .fg-item input[disabled] ~ span { opacity: .65; }   /* the type being viewed: always fetched */

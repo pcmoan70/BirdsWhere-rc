@@ -902,6 +902,11 @@ no direction can delete data on the other device.
 
 ## Persistence, settings & languages
 
+- **Species types to fetch** (Settings → Fetching, since v1811) — six ticks (birds, mammals,
+  amphibians, insects, plants, fungi), all on by default, deciding what a fetch ASKS FOR. Every
+  source has one page budget per fetch shared across the requested types, so fewer ticks return
+  more of each in a dense place. The type currently being viewed is always fetched (shown ticked
+  and disabled), and changing the set starts a fresh fetch — the persisted cache is keyed by it.
 - **One fetch, every group** (since v1809) — a fetch always retrieves the superset (birds, mammals,
   amphibians, insects, plants, fungi) whatever group is selected; the **species group is a display
   filter** (`detPassesGroup`), so switching group re-filters the dots, legend and lists instantly

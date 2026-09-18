@@ -1065,6 +1065,8 @@
   "link.mapant": "MapAnt",
   "link.spInCountry": "Arter i landet",
   "ctrl.countryres": "Lands­samplings­opløsning",
+  "ctrl.fetchGroups": "Artstyper der hentes",
+  "ctrl.fetchGroupsHint": "Hver kilde har ét sidebudget pr. hentning, delt mellem de typer du beder om — færre typer giver altså flere af hver på et travlt sted. Den type du ser på, hentes altid.",
   "ctrl.recentradius": "Fundradius",
   "sources.colTimeout": "Timeout for hentning (s)",
   "sources.timeoutHint": "En kilde, der stadig henter efter så mange sekunder, stoppes; de allerede indlæste observationer beholdes, og dens etiket bliver rød. 0 = ingen timeout.",
