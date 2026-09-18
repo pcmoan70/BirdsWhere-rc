@@ -21402,13 +21402,31 @@
     try { return m ? decodeURIComponent(m[1]) : ""; } catch (e) { return m ? m[1] : ""; }
   }
   // A display-size thumbnail URL from the summary's thumbnail: drop the tracking query,
-  // serve from upload.wikimedia.org (the canonical, cacheable host) at 500 px wide — one of
-  // Wikimedia's standard widths (20/40/60/120/250/330/500/960…); other widths are refused.
+  // serve from upload.wikimedia.org (the canonical, cacheable host) at 800 px wide — one of
+  // Wikimedia's standard widths (20/40/60/120/250/330/500/800/960…); other widths are refused.
+  // 800 rather than 500 since v1802: a gallery card is ~300 CSS px, which is 900 device px on a
+  // 3× phone, so 500 was visibly soft. Sampled originals run 288–6663 px wide (median 1468), so
+  // 800 is a real thumbnail for nearly every file rather than an upscale.
   function spImgThumb(thumb) {
-    return thumb.split("?")[0].replace(/^https:\/\/thumb\.wikimedia\.org\//, "https://upload.wikimedia.org/").replace(/\/\d+px-/, "/500px-");
+    return thumb.split("?")[0].replace(/^https:\/\/thumb\.wikimedia\.org\//, "https://upload.wikimedia.org/").replace(/\/\d+px-/, "/800px-");
   }
+  // Licences we may show. Commons is free-only, but the summary's image can be a file
+  // local to en.wikipedia, where non-free "fair use" and NC/ND files exist — and those
+  // we must not redistribute. Anything we cannot positively identify as free is dropped.
+  function spImgLicenceOk(name) {
+    var l = String(name || "").toLowerCase();
+    if (!l) return false;                                   // no licence metadata → don't show it
+    if (/non-?free|fair use|no derivat|\bnd\b|non-?commercial|\bnc\b/.test(l)) return false;
+    return /cc0|public domain|cc by|cc-by|fal|free art|gfdl|copyrighted free use/.test(l);
+  }
+  // Bumped when the record's SHAPE or the rules that filled it change, so devices
+  // re-fetch instead of serving entries made under the old ones (v2: 800 px thumbs,
+  // untruncated author, licence URL, free-licence gate).
+  var SP_IMG_VER = 2;
   function spImageFor(sci) {
-    var c = spImgStore(); if (c[sci]) return Promise.resolve(c[sci]);
+    var c = spImgStore();
+    if (c[sci] && c[sci].v === SP_IMG_VER) return Promise.resolve(c[sci]);
+    if (c[sci] && c[sci].none && c[sci].tmp) return Promise.resolve(c[sci]);   // transient miss: unchanged by the rules above
     if (photoNetDown()) return Promise.resolve({ none: 1, tmp: 1 });   // offline / service down: don't even ask (the SW would answer 503) — retried later
     var title = encodeURIComponent(sci.trim().replace(/\s+/g, "_"));
     return fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + title, { headers: { Accept: "application/json" } })
@@ -21417,23 +21435,31 @@
       .then(function (r) { if (r.ok) return r.json(); if (r.status === 404) return null; throw new Error("summary " + r.status); })
       .then(function (j) {
         var thumb = j && j.thumbnail && j.thumbnail.source, orig = j && j.originalimage && j.originalimage.source;
-        if (!thumb || (j && j.type === "disambiguation")) { spImgRemember(sci, { none: 1 }); return { none: 1 }; }
+        if (!thumb || (j && j.type === "disambiguation")) { spImgRemember(sci, { v: SP_IMG_VER, none: 1 }); return { none: 1 }; }
         var file = spImgFileFromUrl(orig || thumb);
-        var rec = { t: spImgThumb(thumb), f: file, a: "", l: "" };
+        var rec = { v: SP_IMG_VER, t: spImgThumb(thumb), f: file, a: "", l: "" };
         // Author + licence from the file's metadata (Commons first, else the file may be local to en.wikipedia).
-        var q = "w/api.php?action=query&prop=imageinfo&iiprop=extmetadata&iiextmetadatafilter=Artist%7CLicenseShortName&format=json&origin=*&titles=File:" + encodeURIComponent(file);
+        var q = "w/api.php?action=query&prop=imageinfo&iiprop=extmetadata&iiextmetadatafilter=Artist%7CLicenseShortName%7CLicenseUrl&format=json&origin=*&titles=File:" + encodeURIComponent(file);
         function meta(host) {
           return fetch("https://" + host + "/" + q).then(function (r) { return r.ok ? r.json() : null; }).then(function (m) {
             var pages = m && m.query && m.query.pages, pg = pages && pages[Object.keys(pages)[0]];
             var ii = pg && pg.imageinfo && pg.imageinfo[0] && pg.imageinfo[0].extmetadata;
             if (!ii) return false;
-            rec.a = String((ii.Artist && ii.Artist.value) || "").replace(/<[^>]+>/g, "").trim().slice(0, 80);
+            // The WHOLE author string (audited: real ones run to 251 chars) — a truncated
+            // credit is not the attribution CC BY/BY-SA asks for. 240 is a sanity cap.
+            rec.a = String((ii.Artist && ii.Artist.value) || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 240);
             rec.l = String((ii.LicenseShortName && ii.LicenseShortName.value) || "").trim();
+            rec.lu = String((ii.LicenseUrl && ii.LicenseUrl.value) || "").trim();   // link the deed, not just the file page
             rec.h = host; return true;
           }).catch(function () { return false; });
         }
         return meta("commons.wikimedia.org").then(function (ok) { return ok ? true : meta("en.wikipedia.org"); })
-          .then(function () { spImgRemember(sci, rec); return rec; });
+          .then(function () {
+            // No positively-free licence → treat the species as having no photo (remembered,
+            // so we don't ask again) rather than showing something we may not redistribute.
+            if (!spImgLicenceOk(rec.l)) { spImgRemember(sci, { v: SP_IMG_VER, none: 1 }); return { none: 1 }; }
+            spImgRemember(sci, rec); return rec;
+          });
       })
       .catch(function () { return { none: 1, tmp: 1 }; });   // network trouble: not remembered, retried next time
   }
@@ -21567,7 +21593,10 @@
       box.insertBefore(img, box.firstChild);
       if (cr) {
         var page = "https://" + (r.h || "commons.wikimedia.org") + "/wiki/File:" + encodeURIComponent((r.f || "").replace(/ /g, "_"));
-        cr.innerHTML = '<a href="' + escapeHtml(page) + '" target="_blank" rel="noopener">' + escapeHtml((r.a ? "© " + r.a : "Wikimedia Commons") + (r.l ? " · " + r.l : "")) + "</a>";
+        cr.innerHTML = '<a href="' + escapeHtml(page) + '" target="_blank" rel="noopener">' + escapeHtml(r.a ? "© " + r.a : "Wikimedia Commons") + "</a>" +
+          (r.l ? " · " + (r.lu
+            ? '<a href="' + escapeHtml(r.lu) + '" target="_blank" rel="noopener">' + escapeHtml(r.l) + "</a>"   // the licence deed itself
+            : escapeHtml(r.l)) : "");
       }
       return true;
     });
