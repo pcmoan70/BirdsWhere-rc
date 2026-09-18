@@ -21771,9 +21771,20 @@
       var dot = tr.querySelector(".sp-dot, .sp-cdot, .det-sw");
       var nd = tr.querySelector(".det-nd"), last = tr.querySelector(".sp-last"), dist = tr.querySelector(".sp-dist"), prob = tr.querySelector(".prob-num");
       var probTd = tr.querySelector("td.prob-cell");   // number + coloured bar, cloned as-is
+      // A model row carries its key on .sp-link; an extra (plant, fungus, most insects)
+      // has none, so derive the same "x:<scientific name>" key the table uses — that is
+      // what spDetailRowsFor / openSpeciesListRow expect, and without it these cards had
+      // no records button at all.
       var key = link ? link.getAttribute("data-key") || "" : "";
+      if (!key) {
+        var exBtn = tr.querySelector(".det-count-extra[data-sci]");
+        var exSci = exBtn ? exBtn.getAttribute("data-sci") : sci;
+        if (exSci) key = "x:" + String(exSci).toLowerCase();
+      }
       var lastChip = last ? last.querySelector("[data-date]") : null, lastDate = lastChip ? lastChip.getAttribute("data-date") || "" : "";
-      var subBtn = (key && tr.classList.contains("sp-has-det"))   // only rows with records have a sub-list to open
+      // Rows with records have a sub-list to open — a model species that was actually
+      // observed (.sp-has-det) OR an extra, which exists only BECAUSE it was observed.
+      var subBtn = (key && (tr.classList.contains("sp-has-det") || tr.classList.contains("sp-extra")))
         ? '<button type="button" class="spg-sub" data-key="' + escapeHtml(key) + '" title="' + escapeHtml(t("spg.records")) + '" aria-label="' + escapeHtml(t("spg.records")) + '">\u2630</button>' : "";
       var showSci = sci && !(link && link.textContent.trim() === sci);   // no "(sci)" when the name already IS the sci
       var photoLink = !!key && isBirdKey(key);   // Macaulay Library is birds-only (as in the species menu)
@@ -22011,7 +22022,12 @@
     el.style.width = "max-content"; el.style.maxWidth = "96vw"; el.style.minWidth = "min(96vw,360px)";
     el.style.maxHeight = "min(60vh,420px)"; el.style.overflow = "auto";
     var lbl = labelsByKey[key];
-    el.innerHTML = '<div class="detrow-menu-hdr detrow-menu-name">' + escapeHtml(lbl ? speciesName(lbl) : key) + ' <span class="spg-recpop-n">(' + recs.length + ")</span></div>" + spDetailTableHtml(key, recs);
+    // An extra's key is "x:<scientific name>" — printing it raw put "x:fragaria viridis"
+    // where the species name belongs. detName resolves both kinds through the same
+    // bundled/harvested names everything else uses.
+    var popName = lbl ? speciesName(lbl)
+      : (key && key.indexOf("x:") === 0 ? detName(dEntry(key) || { key: key }) : key);
+    el.innerHTML = '<div class="detrow-menu-hdr detrow-menu-name">' + escapeHtml(popName) + ' <span class="spg-recpop-n">(' + recs.length + ")</span></div>" + spDetailTableHtml(key, recs);
     wireSpDetail(el);
     el.addEventListener("mouseenter", function () { clearTimeout(spgPopTimer); });
     el.addEventListener("mouseleave", function () { scheduleSpgPopClose(); });
