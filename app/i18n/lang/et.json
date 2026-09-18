@@ -1069,6 +1069,7 @@
   "sources.colTimeout": "Päringu ajalõpp (s)",
   "sources.timeoutHint": "Allikas, mis pärast nii mitut sekundit veel laeb, peatatakse; juba laaditud vaatlused säilivad ja selle silt muutub punaseks. 0 = ajalõputa.",
   "ctrl.downloadDays": "Allalaadimine — viimased N päeva",
+  "ctrl.downloadShort": "Allalaadimine",
   "ctrl.downloadDaysHint": "Kui kaugele tagasi tavaline tõmbamine vaatlusi laadib, iga allika puhul (eBird on oma API tõttu alati piiratud 30 päevaga; GBIF ~92-ga). 0 = iga allika oma vaikeväärtus (GBIF/iNaturalist ~90 päeva, eBird 30, BirdWeather 7). Tõmba avamisel on oma eraldi aken.",
   "ctrl.sightTtl": "Taaskasuta allalaadimisi (min)",
   "ctrl.sightTtlHint": "Rakenduse taasavamisel kasutatakse asukoha juba alla laaditud vaatlusi nii mitu minutit uuesti, selle asemel et neid uuesti laadida. 0 = kasuta lõpmatuseni (lae uuesti vaid uue koha või muudetud raadiuse/rühma/allika korral).",

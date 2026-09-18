@@ -833,6 +833,7 @@
   "sources.colTimeout": "Hämtnings-timeout (s)",
   "sources.timeoutHint": "En källa som fortfarande hämtar efter så här många sekunder stoppas; observationerna den redan läst in behålls och dess etikett blir röd. 0 = ingen timeout.",
   "ctrl.downloadDays": "Nedladdning – senaste N dagar",
+  "ctrl.downloadShort": "Nedladdning",
   "ctrl.downloadDaysHint": "Hur långt bakåt en vanlig hämtning laddar ner observationer, för alla källor (eBird är alltid begränsat till 30 dagar av sitt API; GBIF till ~92). 0 = varje källas eget standardvärde (GBIF/iNaturalist ~90 dagar, eBird 30, BirdWeather 7). Hämta vid öppning har sitt eget separata fönster.",
   "ctrl.sightTtl": "Återanvänd nedladdningar (min)",
   "ctrl.sightTtlHint": "När appen öppnas igen återanvänds en plats redan nedladdade observationer i så här många minuter i stället för att hämtas på nytt. 0 = återanvänd för alltid (hämta bara om vald plats, radie, grupp eller källa ändras).",

@@ -1069,6 +1069,7 @@
   "sources.colTimeout": "Timeout for hentning (s)",
   "sources.timeoutHint": "En kilde, der stadig henter efter så mange sekunder, stoppes; de allerede indlæste observationer beholdes, og dens etiket bliver rød. 0 = ingen timeout.",
   "ctrl.downloadDays": "Download — sidste N dage",
+  "ctrl.downloadShort": "Download",
   "ctrl.downloadDaysHint": "Hvor langt tilbage en normal hentning downloader observationer, for hver kilde (eBird er altid begrænset til 30 dage af sit API; GBIF til ~92). 0 = hver kildes egen standard (GBIF/iNaturalist ~90 dage, eBird 30, BirdWeather 7). Hent ved åbning har sit eget separate vindue.",
   "ctrl.sightTtl": "Genbrug downloads (min)",
   "ctrl.sightTtlHint": "Når appen åbnes igen, genbruges et steds allerede downloadede observationer i så mange minutter i stedet for at hente dem igen. 0 = genbrug uendeligt (hent kun igen ved nyt sted eller ændret radius/gruppe/kilde).",

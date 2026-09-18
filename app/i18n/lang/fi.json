@@ -1069,6 +1069,7 @@
   "sources.colTimeout": "Haun aikakatkaisu (s)",
   "sources.timeoutHint": "Lähde, joka hakee yhä näiden sekuntien jälkeen, pysäytetään; jo ladatut havainnot säilytetään ja sen nimi muuttuu punaiseksi. 0 = ei aikakatkaisua.",
   "ctrl.downloadDays": "Lataus — viimeiset N päivää",
+  "ctrl.downloadShort": "Lataus",
   "ctrl.downloadDaysHint": "Kuinka kauas taaksepäin tavallinen haku lataa havaintoja, kaikille lähteille (eBird on aina rajattu 30 päivään API:nsa vuoksi; GBIF ~92:een). 0 = kunkin lähteen oma oletus (GBIF/iNaturalist ~90 päivää, eBird 30, BirdWeather 7). Hae avattaessa käyttää omaa erillistä ikkunaansa.",
   "ctrl.sightTtl": "Käytä latauksia uudelleen (min)",
   "ctrl.sightTtlHint": "Sovelluksen avaaminen uudelleen käyttää paikan jo ladattuja havaintoja näin monta minuuttia sen sijaan, että ne haettaisiin uudelleen. 0 = käytä loputtomasti (hae uudelleen vain uudessa paikassa tai kun säde/ryhmä/lähde muuttuu).",

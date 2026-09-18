@@ -1069,6 +1069,7 @@
   "sources.colTimeout": "Ophaal-time-out (s)",
   "sources.timeoutHint": "Een bron die na zoveel seconden nog ophaalt, wordt gestopt; de al geladen waarnemingen blijven behouden en het label wordt rood. 0 = geen time-out.",
   "ctrl.downloadDays": "Downloaden — laatste N dagen",
+  "ctrl.downloadShort": "Downloaden",
   "ctrl.downloadDaysHint": "Hoe ver terug een normale ophaalactie waarnemingen downloadt, voor elke bron (eBird altijd tot 30 dagen beperkt door de API; GBIF tot ~92). 0 = de eigen standaard van elke bron (GBIF/iNaturalist ~90 dagen, eBird 30, BirdWeather 7). Ophalen bij openen heeft zijn eigen aparte venster.",
   "ctrl.sightTtl": "Downloads hergebruiken (min)",
   "ctrl.sightTtlHint": "Bij het opnieuw openen worden de al gedownloade waarnemingen van een locatie zoveel minuten hergebruikt in plaats van opnieuw op te halen. 0 = onbeperkt hergebruiken (alleen opnieuw ophalen bij een nieuwe plek of gewijzigde straal/groep/bron).",

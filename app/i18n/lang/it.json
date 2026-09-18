@@ -1069,6 +1069,7 @@
   "sources.colTimeout": "Timeout recupero (s)",
   "sources.timeoutHint": "Una fonte ancora in download dopo questi secondi viene fermata; le osservazioni già caricate vengono mantenute e la sua etichetta diventa rossa. 0 = nessun timeout.",
   "ctrl.downloadDays": "Download — ultimi N giorni",
+  "ctrl.downloadShort": "Download",
   "ctrl.downloadDaysHint": "Fino a quanti giorni indietro un recupero normale scarica osservazioni, per ogni fonte (eBird sempre limitato a 30 giorni dalla sua API; GBIF a ~92). 0 = il valore predefinito di ogni fonte (GBIF/iNaturalist ~90 giorni, eBird 30, BirdWeather 7). Recupera all’apertura ha la propria finestra separata.",
   "ctrl.sightTtl": "Riusa i download (min)",
   "ctrl.sightTtlHint": "Riaprendo l’app le osservazioni già scaricate di un luogo vengono riusate per questi minuti invece di essere riscaricate. 0 = riusa indefinitamente (ricarica solo per un nuovo luogo o se cambia raggio/gruppo/fonte).",

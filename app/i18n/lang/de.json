@@ -1069,6 +1069,7 @@
   "sources.colTimeout": "Abruf-Timeout (s)",
   "sources.timeoutHint": "Eine Quelle, die nach so vielen Sekunden noch lädt, wird gestoppt; die bereits geladenen Beobachtungen bleiben erhalten und ihr Label wird rot. 0 = kein Timeout.",
   "ctrl.downloadDays": "Download – letzte N Tage",
+  "ctrl.downloadShort": "Download",
   "ctrl.downloadDaysHint": "Wie weit zurück ein normaler Abruf Beobachtungen lädt, für jede Quelle (eBird ist durch seine API stets auf 30 Tage begrenzt, GBIF auf ~92). 0 = der eigene Standard jeder Quelle (GBIF/iNaturalist ~90 Tage, eBird 30, BirdWeather 7). „Beim Öffnen abrufen“ hat sein eigenes separates Fenster.",
   "ctrl.sightTtl": "Downloads wiederverwenden (Min)",
   "ctrl.sightTtlHint": "Beim erneuten Öffnen der App werden die bereits geladenen Beobachtungen eines Orts so viele Minuten lang wiederverwendet, statt neu abzurufen. 0 = unbegrenzt wiederverwenden (nur bei neuem Ort oder geändertem Radius/Gruppe/Quelle neu abrufen).",

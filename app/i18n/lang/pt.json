@@ -1069,6 +1069,7 @@
   "sources.colTimeout": "Tempo limite (s)",
   "sources.timeoutHint": "Uma fonte ainda a obter dados após estes segundos é interrompida; as observações já carregadas são mantidas e o seu rótulo fica vermelho. 0 = sem tempo limite.",
   "ctrl.downloadDays": "Transferência — últimos N dias",
+  "ctrl.downloadShort": "Transferência",
   "ctrl.downloadDaysHint": "Até quantos dias atrás uma obtenção normal transfere observações, para todas as fontes (eBird sempre limitado a 30 dias pela sua API; GBIF a ~92). 0 = o valor próprio de cada fonte (GBIF/iNaturalist ~90 dias, eBird 30, BirdWeather 7). Obter ao abrir tem a sua própria janela separada.",
   "ctrl.sightTtl": "Reutilizar transferências (min)",
   "ctrl.sightTtlHint": "Ao reabrir a aplicação, as observações já transferidas de um local são reutilizadas durante estes minutos em vez de serem obtidas de novo. 0 = reutilizar indefinidamente (só obter de novo num local novo ou se mudar o raio/grupo/fonte).",

@@ -1069,6 +1069,7 @@
   "sources.colTimeout": "Gavimo skirtasis laikas (s)",
   "sources.timeoutHint": "Šaltinis, vis dar gaunantis duomenis po tiek sekundžių, sustabdomas; jau įkelti stebėjimai išsaugomi, o jo etiketė tampa raudona. 0 = be skirtojo laiko.",
   "ctrl.downloadDays": "Atsisiuntimas — paskutinės N dienų",
+  "ctrl.downloadShort": "Atsisiuntimas",
   "ctrl.downloadDaysHint": "Kiek dienų atgal įprastas gavimas atsisiunčia stebėjimus, kiekvienam šaltiniui (eBird visada apribotas iki 30 dienų savo API; GBIF iki ~92). 0 = kiekvieno šaltinio numatytoji reikšmė (GBIF/iNaturalist ~90 d., eBird 30, BirdWeather 7). Gauti atidarius turi savo atskirą langą.",
   "ctrl.sightTtl": "Naudoti atsisiųstus (min)",
   "ctrl.sightTtlHint": "Iš naujo atidarius programą vietos jau atsisiųsti stebėjimai naudojami dar tiek minučių, o ne atsisiunčiami iš naujo. 0 = naudoti neribotai (atsisiųsti iš naujo tik esant naujai vietai ar pakeitus spindulį/grupę/šaltinį).",

@@ -18145,7 +18145,9 @@
       var ddEl = document.getElementById("download-days");
       if (ddEl) {
         var dNow = downloadDays() || 30;
-        html += '<div class="gq-head gq-head-2">' + escapeHtml(t("ctrl.downloadDays")) +
+        // Short label here ("Download 14 days"): Settings' full "Download — last N days"
+        // would set the whole panel's width on its own.
+        html += '<div class="gq-head gq-head-2">' + escapeHtml(t("ctrl.downloadShort")) +
           ' <span class="gq-days-val">' + escapeHtml(daysLabel(dNow)) + "</span></div>" +
           '<div class="gq-radius"><input type="range" class="gq-days-in" min="0" max="' + (DAYS_STEPS.length - 1) +
           '" step="1" value="' + daysStepIndex(dNow) + '" aria-label="' + escapeHtml(t("ctrl.downloadDays")) + '" /></div>';

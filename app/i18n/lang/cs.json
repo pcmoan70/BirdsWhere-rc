@@ -1069,6 +1069,7 @@
   "sources.colTimeout": "Časový limit načítání (s)",
   "sources.timeoutHint": "Zdroj, který po tolika sekundách stále načítá, se zastaví; již načtená pozorování zůstanou a jeho štítek zčervená. 0 = bez limitu.",
   "ctrl.downloadDays": "Stažení — posledních N dní",
+  "ctrl.downloadShort": "Stažení",
   "ctrl.downloadDaysHint": "Jak daleko zpět běžné stažení stahuje pozorování, pro každý zdroj (eBird je vždy omezen na 30 dní svým API; GBIF na ~92). 0 = vlastní výchozí hodnota každého zdroje (GBIF/iNaturalist ~90 dní, eBird 30, BirdWeather 7). Načíst při otevření má vlastní samostatné okno.",
   "ctrl.sightTtl": "Znovu použít stažené (min)",
   "ctrl.sightTtlHint": "Po opětovném otevření aplikace se již stažená pozorování místa použijí znovu po tolik minut, místo opětovného stažení. 0 = používat neomezeně (znovu stáhnout jen u nového místa nebo změny poloměru/skupiny/zdroje).",

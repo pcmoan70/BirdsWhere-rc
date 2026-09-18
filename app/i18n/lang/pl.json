@@ -1069,6 +1069,7 @@
   "sources.colTimeout": "Limit czasu pobierania (s)",
   "sources.timeoutHint": "Źródło wciąż pobierające po tylu sekundach zostaje zatrzymane; już wczytane obserwacje są zachowane, a jego etykieta robi się czerwona. 0 = bez limitu.",
   "ctrl.downloadDays": "Pobieranie — ostatnie N dni",
+  "ctrl.downloadShort": "Pobieranie",
   "ctrl.downloadDaysHint": "Jak daleko wstecz zwykłe pobieranie ściąga obserwacje, dla każdego źródła (eBird zawsze ograniczony do 30 dni przez swoje API; GBIF do ~92). 0 = własna wartość domyślna każdego źródła (GBIF/iNaturalist ~90 dni, eBird 30, BirdWeather 7). Pobierz przy otwarciu ma własne osobne okno.",
   "ctrl.sightTtl": "Użyj ponownie pobranych (min)",
   "ctrl.sightTtlHint": "Po ponownym otwarciu aplikacji już pobrane obserwacje danego miejsca są używane ponownie przez tyle minut, zamiast pobierać je na nowo. 0 = używaj bez końca (pobieraj ponownie tylko dla nowego miejsca lub zmiany promienia/grupy/źródła).",

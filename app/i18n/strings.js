@@ -927,6 +927,7 @@ window.GeoI18N = (function () {
         "ctrl.recentradius": "Sightings radius",
         "ctrl.radiusSet": "Sightings radius: {r}",
         "ctrl.downloadDays": "Download — last N days",
+        "ctrl.downloadShort": "Download",   // the gear's quick panel: "Download 14 days" — the full label is too wide there
         "ctrl.downloadDaysHint": "How far back a normal fetch downloads observations, applied to every source (eBird is always capped at 30 days by its API; GBIF at ~92). 0 = each source’s own default (GBIF/iNaturalist ~90 days, eBird 30, BirdWeather 7). Fetch on open has its own separate window.",
         "ctrl.sightTtl": "Reuse downloads (min)",
         "ctrl.sightTtlHint": "Reopening the app reuses a location’s already-downloaded observations for this many minutes instead of re-fetching. 0 = reuse indefinitely (only refetch on a new place or a changed radius/group/source).",
