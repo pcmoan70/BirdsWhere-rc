@@ -125,7 +125,19 @@
     return (label && (label.sci || label.key)) || "";
   }
 
-  function speciesName(label) { return nameInCol(label, lang, langTaxCol); }
+  function speciesName(label) {
+    var nm = nameInCol(label, lang, langTaxCol);
+    // nameInCol brackets a name it could not translate ("[Snoring Cicada]"): the pack
+    // has no entry for this language, or its entry is the English one. That is the
+    // signal to reach for a harvested iNaturalist name — and, the first time, to ask
+    // for one. Birds are translated throughout; this fires for the groups that are not.
+    if (nm && nm.charCodeAt(0) === 91 && lang !== "en" && label && label.sci) {
+      var h = harvestedName(label.sci);
+      if (h) return speciesCase(lang, h);
+      queueNameHarvest(label.sci);
+    }
+    return nm;
+  }
 
   // Name in the optional second language ("" when the feature is off).
   function secondName(label) { return secondLang ? nameInCol(label, secondLang, secondTaxCol) : ""; }
@@ -6345,7 +6357,7 @@
     try { await initDetSetStore(); } catch (e) {}
     try { if (window.AppPoints && window.AppPoints.initMpSetStore) await window.AppPoints.initMpSetStore(); } catch (e) {}   // named point lists → IndexedDB (same pattern as trips)
     try { await loadPersistedSightings(); } catch (e) {}   // so a reopen reuses the last downloads instead of refetching
-    try { hydrateHotspotStore(); hydrateVernacCache(); } catch (e) {}   // fire-and-forget: the general cache's IDB stores (hotspots, iNat names)
+    try { hydrateHotspotStore(); hydrateVernacCache(); hydrateNameHarvest(); } catch (e) {}   // fire-and-forget: the general cache's IDB stores (hotspots, iNat names)
     ensurePersistentStorage();   // keep offline-map tiles + saved data from being evicted
     setTimeout(maybeAskRedownloadOffline, 3000);   // offer to re-fetch any browser-evicted offline areas
 
@@ -6631,6 +6643,10 @@
                 '<p class="cu-hint" data-i18n="ctrl.storageEstimate">Browsers pad every cached map tile for privacy, so their estimate can read far higher than the sizes listed below — those are measured.</p>' +
                 '<p class="cu-hint storage-warn" id="storage-warn" style="display:none"></p>' +
                 '<button type="button" id="errlog-open" class="btn btn-light" data-i18n="errlog.title">Error log</button>' +
+                // Names picked up from iNaturalist while browsing (see the harvest above):
+                // exportable so a device's own browsing can grow the app's shipped packs.
+                '<button type="button" id="names-export" class="btn btn-light" data-i18n="names.export">Export species names</button>' +
+                '<p class="cu-hint" id="names-export-note"></p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label data-i18n="clear.label">Clear cached data</label>' +
@@ -9459,6 +9475,116 @@
       extraVernacMem = mem;
     }).catch(function () {});
   }
+  // ---- Name harvest (iNaturalist) ------------------------------------------
+  // ONE lookup per species rather than one per language: taxa?all_names=true returns
+  // every vernacular name iNaturalist holds, so a single request serves the language
+  // on screen, every other language this device may switch to, and the JSON export
+  // that grows the shipped packs (Settings → Storage → Export names).
+  //
+  // Keyed by scientific name, so it covers both halves of the gap: model species whose
+  // pack row is still the English fallback (insects, amphibians, most mammals) AND the
+  // non-model extras — plants and fungi reach the app only as extras, so this is the
+  // only place their names can come from.
+  //
+  // iNaturalist's taxonomy is CC BY 4.0 (GBIF dataset 738041eb-…) — About credits it.
+  var nhMem = null, nhPending = Object.create(null), nhTimer = null, nhDirty = false, nhAsked = 0;
+  var NH_RATE_MS = 1100;     // iNaturalist asks for <= 60 requests/minute
+  var NH_SESSION_MAX = 600;  // and <= ~10k/day: a polite ceiling per app session
+  function nameHarvest() { if (!nhMem) nhMem = {}; return nhMem; }
+  function nhKey(sci) { return sciBinomial(sci).toLowerCase(); }
+  function hydrateNameHarvest() {
+    if (!(window.AppIDB && AppIDB.available())) return Promise.resolve();
+    return AppIDB.get("nameHarvest").then(function (m) {
+      var mem = (m && typeof m === "object") ? m : {};
+      if (nhMem) Object.keys(nhMem).forEach(function (k) { mem[k] = nhMem[k]; });   // keep pre-hydration lookups
+      nhMem = mem;
+    }).catch(function () {});
+  }
+  function saveNameHarvest() {
+    if (!nhDirty) return;
+    nhDirty = false;
+    if (window.AppIDB && AppIDB.available()) AppIDB.put("nameHarvest", nameHarvest()).catch(function () {});
+  }
+  // The name for the CURRENT language out of a harvested record ("" when we hold none).
+  function harvestedName(sci) {
+    var r = nameHarvest()[nhKey(sci)];
+    if (!r || !r.n) return "";
+    return r.n[inatLocaleFor(lang)] || r.n[lang] || "";
+  }
+  function queueNameHarvest(sci) {
+    if (lang === "en") return;                       // English is the base, nothing to fill
+    var k = nhKey(sci);
+    if (!k || k.indexOf(" ") < 0) return;            // genus-only / unusable
+    if (nameHarvest()[k] || nhPending[k]) return;    // held, or already asked for
+    if (nhAsked >= NH_SESSION_MAX) return;
+    nhPending[k] = sciBinomial(sci);
+    scheduleNameHarvest();
+  }
+  function scheduleNameHarvest() {
+    if (nhTimer) return;
+    nhTimer = setTimeout(function () {
+      nhTimer = null;
+      var k = Object.keys(nhPending)[0];
+      if (!k) { saveNameHarvest(); return; }
+      var sci = nhPending[k]; delete nhPending[k];
+      nhAsked++;
+      fetch("https://api.inaturalist.org/v1/taxa?per_page=5&all_names=true&q=" + encodeURIComponent(sci))
+        .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+        .then(function (j) {
+          var rs = (j && j.results) || [];
+          // Exact scientific-name match only: iNat's search is fuzzy, and a near miss
+          // would file another species' names under ours.
+          var hit = rs.filter(function (t) { return t && t.name && t.name.toLowerCase() === k; })[0];
+          var rec = { ts: Date.now(), n: {} };
+          if (hit) {
+            rec.id = hit.id;
+            (hit.names || []).forEach(function (n) {
+              if (!n || !n.locale || n.locale === "sci") return;
+              if (!rec.n[n.locale]) rec.n[n.locale] = n.name;   // first = iNaturalist's preferred
+            });
+          }
+          nameHarvest()[k] = rec; nhDirty = true;               // a miss is remembered too: don't ask twice
+          if (hit && rec.n[inatLocaleFor(lang)]) nhRefresh();
+        })
+        .catch(function () { /* offline / API down: not remembered, asked again later */ })
+        .then(function () { if (Object.keys(nhPending).length) scheduleNameHarvest(); else saveNameHarvest(); });
+    }, NH_RATE_MS);
+  }
+  // Names arrive one at a time; repaint at most every couple of seconds.
+  var nhRefreshTimer = null;
+  function nhRefresh() {
+    if (nhRefreshTimer) return;
+    nhRefreshTimer = setTimeout(function () {
+      nhRefreshTimer = null;
+      saveNameHarvest();
+      try { updateDetLegend(); } catch (e) {}
+      try { if (typeof refreshSpeciesNames === "function") refreshSpeciesNames(); } catch (e) {}
+    }, 2000);
+  }
+  // Settings → Storage → "Export names": everything harvested so far, in the shape
+  // tools/inat-names.mjs --merge reads, so a device's browsing grows the shipped packs.
+  function nameHarvestJson() {
+    var all = nameHarvest(), out = {}, n = 0;
+    Object.keys(all).forEach(function (k) {
+      var r = all[k];
+      if (!r || !r.n || !Object.keys(r.n).length) return;   // skip the "iNat knows nothing" memos
+      out[k] = { id: r.id || 0, n: r.n }; n++;
+    });
+    return { app: "BirdsWhere", generated: new Date().toISOString(), source: "iNaturalist taxa API — taxonomy CC BY 4.0",
+             count: n, names: out };
+  }
+  function updateNamesExportNote() {
+    var b = document.getElementById("names-export"), p = document.getElementById("names-export-note");
+    if (!b || !p) return;
+    var n = nameHarvestCount();
+    b.disabled = !n;
+    p.textContent = t("names.exportNote", { n: n });
+  }
+  function nameHarvestCount() {
+    var all = nameHarvest(), n = 0;
+    Object.keys(all).forEach(function (k) { if (all[k] && all[k].n && Object.keys(all[k].n).length) n++; });
+    return n;
+  }
   function extraVernacName(sci) {
     var key = (lang || "en") + "|" + sci.toLowerCase();
     var cache = vernacCache();
@@ -9507,7 +9633,10 @@
       // Non-model species with no usable common name → the lazy iNat lookup.
       var nm0 = e.name || "";
       if (!nm0 || nm0.toLowerCase() === sci.toLowerCase()) {
-        var v = extraVernacName(sci);
+        var hv = harvestedName(sci);                 // the all-languages harvest first…
+        if (hv) return speciesCase(lang, hv);
+        queueNameHarvest(sci);
+        var v = extraVernacName(sci);                // …then the older single-language cache
         if (v) return speciesCase(lang, v);
       }
     }
@@ -18097,10 +18226,16 @@
         p.scrollTop = 0;   // a long panel always opens at the top
         // Refresh the storage readout on each open (figures change as you cache), and
         // check for a new version immediately (non-blocking; a no-op offline).
-        renderStorageUsage(); updateClearCacheCounts(); updateRarityEmailNote();
+        renderStorageUsage(); updateClearCacheCounts(); updateRarityEmailNote(); updateNamesExportNote();
         try { if (window.SWUpdate && window.SWUpdate.checkNow) window.SWUpdate.checkNow(); } catch (e) {}
       }
     }
+    document.getElementById("names-export").addEventListener("click", function () {
+      var j = nameHarvestJson();
+      if (!j.count) return;
+      downloadCsv("birdswhere-names-" + new Date().toISOString().slice(0, 10) + ".json",
+        JSON.stringify(j), "application/json;charset=utf-8;");
+    });
     document.getElementById("errlog-open").addEventListener("click", function () {
       closeDropdowns();
       var m = createModal({ escClose: true });
