@@ -2265,7 +2265,7 @@
     var extras = all.filter(function (tr) { return tr.classList.contains("sp-extra"); });
     var rows = all.filter(function (tr) { return !tr.classList.contains("sp-extra"); });
     var col = speciesListSort.col;   // "" = sort OFF → natural ranking (model probability, desc)
-    rows.sort(function (a, b) {
+    var cmpFn = function (a, b) {
       var ka, kb;
       if (!col) return (+b.getAttribute("data-prob") || 0) - (+a.getAttribute("data-prob") || 0);
       if (col === "sci") {
@@ -2324,6 +2324,14 @@
       }
       var cmp = ka < kb ? -1 : ka > kb ? 1 : 0;
       return speciesListSort.dir === "asc" ? cmp : -cmp;
+    };
+    rows.sort(cmpFn);
+    // Extras used to be left in insertion order — invisible while they were a handful of
+    // oddities under a model list, but for plants and fungi EVERY row is an extra, so the
+    // list (and the Images view built from it) had no order at all. They now take the same
+    // sort; with sorting off they rank by Total, the model probability they cannot have.
+    extras.sort(col ? cmpFn : function (a, b) {
+      return (parseInt(b.getAttribute("data-total"), 10) || 0) - (parseInt(a.getAttribute("data-total"), 10) || 0);
     });
     var frag = document.createDocumentFragment();
     rows.forEach(function (tr) { frag.appendChild(tr); });
@@ -5116,7 +5124,12 @@
     prependExtraSightings(tbody, extras);
     // Re-apply the active age/rare filters and sort as data arrives.
     applyAgeFilter();
-    if (speciesListSort.col) sortSpeciesList();
+    // Sort when a column is chosen — and once the fetch settles, because the extras are
+    // appended after the last sort and would otherwise keep their arrival order. Invisible
+    // under a model list (a few oddities at the bottom), but it IS the order for plants and
+    // fungi, where every row is an extra. Final only: re-sorting 2500 rows on every partial
+    // is the kind of per-partial work that made v1807 crawl.
+    if (speciesListSort.col || isFinal) sortSpeciesList();
     // The prediction fallback just went on or off → relabel [?]/[!] and rebuild the body
     // (the Images layout draws its cards from the rows the filter pass just settled).
     if (missingFlip) { try { renderSpControls(); } catch (e) {} }
@@ -5227,6 +5240,12 @@
       tr.className = "sp-extra" + (e.rows.some(function (r) { return r.rarity; }) ? " sp-rar" : "");
       tr.setAttribute("data-age-days", days != null ? days : "");
       tr.setAttribute("data-count", eSpec);   // total specimens — for the Total-column count filter
+      // The same sort keys the model rows carry, so the list can be ordered by Total /
+      // observations / name for a group the model does not cover (plants, fungi), where
+      // EVERY row is one of these.
+      tr.setAttribute("data-total", eSpec);
+      tr.setAttribute("data-pairs", ePairs || 0);
+      tr.setAttribute("data-name", name);
       if (e.latestTs) tr.setAttribute("data-last", e.latestTs);
       if (exKm != null) tr.setAttribute("data-dist", exKm);
       var clsBadge = e.cls ? '<span class="sp-extra-cls" title="' + escapeHtml(e.cls) + '">' + classGlyph(e.cls) + "</span> " : "";
@@ -21683,7 +21702,12 @@
     if (!rows.length) return '<div class="dl-empty">' + escapeHtml(t("detlist.empty")) + "</div>";
     var lbl = { total: t("th.total"), last: t("th.last"), dist: t("th.dist"), prob: t("th.prob") };
     return '<div class="sp-gallery">' + rows.map(function (tr) {
-      var link = tr.querySelector(".sp-link"), sciTd = tr.querySelector("td.sci");
+      // .sp-link is the MODEL species' name (clickable → species menu). An extra row —
+      // every plant, fungus and most insects — carries its name in .sp-extra-name instead,
+      // and without this the card showed a scientific name and nothing else.
+      var link = tr.querySelector(".sp-link") || tr.querySelector(".sp-extra-name");
+      var clsBadge = tr.querySelector(".sp-extra-cls");
+      var sciTd = tr.querySelector("td.sci");
       var sci = sciTd ? sciTd.textContent.trim() : (link ? link.getAttribute("data-sci") || "" : "");
       var sciEl = sciTd ? sciTd.querySelector(".sci-link") : null;   // the table's clickable sci (→ Family menu), reused as-is
       // The .sp-dot HOLDER, not the bare swatch inside it: the swatch is an inline span whose
@@ -21714,7 +21738,7 @@
         '<div class="spg-img' + (photoLink ? ' spg-img-link" role="button" title="' + escapeHtml(t("spg.photosTip")) : '"') + '">' +
           (predicted ? '<span class="spg-tag">' + escapeHtml(t("spg.predicted")) + "</span>" : "") +
           '<span class="spg-none" style="display:none">' + escapeHtml(t("spg.noImage")) + "</span></div>" +
-        '<div class="spg-name"><span class="spg-nm">' + (dot ? dot.outerHTML : "") + (link ? link.outerHTML : "") +
+        '<div class="spg-name"><span class="spg-nm">' + (dot ? dot.outerHTML : "") + (clsBadge ? clsBadge.outerHTML : "") + (link ? link.outerHTML : "") +
           (showSci ? ' <span class="spg-sci">(' + (sciEl ? sciEl.outerHTML : escapeHtml(sci)) + ")</span>" : "") + "</span>" + subBtn + "</div>" +
         // Compact, label-free meta line: "#total(n)  last-seen  distance" (the bars row below
         // carries the probabilities; a card without the bars keeps a labelled Probability).
