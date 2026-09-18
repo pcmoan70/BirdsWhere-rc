@@ -2159,7 +2159,6 @@
     var list = obsPhotoList(btn); if (!list.length) return;
     clearTimeout(obsMosaicTimer);
     if (obsMosaicOpenFor(btn)) return;   // already up for this record
-    var r = btn.getBoundingClientRect();
     var el = openAnchoredMenu("detrow-menu obs-mosaic");
     el._btn = btn;
     // One picture → show it whole. Otherwise square tiles in the shape that leaves no
@@ -2182,7 +2181,7 @@
     el.addEventListener("mouseenter", function () { clearTimeout(obsMosaicTimer); });
     el.addEventListener("mouseleave", scheduleObsMosaicClose);
     obsMosaicPop = el;
-    positionAnchoredMenu(el, Math.round(r.left), Math.round(r.bottom + 4));
+    centerPhotoPopup(el);
   }
   function wireSpDetail(container) {
     // Sortable column headers — sort applies WITHIN each date×observer×location group.
@@ -10534,6 +10533,27 @@
     el.style.top = Math.max(6, Math.min(top, window.innerHeight - el.offsetHeight - 8)) + "px";
     enableMenuKeys(el, closeAnchoredMenu);
   }
+  // A popup whose height only settles once its PICTURES have loaded cannot be anchored to
+  // the row that opened it: anchor a row near the bottom of the screen and the clamp in
+  // positionAnchoredMenu measures a height the popup no longer has a moment later, so it
+  // ends up hanging below the fold. Centre those instead — the pictures are the subject,
+  // there is nothing they need to stay attached to — and re-centre as each one lands.
+  function centerAnchoredMenu(el) {
+    el.style.left = Math.max(6, Math.round((window.innerWidth - el.offsetWidth) / 2)) + "px";
+    el.style.top = Math.max(6, Math.round((window.innerHeight - el.offsetHeight) / 2)) + "px";
+    enableMenuKeys(el, closeAnchoredMenu);
+  }
+  function centerPhotoPopup(el) {
+    el.style.maxHeight = "min(88vh, 900px)";
+    el.style.overflow = "auto";
+    centerAnchoredMenu(el);
+    Array.prototype.forEach.call(el.querySelectorAll("img"), function (im) {
+      if (im.complete) return;
+      var re = function () { if (el.isConnected) centerAnchoredMenu(el); };
+      im.addEventListener("load", re, { once: true });
+      im.addEventListener("error", re, { once: true });
+    });
+  }
   function closeDetRowMenu() { closeAnchoredMenu(); }   // alias kept for its many call sites
   // The ⓘ popup on an observation-list row: a small, nicely-formatted card with the
   // record's activity (via actLabel) and note, anchored under the clicked icon.
@@ -11013,7 +11033,7 @@
     var legend = document.createElement("div"); legend.className = "conf-legend";
     legend.textContent = t("confusion.legend", { match: L.match, misid: L.misid, here: L.here, score: L.score });
     el.appendChild(legend);
-    positionAnchoredMenu(el, x, y);
+    centerPhotoPopup(el);
     Array.prototype.forEach.call(strip.querySelectorAll(".cfi-card"), function (c) {
       loadSpPhoto(c.querySelector(".spg-img"), c.querySelector(".spg-none"), c.querySelector(".spg-credit"), c.getAttribute("data-sci"));
     });
