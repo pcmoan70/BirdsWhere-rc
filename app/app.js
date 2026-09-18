@@ -18985,6 +18985,11 @@
   }
 
   function clearOverlay() {
+    // Invalidate any range/richness render still running: its inference resolves
+    // LATER and would then set cachedRender and repaint the magma canvas — over
+    // whatever mode the user has since moved to. (That is how a dark, magenta-veined
+    // rectangle ended up sitting on the Recent map: leaving Range mid-inference.)
+    renderGeneration++;
     cachedRender = null;
     if (overlayCanvas) { overlayCanvas.width = 0; overlayCanvas.height = 0; }
   }
@@ -19044,6 +19049,7 @@
   function paintOverlay() {
     if (_paintRAF) { cancelAnimationFrame(_paintRAF); _paintRAF = 0; }
     if (!cachedRender || !map) return;
+    if (currentMode !== "range" && currentMode !== "richness") { clearOverlay(); return; }   // the heat canvas belongs to those two modes only
     if (!window.h3) { paintOverlaySmooth(); return; }
     try {
       if (cachedRender.h3richness) paintRichnessH3();
