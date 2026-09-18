@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1793";
+var VERSION = "v1794";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• In Norway, a clicked point's More ▸ section can now open MapAnt — the laser-scanned orienteering map of the whole country, showing contours, boulders, marshes and vegetation density far beyond any ordinary map — centred on that exact spot. Switch on Experimental features to see it. (It opens at mapant.no rather than becoming one of the app's own maps: MapAnt draws its tiles in a Norwegian grid that cannot be mixed with the worldwide ones.)",
   "• Found the dark patches: a saved trip shown on the map gives every record an invisible tap target, and those were painted black at 1 % because a fully transparent shape cannot be tapped. Where a trip packs many records into a few pixels — zoomed out, or a day spent in one spot — fifty of them stack into a 40 % dark wash and two hundred into a near-black blob, fading as you zoom in. They now paint nothing at all and stay just as tappable.",
   "• The app now tells the browser it is a light-themed page. On Android, Chrome's automatic dark theme re-colours pages that do not say, and it darkens IMAGES one by one using a guess about each — on a map that shows up as some tiles or areas being darker than their neighbours, shifting as you zoom. Declaring the scheme keeps the map exactly as its maker drew it. If your phone is not in dark mode and you still see it, tell me — a screenshot with the zoom level would pin it down.",
   "• The rarity-alert email address now travels with your other settings: a device that has none picks it up on the next sync, and a Download brings the alert preferences (address, interval, threshold, which sources, sound) across. What stays on each device is its own bookkeeping — which alerts it has already seen, which places it has armed, when it last checked and what became of its last message — because copying that between devices would either repeat every alert or silence a device that has never checked.",
   "• …and that panel is now tall enough to show it all without a scrollbar.",
-  "• Press and hold the gear and you now get the fetch radius as well as the species group — the two things that decide what a tap on the map brings back, without opening Settings. The slider drives the same setting, so the value, the label and the cleared sightings cache all behave exactly as before.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

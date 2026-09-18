@@ -829,7 +829,12 @@ an **eBird Record Format CSV** ready for [ebird.org/import](https://ebird.org/im
 - **Map right-click / long-press menu** — *Add point*, *Share point*, *Save location*, *Navigate
   here*, *Add to route* and *Offline maps* (the coordinates line copies them); the click popup adds
   a **Birdingplaces** link (birdingplaces.eu at the point),
-  and, for Sweden & Norway, a **Fågelkartan** link to that point's county / fylke page.
+  and, for Sweden & Norway, a **Fågelkartan** link to that point's county / fylke page. In Norway,
+  with *Experimental features* on, **More ▸** also carries a **MapAnt** link, opening the
+  LiDAR-derived orienteering map of the country (mapant.no) centred on the clicked point — contours,
+  boulders, marshes and vegetation density down to ~0.5 m/px, which reads terrain far better than
+  any of the basemaps. It is a link rather than a basemap because MapAnt publishes its tiles in
+  UTM 33N (EPSG:32633), not Web Mercator, and Leaflet carries one projection per map.
 - **Country button (globe, right side)** — reads the country at the map centre and opens **Birding
   blogs** (a curated, per-country list of personal birder blogs you can add to and remove — synced),
   the **BirdLife DataZone** country factsheet, and the **national observation services** for that

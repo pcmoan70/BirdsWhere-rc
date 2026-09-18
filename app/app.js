@@ -20198,6 +20198,18 @@
         );
         var _pp = mk.getPopup(); if (_pp && _pp.isOpen()) _pp.update();
       }
+      // MapAnt (Norway): the LiDAR-derived orienteering map of the whole country —
+      // contours, boulders, marshes and vegetation density at up to ~0.5 m/px, which
+      // reads terrain far better than any of our basemaps. It is published in UTM 33N
+      // (EPSG:32633), not Web Mercator, so it cannot join the basemap list; this opens
+      // mapant.no centred on the clicked point instead (their hash is #zoom/lat/lon).
+      // Norway-only by coverage, and Experimental-gated like the radar link.
+      if (cc === "NO" && experimentalOn()) {
+        moreSub.appendChild(makePopupBtn(t("link.mapant") + " ↗", "btn-light", function () {
+          mk.closePopup();
+          openExternal("https://mapant.no/#8/" + lat.toFixed(5) + "/" + lon.toFixed(5));
+        }));
+      }
       natServicesFor(cc).forEach(function (s) {
         moreSub.appendChild(makePopupBtn(s.label + " ↗", "btn-light", function () { mk.closePopup(); openExternal(s.url); }));
       });

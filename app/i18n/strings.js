@@ -921,6 +921,7 @@ window.GeoI18N = (function () {
         "blogs.fatbirder": "Birding blogs on Fatbirder",
         "link.birdlife": "BirdLife",
         "link.aloft": "Radar",
+        "link.mapant": "MapAnt",
         "link.spInCountry": "Species in country",
         "ctrl.countryres": "Country sampling resolution",
         "ctrl.recentradius": "Sightings radius",
