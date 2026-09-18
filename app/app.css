@@ -1741,7 +1741,11 @@ table.an-scatter-table td.an-tint { color: #fff; font-weight: 600; text-shadow: 
 }
 .dd-empty { color: var(--ink-faint); font-size: var(--fs-s); padding: 8px 10px; }
 /* Quick "Species group" picker on a long-press / right-click of the Settings gear. */
-.group-quick-panel { min-width: 180px; }
+/* The gear's press-and-hold panel: seven species groups plus the radius slider is
+   taller than .dd-panel's 300 px, and a scrollbar on a menu this small reads as a
+   glitch. Let it size to its content, capped by the viewport (a short screen still
+   scrolls rather than overflowing). */
+.group-quick-panel { min-width: 180px; max-height: min(86vh, 520px); }
 /* Settings species-group picker (custom stand-in for the hidden native select). */
 #group-picker-wrap { position: relative; }
 #group-picker-btn {
