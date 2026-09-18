@@ -36,6 +36,11 @@
   <!-- PWA: installable + offline -->
   <link rel="manifest" href="manifest.webmanifest" />
   <meta name="theme-color" content="#0b1f2a" />
+  <!-- The UI is designed light. Declaring a colour scheme also opts the page out of
+       Android Chrome's Auto Dark Theme, which re-colours undeclared pages and darkens
+       IMAGES by a per-image heuristic — on a map that means some tiles come out darker
+       than their neighbours, changing as you zoom. -->
+  <meta name="color-scheme" content="light" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="icon" href="icon-192.png" sizes="192x192" type="image/png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />

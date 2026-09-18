@@ -19,6 +19,7 @@ iframe[src*="accounts.google.com"] {
    place (no MkDocs runtime is present, so these names would otherwise be unset).
    =========================================================================== */
 :root {
+  color-scheme: light;   /* see index.html: keeps browser auto-dark off the map tiles */
   /* ---- UI size system (audit 2026-08-20): 4 font sizes + 3 icon sizes.
      Every UI font-size / icon width-height references these; chart-internal
      text, print styles, count badges and data-sized map markers are exempt. */
