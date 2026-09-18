@@ -199,17 +199,30 @@
     var hint = document.getElementById("group-nomodel-hint");
     if (hint) hint.style.display = hasModel ? "none" : "";
   }
+  // WHAT A FETCH RETRIEVES, as opposed to what the app is currently showing. Since
+  // v1809 every fetch retrieves the superset — every kingdom — whatever group is
+  // selected, and the active group filters what is DISPLAYED (detPassesGroup,
+  // extraInGroup, the legend, the lists). So a location behaves the same whether you
+  // are looking at birds, plants or fungi, switching group is instant instead of
+  // leaving an empty map, and whether the model covers a group stops mattering to the
+  // fetch. The cost, deliberately accepted: each source's paging budget is shared
+  // across six taxa, so a very dense spot truncates sooner than a birds-only fetch did.
+  function fetchScopeGroup() { return "all"; }
   function groupTaxaList() {
     // "All" now spans every supported kingdom (animals + plants + fungi) so a
     // cached All fetch is a true superset — All → any single group can be derived
     // by filtering instead of refetching. (Heavier: it shares the sources' paging
     // budget across more taxa, so a dense spot can truncate sooner.)
-    if (speciesGroup === "all") return [GROUP_TAXA.aves, GROUP_TAXA.mammalia, GROUP_TAXA.amphibia, GROUP_TAXA.insecta, GROUP_TAXA.plantae, GROUP_TAXA.fungi];
-    return [GROUP_TAXA[speciesGroup] || GROUP_TAXA.aves];
+    var g = fetchScopeGroup();
+    if (g === "all") return [GROUP_TAXA.aves, GROUP_TAXA.mammalia, GROUP_TAXA.amphibia, GROUP_TAXA.insecta, GROUP_TAXA.plantae, GROUP_TAXA.fungi];
+    return [GROUP_TAXA[g] || GROUP_TAXA.aves];
   }
   function gbifTaxonParam() { return groupTaxaList().map(function (g) { return "&taxonKey=" + g.gbif; }).join(""); }   // GBIF ORs repeated taxonKey
   function inatIconicTaxa() { return groupTaxaList().map(function (g) { return g.inat; }).join(","); }
-  function groupIsBirds() { return speciesGroup === "all" || speciesGroup === "aves"; }
+  // Bird-only feeds (eBird, BirdWeather, NBN): queried whenever the FETCH covers birds,
+  // which under the superset policy is always — their records are filtered out of the
+  // view like any other when a non-bird group is selected.
+  function groupIsBirds() { var g = fetchScopeGroup(); return g === "all" || g === "aves"; }
   var hiResFactor = 0;        // detail offset in zoom levels / H3 resolutions (0 = auto, ±N = coarser/finer)
   var distMapToken = 0;       // guards against stale distribution-map fetches
   var recentToken = 0;        // guards against stale recent-detections fetches
@@ -4539,7 +4552,7 @@
     // Day window: an explicit override (Fetch-on-open) wins; else the general
     // "Download — last N days" setting; else 0 = each source's own default.
     var days = (daysOverride > 0) ? daysOverride : downloadDays();
-    var fetchGroup = speciesGroup;   // group at fetch-start — aggregate/plot use THIS, not a value the user may switch mid-fetch
+    var fetchGroup = fetchScopeGroup();   // always the superset: one fetch serves every group
     var ck = sightCK(lat, lon, rkm, fetchGroup, days);   // group- + days-keyed: a different window is a different cache entry
     var fetchOrigin = { lat: lat, lon: lon, rkm: rkm };  // rides on every (partial) result → area ownership follows the FETCH, not the current view
     if (seededSightings[ck]) return seededSightings[ck];   // shared-list import (works with NO keys/sources — never refetched)
@@ -4690,7 +4703,7 @@
   }
   function plotHistoricRecs(recsM, grp) {
     if (!recsM || !recsM.length || typeof plotDetections !== "function") return;
-    plotHistoricAgg(AppAggregate.aggregateRecords(recsM, grp), grp);
+    plotHistoricAgg(AppAggregate.aggregateRecords(recsM, grp), speciesGroup);   // aggregate the superset, show the active group
   }
   // Does a cached historic result cover a requested range + month-of-year subset?
   // (Broader→narrower only: the cached range must span the request, and either the
@@ -4746,7 +4759,7 @@
   function fetchHistoricSightingsAt(lat, lon, range, onProg, onPartial) {
     var rkm = recentRadiusKm();
     var months = histMonthsParam();   // "" = all months, else "&month=5&month=6"
-    var fetchGroup = speciesGroup;   // group at fetch-start (see fetchAllSightingsAt)
+    var fetchGroup = fetchScopeGroup();   // the superset, like the recent fetch (see fetchAllSightingsAt)
     var ck = lat.toFixed(2) + "," + lon.toFixed(2) + ":" + rkm + ":" + range + months + ":" + fetchGroup;   // group-keyed (class filter differs per group)
     if (histSightingsCache[ck]) return histSightingsCache[ck];
     var sig = histAbort ? histAbort.signal : null;
@@ -4762,7 +4775,7 @@
       var filtered = filterHistAgg(covering.out, from, to, reqMonths);
       var prC = Promise.resolve(filtered);
       histSightingsCache[ck] = prC;
-      try { plotHistoricAgg(filtered, fetchGroup); saveDetections(); } catch (e) {}
+      try { plotHistoricAgg(filtered, speciesGroup); saveDetections(); } catch (e) {}
       try { setStatus(t("hist.reused", { n: filtered.dedupTotal })); } catch (e) {}
       return prC;
     }
@@ -6362,7 +6375,7 @@
       countryMatch: AppGeo.countryMatch,
       inatLocale: inatLocale,
       gbifTaxonParam: gbifTaxonParam,
-      gbifGroup: function () { return speciesGroup; },   // active species group → per-group dataset gating
+      gbifGroup: fetchScopeGroup,   // the FETCH scope (always the superset) → per-group dataset gating
       inatIconicTaxa: inatIconicTaxa,
     });
     // Hydrate saved trips from IndexedDB (and migrate any still in the localStorage
@@ -12511,9 +12524,13 @@
   // plotAllSightings can render the current snapshot or a freshly-fetched one.
   function plotSightingsResult(result) {
       obsStatusActive = false;
-      // Filter by the group the data was FETCHED under (result.group), not the live
-      // one — so switching group mid-fetch can't filter e.g. bird data against mammals.
-      var grp = result.group || speciesGroup;
+      // PLOT THE WHOLE SUPERSET. The species group is a DISPLAY filter — detPassesGroup
+      // decides what the map, legend and lists show, and a group switch re-runs
+      // rebuildDetLayers() — so holding every kingdom's records here is what makes the
+      // switch instant instead of leaving an empty map until you fetch again.
+      // (Before v1809 a fetch held one group's data, so this had to filter by
+      // result.group: switching mid-fetch would have matched bird data against mammals.)
+      var grp = "all";
       function modelKeyInGroup(key) { return grp === "all" || ((taxByCode[key] || {}).class_name || "").toLowerCase() === grp; }
       function extraInGroup(cls) { return grp === "all" || (cls && String(cls).toLowerCase() === grp); }
       // Transfer the FILTERED species list to the map: keep a species only when

@@ -902,6 +902,13 @@ no direction can delete data on the other device.
 
 ## Persistence, settings & languages
 
+- **One fetch, every group** (since v1809) — a fetch always retrieves the superset (birds, mammals,
+  amphibians, insects, plants, fungi) whatever group is selected; the **species group is a display
+  filter** (`detPassesGroup`), so switching group re-filters the dots, legend and lists instantly
+  instead of leaving an empty map. A location therefore behaves identically whatever group you are
+  in, and whether the model covers that group no longer affects the fetch. Cost: each source's
+  paging budget is shared across six taxa, so a very dense spot truncates sooner than a birds-only
+  fetch would.
 - **Species names outside birds** — the name packs were built for birds (measured 2026-09-18:
   95.6 % of insect and amphibian entries, and 42.5 % of mammal entries, were the English name
   repeated; plants and fungi have no packs at all, not being in the model). When a species appears
