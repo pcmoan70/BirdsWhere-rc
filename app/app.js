@@ -5123,8 +5123,13 @@
     // do not. Without this the Images view kept the "loading" placeholder it rendered
     // before the data arrived: invisible for birds, whose list is rebuilt by the fetch
     // path anyway, but permanent for plants and fungi, whose rows are ALL extras.
+    // …but NOT on every partial: this runs once per source that answers, and rebuilding a
+    // 276-card gallery (each card starting its own photo load) five times during a fetch is
+    // what made fetching feel slow. Rebuild when the fetch settles, or the moment the first
+    // data replaces the "loading" placeholder — never in between.
     if (spLayout !== "table" && typeof speciesPanelPopulated === "function" && speciesPanelPopulated()) {
-      try { renderSpBody(); } catch (e) {}
+      var rec0 = document.getElementById("sp-records");
+      if (isFinal || (rec0 && rec0.querySelector(".spg-wait"))) { try { renderSpBody(); } catch (e) {} }
     }
   }
   function augmentRowsWithSightings(lat, lon, histRange, onProg) {
