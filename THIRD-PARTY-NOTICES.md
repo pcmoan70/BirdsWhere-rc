@@ -127,6 +127,11 @@ you know the exact upstream, add it here.
 The app fetches live data directly from these third-party services; the data is © its
 respective providers and subject to each provider's terms of use:
 
+- **Species photos:** the lead image of the species' Wikipedia article, else the taxon's image in
+  **Wikidata** (P18), both served from Wikimedia Commons with the photographer and licence shown on
+  the picture; else **iNaturalist**'s own taxon photo, restricted to CC0 / CC BY / CC BY-SA and
+  shown with the attribution iNaturalist supplies, linking to the taxon page. Only licences the app
+  can positively identify as free are displayed.
 - **Species names (all groups outside the model):** the iNaturalist Taxonomy, CC BY 4.0 — see
   section 2; queried live for species not in the bundled extract.
 - **Observations:** eBird / Cornell Lab of Ornithology; GBIF; iNaturalist; Artsdatabanken

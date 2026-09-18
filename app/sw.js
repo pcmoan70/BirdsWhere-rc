@@ -21,16 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1814";
+var VERSION = "v1815";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
   "• The Settings gear's two gestures have swapped. A TAP now opens the small quick panel — species group, fetch radius and, new, how far back to fetch (1 · 2 · 3 · 7 · 14 · 21 · 28 · 42 · 91 days) — because those three decide what your next tap on the map brings home, and they were the ones you kept opening Settings for. PRESS-AND-HOLD (or right-click) opens the full Settings panel, the rarer errand. Both sliders drive the very same controls that live in Settings, so whichever way you change them it is saved once, in one place. Both sliders are the same width now, and every slider in the app wears the app's green instead of the browser's blue. The panel's last row opens full Settings as well, so it is always one tap away — no gesture required.",
+  "• Insects, plants and fungi get pictures where Wikipedia has none. Measured on species actually recorded up here, the English Wikipedia illustrates 6 of 14 insects, 11 of 14 plants and 10 of 14 fungi — so the app now asks Wikidata next, which knows a taxon's picture even when no English article exists (it filled 7 of the 15 gaps in that sample, all Wikimedia files with the usual credit), and iNaturalist after that, using only photos whose licence allows it. One bug fell out of the same work: a Wikimedia licence called simply \"Attribution\" — a perfectly free one — was not on the app's list of licences it may show, so species whose only picture carries it showed none at all. The ladybird is back.",
   "• Picture popups now open in the middle of the screen. They used to hang off the row that opened them, so a species near the bottom of a list pushed its photos below the edge — and because a popup only reaches its full height once the pictures have loaded, the guard that keeps popups on screen was measuring a height they no longer had. They are centred now, re-centred as each picture lands, and scroll inside themselves if there are more photos than fit.",
-  "• Every species now has its records button in the Images view — the ☰ that lists the actual observations behind a card, with date, place, source, observer and distance. It was there only for species the model predicts, so a plant or a fungus card had no way into its own records; now a card offers it whenever there is something to show, which for those groups is always (they only appear BECAUSE they were observed). The popup also names the species instead of printing its internal key.",
   "• Fixed, with apologies: the previous version asked Wikimedia for 960-pixel photos as \"800 px\", a size their servers do not serve — every picture came back as an error, so the cards showed the credit line over \"No image\". The photos are back, at a size their servers do serve, and the loader now retries at the smaller size once before ever declaring a photo missing.",
-  "• Species photos are sharper and their credits are now complete. The pictures are fetched at 960 px instead of 500 (a card is ~900 device pixels on a modern phone, so 500 was visibly soft), the photographer's name is shown in FULL — it used to be cut at 80 characters, which is not the credit these licences ask for — and the licence itself is now a link to its terms beside the link to the file page. A photo whose licence cannot be positively identified as free is no longer shown at all: everything in a 40-species audit was free (CC BY-SA, CC BY, public domain, CC0), but the app could previously have displayed a non-free file from Wikipedia without noticing.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
@@ -366,7 +365,11 @@ self.addEventListener("fetch", function (event) {
     event.respondWith(tileResponse(req));
     return;
   }
-  if (url.hostname === "upload.wikimedia.org") {   // species photo bytes (the lookups on wikipedia/commons stay API)
+  // Species photo BYTES (the lookups on wikipedia/commons/wikidata/inaturalist stay API).
+  // iNaturalist's own photos are the fallback for species Wikimedia has no picture of
+  // (v1815) and belong in the same capped, version-independent store.
+  if (url.hostname === "upload.wikimedia.org" ||
+      (/(^|\.)(inaturalist-open-data\.s3\.amazonaws\.com|static\.inaturalist\.org|inaturalist\.org)$/.test(url.hostname) && /\/photos\//.test(url.pathname))) {
     event.respondWith(cacheFirstCapped(req, IMG_CACHE, IMG_CAP));
     return;
   }

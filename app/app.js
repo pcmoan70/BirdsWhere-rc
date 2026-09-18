@@ -21709,13 +21709,81 @@
   function spImgLicenceOk(name) {
     var l = String(name || "").toLowerCase();
     if (!l) return false;                                   // no licence metadata → don't show it
+    // Reject FIRST, so "Attribution-NonCommercial" cannot pass on the word "attribution".
     if (/non-?free|fair use|no derivat|\bnd\b|non-?commercial|\bnc\b/.test(l)) return false;
-    return /cc0|public domain|cc by|cc-by|fal|free art|gfdl|copyrighted free use/.test(l);
+    // Commons' free templates, as they actually appear in LicenseShortName. "Attribution"
+    // (the bare {{Attribution}} template) was missing until v1815 and cost every species
+    // whose picture uses it — Harmonia axyridis among them — its photo entirely.
+    return /cc0|public domain|pdm|cc by|cc-by|attribution|fal|free art|gfdl|copyrighted free use|no restrictions|open government|ogl/.test(l);
   }
   // Bumped when the record's SHAPE or the rules that filled it change, so devices
   // re-fetch instead of serving entries made under the old ones (v2: 800 px thumbs,
   // untruncated author, licence URL, free-licence gate).
-  var SP_IMG_VER = 3;   // v3: 960 px (v2 asked for 800, which Wikimedia refuses)
+  var SP_IMG_VER = 4;   // v4: Wikidata/iNaturalist fallbacks + the widened free-licence list
+  // ---- Photo fallbacks for species Wikipedia has no picture of ---------------
+  // Measured 2026-09-18 on species actually observed in northern Europe: the English
+  // Wikipedia has a lead image for 6/14 insects, 11/14 plants, 10/14 fungi. Of the 15
+  // gaps, Wikidata's image (P18) fills 7 — Commons files, free by construction and
+  // carrying the same Artist/Licence metadata as any other — and iNaturalist has a photo
+  // for all 15, but only 3 under a licence we may redistribute (CC0 / CC BY / CC BY-SA);
+  // the rest are NonCommercial. So: Wikidata first, then iNaturalist's free ones.
+  function spImgFromCommonsFile(file, sci) {
+    if (!file) return Promise.resolve(null);
+    var q = "https://commons.wikimedia.org/w/api.php?action=query&prop=imageinfo&format=json&origin=*" +
+      "&iiprop=url%7Cextmetadata&iiurlwidth=" + SP_IMG_W +
+      "&iiextmetadatafilter=Artist%7CLicenseShortName%7CLicenseUrl&titles=" + encodeURIComponent("File:" + file);
+    return fetch(q).then(function (r) { return r.ok ? r.json() : null; }).then(function (m) {
+      var pages = m && m.query && m.query.pages, pg = pages && pages[Object.keys(pages)[0]];
+      var ii = pg && pg.imageinfo && pg.imageinfo[0];
+      if (!ii || !(ii.thumburl || ii.url)) return null;
+      var em = ii.extmetadata || {};
+      // The API answers on thumb.wikimedia.org; the canonical, service-worker-cached host
+      // is upload.wikimedia.org — the same rewrite spImgThumb does for the article path.
+      var url = String(ii.thumburl || ii.url).replace(/^https:\/\/thumb\.wikimedia\.org\//, "https://upload.wikimedia.org/");
+      var rec = { v: SP_IMG_VER, t: url, f: file, h: "commons.wikimedia.org",
+        a: String((em.Artist && em.Artist.value) || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 240),
+        l: String((em.LicenseShortName && em.LicenseShortName.value) || "").trim(),
+        lu: String((em.LicenseUrl && em.LicenseUrl.value) || "").trim() };
+      return spImgLicenceOk(rec.l) ? rec : null;   // the same gate as the Wikipedia path
+    }).catch(function () { return null; });
+  }
+  // Wikidata knows a taxon's picture even where the English Wikipedia has no article.
+  function spImgFromWikidata(sci) {
+    var api = "https://www.wikidata.org/w/api.php?format=json&origin=*";
+    return fetch(api + "&action=wbsearchentities&language=en&type=item&limit=5&search=" + encodeURIComponent(sci))
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        var hit = ((j && j.search) || []).filter(function (x) { return String(x.label || "").toLowerCase() === sci.toLowerCase(); })[0];
+        if (!hit) return null;
+        return fetch(api + "&action=wbgetclaims&property=P18&entity=" + encodeURIComponent(hit.id))
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (c) {
+            var cl = c && c.claims && c.claims.P18 && c.claims.P18[0];
+            var file = cl && cl.mainsnak && cl.mainsnak.datavalue && cl.mainsnak.datavalue.value;
+            return spImgFromCommonsFile(file, sci);
+          });
+      }).catch(function () { return null; });
+  }
+  // iNaturalist's own photo of the taxon — only the licences we may redistribute.
+  var INAT_LIC = { cc0: { n: "CC0", u: "https://creativecommons.org/publicdomain/zero/1.0/" },
+                   "cc-by": { n: "CC BY", u: "https://creativecommons.org/licenses/by/4.0/" },
+                   "cc-by-sa": { n: "CC BY-SA", u: "https://creativecommons.org/licenses/by-sa/4.0/" } };
+  function spImgFromInat(sci) {
+    return fetch("https://api.inaturalist.org/v1/taxa?rank=species&per_page=5&q=" + encodeURIComponent(sci))
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        var hit = ((j && j.results) || []).filter(function (x) { return String(x.name || "").toLowerCase() === sci.toLowerCase(); })[0];
+        var dp = hit && hit.default_photo;
+        var lic = dp && INAT_LIC[dp.license_code];
+        if (!dp || !lic || !dp.medium_url) return null;   // NonCommercial / all rights reserved → not ours to show
+        return { v: SP_IMG_VER, t: String(dp.medium_url).replace(/\/medium\.(jpe?g|png)/i, "/large.$1"),
+          a: String(dp.attribution || "").replace(/\s+/g, " ").trim().slice(0, 240), l: lic.n, lu: lic.u,
+          pg: "https://www.inaturalist.org/taxa/" + hit.id, f: "", h: "" };
+      }).catch(function () { return null; });
+  }
+  function spImageFallbacks(sci) {
+    return spImgFromWikidata(sci).then(function (rec) { return rec || spImgFromInat(sci); });
+  }
   function spImageFor(sci) {
     var c = spImgStore();
     if (c[sci] && c[sci].v === SP_IMG_VER) return Promise.resolve(c[sci]);
@@ -21726,9 +21794,15 @@
       // Only a definite 404 means "no article" (remembered below); any other failure —
       // offline 503 from the service worker, 429, 5xx — is transient and must not be remembered.
       .then(function (r) { if (r.ok) return r.json(); if (r.status === 404) return null; throw new Error("summary " + r.status); })
+      .then(function (j) { return j || { __noArticle: 1 }; })   // no article ≠ no picture: the fallbacks still run
       .then(function (j) {
         var thumb = j && j.thumbnail && j.thumbnail.source, orig = j && j.originalimage && j.originalimage.source;
-        if (!thumb || (j && j.type === "disambiguation")) { spImgRemember(sci, { v: SP_IMG_VER, none: 1 }); return { none: 1 }; }
+        if (!thumb || (j && j.type === "disambiguation")) {
+          return spImageFallbacks(sci).then(function (fb) {
+            spImgRemember(sci, fb || { v: SP_IMG_VER, none: 1 });
+            return fb || { none: 1 };
+          });
+        }
         var file = spImgFileFromUrl(orig || thumb);
         var rec = { v: SP_IMG_VER, t: spImgThumb(thumb), f: file, a: "", l: "" };
         // Author + licence from the file's metadata (Commons first, else the file may be local to en.wikipedia).
@@ -21750,7 +21824,12 @@
           .then(function () {
             // No positively-free licence → treat the species as having no photo (remembered,
             // so we don't ask again) rather than showing something we may not redistribute.
-            if (!spImgLicenceOk(rec.l)) { spImgRemember(sci, { v: SP_IMG_VER, none: 1 }); return { none: 1 }; }
+            if (!spImgLicenceOk(rec.l)) {
+              return spImageFallbacks(sci).then(function (fb) {
+                spImgRemember(sci, fb || { v: SP_IMG_VER, none: 1 });
+                return fb || { none: 1 };
+              });
+            }
             spImgRemember(sci, rec); return rec;
           });
       })
@@ -21911,7 +21990,7 @@
       });
       box.insertBefore(img, box.firstChild);
       if (cr) {
-        var page = "https://" + (r.h || "commons.wikimedia.org") + "/wiki/File:" + encodeURIComponent((r.f || "").replace(/ /g, "_"));
+        var page = r.pg || ("https://" + (r.h || "commons.wikimedia.org") + "/wiki/File:" + encodeURIComponent((r.f || "").replace(/ /g, "_")));
         cr.innerHTML = '<a href="' + escapeHtml(page) + '" target="_blank" rel="noopener">' + escapeHtml(r.a ? "© " + r.a : "Wikimedia Commons") + "</a>" +
           (r.l ? " · " + (r.lu
             ? '<a href="' + escapeHtml(r.lu) + '" target="_blank" rel="noopener">' + escapeHtml(r.l) + "</a>"   // the licence deed itself
