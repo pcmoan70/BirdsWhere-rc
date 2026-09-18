@@ -22544,10 +22544,15 @@
     var week = +document.getElementById("week-select").value;
     var pmin = +document.getElementById("prob-min").value / 100;
     var pmax = +document.getElementById("prob-max").value / 100;
-    setStatus(t("status.predicting", { lat: lat.toFixed(2), lon: lon.toFixed(2), week: week }));
+    // Plants and fungi are not in the model, so not one of its 12 012 species can pass the
+    // group filter: running the inference for them would cost a model load and a prediction
+    // to produce an empty list — and, since the observation fetch below sits in the same
+    // try block, any trouble there took the OBSERVATIONS with it. Skip it; fetch regardless.
+    var noModel = !groupHasModel();
+    if (!noModel) setStatus(t("status.predicting", { lat: lat.toFixed(2), lon: lon.toFixed(2), week: week }));
     try {
-      var out = await predictWeek(lat, lon, week);   // cached full vector (grid cell of the point)
-      var cmp = await computeComparison(lat, lon, week);
+      var out = noModel ? null : await predictWeek(lat, lon, week);   // cached full vector (grid cell of the point)
+      var cmp = noModel ? { probs: null, kind: "" } : await computeComparison(lat, lon, week);
       // Superseded while awaiting inference (mode switch / newer point) — bail out
       // BEFORE rendering or firing the sightings fetch. This is the fix for a recent
       // fetch firing when the user switches Recent → Historic mid-render.
@@ -22556,6 +22561,7 @@
       var kind = cmp.kind;   // "delta" | "ratio" | "focus"
       function buildResults() {
         var r = [];
+        if (noModel) return r;   // nothing the model predicts belongs to this group
         for (var i = 0; i < labels.length; i++) {
           if (out[i] >= pmin && out[i] <= pmax && inGroup(i) && passSpeciesFilter(labels[i].key)) {
             var cval = 0;
@@ -22602,7 +22608,9 @@
       renderSpCoordsAreas(document.getElementById("sp-coords"), lat, lon,
         // "N species above p%": always counted from the summary floor (≥ 15 %, or the slider's
         // own floor when higher) — below that it would be most of the model.
-        t("sp.summary", { lat: lat.toFixed(4), lon: lon.toFixed(4), week: weekMonthLabel(week), n: summaryCount(results, pmin), p: summaryPct(pmin) }) +
+        (noModel
+          ? t("sp.summaryObs", { lat: lat.toFixed(4), lon: lon.toFixed(4), week: weekMonthLabel(week) })
+          : t("sp.summary", { lat: lat.toFixed(4), lon: lon.toFixed(4), week: weekMonthLabel(week), n: summaryCount(results, pmin), p: summaryPct(pmin) })) +
         " · " + t("sp.radius", { km: recentRadiusKm() }) +
         (hist ? " · " + t("hist.range") + " " + fmtDate(hist.from) + " – " + fmtDate(hist.to) +
           (hist.months && hist.months.length ? " · " + t("hist.months") + " " + hist.months.slice().sort(function (a, b) { return a - b; }).map(histMonthShort).join(", ") : "") : ""));
@@ -22662,7 +22670,11 @@
       document.getElementById("barchart-panel").style.display = "none";
       updateViewToggle();   // a fresh list → the header List⇄Map switch applies now
       renderSpControls();   // filter bar + layout dropdown + (records view if not the table)
-      setStatus(t("status.spResult", { n: summaryCount(results, pmin), p: summaryPct(pmin), lat: lat.toFixed(2), lon: lon.toFixed(2) }));
+      // "N species above 15 %" is a MODEL statement; for plants and fungi it could only ever
+      // read "0 species", which looked like "nothing found here" when the fetch had not even run.
+      setStatus(noModel
+        ? t("status.spResultObs", { lat: lat.toFixed(2), lon: lon.toFixed(2) })
+        : t("status.spResult", { n: summaryCount(results, pmin), p: summaryPct(pmin), lat: lat.toFixed(2), lon: lon.toFixed(2) }));
 
       // Build CSV for species list (includes 2nd-name + comparison columns when active,
       // plus a "seen_count" column filled from the latest fetch). Rebuilt at DOWNLOAD
