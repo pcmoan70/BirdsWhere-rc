@@ -135,6 +135,9 @@
       var h = harvestedName(label.sci);
       if (h) return speciesCase(lang, h);
       queueNameHarvest(label.sci);
+      // Still nothing in this language → the scientific name rather than a bracketed
+      // English one, for the groups whose common names are patchy.
+      if (sciFallbackFor((taxByCode[label.key] || {}).class_name)) return sciCase(label.sci);
     }
     return nm;
   }
@@ -4715,7 +4718,7 @@
     });
     Object.keys(outM.extras || {}).forEach(function (k) {
       var ex = outM.extras[k];
-      if (ex.rows && ex.rows.length && inGrp(ex.cls)) entries.push({ key: "x:" + k, name: extraDisplayName(ex.sci || k, ex.name), rows: ex.rows, cls: ex.cls || "" });
+      if (ex.rows && ex.rows.length && inGrp(ex.cls)) entries.push({ key: "x:" + k, name: extraDisplayName(ex.sci || k, ex.name, ex.cls), rows: ex.rows, cls: ex.cls || "" });
     });
     if (!entries.length) return;
     if (isFinite(+currentSpView.lat) && isFinite(+currentSpView.lon)) currentFetchAreaId = rememberFetchedArea(+currentSpView.lat, +currentSpView.lon, recentRadiusKm(), currentSpView.name || currentSpView.locName);
@@ -5245,7 +5248,7 @@
     var oLat = _dor ? _dor.lat : NaN, oLon = _dor ? _dor.lon : NaN;
     var haveOrigin = !!_dor;
     keys.forEach(function (k) {
-      var e = extras[k], name = extraDisplayName(e.sci || k, e.name);
+      var e = extras[k], name = extraDisplayName(e.sci || k, e.name, e.cls);
       // Total SPECIMENS (deduped) + distinct observations, matching the model rows.
       var eSpec = dedupedSpecimenTotal(e.rows);
       var ePairs = distinctObsDatePairs(e.rows);
@@ -9568,12 +9571,26 @@
   // national portals in their own language. So a name we hold for the CURRENT language
   // wins over it — that is the whole point of shipping and harvesting them — and the
   // record's name is the fallback, with the scientific name behind that.
-  function extraDisplayName(sci, recName) {
+  // Groups whose common names are patchy everywhere: when the app has no name in the
+  // user's OWN language, a scientific name is more use than an English one they may not
+  // know — and it is what field guides and the portals print anyway. Birds, mammals and
+  // amphibians keep the old behaviour (their name packs are good, and an English bird
+  // name is widely recognised).
+  var SCI_FALLBACK_GROUPS = { insecta: 1, plantae: 1, fungi: 1 };
+  function sciCase(sci) {
+    var b = sciBinomial(sci).trim(); if (!b) return "";
+    return b.charAt(0).toUpperCase() + b.slice(1).toLowerCase();   // "fragaria viridis" → "Fragaria viridis"
+  }
+  function sciFallbackFor(cls) { return lang !== "en" && !!SCI_FALLBACK_GROUPS[String(cls || "").toLowerCase()]; }
+  function extraDisplayName(sci, recName, cls) {
     var h = harvestedName(sci);                       // bundled pack, then the device's harvest
     if (h) return speciesCase(lang, h);
     if (lang !== "en") queueNameHarvest(sci);         // don't hold one yet → ask once
     var v = extraVernacName(sci);                     // the older single-language cache
     if (v) return speciesCase(lang, v);
+    // Nothing in this language: the record's own name is whatever its source sent (GBIF
+    // answers in English), so for these groups show the scientific name instead.
+    if (sciFallbackFor(cls)) return sciCase(sci);
     return speciesCase(lang, recName || sci);
   }
   function bundledExtraName(sci) {
@@ -9739,7 +9756,7 @@
       var sci = e.key.slice(2);
       var l2 = AppAggregate.ensureSciIndex()[sci.toLowerCase()] || AppAggregate.labelBySciEpithet(sci, e.cls) || AppAggregate.labelBySciGenus(sci, e.cls);
       if (l2) return speciesName(l2);
-      return extraDisplayName(sci, e.name);
+      return extraDisplayName(sci, e.name, e.cls);
     }
     return speciesCase(lang, e.name || (e.key && e.key.indexOf("x:") === 0 ? e.key.slice(2) : e.key));
   }
@@ -12613,7 +12630,7 @@
       });
       Object.keys(result.extras).forEach(function (k) {
         var ex = result.extras[k];
-        if (ex.rows && ex.rows.length && extraInGroup(ex.cls) && passesAge(ex.latestTs)) entries.push({ key: "x:" + k, name: extraDisplayName(ex.sci || k, ex.name), rows: ex.rows, count: ex.count, cls: ex.cls || "" });
+        if (ex.rows && ex.rows.length && extraInGroup(ex.cls) && passesAge(ex.latestTs)) entries.push({ key: "x:" + k, name: extraDisplayName(ex.sci || k, ex.name, ex.cls), rows: ex.rows, count: ex.count, cls: ex.cls || "" });
       });
       var hasFail = !!(result.failed && result.failed.length);
       // plotNoFit marks a progressive (partial) plot mid-fetch — an early source may

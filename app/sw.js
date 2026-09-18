@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1815";
+var VERSION = "v1816";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
   "• The Settings gear's two gestures have swapped. A TAP now opens the small quick panel — species group, fetch radius and, new, how far back to fetch (1 · 2 · 3 · 7 · 14 · 21 · 28 · 42 · 91 days) — because those three decide what your next tap on the map brings home, and they were the ones you kept opening Settings for. PRESS-AND-HOLD (or right-click) opens the full Settings panel, the rarer errand. Both sliders drive the very same controls that live in Settings, so whichever way you change them it is saved once, in one place. Both sliders are the same width now, and every slider in the app wears the app's green instead of the browser's blue. The panel's last row opens full Settings as well, so it is always one tap away — no gesture required.",
+  "• Insects, plants and fungi now fall back to the scientific name when there is none in your language, instead of showing an English one. A Norwegian reader meeting an insect with no Norwegian name gets \"Stethophyma grossum\" rather than \"[Large Marsh Grasshopper]\" — the name the field guides and the reporting portals print, and the one you can look up. Birds, mammals and amphibians are unchanged: their name lists are good, and an English bird name is widely understood.",
   "• Insects, plants and fungi get pictures where Wikipedia has none. Measured on species actually recorded up here, the English Wikipedia illustrates 6 of 14 insects, 11 of 14 plants and 10 of 14 fungi — so the app now asks Wikidata next, which knows a taxon's picture even when no English article exists (it filled 7 of the 15 gaps in that sample, all Wikimedia files with the usual credit), and iNaturalist after that, using only photos whose licence allows it. One bug fell out of the same work: a Wikimedia licence called simply \"Attribution\" — a perfectly free one — was not on the app's list of licences it may show, so species whose only picture carries it showed none at all. The ladybird is back.",
   "• Picture popups now open in the middle of the screen. They used to hang off the row that opened them, so a species near the bottom of a list pushed its photos below the edge — and because a popup only reaches its full height once the pictures have loaded, the guard that keeps popups on screen was measuring a height they no longer had. They are centred now, re-centred as each picture lands, and scroll inside themselves if there are more photos than fit.",
-  "• Fixed, with apologies: the previous version asked Wikimedia for 960-pixel photos as \"800 px\", a size their servers do not serve — every picture came back as an error, so the cards showed the credit line over \"No image\". The photos are back, at a size their servers do serve, and the loader now retries at the smaller size once before ever declaring a photo missing.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
