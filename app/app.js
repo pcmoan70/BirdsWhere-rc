@@ -4679,7 +4679,7 @@
     });
     Object.keys(outM.extras || {}).forEach(function (k) {
       var ex = outM.extras[k];
-      if (ex.rows && ex.rows.length && inGrp(ex.cls)) entries.push({ key: "x:" + k, name: ex.name || ex.sci, rows: ex.rows, cls: ex.cls || "" });
+      if (ex.rows && ex.rows.length && inGrp(ex.cls)) entries.push({ key: "x:" + k, name: extraDisplayName(ex.sci || k, ex.name), rows: ex.rows, cls: ex.cls || "" });
     });
     if (!entries.length) return;
     if (isFinite(+currentSpView.lat) && isFinite(+currentSpView.lon)) currentFetchAreaId = rememberFetchedArea(+currentSpView.lat, +currentSpView.lon, recentRadiusKm(), currentSpView.name || currentSpView.locName);
@@ -5191,7 +5191,7 @@
     var oLat = _dor ? _dor.lat : NaN, oLon = _dor ? _dor.lon : NaN;
     var haveOrigin = !!_dor;
     keys.forEach(function (k) {
-      var e = extras[k], name = e.name || e.sci;
+      var e = extras[k], name = extraDisplayName(e.sci || k, e.name);
       // Total SPECIMENS (deduped) + distinct observations, matching the model rows.
       var eSpec = dedupedSpecimenTotal(e.rows);
       var ePairs = distinctObsDatePairs(e.rows);
@@ -9494,6 +9494,20 @@
       .catch(function () { extraNameDict[code] = {}; return extraNameDict[code]; });
     return extraNameReq[code];
   }
+  // What to call a NON-MODEL species (plants, fungi, most insects — everything that
+  // reaches the app as an "extra"). The record's own name is whatever the source
+  // happened to send: GBIF answers in English, iNaturalist in the fetch locale, the
+  // national portals in their own language. So a name we hold for the CURRENT language
+  // wins over it — that is the whole point of shipping and harvesting them — and the
+  // record's name is the fallback, with the scientific name behind that.
+  function extraDisplayName(sci, recName) {
+    var h = harvestedName(sci);                       // bundled pack, then the device's harvest
+    if (h) return speciesCase(lang, h);
+    if (lang !== "en") queueNameHarvest(sci);         // don't hold one yet → ask once
+    var v = extraVernacName(sci);                     // the older single-language cache
+    if (v) return speciesCase(lang, v);
+    return speciesCase(lang, recName || sci);
+  }
   function bundledExtraName(sci) {
     var d = extraNameDict[lang];
     if (!d) { ensureExtraNames(lang); return ""; }        // first miss kicks the load off
@@ -9657,15 +9671,7 @@
       var sci = e.key.slice(2);
       var l2 = AppAggregate.ensureSciIndex()[sci.toLowerCase()] || AppAggregate.labelBySciEpithet(sci, e.cls) || AppAggregate.labelBySciGenus(sci, e.cls);
       if (l2) return speciesName(l2);
-      // Non-model species with no usable common name → the lazy iNat lookup.
-      var nm0 = e.name || "";
-      if (!nm0 || nm0.toLowerCase() === sci.toLowerCase()) {
-        var hv = harvestedName(sci);                 // the all-languages harvest first…
-        if (hv) return speciesCase(lang, hv);
-        queueNameHarvest(sci);
-        var v = extraVernacName(sci);                // …then the older single-language cache
-        if (v) return speciesCase(lang, v);
-      }
+      return extraDisplayName(sci, e.name);
     }
     return speciesCase(lang, e.name || (e.key && e.key.indexOf("x:") === 0 ? e.key.slice(2) : e.key));
   }
@@ -12514,7 +12520,7 @@
       });
       Object.keys(result.extras).forEach(function (k) {
         var ex = result.extras[k];
-        if (ex.rows && ex.rows.length && extraInGroup(ex.cls) && passesAge(ex.latestTs)) entries.push({ key: "x:" + k, name: ex.name || ex.sci, rows: ex.rows, count: ex.count, cls: ex.cls || "" });
+        if (ex.rows && ex.rows.length && extraInGroup(ex.cls) && passesAge(ex.latestTs)) entries.push({ key: "x:" + k, name: extraDisplayName(ex.sci || k, ex.name), rows: ex.rows, count: ex.count, cls: ex.cls || "" });
       });
       var hasFail = !!(result.failed && result.failed.length);
       // plotNoFit marks a progressive (partial) plot mid-fetch — an early source may
