@@ -18066,6 +18066,17 @@
         var lbl = o.textContent.replace(/^[^\p{L}\p{N}]+/u, "");
         html += '<button type="button" class="gq-item' + (o.value === cur ? " gq-cur" : "") + '" data-val="' + escapeHtml(o.value) + '">' + settingsIconHtml(o.value) + '<span>' + escapeHtml(lbl) + "</span></button>";
       });
+      // The fetch radius belongs with the group: both decide WHAT a tap on the map
+      // fetches, and both are otherwise a trip into Settings. The slider drives the
+      // Settings one (#recent-radius) rather than saving on its own, so its label, its
+      // save and the sightings-cache reset all keep working from one place.
+      var rrEl = document.getElementById("recent-radius");
+      if (rrEl) {
+        html += '<div class="gq-head gq-head-2">' + escapeHtml(t("ctrl.recentradius")) +
+          ' <span class="gq-radius-val">' + escapeHtml(radiusLabel(RADIUS_STEPS[+rrEl.value])) + "</span></div>" +
+          '<div class="gq-radius"><input type="range" class="gq-radius-in" min="' + rrEl.min + '" max="' + rrEl.max +
+          '" step="' + rrEl.step + '" value="' + rrEl.value + '" aria-label="' + escapeHtml(t("ctrl.recentradius")) + '" /></div>';
+      }
       panel.innerHTML = html;
       panel.style.display = "block";
       Array.prototype.forEach.call(panel.querySelectorAll(".gq-item"), function (b) {
@@ -18075,6 +18086,25 @@
           panel.style.display = "none";
         });
       });
+      var rIn = panel.querySelector(".gq-radius-in"), rOut = panel.querySelector(".gq-radius-val");
+      if (rIn && rrEl) {
+        // Drag: mirror into the Settings slider and let ITS handlers do the work.
+        rIn.addEventListener("input", function (e) {
+          e.stopPropagation();
+          if (rOut) rOut.textContent = radiusLabel(RADIUS_STEPS[+this.value]);
+          rrEl.value = this.value;
+          rrEl.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        rIn.addEventListener("change", function (e) {
+          e.stopPropagation();
+          rrEl.value = this.value;
+          rrEl.dispatchEvent(new Event("change", { bubbles: true }));
+        });
+        // A drag inside the panel must not be taken for a click outside it.
+        rIn.addEventListener("click", function (e) { e.stopPropagation(); });
+        rIn.addEventListener("mousedown", function (e) { e.stopPropagation(); });
+        rIn.addEventListener("touchstart", function (e) { e.stopPropagation(); }, { passive: true });
+      }
     }
     (function () {
       var btn = document.getElementById("settings-toggle");
