@@ -22322,18 +22322,23 @@
           // list page directly instead of the map-first default.
           sp.style.display = "block"; if (!keepScroll) sp.scrollTop = 0; navOpen("page", closeAnyFullPage);
           listFirst = !noFetch;
-        } else {
+        } else if (!onListView()) {
           // Species-List (recent): go straight to the map and drop dots in as the
           // fetch streams. The list stays rendered-but-hidden until the header
           // List⇄Map switch is tapped, so the user watches points land live.
+          // NEVER when the list page is already open: this block runs on every
+          // render, and a re-render that lands while the user is reading the list
+          // (predictions resolving, a late source, a layout rebuild) would yank the
+          // page away and drop them back on the map mid-scroll.
           sp.style.display = "none";
           if (!noFetch) spMapFetch = true;
         }
       } else if (currentMode === "historic") {
         // Historic is MAP-FIRST like Recent: stay on the map and watch the dots
         // land month by month as the fetch streams; the list stays rendered-but-
-        // hidden behind the header List⇄Map switch.
-        sp.style.display = "none";
+        // hidden behind the header List⇄Map switch. Same rule: never close a list
+        // page the user already has open.
+        if (!onListView()) sp.style.display = "none";
       } else {
         sp.style.display = "block";
       }
