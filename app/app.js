@@ -21537,13 +21537,15 @@
     try { return m ? decodeURIComponent(m[1]) : ""; } catch (e) { return m ? m[1] : ""; }
   }
   // A display-size thumbnail URL from the summary's thumbnail: drop the tracking query,
-  // serve from upload.wikimedia.org (the canonical, cacheable host) at 800 px wide — one of
-  // Wikimedia's standard widths (20/40/60/120/250/330/500/800/960…); other widths are refused.
-  // 800 rather than 500 since v1802: a gallery card is ~300 CSS px, which is 900 device px on a
-  // 3× phone, so 500 was visibly soft. Sampled originals run 288–6663 px wide (median 1468), so
-  // 800 is a real thumbnail for nearly every file rather than an upscale.
+  // serve from upload.wikimedia.org (the canonical, cacheable host) at 960 px wide.
+  // Wikimedia serves a FIXED ladder of widths here (20/40/60/120/250/330/500/960…) and
+  // answers anything else with HTTP 400 — v1802 asked for 800 and every photo broke, which
+  // is why the width is a named constant now and the loader falls back to 500 on error.
+  // 960 rather than 500: a gallery card is ~300 CSS px, i.e. ~900 device px on a 3× phone.
+  var SP_IMG_W = 960, SP_IMG_W_FALLBACK = 500;
+  function spImgAtWidth(u, w) { return String(u || "").replace(/\/\d+px-/, "/" + w + "px-"); }
   function spImgThumb(thumb) {
-    return thumb.split("?")[0].replace(/^https:\/\/thumb\.wikimedia\.org\//, "https://upload.wikimedia.org/").replace(/\/\d+px-/, "/800px-");
+    return spImgAtWidth(thumb.split("?")[0].replace(/^https:\/\/thumb\.wikimedia\.org\//, "https://upload.wikimedia.org/"), SP_IMG_W);
   }
   // Licences we may show. Commons is free-only, but the summary's image can be a file
   // local to en.wikipedia, where non-free "fair use" and NC/ND files exist — and those
@@ -21557,7 +21559,7 @@
   // Bumped when the record's SHAPE or the rules that filled it change, so devices
   // re-fetch instead of serving entries made under the old ones (v2: 800 px thumbs,
   // untruncated author, licence URL, free-licence gate).
-  var SP_IMG_VER = 2;
+  var SP_IMG_VER = 3;   // v3: 960 px (v2 asked for 800, which Wikimedia refuses)
   function spImageFor(sci) {
     var c = spImgStore();
     if (c[sci] && c[sci].v === SP_IMG_VER) return Promise.resolve(c[sci]);
@@ -21721,6 +21723,10 @@
       img.crossOrigin = "anonymous";   // CORS load → the SW's species-images cache stores a real (sized) response, not an opaque one
       img.src = r.t;
       img.addEventListener("error", function () {
+        // A width this file has no thumbnail for → try the narrower standard width once
+        // before giving up, so one odd file (or a future ladder change) can't blank the card.
+        var alt = spImgAtWidth(r.t, SP_IMG_W_FALLBACK);
+        if (!img._retried && alt !== img.src) { img._retried = 1; img.src = alt; return; }
         img.remove();
         if (photoNetDown()) markOffline(box, none);   // known photo, just not cached on the device
         else markNoImage(box, none);

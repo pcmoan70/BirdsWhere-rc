@@ -911,7 +911,7 @@ no direction can delete data on the other device.
   collected as JSON; `tools/inat-names.mjs --merge <file> --write` folds it back into the shipped
   packs. iNaturalist's taxonomy is CC BY 4.0 and is credited in the About panel.
 - **Species photos** — the lead image of the species' Wikipedia article via Wikimedia Commons, at
-  800 px, credited under each picture with the photographer's **full** name and a link to both the
+  960 px, credited under each picture with the photographer's **full** name and a link to both the
   file page and the licence terms. Only positively-free licences (CC0 / public domain / CC BY /
   CC BY-SA / FAL / GFDL) are shown.
 - **The gear's two gestures** — a **tap** on the ⚙ opens a small quick panel with the three
