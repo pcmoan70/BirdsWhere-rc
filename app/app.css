@@ -1783,6 +1783,9 @@ table.an-scatter-table td.an-tint { color: #fff; font-weight: 600; text-shadow: 
 .group-quick-panel .gq-radius-val, .group-quick-panel .gq-days-val { text-transform: none; letter-spacing: 0; font-weight: 700; color: var(--ink, #222); }
 .group-quick-panel .gq-radius { padding: 2px 8px 6px; }
 .group-quick-panel .gq-radius input[type="range"] { width: 100%; box-sizing: border-box; margin: 0; }
+/* Footer row: the way into full Settings for anyone who never finds the hold. */
+.group-quick-panel .gq-foot { border-top: 1px solid var(--border, rgba(0,0,0,.1)); margin-top: 4px; padding-top: 4px; }
+.group-quick-panel .gq-item .btn-ico { width: var(--ico-m, 16px); height: var(--ico-m, 16px); flex: 0 0 auto; color: var(--brand-deep, #1f5b48); }
 .dd-row {
   display: flex;
   align-items: center;

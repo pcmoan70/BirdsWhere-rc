@@ -18170,8 +18170,17 @@
           '<div class="gq-radius"><input type="range" class="gq-days-in" min="0" max="' + (DAYS_STEPS.length - 1) +
           '" step="1" value="' + daysStepIndex(dNow) + '" aria-label="' + escapeHtml(t("ctrl.downloadDays")) + '" /></div>';
       }
+      // A plain-tap route into full Settings, always. The press-and-hold is a gesture
+      // some devices emulate badly and some users never find, and everything in Settings
+      // — the "Reload to update" button included — would then be unreachable. (v1795-97
+      // was exactly that trap on Android: the hold opened Settings and the emulated
+      // click shut it again, with no other door.)
+      html += '<div class="gq-foot"><button type="button" class="gq-item gq-settings">' + ico("menu") +
+        "<span>" + escapeHtml(t("ctrl.settings")) + "…</span></button></div>";
       panel.innerHTML = html;
       panel.style.display = "block";
+      var setBtn = panel.querySelector(".gq-settings");
+      if (setBtn) setBtn.addEventListener("click", function () { toggleSettingsPanel(); });
       Array.prototype.forEach.call(panel.querySelectorAll(".gq-item"), function (b) {
         b.addEventListener("click", function () {
           var v = this.getAttribute("data-val");

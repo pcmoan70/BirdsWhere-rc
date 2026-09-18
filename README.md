@@ -905,8 +905,9 @@ no direction can delete data on the other device.
 - **The gear's two gestures** — a **tap** on the ⚙ opens a small quick panel with the three
   settings that decide what the next tap on the map brings back: the **species group**, the
   **fetch radius** and **how many days back** to fetch (1 · 2 · 3 · 7 · 14 · 21 · 28 · 42 · 91).
-  **Press-and-hold** (or right-click) opens the full **Settings** panel. Both sliders drive the
-  same controls that live in Settings, so a change made either way is saved the same way.
+  **Press-and-hold** (or right-click) opens the full **Settings** panel — and so does the quick
+  panel's last row, **Settings…**, so Settings is always reachable with plain taps. Both sliders
+  drive the same controls that live in Settings, so a change made either way is saved the same way.
 - **Persistence** — settings, view, species/year/life lists, checklists, points and plotted
   detections survive across visits. Small settings live in **localStorage**; bulky per-list data
   (saved sets, detections) lives in **IndexedDB** to avoid the ~5 MB cap, hydrated into memory once
