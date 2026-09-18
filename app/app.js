@@ -5561,6 +5561,35 @@
         return (d && d.url) ? { key: d.key, name: d.name, url: linkUrl(d.url), country: d.country } : d;
       });
     }
+    // Rarity alerts: merged FIELD-WISE, never as one blob. The preferences — the email
+    // address, the interval, the threshold, which sources, the sound — travel like any
+    // other setting, while the bookkeeping stays this device's own: copying a seen-set
+    // or a seeded-locations map across devices would either re-announce everything or
+    // silence a device that has never polled.
+    (function () {
+      var lr = (local && local.rarityAlerts) || null, ir = (incoming && incoming.rarityAlerts) || null;
+      if (!lr && !ir) return;
+      lr = lr || {}; ir = ir || {};
+      var PREFS = ["enabled", "intervalMin", "probPct", "showDays", "showMap", "allSources",
+        "countryWide", "sound", "sysNotif", "email"];
+      var MINE = ["seen", "seeded", "lastPoll", "lastEmail", "emailState", "emailAt", "emailKind", "emailCount"];
+      var win = opts.incomingWins ? ir : lr, other = opts.incomingWins ? lr : ir;
+      var out = {}; Object.keys(lr).forEach(function (k) { out[k] = lr[k]; });
+      PREFS.forEach(function (k) {
+        var v = (win[k] !== undefined) ? win[k] : other[k];
+        if (v !== undefined) out[k] = v;
+      });
+      // The address ALSO fills in when this device simply has none — the same rule the
+      // eBird key follows, so a second device picks it up without forcing a download.
+      if (!String(out.email || "").trim() && String(ir.email || "").trim()) out.email = ir.email;
+      MINE.forEach(function (k) { if (lr[k] !== undefined) out[k] = lr[k]; else delete out[k]; });
+      // A different address than this device was using starts with a clean mail state:
+      // "not confirmed yet" for someone else's address would be a lie.
+      if (String(out.email || "").trim() !== String(lr.email || "").trim()) {
+        out.emailState = ""; out.emailAt = 0; out.emailKind = ""; out.emailCount = 0;
+      }
+      newState.rarityAlerts = out;
+    })();
     // The merged collections override either side's copy.
     newState.fieldChecklists = mergedCl;
     // Merged lists go to IndexedDB (and out of the blob) when that is the store — the

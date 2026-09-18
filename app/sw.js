@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1790";
+var VERSION = "v1791";
 // The changelog highlights shown under the lit "Reload to update" button in
 // Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
 // bumped for a user-visible change — replace stale bullets, don't accumulate.
 var NOTES = [
+  "• The rarity-alert email address now travels with your other settings: a device that has none picks it up on the next sync, and a Download brings the alert preferences (address, interval, threshold, which sources, sound) across. What stays on each device is its own bookkeeping — which alerts it has already seen, which places it has armed, when it last checked and what became of its last message — because copying that between devices would either repeat every alert or silence a device that has never checked.",
   "• …and that panel is now tall enough to show it all without a scrollbar.",
   "• Press and hold the gear and you now get the fetch radius as well as the species group — the two things that decide what a tap on the map brings back, without opening Settings. The slider drives the same setting, so the value, the label and the cleared sightings cache all behave exactly as before.",
   "• In the Images list, press and hold a Probability / Season / Yr-peak bar to see that species' year curve — the little popup a mouse gets on hover. The gesture existed only on phones without a mouse; on a computer (or a touch laptop) holding did nothing. Holding the ☰ button likewise opens the species' records everywhere now. A normal click still opens the Migration view.",
   "• Names now behave the same everywhere. A species name, an observer name and a place name each open their own menu — and a place name always offers the lot: find on map, save as a point, add to the route, and show only this location. That includes two places it never worked before: the title of the observation window (which IS that spot's name) and the place beside the observer in each record. One shared implementation now drives all three kinds, so nowhere can quietly miss out again.",
-  "• The storage line in Settings now says what the app can actually measure: “Settings & saved lists · cached data · browser estimate”. The browser's own figure can read tens of GB for a few hundred MB, because it pads every cached map tile for privacy — that is explained under the line, and the “storage nearly full” warning no longer fires on padding (a genuinely full device still warns). Each cache row now shows 0 rather than nothing when it is empty.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
