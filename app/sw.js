@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1817";
-// The changelog highlights shown under the lit "Reload to update" button in
-// Settings (one bullet per line, ~4–5 bullets). Refresh whenever VERSION is
-// bumped for a user-visible change — replace stale bullets, don't accumulate.
+var VERSION = "v1818";
+// The changelog shown under the lit "Reload to update" button in Settings.
+// THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
+// A returning user wants to know what the update they are about to install changes,
+// not a scroll of things they already have; the feature history lives in Settings →
+// What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• The Settings gear's two gestures have swapped. A TAP now opens the small quick panel — species group, fetch radius and, new, how far back to fetch (1 · 2 · 3 · 7 · 14 · 21 · 28 · 42 · 91 days) — because those three decide what your next tap on the map brings home, and they were the ones you kept opening Settings for. PRESS-AND-HOLD (or right-click) opens the full Settings panel, the rarer errand. Both sliders drive the very same controls that live in Settings, so whichever way you change them it is saved once, in one place. Both sliders are the same width now, and every slider in the app wears the app's green instead of the browser's blue. The panel's last row opens full Settings as well, so it is always one tap away — no gesture required.",
   "• Fixed: the Images list flickered non-stop whenever some species had no photo. Each name the app looked up arrived a couple of seconds later and rebuilt the entire list to show it — throwing every card away, starting every photo again, and so provoking the next round: the species without pictures are the obscure ones that also lack names, so it never settled until you left the view. Measured at 60 rebuilds in 30 seconds; now none. Names are written into the list where they stand, which is all a name ever needed.",
-  "• Insects, plants and fungi now fall back to the scientific name when there is none in your language, instead of showing an English one. A Norwegian reader meeting an insect with no Norwegian name gets \"Stethophyma grossum\" rather than \"[Large Marsh Grasshopper]\" — the name the field guides and the reporting portals print, and the one you can look up. Birds, mammals and amphibians are unchanged: their name lists are good, and an English bird name is widely understood.",
-  "• Insects, plants and fungi get pictures where Wikipedia has none. Measured on species actually recorded up here, the English Wikipedia illustrates 6 of 14 insects, 11 of 14 plants and 10 of 14 fungi — so the app now asks Wikidata next, which knows a taxon's picture even when no English article exists (it filled 7 of the 15 gaps in that sample, all Wikimedia files with the usual credit), and iNaturalist after that, using only photos whose licence allows it. One bug fell out of the same work: a Wikimedia licence called simply \"Attribution\" — a perfectly free one — was not on the app's list of licences it may show, so species whose only picture carries it showed none at all. The ladybird is back.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
