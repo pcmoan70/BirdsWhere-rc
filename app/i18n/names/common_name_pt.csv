@@ -161,7 +161,7 @@ Impala
 Giant Elephant Bird
 peru-do-mato-de-cabeça-azul
 peru-do-mato-de-waigeo
-Rufous Bettong
+Betong-ruivo
 andorinhão-de-mindanau
 andorinhão-das-marianas
 andorinhão-dos-himalaias
@@ -348,7 +348,7 @@ papagaio-rei-da-papua
 papagaio-rei-australiano
 torda-miúda
 debulhador-de-peito-escamado
-Allen's Swamp Monkey
+Macaco-do-Pântano
 Aligátor-americano
 Rã-de-coxa-brilhante
 Striped Rocket Frog
@@ -645,7 +645,7 @@ ganso-das-neves-pequeno
 ganso-campestre-da-tundra
 ganso-pega
 Nornalup Frog
-Yellow-footed Antechinus
+Rato-marsupial-de-patas-amarelas
 papa-moscas-de-colarinho
 papa-moscas-de-sobrancelha-ruiva
 beija-flor-de-peito-laranja
@@ -1316,7 +1316,7 @@ Gatiara
 Western Lowland Olingo
 Olinguito
 Bassarisco
-Cacomistle
+cacomixtle-do-sul
 matracão
 prínia-de-cabeça-preta
 prínia-ruiva
@@ -1601,7 +1601,7 @@ calau-de-faces-castanhas
 calau-assobiador
 calau-de-faces-cinzentas
 Tatu-de-rabo-mole-pequeno
-Ucayali Bald Uacari
+Uacari-calvo-do-rio-Ucayali
 Coastal Cactus Dodger
 Moore's Cactus Dodger
 Common Cactus Dodger
@@ -1738,7 +1738,7 @@ marreca-de-coleira
 urso-do-mar
 Northern Gray-bellied Squirrel
 Southern Gray-bellied Squirrel
-Pallas' Squirrel
+Esquilo-do-pallas
 Esquilo-de-finlayson
 Inornate Squirrel
 Black-striped Squirrel
@@ -1854,7 +1854,7 @@ frango-d'água-de-garganta-cinzenta
 Chacal-dourado
 Cão doméstico
 Coiote
-African Wolf
+Lobo-dourado-africano
 Lobo
 Eastern Wolf
 Lobo-vermelho
@@ -1886,8 +1886,8 @@ Cabra
 Íbex
 Cabra-montês
 Corço
-Eastern Roe Deer
-Taiwan Serow
+Corça-siberiana
+Serow-de-Formosa
 noitibó-do-deserto
 noitibó-da-savana
 noitibó-das-andamão
@@ -2129,15 +2129,15 @@ formigueiro-de-parker
 chororó-preto
 chororó-escuro
 Macaco-de-cauda-vermelha
-Campbell's Monkey
-Moustached Monkey
-Lowe's Monkey
+Macaco-de-Campbell
+Macaco-bigodudo
+Macaco-mona-de-Lowe
 Macaco-preto
-Mona Monkey
-De Brazza's Monkey
-Putty-nosed Monkey
-Lesser Spot-nosed Monkey
-Crowned Monkey
+Macaco-mona
+Macaco-de-Brazza
+Macaco-de-nariz-Branco
+Guenon-de-nariz-branco
+Macaco-coroado
 solitário
 rouxinol-de-dorso-castanho
 rouxinol-de-dorso-ruivo
@@ -2167,7 +2167,7 @@ cotovia-namaqua
 papa-mel-alvinegro
 Wapiti
 Veado
-Sika Deer
+Cervo-Sika
 guarda-rios-malhado
 cétia-de-barrete
 cétia-de-cabeça-castanha
@@ -2313,7 +2313,7 @@ beija-flor-de-garganta-verde
 beija-flor-de-peito-azul
 Doria's Tree Frog
 Sapo-de-ninho-de-espuma
-Northern Bearded Saki Monkey
+Cuxiú-de-costas-vermelhas
 Cuxiú-preto
 Cuxiú-de-uta-hick
 soldadinho-do-araripe
@@ -2887,7 +2887,7 @@ picanço-musical
 picanço-de-arafura
 picanço-fuliginoso
 picanço-das-rochas
-Mantled Guereza
+Guereza
 Macaco-fidalgo-preto
 gralha-dáurica
 gralha-de-nuca-cinzenta
@@ -3499,7 +3499,7 @@ colibri-de-doubleday
 esmeralda-de-cozumel
 colibri-de-bico-largo
 colibri-de-três-marias
-greenhall's dog-faced bat
+Morcego-Cara-de-Cachorro-de-Greenhall
 Thomas's Dog-faced Bat
 Mexican Dog-faced Bat
 southern dog-faced bat
@@ -3582,7 +3582,7 @@ dácnis-de-coxas-vermelhas
 dácnis-esverdeado
 Bolivian Bamboo Rat
 toró
-Striped Possum
+Possum-Listrado
 codorniz-cantora
 Gamo
 trepadeira-variável
@@ -3607,9 +3607,9 @@ bico-de-cerdas-ocidental
 Cutia-de-Azara
 Cutia-de-crista
 Cutia-centro-americana
-West Andean Long-nosed Armadillo
-Mexican Long-nosed Armadillo
-Western Quoll
+Tatu-Centro-Americano
+Tatu-Mexicano
+Quoll-Ocidental
 Gato-tigre
 arapaçu-rabudo
 arapaçu-rabudo (pallida)
@@ -3865,8 +3865,8 @@ Dorisiana noriegai
 bico-de-lança
 bico-de-lança-grande
 Orange-bellied Himalayan Squirrel
-Perny's Long-nosed Squirrel
-Red-hipped Squirrel
+Esquilo-de-nariz-longo-de-perny
+Esquilo-de-coxas-Vermelhas
 Asian Red-cheeked Squirrel
 ivi
 mamo-preto
@@ -4058,7 +4058,7 @@ garça-dos-recifes-oriental
 garça-branca-pequena
 garça-tricolor
 garça-de-garganta-vermelha
-Madagascan Fruit Bat
+Morcego-cor-de-palha-de-Madagascar
 Morcego‑cor‑de‑palha
 Irara
 Sapinho-guarda
@@ -4399,7 +4399,7 @@ Morcego-Buldogue
 Fierce Bonneted Bat
 Florida Bonneted Bat
 Wagner's Bonneted Bat
-Western Bonneted Bat
+Morcego-de-Orelhas-Largas
 papa-moscas-de-buru
 papa-moscas-dos-nilgiris
 papa-moscas-de-cabeça-azul
@@ -4714,11 +4714,11 @@ fulveta-de-manipur
 fulveta-de-lunetas
 fulveta-chinesa
 fulveta-de-sobrancelha-branca
-Dusky Palm Squirrel
-Three-striped Palm Squirrel
-Five-striped Palm Squirrel
-Nilgiri Palm Squirrel
-Jungle Palm Squirrel
+Esquilo-das-Palmeiras-escuro
+Esquilo-das-Palmeiras-Meridional
+Esquilo-das-Palmeiras-de-cinco-listras
+Esquilo-das-Palmeiras-de-Nilgiri
+esquilo-listrado-da-selva
 Lady Burton's Rope Squirrel
 Ribboned Rope Squirrel
 Fire-footed Rope Squirrel
@@ -4823,7 +4823,7 @@ Gampsocleis ussuriensis
 gaviãozinho
 timali-de-cabeça-branca
 timali-de-colar
-striped hairy-nosed bat
+Morcego-de-Nariz-Peludo-Listrado
 zaragateiro-da-papua
 painho-de-dorso-cinzento
 charlatão-de-peito-laranja
@@ -5584,7 +5584,7 @@ painho-de-socorro
 painho-das-galápagos
 painho-de-tristram
 Capivara
-Lesser Capybara
+Capivara-ístimica
 andorinhão-gigante
 gaivota-pequena
 Rakali
@@ -5634,11 +5634,11 @@ hiliota-de-dorso-violeta
 Abbott's Gibbon
 Agile Gibbon
 Bornean White-bearded Gibbon
-North Bornean Gray Gibbon
+Gibão-do-Norte-de-Bornéu
 Gibão-de-mãos-brancas
 Javan Gibbon
 Müller's Gibbon
-Pileated Gibbon
+Gibão-coroado
 beija-flor-dourado
 beija-flor-safira
 tordo-dos-bosques
@@ -5746,8 +5746,8 @@ Alashanian Pipistrelle
 Chinese Pipistrelle
 Morcego-de-savi
 Stubbe's Pipistrelle
-East Asian Porcupine
-Crested Porcupine
+Porco-Espinho-Malaio
+Porco-Espinho-com-Crista
 charlatão-estrelado
 charlatão-de-bigodes
 charlatão-d'orelha-castanha
@@ -5882,8 +5882,8 @@ tangará-de-reinhardt
 tangará-de-coroa-dourada
 choquinha-de-barriga-ruiva
 choquinha-de-garganta-clara
-Northern Brown Bandicoot
-Southern Brown Bandicoot
+bandicoot-marrom-do-norte
+bandicoot-marrom-do-sul
 guarda-rios-anão
 pica-peixinho-pigmeu
 faisão-cruento
@@ -5983,7 +5983,7 @@ Lagopo-ruivo
 lagópode-de-cauda-branca
 lagopo-cinzento
 red grouse
-Plains Viscacha
+Viscacha-da-Planície
 macaco-barrigudo-cinzento
 lagarteiro-de-sobrancelha-preta
 lagarteiro-de-barriga-ruiva
@@ -6151,7 +6151,7 @@ Northern Yellow Bat
 Seminole Bat
 Hawaiian Hoary Bat
 Cinnamon Red Bat
-Southern Hoary Bat
+Morcego-grisalho
 Western Yellow Bat
 franga-d'água-de-garganta-branca
 sanã-do-capim
@@ -6194,7 +6194,7 @@ Mico-leão-de-juba-dourada
 Mico-leão-preto
 Mico-leão-dourado
 Gato-chileno
-Southern Tigrina
+Gato-do-mato-pequeno
 Jaguatirica
 Maracajá
 trepa-troncos-de-cabeça-pontilhada
@@ -6587,9 +6587,9 @@ rouxinol-oriental
 rouxinol
 rouxinol-de-barriga-branca
 pisco-de-peito-azul
-Asian Small-clawed Otter
+Lontra-Sem-Garras-Asiática
 Lontra-europeia
-Smooth-coated Otter
+Lontra-de-Pelo-Liso
 barbaças-de-chaplin
 barbaças-de-bico-preto
 barbaças-de-cabeça-branca
@@ -6618,20 +6618,20 @@ tetraz-caucasiano
 tetraz-lira
 Macaco-urso
 Assam Macaque
-Formosan Rock Macaque
+Macaco-de-Formosa
 Macaco-caranguejeiro
 Macaco-do-japão
 macaco-de-cauda-de-porco-do-norte
 Moor Macaque
 Macaco-rhesus
 Arunachal Macaque
-Southern Pig-tailed Macaque
+Macaco-Cauda-de-Porco-do-Sul
 Macaco-negro
 Macaco-de-boina
 Macaco-cauda-de-leão
 Macaco-de-barrete
 Macaco-de-gibraltar
-Tibetan Macaque
+Macaco-Tibetano
 papa-mel-de-palas
 bico-largo-de-peito-amarelo
 bico-largo-de-peito-preto
@@ -6791,9 +6791,9 @@ Marmota-comum
 Marmota-olímpica
 Marmota-siberiana
 Marmota-de-Vancouver
-American Marten
-Pacific Marten
-Yellow-throated Marten
+marta-americana
+Marta-do-Pacífico
+Marta-de-Garganta-Amarela
 Fuinha
 Nilgiri Marten
 Marta
@@ -6806,7 +6806,7 @@ capuchinho-de-cabeça-estriada
 monarca-de-lesson
 monarca-de-vanikoro
 monarca-versicolor
-Mexican Red Brocket
+Veado-Mateiro-Centro-Americano
 joão-de-barriga-branca
 andorinhão-espinhoso-da-papua
 andorinhão-espinhoso-filipino
@@ -7373,8 +7373,8 @@ pica-pau-ardósia
 frango-d'água-de-ascensão
 Mangusto-listrado
 Southern Red Muntjac
-Reeves's Muntjac
-Northern Red Muntjac
+Muntjac-chinês
+Muntjac-Indiano
 Bicolored Tube-nosed Bat
 Ratinho-caseiro
 Ratinho-ruivo
@@ -7573,7 +7573,7 @@ Adelaide Buzzer
 Fence Buzzer
 Smoky Buzzer
 tapaculo-cinza
-silver-tipped myotis
+Morcego-Borboleta-de-Pontas-Prateadas
 Alcathoe myotis
 Atacama myotis
 Southeastern Myotis
@@ -7748,7 +7748,7 @@ Macaco-narigudo
 arapaçu-de-bico-comprido
 Quati-de-nariz-branco
 Quati-de-Cauda-Anelada
-Mountain Coati
+Quati-Andino
 Mexican Funnel-eared Bat
 Reed-cricket
 Natula matsuurai
@@ -7986,7 +7986,7 @@ Morcego-pescador-grande
 bulbul-de-faces-nuas
 Northern Yellow-cheeked Gibbon
 Gibão-de-topete
-Southern Yellow-cheeked Gibbon
+Gibão-de-Bochechas-Amarelas-do-Sul
 Northern White-cheeked Gibbon
 Southern White-cheeked Gibbon
 marreca-caucau
@@ -7998,7 +7998,7 @@ freirinha-de-coroa-castanha
 freirinha-amarelada
 periquito-de-máscara-azul
 periquito-de-naretha
-Agile Wallaby
+Ualabi-Ágil
 macuru-de-testa-branca
 macuru-de-pescoço-branco
 macuru-de-peito-marrom
@@ -8574,7 +8574,7 @@ pardal-de-java
 pardela-das-neves
 gaivota-marfim
 Foca-da-Groenlândia
-Masked Palm Civet
+Civeta-Mascarada
 Bronze Tree-buzzer
 akoekoe
 bico-de-lacre-gafanhoto
@@ -8608,7 +8608,7 @@ andorinhão-tesoura-grande
 alcatraz-de-abbott
 Babuíno-anúbis
 Babuíno-amarelo
-Guinea Baboon
+Babuíno-da-Guiné
 Babuíno-do-cabo
 Rana daemeli
 Rana elberti
@@ -8638,8 +8638,8 @@ bico-de-papagaio-de-cabeça-preta
 bico-de-papagaio-tridáctilo
 bico-de-papagaio-de-peito-branco
 bico-de-papagaio-castanho
-Northern Palm Civet
-Southern Palm Civet
+civeta-das-palmeiras-asiática
+civeta-das-palmeiras-de-sumatra
 Kenya Coast Galago
 galinha-d'água-pequena
 Paragryllus rex
@@ -8652,7 +8652,7 @@ Alexander's Bush Squirrel
 Boehm's Bush Squirrel
 Smith's Bush Squirrel
 Ochre Bush Squirrel
-Red Bush Squirrel
+Esquilo-vermelho-Africano
 iuína-coroada
 pardalote-ponteado
 pardalote-da-tasmânia
@@ -8835,7 +8835,7 @@ Peron's Tree Frog
 Western Laughing Tree Frog
 Northern Laughing Tree Frog
 Tyler's Laughing Tree Frog
-Long-nosed Bandicoot
+bandicoot-narigudo
 formigueiro-do-allpahuayo
 formigueiro-de-cabeça-preta/de-hellmayr/de-pelzeln
 codorniz-das-rochas
@@ -8889,11 +8889,11 @@ Taiwan Giant Flying Squirrel
 Taiwan Red-and-white Giant Flying Squirrel
 Red Giant Flying Squirrel
 Common Giant Flying Squirrel
-Greater Glider
-Yellow-bellied Glider
-Sugar Glider
-Squirrel Glider
-Krefft's Glider
+Planador-Gigante
+Planador-de-Barriga-Amarela
+Planador-de-Açúcar
+Planador-Esquilo
+Planador-de-Krefft
 andorinha-ariel
 andorinha-fluvial
 andorinha-das-cavernas
@@ -8904,7 +8904,7 @@ andorinha-de-dorso-acanelado
 andorinha-de-garganta-ruiva
 andorinha-de-colar-ruivo
 andorinha-sul-africana
-Yellow-footed Rock Wallaby
+Ualabi-de-Rocha-de-cauda-anelada
 petróica-das-rochas
 petróica-da-ilha-sul
 petróica-montesa
@@ -9002,7 +9002,7 @@ corvo-marinho-de-pintas
 corvo-marinho-preto-pequeno
 corvo-marinho-alvinegro
 noitibó-de-nuttall
-Southern Common Cuscus
+Cuscus-comum-Meridional
 pisa-n’água-de-bico-grosso
 pisa-n’água-de-pescoço-vermelho
 pisa-n’água
@@ -9273,7 +9273,7 @@ felosa-de-whistler
 felosa-do-japão
 felosa-de-capuz
 felosa-do-iunão
-Greater Spear-nosed Bat
+Morcego-Nariz-de-Lança-Grande
 Rãzinha-choradeira
 Pale-legged Weeping Frog
 Weeping Frog
@@ -9832,7 +9832,7 @@ franga-d'água-australiana
 franga-d'água-malhada
 Porco‑do‑mato-africano
 Porco‑vermelho
-Long-nosed Potoroo
+Potoro-Narigudo
 Jupará
 Montane Marsh Frog
 corre-ramos-malhado
@@ -9844,7 +9844,7 @@ Sumatran Surili
 Southern Mitered Langur
 Robinson’s Banded Langur
 Maroon Leaf Monkey
-White-thighed Surili
+Surili-de-coxas-brancas
 maracanã-de-colar
 maracanã-de-cabeça-azul
 maracanã
@@ -9942,9 +9942,9 @@ papa-açúcar-do-cabo
 papa-açúcar-de-gurney
 big crested mastiff bat
 Morcego-narigudo
-Coquerel's Sifaka
-Diademed Sifaka
-Verreaux's Sifaka
+Sifaka-de-Coquerel
+Sifaka-de-Diadema
+Sifaka-de-Verreaux
 Celebes Dwarf Squirrel
 maçarico-de-kiritimati
 maçarico-de-moorea
@@ -10037,7 +10037,7 @@ freira-de-beck
 freira-das-fiji
 freira-do-taiti
 bocarra-de-grauer
-Common Ring-tailed Possum
+Possum-Cauda-de-Anel
 andorinha-dos-rios-africana
 andorinha-dos-rios-asiática
 Marsh meadow grasshopper
@@ -10275,14 +10275,14 @@ Common True Katydid
 huet-huet-de-garganta-castanha
 huet-huet-de-bigodes
 huet-huet-de-garganta-preta
-Black Flying-fox
-Spectacled Flying-fox
+Raposa-Voadora-Negra
+Raposa-Voadora-de-Óculos
 Ryukyu Flying-fox
 Variable Flying-fox
 Lyle's Flying-fox
-Indian Flying Fox
-Mauritius Flying-fox
-Grey-headed Flying-fox
+Raposa-Voadora-Indiana
+Raposa-Voadora-Mauriciana
+Raposa-Voadora-Grisalha
 Bonin Flying-fox
 Little Red Flying-fox
 Seychelles Flying-fox
@@ -10410,7 +10410,7 @@ Andorinha-das-rochas-pálida
 red-throated crag-martin
 andorinha-das-rochas
 faisão-koklass
-Southern Pudú
+Pudu-Meridional
 pardela-maori
 pardela-de-townsend
 pardela-tropical
@@ -10480,8 +10480,8 @@ papa-mel-marmoreado
 papa-mel-liso
 papa-mel-de-cabeça-riscada
 bico-virado-austral
-Red-shanked Douc Langur
-Black-shanked Douc Langur
+Douc-de-Joelhos-Vermelhos
+Douc-de-Joelhos-Negros
 choca-cantadora
 andorinha-pequena-de-casa
 andorinha-de-coleira
@@ -10823,9 +10823,9 @@ tentilhão-carmesim
 asa-rosada
 gaivota-rosada
 Yucatán Yellow Bat
-Thomas's Yellow Bat
+Morcego-Amarelo-de-Thomas
 little yellow bat
-Great Gerbil
+Gerbil-Gigante
 choquinha-de-garganta-pintada
 fulveta-do-tarim
 fulveta-de-pequim
@@ -10918,9 +10918,9 @@ Camurça-europeia
 galo-das-rochas-andino
 galo-da-serra
 gavião-carijó
-Philippine Brown Deer
-Javan Rusa
-Sambar
+Sambar-filipino
+Sambar-de-Java
+Cervo-Sambar
 Ruspolia lineosa
 saltão-cabeça-de-cone
 talha-mar-asiático
@@ -10951,11 +10951,11 @@ Red-cap Mustached Tamarin
 Golden-mantle Saddleback Tamarin
 Eastern Black-handed Tamarin
 Sauim-de-Cara-Suja
-Black-capped Squirrel Monkey
+Macaco-esquilo-Boliviano
 Macaco-de-cheiro-comum (Saimiri cassiquiarensis)
 Macaco-mão-de-ouro
-Ecuadorian Squirrel Monkey
-Central American Squirrel Monkey
+Macaco-esquilo-Equatoriano
+Macaco-esquilo-Centro-Americano
 Macaco-de-cheiro
 choca-do-nordeste
 Choca-de-Crista-Preta
@@ -11243,13 +11243,13 @@ ave-do-paraíso-filamentosa
 Semia watanabei
 ave-do-paraíso-de-wallace
 Weale's Running Frog
-Bengal Sacred Langur
-Terai Sacred Langur
-Malabar Sacred Langur
-Nilgiri Langur
-Tufted Gray Langur
+Langur-Cinzento-Comum
+langur-cinzento-do-Terai
+Langur-Cinzento-de-Mãos-Negras
+Langur-de-Nilgiri
+Langur-Cinzento-Meridional
 Langur-cinzento-do-Nepal
-Purple-faced Langur
+Langur-Roxo
 capitão-de-bico-dentado
 capitão-tucano
 colibri-de-joão-fernandes
@@ -11431,7 +11431,7 @@ Pacific Shrew
 Trowbridge's Shrew
 Boto-cinza
 Golfinho-corcunda-de-Sahul
-Coruro
+Cururó
 boininha
 pato-colhereiro
 marreca-colorada
@@ -11990,7 +11990,7 @@ gavião-de-cauda-pintada
 gavião-besra
 Tacua speciosa
 Morcego‑de‑cauda‑livre‑do‑egito
-Mexican Free-tailed Bat
+Morcego-de-Cauda-Solta-Brasileiro
 East Asian Free-tailed Bat
 Morcego-rabudo
 tadorna-do-cabo
@@ -12017,10 +12017,10 @@ Tâmia oriental
 Esquilo-de-Douglas
 Fremont's Squirrel
 Esquilo-vermelho americano
-Maritime Striped Squirrel
-Himalayan Striped Squirrel
-Cambodian Striped Squirrel
-Swinhoe's Striped Squirrel
+Esquilo-listrado-marítimo
+Esquilo-listrado-do-Himalaia
+Esquilo-listrado-cambojano
+Esquilo-listrado-chinês
 tangará-dourado
 cambada-de-chaves
 saíra-opala
@@ -12316,9 +12316,9 @@ carriça-sinaloense
 carriça-dos-vulcões
 carriça-da-carolina
 Thylamys
-Rufous-bellied Pademelon
-Red-legged Pademelon
-Red-necked Pademelon
+Pademelon-da-Tâsmania
+Pademelon-de-Pés-Vermelhos
+Pademelon-de-Nuca-Vermelha
 Thyreonotus corsicus
 Thyropteridae
 sementeiro-de-faces-amarelas
@@ -12465,7 +12465,7 @@ Elande
 Imbabala
 Sitatunga
 Cudo
-Southern Bushbuck
+Antílope-do-mato-sul-africano
 tragopã-de-barriga-branca
 tragopã-de-peito-branco
 tragopã-de-dorso-cinzento
@@ -12534,8 +12534,8 @@ barbaças-fúnebre
 barbaças-das-acácias
 barbaças-de-cabeça-preta
 bulbul-peludo
-Short-eared Brush-tailed Possum
-Mountain Brush-tailed Possum
+Possum-de-Orelhas-curtas
+Possum-cauda-de-Escova-da-Montanha
 Cusu-comum
 tiê-de-topete
 sabiá-cica
@@ -12891,7 +12891,7 @@ picanço-bicolor
 Rough Saddle Bush-cricket
 tourinho-ágil
 tourinho-liso
-White-tailed Giant Rat
+Rato-gigante-de-cauda-Branca
 rolinha-vaqueira
 noitibó-lira
 noitibó-cauda-de-andorinha
@@ -12905,8 +12905,8 @@ tangará-de-stolzmann
 gavião-rabilongo
 Urso-negro
 Urso-pardo
-Indian Grey Mongoose
-Indian Brown Mongoose
+Mangusto-cinzento-Indiano
+Mangusto-Marrom
 Mangusto-caranguejeiro
 Vagitanus terminalis
 barbilhão-de-gola-branca

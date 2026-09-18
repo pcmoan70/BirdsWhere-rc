@@ -909,7 +909,14 @@ no direction can delete data on the other device.
   language it returns**, so the name fills in as it arrives, is instant next time and is already
   there if you switch language. **Settings → Storage → Export species names** downloads everything
   collected as JSON; `tools/inat-names.mjs --merge <file> --write` folds it back into the shipped
-  packs. iNaturalist's taxonomy is CC BY 4.0 and is credited in the About panel.
+  packs.
+- **Bundled names for those groups** — `app/i18n/names-extra/<lang>.json`, keyed by scientific
+  name, covering ~41 650 northern-European species in 14 languages (180–1080 KB each, loaded on
+  demand for the UI language only). Built by `tools/build-extra-names.py` from the iNaturalist
+  taxonomy archive; the live lookup above only runs for species outside it. iNaturalist's taxonomy
+  is **CC BY 4.0**: the attribution, the licence link and the list of changes made are in the About
+  panel (all 15 languages), `THIRD-PARTY-NOTICES.md` §2 and
+  `app/i18n/names-extra/ATTRIBUTION.txt`.
 - **Species photos** — the lead image of the species' Wikipedia article via Wikimedia Commons, at
   960 px, credited under each picture with the photographer's **full** name and a link to both the
   file page and the licence terms. Only positively-free licences (CC0 / public domain / CC BY /

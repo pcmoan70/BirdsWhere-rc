@@ -70,6 +70,24 @@ By the BirdNET team — https://github.com/birdnet-team/geomodel
 Multilingual common names in `taxonomy.csv` derive from the BirdNET label set and its upstream
 taxonomy; usage follows the CC BY-SA 4.0 terms above.
 
+### iNaturalist Taxonomy — common names (CC BY 4.0)
+Files: `app/i18n/names-extra/*.json` (see `app/i18n/names-extra/ATTRIBUTION.txt`)
+
+Common names for the groups the habitat model does not cover — plants, fungi, insects,
+amphibians and mammals — are taken from the **iNaturalist Taxonomy**, © iNaturalist and its
+contributors, licensed **CC BY 4.0** — https://creativecommons.org/licenses/by/4.0/ — and
+redistributed here under those terms.
+
+- Source: https://www.inaturalist.org/taxa/inaturalist-taxonomy.dwca.zip (archive of 2026-09-01),
+  also published as GBIF dataset `738041eb-6a2d-449f-8007-0ee4793195d3`.
+- **Adapted**, as CC BY 4.0 requires to be stated: restricted to species rank in those five
+  groups and to a northern-European slice, one name per species per language, re-keyed by
+  lower-cased scientific name, re-encoded as JSON, English omitted. Rebuild with
+  `tools/build-extra-names.py`.
+- The app also queries the same taxonomy live (`api.inaturalist.org/v1/taxa`) for species it
+  holds no name for, and stores those names on the device. The About panel carries the
+  attribution and the licence link in all 15 UI languages.
+
 ### Simplified country borders
 File: `app/countries-lite.json` — heavily simplified national outlines used only to gate
 country-scoped observation sources. Derived from open/public-domain geographic boundary data
@@ -109,6 +127,8 @@ you know the exact upstream, add it here.
 The app fetches live data directly from these third-party services; the data is © its
 respective providers and subject to each provider's terms of use:
 
+- **Species names (all groups outside the model):** the iNaturalist Taxonomy, CC BY 4.0 — see
+  section 2; queried live for species not in the bundled extract.
 - **Observations:** eBird / Cornell Lab of Ornithology; GBIF; iNaturalist; Artsdatabanken
   (Artsobservasjoner); SLU Artdatabanken (Artportalen); FinBIF / Laji.fi; BirdWeather.
 - **Basemaps & overlays:** © OpenStreetMap contributors; © CARTO; OpenTopoMap (CC-BY-SA);

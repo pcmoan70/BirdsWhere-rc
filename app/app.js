@@ -7026,7 +7026,7 @@
     try {
       await Promise.all([initWorker(), loadLabels(), loadTaxonomy()]);
       // Species names for the restored language(s) — needs taxCodesOrder from loadTaxonomy.
-      await Promise.all([ensureLangNames(langTaxCol), ensureLangNames(secondTaxCol)]);
+      await Promise.all([ensureLangNames(langTaxCol), ensureLangNames(secondTaxCol), ensureExtraNames(lang)]);
       // Mark not-yet-downloaded name packs (italics) in the language selects.
       probeLangPacks().then(function () { populateLangSelect(); populateSecondLangSelect(); });
       buildLabelClass();
@@ -7687,6 +7687,7 @@
     // Species names for the new language come from an on-demand pack; until it
     // arrives everything above showed [English] fallbacks — relabel again on merge.
     ensureLangNames(langTaxCol).then(function (loaded) { if (loaded) refreshSpeciesNames(); });
+    ensureExtraNames(lang).then(function (d) { if (d && Object.keys(d).length) refreshSpeciesNames(); });
   }
 
   function populateLangSelect() {
@@ -9475,6 +9476,30 @@
       extraVernacMem = mem;
     }).catch(function () {});
   }
+  // ---- Bundled names for the groups outside the model ----------------------
+  // The positional packs (i18n/names/) only cover the model's own species list, so
+  // plants, fungi and most insects have no row there at all. These per-language
+  // dictionaries are keyed by SCIENTIFIC NAME instead and cover the northern-European
+  // species first — built from the same iNaturalist taxonomy the live harvest asks
+  // (tools/build-extra-names.py), so a name is identical whether it was shipped or
+  // fetched. Loaded on demand: one language, once, ~180–1080 KB.
+  var extraNameDict = Object.create(null), extraNameReq = Object.create(null);
+  function ensureExtraNames(code) {
+    if (!code || code === "en") return Promise.resolve(null);
+    if (extraNameDict[code]) return Promise.resolve(extraNameDict[code]);
+    if (extraNameReq[code]) return extraNameReq[code];
+    extraNameReq[code] = fetch("i18n/names-extra/" + code + ".json")
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { extraNameDict[code] = j || {}; return extraNameDict[code]; })
+      .catch(function () { extraNameDict[code] = {}; return extraNameDict[code]; });
+    return extraNameReq[code];
+  }
+  function bundledExtraName(sci) {
+    var d = extraNameDict[lang];
+    if (!d) { ensureExtraNames(lang); return ""; }        // first miss kicks the load off
+    return d[sciBinomial(sci).toLowerCase()] || "";
+  }
+
   // ---- Name harvest (iNaturalist) ------------------------------------------
   // ONE lookup per species rather than one per language: taxa?all_names=true returns
   // every vernacular name iNaturalist holds, so a single request serves the language
@@ -9507,6 +9532,8 @@
   }
   // The name for the CURRENT language out of a harvested record ("" when we hold none).
   function harvestedName(sci) {
+    var b = bundledExtraName(sci);                        // shipped with the app — no network, works offline
+    if (b) return b;
     var r = nameHarvest()[nhKey(sci)];
     if (!r || !r.n) return "";
     return r.n[inatLocaleFor(lang)] || r.n[lang] || "";

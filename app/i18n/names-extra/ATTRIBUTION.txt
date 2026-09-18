@@ -1,0 +1,22 @@
+Common names in this directory come from the iNaturalist Taxonomy.
+
+Source      https://www.inaturalist.org/taxa/inaturalist-taxonomy.dwca.zip
+            (also published as GBIF dataset 738041eb-6a2d-449f-8007-0ee4793195d3)
+Creator     iNaturalist and its contributors
+Licence     Creative Commons Attribution 4.0 International (CC BY 4.0)
+            https://creativecommons.org/licenses/by/4.0/
+Retrieved   2026-09-18 (archive dated 2026-09-01)
+
+CHANGES MADE (this is an adapted extract, not the original dataset):
+  · restricted to rank "species" in five groups — Insecta, Mammalia, Amphibia
+    (class) and Plantae, Fungi (kingdom);
+  · restricted to a northern-European slice: species iNaturalist holds a
+    research-grade observation of between 54-72 N and 4-32 E, plus every species it
+    holds a Norwegian, Swedish, Danish, Finnish, Estonian or Lithuanian name for;
+  · one name per species per language (iNaturalist's first/preferred row), the rest
+    discarded;
+  · re-keyed by lower-cased scientific name and re-encoded as JSON per language;
+  · English omitted (the app already shows the English name).
+
+Rebuild with tools/build-extra-names.py. Redistribution of these files must keep this
+attribution and the CC BY 4.0 licence notice.
