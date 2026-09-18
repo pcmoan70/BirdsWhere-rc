@@ -14885,8 +14885,14 @@
           (r.src ? "<div class='dset-src'>" + (r.url
             ? '<a href="' + escapeHtml(safeHref(r.url)) + '" target="_blank" rel="noopener">' + escapeHtml(srcLabel(r)) + " ↗</a>"
             : escapeHtml(srcLabel(r))) + "</div>" : "");
-        // A larger, near-invisible hit circle so a 5 px trip dot is easy to TAP.
-        var hit = L.circleMarker([r.lat, r.lon], { radius: 12, stroke: false, fillColor: "#000", fillOpacity: 0.01, renderer: detRenderer() });
+        // A larger, INVISIBLE hit circle so a 5 px trip dot is easy to TAP. It used to be
+        // painted black at 1 % opacity, because an SVG path with no paint is not hit-tested
+        // under the default `pointer-events: visiblePainted` — but 1 % STACKS: where a trip
+        // packs many records into a few pixels (zoomed out, or a day spent in one spot),
+        // fifty overlapping circles leave 0.99^50 of the light and the area turns visibly
+        // dark, in a gradient following the density. `pointer-events: all` (see .det-hit in
+        // app.css) keeps the whole circle tappable while painting nothing at all.
+        var hit = L.circleMarker([r.lat, r.lon], { radius: 12, stroke: false, fillOpacity: 0, className: "det-hit", renderer: detRenderer() });
         hit.bindTooltip(escapeHtml(nm), { direction: "top", className: "det-hover-tip" });
         hit.bindPopup(pop, { className: "area-tip", closeButton: true });
         g.addLayer(hit);

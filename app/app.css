@@ -390,6 +390,10 @@ input:focus-visible {
   z-index: 1;
 }
 
+/* Invisible-but-tappable hit targets (trip-overlay dots). An SVG path with no paint
+   is skipped by the default `visiblePainted` hit-testing, so these used to be painted
+   at 1 % — which stacked into dark blobs wherever records piled up. */
+.leaflet-container .leaflet-overlay-pane svg path.det-hit { pointer-events: all; }
 /* Canvas overlay on map for range heatmap */
 .heatmap-overlay {
   image-rendering: auto;
