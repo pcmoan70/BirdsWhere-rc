@@ -9676,7 +9676,12 @@
         .then(function () { if (Object.keys(nhPending).length) scheduleNameHarvest(); else saveNameHarvest(); });
     }, NH_RATE_MS);
   }
-  // Names arrive one at a time; repaint at most every couple of seconds.
+  // Names arrive one at a time; repaint at most every couple of seconds — and IN PLACE.
+  // refreshSpeciesNames() ends in renderSpControls(), which rebuilds the whole layout
+  // body: in the Images view that throws every card away and builds it again, so each
+  // arriving name made the list flash and every photo reload. Worse, it was a loop —
+  // the species without pictures are the obscure ones that also lack names, so their
+  // lookups kept arriving, kept rebuilding, and kept re-requesting the same photos.
   var nhRefreshTimer = null;
   function nhRefresh() {
     if (nhRefreshTimer) return;
@@ -9684,8 +9689,48 @@
       nhRefreshTimer = null;
       saveNameHarvest();
       try { updateDetLegend(); } catch (e) {}
-      try { if (typeof refreshSpeciesNames === "function") refreshSpeciesNames(); } catch (e) {}
+      try { refreshNamesInPlace(); } catch (e) {}
     }, 2000);
+  }
+  // Rewrite the names already on screen — table rows and gallery cards — without
+  // rebuilding anything. A name is text; nothing else about the list has changed.
+  function refreshNamesInPlace() {
+    var tbody = document.getElementById("sp-tbody");
+    function setText(el, nm) {
+      if (!el || !nm) return false;
+      for (var n = el.lastChild; n; n = n.previousSibling) if (n.nodeType === 3 && n.nodeValue.trim()) { if (n.nodeValue === nm) return false; n.nodeValue = nm; return true; }
+      if (el.textContent === nm) return false;
+      el.textContent = nm; return true;
+    }
+    function rowName(tr) {
+      var link = tr.querySelector(".sp-link[data-key]");
+      if (link) {
+        var lbl = labelsByKey[link.getAttribute("data-key")];
+        return lbl ? { el: link, nm: speciesName(lbl) } : null;
+      }
+      var ex = tr.querySelector(".sp-extra-name");
+      if (!ex) return null;
+      var sciTd = tr.querySelector("td.sci"), badge = tr.querySelector(".sp-extra-cls");
+      var sci = sciTd ? sciTd.textContent.trim() : "";
+      return sci ? { el: ex, nm: extraDisplayName(sci, ex.textContent, badge ? badge.getAttribute("title") : "") } : null;
+    }
+    if (tbody) Array.prototype.forEach.call(tbody.children, function (tr) {
+      var r = rowName(tr); if (!r || !r.nm) return;
+      if (setText(r.el, r.nm)) {
+        if (r.el.hasAttribute("data-name")) r.el.setAttribute("data-name", r.nm);
+        tr.setAttribute("data-name", r.nm.toLowerCase());
+      }
+    });
+    // The cards hold a CLONE of the row's name element, so they need the same pass.
+    var rec = document.getElementById("sp-records");
+    if (rec) Array.prototype.forEach.call(rec.querySelectorAll(".spg-card"), function (c) {
+      var key = c.getAttribute("data-key") || "", sci = c.getAttribute("data-sci") || "";
+      var lbl = labelsByKey[key];
+      var badge = c.querySelector(".sp-extra-cls");
+      var nm = lbl ? speciesName(lbl)
+        : (sci ? extraDisplayName(sci, "", badge ? badge.getAttribute("title") : "") : "");
+      setText(c.querySelector(".sp-link, .sp-extra-name"), nm);
+    });
   }
   // Settings → Storage → "Export names": everything harvested so far, in the shape
   // tools/inat-names.mjs --merge reads, so a device's browsing grows the shipped packs.
@@ -9740,7 +9785,9 @@
         if (changed) {
           saveVernacCache();   // unlimited — no cap; lives in the general cache (IDB)
           try { updateDetLegend(); } catch (e) {}
-          try { if (typeof refreshCurrentView === "function") refreshCurrentView(); } catch (e) {}
+          // In place, for the same reason as nhRefresh: refreshCurrentView() re-runs the
+          // whole list render (and its fetch) to change some text.
+          try { refreshNamesInPlace(); } catch (e) {}
         }
         if (Object.keys(vernacPending).length) scheduleVernacFetch();
       });
