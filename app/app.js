@@ -5118,6 +5118,14 @@
       try { plotSightingsResult(result); } catch (e) {}
       plotNoFit = false;
     }
+    // The Images and By-observation layouts are BUILT FROM these rows, so they have to be
+    // rebuilt once the observations land — the table updates its own cells in place, they
+    // do not. Without this the Images view kept the "loading" placeholder it rendered
+    // before the data arrived: invisible for birds, whose list is rebuilt by the fetch
+    // path anyway, but permanent for plants and fungi, whose rows are ALL extras.
+    if (spLayout !== "table" && typeof speciesPanelPopulated === "function" && speciesPanelPopulated()) {
+      try { renderSpBody(); } catch (e) {}
+    }
   }
   function augmentRowsWithSightings(lat, lon, histRange, onProg) {
     // Which species were already on the map BEFORE this fetch — the rarest-finds
@@ -21638,7 +21646,13 @@
     // Before the observations have landed the table holds the model's whole prediction list
     // (default sort: rarest first) — as cards that would be a wall of exotic species whose
     // photos start downloading. Wait for the fetch instead; [?] (predictions wanted) still shows.
-    if (!tbody._sightingsAgg && !spMissingOn()) return '<div class="dl-empty spg-wait"><div class="spinner"></div>' + escapeHtml(t("status.loadingDet")) + "</div>";
+    // …but rows that came FROM observations (a fetched species, or an extra — which is
+    // every plant, fungus and most insects, none of which the model predicts) are not
+    // that wall: they are the result. Waiting on `_sightingsAgg`, which only a per-point
+    // fetch attaches, left those layouts on a permanent spinner — plants and fungi never
+    // appeared in the Images view at all.
+    var anyObserved = tbody.querySelector("tr.sp-has-det, tr.sp-extra");
+    if (!tbody._sightingsAgg && !spMissingOn() && !anyObserved) return '<div class="dl-empty spg-wait"><div class="spinner"></div>' + escapeHtml(t("status.loadingDet")) + "</div>";
     // The name search hides table rows with a CLASS (it composes with the inline
     // show/hide) — the cards are built from the rows, so they must honour it too.
     var rows = Array.prototype.filter.call(tbody.children, function (tr) {
