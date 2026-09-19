@@ -10847,7 +10847,72 @@
   // Clicking a SCIENTIFIC name opens a family browser: every model species in the
   // same family, ranked by the model's probability at the current point, each a
   // button into the normal species-info menu.
+  function familyView() { return window.GeoState.get("familyView", "table") === "images" ? "images" : "table"; }
+  function setFamilyView(v) { window.GeoState.save({ familyView: v === "images" ? "images" : "table" }); }
+  // The family, as picture cards — the same shape as "Confusion species (images)", which
+  // is what a family list is for: seeing what the neighbours look like. Ranked by the
+  // model's probability at the point when there is one, else alphabetically.
+  async function openFamilyImages(key, x, y) {
+    var lbl = key && labelsByKey[key]; if (!lbl) return;
+    var fam = famOf(key);
+    var el = openAnchoredMenu("detrow-menu family-menu conf-menu conf-img-menu");
+    el.style.width = "min(97vw,900px)";
+    var hdr = document.createElement("div");
+    hdr.className = "detrow-menu-hdr detrow-menu-name";
+    hdr.textContent = fam || t("family.unknown");
+    el.appendChild(hdr);
+    var closeBtn = document.createElement("button");
+    closeBtn.type = "button"; closeBtn.className = "conf-close"; closeBtn.textContent = "×";
+    closeBtn.setAttribute("aria-label", t("btn.close"));
+    closeBtn.addEventListener("click", function (e) { e.stopPropagation(); closeAnchoredMenu(); });
+    el.appendChild(closeBtn);
+    confSwitchBtn(el, t("confusion.toText"), function () { setFamilyView("table"); openFamilyMenu(key, x, y); });
+    if (!fam) { centerPhotoPopup(el); return; }
+    var members = labels.filter(function (l) { return famOf(l.key) === fam; });
+    var pt = (currentSpView && isFinite(+currentSpView.lat) && isFinite(+currentSpView.lon)) ? currentSpView : null;
+    var out = null;
+    if (pt) {
+      var wait = document.createElement("div"); wait.className = "detrow-menu-hdr"; wait.textContent = "…";
+      el.appendChild(wait); centerPhotoPopup(el);
+      try { out = await predictWeek(+pt.lat, +pt.lon, +document.getElementById("week-select").value); } catch (e) {}
+      if (_anchMenuEl !== el) return;                        // closed while computing
+      if (wait.parentNode) wait.parentNode.removeChild(wait);
+    }
+    var arr = members.map(function (m) { return { m: m, p: out ? (out[m.index] || 0) : -1 }; });
+    if (out) arr.sort(function (a, b) { return b.p - a.p; });
+    else arr.sort(function (a, b) { return speciesName(a.m).localeCompare(speciesName(b.m)); });
+    var hereLbl = t("confusion.colHere");
+    var pct = function (p) { var v = p * 100; return v >= 0.5 ? Math.round(v) + "%" : (p > 0 ? "<1%" : "0%"); };
+    var strip = document.createElement("div"); strip.className = "cfi-strip";
+    strip.innerHTML = arr.map(function (w) {
+      var m = w.m, nm = speciesName(m), here = w.p;
+      var isBase = m.key === key;
+      return '<div class="cfi-card' + (isBase ? ' cfi-base" title="' + escapeHtml(t("confusion.base")) + '"' : '"') +
+        ' data-key="' + escapeHtml(m.key) + '" data-sci="' + escapeHtml(m.sci) + '">' +
+        '<div class="spg-img"><span class="spg-none" style="display:none">' + escapeHtml(t("spg.noImage")) + "</span></div>" +
+        '<div class="cfi-name">' + escapeHtml(nm) + "</div>" +
+        '<div class="cfi-sci">' + escapeHtml(m.sci) + "</div>" +
+        (here >= 0 ? '<div class="cfi-stats"><div class="cfi-row cfi-here"><i class="cfi-bar" style="width:' +
+            Math.max(4, Math.min(100, here * 100)).toFixed(0) + '%;background:' + probHueColor(here) + '"></i>' +
+            '<span class="cfi-k">' + escapeHtml(hereLbl) + '</span><span class="cfi-v">' + escapeHtml(pct(here)) + "</span></div></div>" : "") +
+        '<div class="spg-credit"></div>' +
+      "</div>";
+    }).join("");
+    el.appendChild(strip);
+    centerPhotoPopup(el);
+    Array.prototype.forEach.call(strip.querySelectorAll(".cfi-card"), function (c) {
+      loadSpPhoto(c.querySelector(".spg-img"), c.querySelector(".spg-none"), c.querySelector(".spg-credit"), c.getAttribute("data-sci"));
+    });
+    strip.addEventListener("click", function (e) {
+      if (e.target.closest("a")) return;                     // the photo credit link
+      var c = e.target.closest(".cfi-card"); if (!c) return;
+      var mk = c.getAttribute("data-key"), ml = labelsByKey[mk]; if (!ml) return;
+      closeAnchoredMenu();
+      showDetRowMenu({ key: mk, name: speciesName(ml), sci: ml.sci }, x, y);
+    });
+  }
   async function openFamilyMenu(key, x, y) {
+    if (familyView() === "images" && navigator.onLine !== false) { openFamilyImages(key, x, y); return; }
     var lbl = key && labelsByKey[key]; if (!lbl) return;
     var fam = famOf(key);
     var el = openAnchoredMenu("detrow-menu family-menu");
@@ -10857,6 +10922,7 @@
     hdr.className = "detrow-menu-hdr detrow-menu-name";
     hdr.textContent = fam || t("family.unknown");
     el.appendChild(hdr);
+    confSwitchBtn(el, t("splay.gallery"), function () { setFamilyView("images"); openFamilyImages(key, x, y); });
     positionAnchoredMenu(el, x, y);
     if (!fam) return;
     var members = labels.filter(function (l) { return famOf(l.key) === fam; });

@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1825";
+var VERSION = "v1826";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• The butterflies filter now narrows the INSECTS and leaves everything else alone — your birds stay put while it is on, where before it emptied the list of them. The funnel turns orange whenever it is set, even where it removes nothing, so you can see it is on; the funnel's clear-all switches it off with the other filters, and its own section has an × of its own.",
+  "• The Family popup now has a picture view, like the confusion species: every bird in the family as a photo card, the one you came from framed, ranked by how likely each is where you are looking — and tapping a card opens that species. Switch between pictures and the list with the button in the popup; it opens the way you left it.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
