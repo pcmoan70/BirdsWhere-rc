@@ -10900,9 +10900,7 @@
     }).join("");
     el.appendChild(strip);
     centerPhotoPopup(el);
-    Array.prototype.forEach.call(strip.querySelectorAll(".cfi-card"), function (c) {
-      loadSpPhoto(c.querySelector(".spg-img"), c.querySelector(".spg-none"), c.querySelector(".spg-credit"), c.getAttribute("data-sci"));
-    });
+    wirePhotoCards(el, strip);
     strip.addEventListener("click", function (e) {
       if (e.target.closest("a")) return;                     // the photo credit link
       var c = e.target.closest(".cfi-card"); if (!c) return;
@@ -11250,6 +11248,39 @@
   function confusionView() { return window.GeoState.get("confusionView", "images") === "table" ? "table" : "images"; }
   // The view switch in the popup's top-right (next to ×): table ↔ photo cards, one-off (the
   // Settings default is untouched); reopens the other view at the same anchor.
+  // Photo cards in a popup (the family view, the confusion view). Asking for sixty
+  // pictures at once is how you get rate-limited: four failures in a row trip
+  // spPhotoFailed() and every remaining card is then told the service is down, so a big
+  // family came out half empty and STAYED that way, nothing cached for next time.
+  // So: the cards on screen first, the rest as they scroll into view, at most three
+  // lookups in flight, and a transient failure puts the card back in the queue.
+  function wirePhotoCards(popup, strip) {
+    var PARALLEL = 3, queue = [], running = 0;
+    function fill(card) {
+      if (!card || card._cfiDone) return;
+      card._cfiDone = true;
+      queue.push(card); pump();
+    }
+    function pump() {
+      while (running < PARALLEL && queue.length) {
+        var c = queue.shift();
+        running++;
+        loadSpPhoto(c.querySelector(".spg-img"), c.querySelector(".spg-none"), c.querySelector(".spg-credit"), c.getAttribute("data-sci"))
+          .then(function (ok) {
+            running--;
+            // null = the lookup could not be reached (offline, rate limit): nothing was
+            // remembered, so let it be asked for again rather than leaving a blank card.
+            if (ok === null && popup.isConnected) { c._cfiDone = false; setTimeout(function () { fill(c); }, 4000); }
+            pump();
+          }, function () { running--; pump(); });
+      }
+    }
+    // EVERY card is queued, in order, so the whole family ends up fetched and cached —
+    // scrolled to or not. The pacing above is what keeps that polite; a scroll-triggered
+    // loader would leave the species you never scrolled past permanently unknown, and
+    // those are exactly the ones worth having on the next visit.
+    Array.prototype.slice.call(strip.querySelectorAll(".cfi-card")).forEach(fill);
+  }
   function confSwitchBtn(el, label, open) {
     var b = document.createElement("button");
     b.type = "button"; b.className = "conf-switch"; b.textContent = label;
@@ -11314,9 +11345,7 @@
     legend.textContent = t("confusion.legend", { match: L.match, misid: L.misid, here: L.here, score: L.score });
     el.appendChild(legend);
     centerPhotoPopup(el);
-    Array.prototype.forEach.call(strip.querySelectorAll(".cfi-card"), function (c) {
-      loadSpPhoto(c.querySelector(".spg-img"), c.querySelector(".spg-none"), c.querySelector(".spg-credit"), c.getAttribute("data-sci"));
-    });
+    wirePhotoCards(el, strip);
     strip.addEventListener("click", function (e) {
       if (e.target.closest("a")) return;   // the photo credit link
       var c = e.target.closest(".cfi-card"); if (!c || c.classList.contains("cfi-base")) return;

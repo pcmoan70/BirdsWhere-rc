@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1826";
+var VERSION = "v1827";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• The Family popup now has a picture view, like the confusion species: every bird in the family as a photo card, the one you came from framed, ranked by how likely each is where you are looking — and tapping a card opens that species. Switch between pictures and the list with the button in the popup; it opens the way you left it.",
+  "• The Family and Confusion picture views now fetch every card's photo, a few at a time, and keep them. They used to ask for all of them at once — sixty requests in a breath, which trips the app's own \"photo service is not answering\" guard after four failures, leaving the rest of the family blank and, worse, remembering nothing, so the next visit was blank again. Now they queue politely, retry anything that fails, and the whole family is on the device for next time.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
