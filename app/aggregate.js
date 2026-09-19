@@ -227,7 +227,11 @@ window.AppAggregate = (function () {
       var row = { lat: r.lat, lon: r.lon, date: r.date || "", src: r.src, origin: r.origin || "", url: r.url || "", place: r.place || "", count: (r.count != null ? r.count : ""), act: r.act || "", note: r.note || "", flags: r.flags || "", observer: r.observer || "",
         // The recorder's own photo of the bird and the species' national red-list code,
         // from the sources that report them (iNaturalist, GBIF, Artsobs, Artportalen, Laji).
-        photo: r.photo || "", photoBig: r.photoBig || "", photoBy: r.photoBy || "", photos: r.photos || null, rl: r.rl || "" };
+        photo: r.photo || "", photoBig: r.photoBig || "", photoBy: r.photoBy || "", photos: r.photos || null, rl: r.rl || "",
+        // Family (GBIF, Artsobservasjoner, Artportalen, BirdTrack) and iNaturalist's own
+        // butterfly marker — the two ways the app can tell a butterfly from a moth. Kept
+        // here because the filters read the STORED rows, not the raw records.
+        family: r.family || "", bfly: r.bfly || undefined };
       // Match a model species by code (eBird) first, then exact scientific name,
       // then the species epithet (catches old-genus synonyms like "Sylvia
       // curruca" for the model's "Curruca curruca").

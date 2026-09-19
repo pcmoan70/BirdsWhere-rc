@@ -182,7 +182,12 @@ window.AppNormalize = (function () {
       if (rank && rank !== "species" && rank !== "subspecies" && rank !== "variety" && rank !== "form") return;
       var sn = tax.name; if (!sn || !/\s/.test(sn)) return;
       var ll = inatLatLon(o);
-      out.push({ src: "iNaturalist", speciesCode: "", sciName: sn, comName: tax.preferred_common_name || "", family: "", cls: normClass(tax.iconic_taxon_name),
+      // iNaturalist gives no family, but every observation carries its taxon's ancestry:
+      // 47224 = Papilionoidea, the butterflies (as against the moths in Lepidoptera).
+      // That is exact, and it is what the app's butterfly filter tests for these records.
+      var anc = tax.ancestor_ids || [];
+      out.push({ src: "iNaturalist", speciesCode: "", sciName: sn, comName: tax.preferred_common_name || "", family: "",
+        bfly: anc.indexOf && anc.indexOf(47224) >= 0 ? 1 : undefined, cls: normClass(tax.iconic_taxon_name),
         lat: isFinite(ll.lat) ? ll.lat : null, lon: isFinite(ll.lon) ? ll.lon : null, date: o.observed_on || (o.time_observed_at || "").slice(0, 10), dt: o.time_observed_at || o.observed_on || "",
         // Obscured records (user or taxon geoprivacy): iNat strips place_guess to
         // admin level ("Norway", "Hordaland, NO", or nothing) and fuzzes the public

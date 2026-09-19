@@ -2508,7 +2508,19 @@
         (+tr.getAttribute("data-prob") || 0) >= missingCut;
       // What the list offers BEFORE the species selection narrows it — the pool the
       // lists/groups picker works from when nothing is plotted (see listPool).
-      var pooled = (missingOk || (recencyOk && countOk && !obsFilteredOut)) && rareOk && buildOk;
+      // Butterflies-only: a species stays when one of its observations is a butterfly.
+      // Predicted rows have no observations, so they go — which is right: the model's
+      // insects are the singing ones (grasshoppers, cicadas), never butterflies.
+      // An extra row has no .sp-link, so `key` above is null — derive the same
+      // "x:<scientific name>" key the rest of the app uses, or every extra (which is
+      // where the butterflies actually are) would be judged keyless and dropped.
+      var bflyKey = key;
+      if (!bflyKey) {
+        var exB = tr.querySelector(".det-count-extra[data-sci]");
+        if (exB) bflyKey = "x:" + String(exB.getAttribute("data-sci") || "").toLowerCase();
+      }
+      var bflyOk = detPassesBflySp(bflyKey);
+      var pooled = (missingOk || (recencyOk && countOk && !obsFilteredOut)) && rareOk && buildOk && bflyOk;
       tr.classList.toggle("sp-pool", pooled);
       tr.style.display = (pooled && selOk && excOk) ? "" : "none";
     });
@@ -9334,7 +9346,36 @@
   // observer filter (incl. dedup-hidden) + location filter + data-source filter + "New" filter.
   // Centralised so the sub-filters can't silently drift apart between the list-total, obs-count,
   // map and restrict-to-view call sites.
-  function detRowPasses(r) { return detDatePasses(r.date) && detObsPasses(r) && detLocPasses(r) && detPassesSrc(r) && detPassesNew(r); }
+  // ---- Butterflies ----------------------------------------------------------
+  // The seven families of Papilionoidea — the day-flying butterflies, as against the
+  // moths that make up most of the order. A fixed list, so no extra data ships: GBIF,
+  // Artsobservasjoner, Artportalen and BirdTrack all give a record's family, and
+  // iNaturalist records are marked in normalize.js from the taxon's own ancestry
+  // (Papilionoidea = 47224), which is exact.
+  var BUTTERFLY_FAMILIES = { papilionidae: 1, pieridae: 1, nymphalidae: 1, lycaenidae: 1, riodinidae: 1, hesperiidae: 1, hedylidae: 1 };
+  var detBflyFilter = false;
+  function rowIsButterfly(r) {
+    if (!r) return false;
+    if (r.bfly) return true;                                   // iNaturalist: by ancestry
+    return !!BUTTERFLY_FAMILIES[String(r.family || "").toLowerCase()];
+  }
+  function detPassesBfly(r) { return !detBflyFilter || rowIsButterfly(r); }
+  // A SPECIES passes when any of its observations is a butterfly. Predicted species
+  // (the [?] rows) have no observations, and the model's insects are singing insects —
+  // grasshoppers and cicadas — so with the filter on they drop out, which is the point.
+  function detPassesBflySp(k) {
+    if (!detBflyFilter) return true;
+    var e = dEntry(k);
+    return !!(e && e.rows && e.rows.some(rowIsButterfly));
+  }
+  function setDetBflyFilter(on) {
+    detBflyFilter = !!on;
+    saveLegendState();
+    rebuildDetLayers(); updateDetLegend();       // map dots + legend
+    applyAgeFilter();                            // the list's own show/hide pass
+    if (allFiltersPane) renderAllFiltersPane();  // keep the pane's own summary line current
+  }
+  function detRowPasses(r) { return detDatePasses(r.date) && detObsPasses(r) && detLocPasses(r) && detPassesSrc(r) && detPassesNew(r) && detPassesBfly(r); }
   // A species is an "alert" when its detPlot entry carries injected rarity rows
   // (syncAlertDetections flags the entry `alert`).
   function isAlertSpecies(k) { return !!(detPlot[k] && detPlot[k].alert); }
@@ -9557,7 +9598,7 @@
   function detIsVisible(key, selActive) {
     if (selActive === undefined) selActive = detSelectionActive();
     if (detExcluded[key]) return false;   // list red-excluded → never show
-    return detPassesStatus(key) && detPassesGroup(key) && detPassesCount(key) && detPassesProb(key) && detPassesRows(key) && detPassesRegion(key) && (!selActive || !!detSelected[key]);
+    return detPassesStatus(key) && detPassesGroup(key) && detPassesBflySp(key) && detPassesCount(key) && detPassesProb(key) && detPassesRows(key) && detPassesRegion(key) && (!selActive || !!detSelected[key]);
   }
   // Dots are always shown in their species colour (no grey overview mode) — so
   // "all"/"1 day"/etc. all render coloured. Visibility (above) does the filtering.
@@ -9566,7 +9607,11 @@
       .map(function (r) { return { lat: +r.lat, lon: +r.lon, url: r.url || "", date: r.date || "", src: r.src || "", origin: r.origin || "", place: r.place || "", placeCoarse: r.placeCoarse ? 1 : undefined, posFuzzM: (+r.posFuzzM > 0) ? +r.posFuzzM : undefined, count: (r.count != null ? r.count : ""), act: r.act || "", note: String(r.note || "").slice(0, 1000), flags: r.flags || "", observer: r.observer || "",
         // The observer's own photo + the species' red-list code, when the source gives them.
         // Stored only when present (undefined serializes away); photoBig only when it differs.
-        photo: r.photo || undefined, photoBig: (r.photoBig && r.photoBig !== r.photo) ? r.photoBig : undefined, photoBy: r.photoBy ? String(r.photoBy).slice(0, 120) : undefined, photos: (r.photos && r.photos.length > 1) ? r.photos.slice(0, 12) : undefined, rl: r.rl || undefined }; });   // note cap 1000 (was 160 — cut real observer notes; the ⓘ popup scrolls); undefined placeCoarse/posFuzzM serialize away
+        photo: r.photo || undefined, photoBig: (r.photoBig && r.photoBig !== r.photo) ? r.photoBig : undefined, photoBy: r.photoBy ? String(r.photoBy).slice(0, 120) : undefined, photos: (r.photos && r.photos.length > 1) ? r.photos.slice(0, 12) : undefined, rl: r.rl || undefined,
+        // Family / the iNaturalist butterfly marker: the filters read STORED rows, so the
+        // two fields that tell a butterfly from a moth have to survive the trim.
+        family: r.family || undefined, bfly: r.bfly || undefined };   // note cap 1000 (was 160 — cut real observer notes; the ⓘ popup scrolls); undefined placeCoarse/posFuzzM serialize away
+      });
   }
   // Localized display name for a plotted species (re-derived from the key so it
   // follows the UI language); falls back to the name stored at plot time.
@@ -10054,7 +10099,7 @@
       else if (detFocusKeys) { if (!detFocusKeys.has(k)) return; }   // list/family hover preview
       else if (!detIsVisible(k, selActive)) return;
       var spKey = (detPlot[k] && detPlot[k].key) || k;
-      (detPlot[k].rows || []).forEach(function (r) { if (detDatePasses(r.date) && detPassesNew(r)) fn(r, spKey); });
+      (detPlot[k].rows || []).forEach(function (r) { if (detDatePasses(r.date) && detPassesNew(r) && detPassesBfly(r)) fn(r, spKey); });
     });
   }
   function detDrawableCount() { var n = 0; eachDrawableRow(function () { n++; }); return n; }
@@ -10150,6 +10195,7 @@
         if (!detLocPasses(r)) return;          // location filter (📍)
         if (!detPassesSrc(r)) return;          // data-source filter (click a source in the list)
         if (!detPassesNew(r)) return;          // "New" filter (only detections fetched after the baseline)
+        if (!detPassesBfly(r)) return;         // Butterflies-only filter
         if (center) {
           if (Math.abs(r.lat - near.lat) > dLat || Math.abs(r.lon - near.lon) > dLon) return;   // bbox reject (cheap)
           if (map.distance(center, L.latLng(r.lat, r.lon)) > near.meters) return;
@@ -12096,6 +12142,7 @@
       if (!detLocPasses(r)) return;             // location filter (📍)
       if (!detPassesSrc(r)) return;             // data-source filter
       if (!detPassesNew(r)) return;             // "New" filter
+      if (!detPassesBfly(r)) return;            // Butterflies-only filter
       var lk = (+r.lat).toFixed(4) + "," + (+r.lon).toFixed(4);
       var s = obsByLoc[lk] || (obsByLoc[lk] = Object.create(null));
       var o = (r.observer || "").trim(); if (o) s[o] = 1;
@@ -13064,7 +13111,7 @@
   // Persist the legend's UI state — collapsed, the starred-only filter, and the
   // row selection — so the map legend comes back the way the user left it.
   function saveLegendState() {
-    window.GeoState.save({ mapLegend: { mini: detLegendMini, starFilter: detStarFilter, rareFilter: detRareFilter, yearFilter: detYearFilter, lifeFilter: detLifeFilter, alertFilter: detAlertFilter, selected: Object.keys(detSelected), excluded: Object.keys(detExcluded), selBase: { sel: Object.keys(detSelBase.sel), exc: Object.keys(detSelBase.exc) }, obsFilter: detObsFilter ? Array.from(detObsFilter) : null, locFilter: detLocFilter ? Array.from(detLocFilter) : null, srcFilter: detSrcFilter ? Array.from(detSrcFilter) : null, deleted: deletedSpecies, countMin: spCountMin, countMax: spCountMax, countMetric: spCountMetric, ageDays: speciesAgeFilterDays, newFilter: detNewFilter, newSince: detNewSince, todayFilter: detTodayFilter, daySel: Object.keys(detDaySel), rows: detLegendRows, sort: detLegendSort, regionMode: detRegionMode, regionPick: detRegionPick } });
+    window.GeoState.save({ mapLegend: { mini: detLegendMini, bflyFilter: detBflyFilter, starFilter: detStarFilter, rareFilter: detRareFilter, yearFilter: detYearFilter, lifeFilter: detLifeFilter, alertFilter: detAlertFilter, selected: Object.keys(detSelected), excluded: Object.keys(detExcluded), selBase: { sel: Object.keys(detSelBase.sel), exc: Object.keys(detSelBase.exc) }, obsFilter: detObsFilter ? Array.from(detObsFilter) : null, locFilter: detLocFilter ? Array.from(detLocFilter) : null, srcFilter: detSrcFilter ? Array.from(detSrcFilter) : null, deleted: deletedSpecies, countMin: spCountMin, countMax: spCountMax, countMetric: spCountMetric, ageDays: speciesAgeFilterDays, newFilter: detNewFilter, newSince: detNewSince, todayFilter: detTodayFilter, daySel: Object.keys(detDaySel), rows: detLegendRows, sort: detLegendSort, regionMode: detRegionMode, regionPick: detRegionPick } });
   }
   function loadDetections() {
     // Self-heal a store left over-quota by an older build: cap the stored
@@ -13086,6 +13133,7 @@
     // Restore the saved legend state, then render the layers honouring it.
     var ls = window.GeoState.get("mapLegend", {}) || {};
     detLegendMini = !!ls.mini;
+    detBflyFilter = !!ls.bflyFilter;   // butterflies-only
     detLegendRows = DET_ROWS_STATES.indexOf(ls.rows) >= 0 ? ls.rows : "all";   // legend "Total" row-set (default: All)
     detLegendSort = DET_SORT_STATES.indexOf(ls.sort) >= 0 ? ls.sort : "rarity";   // legend sort order (default: Rarity)
     detRegionMode = (ls.regionMode === "far" || ls.regionMode === "from") ? ls.regionMode : "off";   // region filter
@@ -14908,6 +14956,11 @@
     var newSum = detNewFilter ? (detTodayFilter ? t("filters.newToday") : t("filters.newOn")) : t("filters.any");
     var secNew = affSection("new", t("filters.new"), detNewFilter, newSum, newBody);
 
+    // Butterflies — the one sub-group of insects people actually look for by name.
+    var bflyBody = '<label class="det-obs-row"><input type="checkbox" class="aff-bfly-cb"' + (detBflyFilter ? " checked" : "") + "> " +
+      escapeHtml(t("filters.bflyHint")) + "</label>";
+    var secBfly = affSection("bfly", t("filters.bfly"), detBflyFilter, detBflyFilter ? t("filters.bflyOn") : t("filters.any"), bflyBody);
+
     // Count range [min] ≤ (Total|Observations) ≤ [max]
     var metricLbl = spCountMetric === "pairs" ? t("sort.obs") : t("th.total");
     var cntBody = '<div class="sp-bound-row">' +
@@ -14966,7 +15019,7 @@
     var secRegion = affSection("region", t("region.title"), detRegionMode !== "off", regSum, affRegionHtml());
 
     // Order: "Show last" (date) at the top; Probability sits right under Status; the standalone Hidden checkbox at the very bottom.
-    return head + '<div class="aff-body">' + secDate + secSort + secSel + secLists + secMode + secProb + secNew + secCnt + secName + secLoc + secObs + secSrc + secRegion + "</div>";
+    return head + '<div class="aff-body">' + secDate + secSort + secSel + secLists + secMode + secProb + secNew + secBfly + secCnt + secName + secLoc + secObs + secSrc + secRegion + "</div>";
   }
   function affRegionHtml() {
     var opts = DET_REGIONS.map(function (n, i) { return '<option value="' + i + '"' + (i === detRegionPick ? " selected" : "") + ">" + escapeHtml(regionName(i)) + "</option>"; }).join("");
@@ -15009,6 +15062,7 @@
     var cl = box.querySelector(".aff-close"); if (cl) cl.addEventListener("click", function (e) { e.stopPropagation(); if (allFiltersPane) allFiltersPane.close(); });
     var nb = box.querySelector(".aff-new-cb"); if (nb) nb.addEventListener("change", function (e) { e.stopPropagation(); setDetNewFilter(this.checked); });
     var tb = box.querySelector(".aff-today-cb"); if (tb) tb.addEventListener("change", function (e) { e.stopPropagation(); setDetTodayFilter(this.checked); });
+    var bb = box.querySelector(".aff-bfly-cb"); if (bb) bb.addEventListener("change", function (e) { e.stopPropagation(); setDetBflyFilter(this.checked); });
     var ca = box.querySelector(".aff-clear-all"); if (ca) ca.addEventListener("click", function (e) { e.stopPropagation(); clearAllFilters(); });
     box.querySelectorAll(".aff-sec-clear").forEach(function (b) {
       b.addEventListener("click", function (e) {

@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1821";
+var VERSION = "v1822";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• The new probability arrow and the Probability column header are now one control seen from two places: sort from either and the other follows. The header still cycles commonest → rarest → unsorted, and the arrow shows exactly where that cycle stands — ↓, ↑, or ⇅ when the list is ordered by something else.",
+  "• A butterflies filter, under the funnel: it keeps the day-flying butterflies and hides the moths and everything else. It works off each record's own family (or, for iNaturalist records, the taxon's ancestry), so it is exact rather than a guess from the name — and it carries through to the map dots, the legend and every list, as filters here always do.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
