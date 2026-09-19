@@ -238,6 +238,11 @@
     var sel = document.getElementById("group-select"); if (sel) sel.value = g;
     try { updateSettingsIcon(); renderGroupPicker(); refreshGroupModeOptions(); } catch (e) {}
     if (typeof fetchGroupsRender === "function") fetchGroupsRender();
+    // Everything the group-picker's own handler does short of saving: the list is built
+    // for ONE group, so without this it keeps the previous group's rows — which is how a
+    // butterflies filter applied over a bird list could only ever show nothing.
+    try { rerenderPointList({ noFetch: true }); } catch (e) {}
+    try { rebuildDetLayers(); updateDetLegend(); } catch (e) {}
   }
   // "all" while more than one type is requested (the per-dataset gating in fetch.js reads
   // this), else that single type.
@@ -9354,28 +9359,63 @@
   // (Papilionoidea = 47224), which is exact.
   var BUTTERFLY_FAMILIES = { papilionidae: 1, pieridae: 1, nymphalidae: 1, lycaenidae: 1, riodinidae: 1, hesperiidae: 1, hedylidae: 1 };
   var detBflyFilter = false;
+  // Whether a species is a butterfly is a fact about the SPECIES, so the primary test is
+  // its name: every genus in the seven families (1 968 of them, 22 KB, from the
+  // iNaturalist taxonomy) is bundled. That works for observations already on the map —
+  // including ones stored before this feature existed, which carry no family — and for
+  // sources that never send a family at all. Family / iNaturalist ancestry stay as the
+  // fallback for a species whose genus the list does not know.
+  var bflyGenera = null, bflyGeneraReq = null;
+  function ensureButterflyGenera() {
+    if (bflyGenera) return Promise.resolve(bflyGenera);
+    if (bflyGeneraReq) return bflyGeneraReq;
+    bflyGeneraReq = fetch("butterfly-genera.json").then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (a) {
+        bflyGenera = Object.create(null);
+        (a || []).forEach(function (g) { bflyGenera[g] = 1; });
+        return bflyGenera;
+      }).catch(function () { bflyGenera = Object.create(null); return bflyGenera; });
+    return bflyGeneraReq;
+  }
+  function sciIsButterfly(sci) {
+    if (!bflyGenera) return null;                              // list not loaded yet → undecided
+    var g = String(sci || "").trim().split(/\s+/)[0].toLowerCase();
+    return g ? !!bflyGenera[g] : false;
+  }
   function rowIsButterfly(r) {
     if (!r) return false;
     if (r.bfly) return true;                                   // iNaturalist: by ancestry
     return !!BUTTERFLY_FAMILIES[String(r.family || "").toLowerCase()];
   }
-  function detPassesBfly(r) { return !detBflyFilter || rowIsButterfly(r); }
   // A SPECIES passes when any of its observations is a butterfly. Predicted species
   // (the [?] rows) have no observations, and the model's insects are singing insects —
   // grasshoppers and cicadas — so with the filter on they drop out, which is the point.
   function detPassesBflySp(k) {
-    if (!detBflyFilter) return true;
-    var e = dEntry(k);
+    if (!detBflyFilter || !k) return !detBflyFilter;
+    var lbl = labelsByKey[k];
+    var sci = lbl ? lbl.sci : (String(k).indexOf("x:") === 0 ? String(k).slice(2) : "");
+    var byName = sciIsButterfly(sci);
+    if (byName !== null) return byName;                        // the bundled genus list decides
+    var e = dEntry(k);                                         // …until it has loaded
     return !!(e && e.rows && e.rows.some(rowIsButterfly));
   }
   function setDetBflyFilter(on) {
     detBflyFilter = !!on;
     saveLegendState();
+    if (detBflyFilter) {
+      // Butterflies are insects: with Birds (or plants, or fungi) on screen the filter
+      // could only ever empty the list, so show insects — the filter is the request.
+      if (speciesGroup !== "all" && speciesGroup !== "insecta") showGroupWithoutSaving("insecta");
+      ensureButterflyGenera().then(function () {
+        rebuildDetLayers(); updateDetLegend(); applyAgeFilter();
+        if (allFiltersPane) renderAllFiltersPane();
+      });
+    }
     rebuildDetLayers(); updateDetLegend();       // map dots + legend
     applyAgeFilter();                            // the list's own show/hide pass
     if (allFiltersPane) renderAllFiltersPane();  // keep the pane's own summary line current
   }
-  function detRowPasses(r) { return detDatePasses(r.date) && detObsPasses(r) && detLocPasses(r) && detPassesSrc(r) && detPassesNew(r) && detPassesBfly(r); }
+  function detRowPasses(r) { return detDatePasses(r.date) && detObsPasses(r) && detLocPasses(r) && detPassesSrc(r) && detPassesNew(r); }
   // A species is an "alert" when its detPlot entry carries injected rarity rows
   // (syncAlertDetections flags the entry `alert`).
   function isAlertSpecies(k) { return !!(detPlot[k] && detPlot[k].alert); }
@@ -10099,7 +10139,7 @@
       else if (detFocusKeys) { if (!detFocusKeys.has(k)) return; }   // list/family hover preview
       else if (!detIsVisible(k, selActive)) return;
       var spKey = (detPlot[k] && detPlot[k].key) || k;
-      (detPlot[k].rows || []).forEach(function (r) { if (detDatePasses(r.date) && detPassesNew(r) && detPassesBfly(r)) fn(r, spKey); });
+      (detPlot[k].rows || []).forEach(function (r) { if (detDatePasses(r.date) && detPassesNew(r)) fn(r, spKey); });
     });
   }
   function detDrawableCount() { var n = 0; eachDrawableRow(function () { n++; }); return n; }
@@ -10195,7 +10235,6 @@
         if (!detLocPasses(r)) return;          // location filter (📍)
         if (!detPassesSrc(r)) return;          // data-source filter (click a source in the list)
         if (!detPassesNew(r)) return;          // "New" filter (only detections fetched after the baseline)
-        if (!detPassesBfly(r)) return;         // Butterflies-only filter
         if (center) {
           if (Math.abs(r.lat - near.lat) > dLat || Math.abs(r.lon - near.lon) > dLon) return;   // bbox reject (cheap)
           if (map.distance(center, L.latLng(r.lat, r.lon)) > near.meters) return;
@@ -12142,7 +12181,6 @@
       if (!detLocPasses(r)) return;             // location filter (📍)
       if (!detPassesSrc(r)) return;             // data-source filter
       if (!detPassesNew(r)) return;             // "New" filter
-      if (!detPassesBfly(r)) return;            // Butterflies-only filter
       var lk = (+r.lat).toFixed(4) + "," + (+r.lon).toFixed(4);
       var s = obsByLoc[lk] || (obsByLoc[lk] = Object.create(null));
       var o = (r.observer || "").trim(); if (o) s[o] = 1;
@@ -13134,6 +13172,7 @@
     var ls = window.GeoState.get("mapLegend", {}) || {};
     detLegendMini = !!ls.mini;
     detBflyFilter = !!ls.bflyFilter;   // butterflies-only
+    if (detBflyFilter) ensureButterflyGenera().then(function () { try { rebuildDetLayers(); updateDetLegend(); applyAgeFilter(); } catch (e) {} });
     detLegendRows = DET_ROWS_STATES.indexOf(ls.rows) >= 0 ? ls.rows : "all";   // legend "Total" row-set (default: All)
     detLegendSort = DET_SORT_STATES.indexOf(ls.sort) >= 0 ? ls.sort : "rarity";   // legend sort order (default: Rarity)
     detRegionMode = (ls.regionMode === "far" || ls.regionMode === "from") ? ls.regionMode : "off";   // region filter

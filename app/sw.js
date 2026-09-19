@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1822";
+var VERSION = "v1823";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• A butterflies filter, under the funnel: it keeps the day-flying butterflies and hides the moths and everything else. It works off each record's own family (or, for iNaturalist records, the taxon's ancestry), so it is exact rather than a guess from the name — and it carries through to the map dots, the legend and every list, as filters here always do.",
+  "• Fixed: the butterflies filter showed nothing. It recognised a butterfly from the family name on each observation — which observations already on your map do not carry, and several sources never send at all. It now knows the butterflies by NAME: every genus in the seven families travels with the app, so a red admiral is recognised as one whatever its record happens to say. Switching the filter on also shows insects, since with birds on screen it could only ever empty the list.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
