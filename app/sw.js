@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1820";
+var VERSION = "v1821";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• The species list and the Images view get a sort button: one tap ranks by probability with the commonest first (↓), another with the rarest first (↑). The Images cards had no column headers to sort by at all, and in the table it saves hunting for the right header. It sits next to the [?] button, which is unchanged: [!] lists what has actually been observed, [?] weaves in what the model predicts here as well — and where nothing has been observed, the predictions are shown on their own.",
+  "• The new probability arrow and the Probability column header are now one control seen from two places: sort from either and the other follows. The header still cycles commonest → rarest → unsorted, and the arrow shows exactly where that cycle stands — ↓, ↑, or ⇅ when the list is ordered by something else.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

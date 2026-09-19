@@ -1662,6 +1662,21 @@
   }
   // Refresh the sort-arrow indicator on the sortable column headers. Class-based
   // (▲/▼ via CSS ::after) so it doesn't disturb the headers' dynamic labels.
+  // The arrow button and the Prob column header are two faces of one setting, so the
+  // button is redrawn by updateSortIndicators() — the single point every sort change
+  // passes through (header clicks, the button itself, a ?sortby= link, [?] switching to
+  // probability ↓). Click either and the other follows.
+  // ↓ = commonest first, ↑ = rarest first, ⇅ = the list is ordered by something else.
+  function renderProbSortBtn() {
+    var psb = document.getElementById("sp-probsort-btn"); if (!psb) return;
+    var onProb = speciesListSort.col === "prob";
+    var asc = onProb && speciesListSort.dir === "asc";
+    psb.classList.toggle("on", onProb);
+    var gly = psb.querySelector(".ps-gly"); if (gly) gly.textContent = onProb ? (asc ? "↑" : "↓") : "⇅";
+    psb.title = t(onProb ? (asc ? "sp.probSortAsc" : "sp.probSortDesc") : "sp.probSort");
+    psb.setAttribute("aria-label", psb.title);
+    psb.style.display = (spLayout === "table" || spLayout === "gallery") ? "" : "none";
+  }
   function updateSortIndicators() {
     var cols = { "sp-species-head": "name", "sp-name2-head": "name2", "sp-sci-head": "sci", "sp-nd-head": "total", "sp-last-head": "last", "sp-prob-head": "prob", "sp-dist-head": "dist", "sp-season-head": "season", "sp-delta-head": "cmp" };
     Object.keys(cols).forEach(function (id) {
@@ -1671,6 +1686,7 @@
       el.classList.toggle("sort-desc", on && speciesListSort.dir === "desc");
     });
     updateDistSortPulse();
+    renderProbSortBtn();   // the arrow button IS this state — keep the two in step
   }
   // Pulse the DIST sort arrow blue while the list is sorted by distance AND live
   // tracking is on (the order recalculates as you move). Covers both list layouts;
@@ -22398,17 +22414,7 @@
       mb.title = t(spMissingOn() ? "sp.missingOff" : "sp.missingBtn"); mb.setAttribute("aria-label", mb.title);
       mb.style.display = (spLayout === "table" || spLayout === "gallery") ? "" : "none";
     }
-    // ↓ = commonest first, ↑ = rarest first, ⇅ = the list is sorted by something else.
-    var psb = document.getElementById("sp-probsort-btn");
-    if (psb) {
-      var onProb = speciesListSort.col === "prob";
-      var asc = onProb && speciesListSort.dir === "asc";
-      psb.classList.toggle("on", onProb);
-      var gly = psb.querySelector(".ps-gly"); if (gly) gly.textContent = onProb ? (asc ? "↑" : "↓") : "⇅";
-      psb.title = t(onProb ? (asc ? "sp.probSortAsc" : "sp.probSortDesc") : "sp.probSort");
-      psb.setAttribute("aria-label", psb.title);
-      psb.style.display = (spLayout === "table" || spLayout === "gallery") ? "" : "none";
-    }
+    renderProbSortBtn();
     if (spLayout === "table" || spLayout === "gallery") {
       // Column-header panels (Species / Total / Last / Prob) open inline in
       // #sp-filters-wrap, between the header and the first rows. No toggle button.
