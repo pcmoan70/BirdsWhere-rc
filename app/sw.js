@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1823";
+var VERSION = "v1824";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• Fixed: the butterflies filter showed nothing. It recognised a butterfly from the family name on each observation — which observations already on your map do not carry, and several sources never send at all. It now knows the butterflies by NAME: every genus in the seven families travels with the app, so a red admiral is recognised as one whatever its record happens to say. Switching the filter on also shows insects, since with birds on screen it could only ever empty the list.",
+  "• Fixed: switching the butterflies filter on or off left an open list showing what it showed before. The per-point species table re-filtered itself, but the plain \"by observation\" list — the one you get when no point is selected — is rebuilt rather than re-filtered, and nothing asked it to rebuild, so the filter only appeared to take hold after switching to the map and back. It now applies at once, either way.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

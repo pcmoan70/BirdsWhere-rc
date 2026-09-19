@@ -9408,8 +9408,14 @@
       if (speciesGroup !== "all" && speciesGroup !== "insecta") showGroupWithoutSaving("insecta");
       ensureButterflyGenera().then(function () {
         rebuildDetLayers(); updateDetLegend(); applyAgeFilter();
+        // applyAgeFilter only touches the per-point TABLE. Without a clicked point the
+        // open list is the "By observation" page, which is rebuilt, not re-filtered — so
+        // ticking the filter left it showing everything until the view was toggled.
+        try { refreshOpenList(); } catch (e) {}
         if (allFiltersPane) renderAllFiltersPane();
       });
+    } else {
+      try { refreshOpenList(); } catch (e) {}   // …and the same when switching it off
     }
     rebuildDetLayers(); updateDetLegend();       // map dots + legend
     applyAgeFilter();                            // the list's own show/hide pass
