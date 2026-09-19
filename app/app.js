@@ -2533,7 +2533,7 @@
     repaintDotsOutsideTable(rareAll);   // Images cards / observation rows / the ☰ popover
     updateRecencyNote();
     filterSpRows();          // re-apply the name search on top of the other filters
-    _detRemovedMemo = null;  // row visibility just changed → the funnel's stats must be recounted
+    invalidateFilterMemos();  // row visibility just changed → stats AND the date snapshot must be redone
   }
   // In-app name search for the species-list table. Uses a CSS class (display:none
   // !important) so it composes with applyAgeFilter's inline show/hide instead of
@@ -9979,7 +9979,19 @@
       });
     }, 400);
   }
+  // Resolving an extra's name walks the scientific-name index and up to three fallback
+  // matchers, and the legend/lists ask for the SAME species' name many times in one
+  // render — 112 ms of a filter change between this and extraDisplayName. A name cannot
+  // change inside one synchronous pass, so memoise it for the tick (a language change or
+  // a harvested name lands in a later tick and re-renders anyway).
+  var _detNameMemo = null;
   function detName(e) {
+    if (!e || !e.key) return detNameUncached(e);
+    if (!_detNameMemo) { _detNameMemo = Object.create(null); setTimeout(function () { _detNameMemo = null; }, 0); }
+    var hit = _detNameMemo[e.key];
+    return hit !== undefined ? hit : (_detNameMemo[e.key] = detNameUncached(e));
+  }
+  function detNameUncached(e) {
     var lbl = labelsByKey[e.key];
     if (lbl) return speciesName(lbl);
     // Extra stored under "x:<sci>" — re-resolve to a model species by scientific
@@ -10030,8 +10042,16 @@
   function recentEnough(dateStr, maxDays) {
     if (!maxDays) return true;            // 0/"All" = no filter
     if (!dateStr) return false;           // unknown date → exclude when filtering
-    var t = Date.parse(dateStr); if (isNaN(t)) return false;
-    return (Date.now() - t) / 86400000 <= maxDays;
+    return String(dateStr).slice(0, 10) >= isoDaysAgo(maxDays);
+  }
+  // "YYYY-MM-DD", maxDays before today (local) — the cutoff the recency window compares
+  // against. One string per pass instead of a Date.parse per ROW: parsing was the single
+  // most expensive thing in a filter change (229 ms of ~2.0 s, measured 2026-09-19 on 255
+  // species). It also makes the window exactly "dated within the last N days" rather than
+  // something that drifts with the time of day.
+  function isoDaysAgo(days) {
+    var d = new Date(Date.now() - days * 86400000);
+    return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
   }
   // Absolute from–to date range (YYYY-MM-DD), an alternative to the rolling "last
   // N days" window. Null when neither end is set. When a range is active it takes
@@ -10060,22 +10080,36 @@
   var detDayHover = null;                // { f, t, k } — hovered bar's date range (bars can bucket several days)
   var detDaySuspend = false;
   function detDaySelActive() { for (var k in detDaySel) return true; return false; }
+  // detDatePasses runs ONCE PER PLOTTED ROW — hundreds of thousands of times in a single
+  // filter change. Its three settings (recency days, date range, months) all live in
+  // GeoState, and reading them inside that loop cost more than the comparison itself.
+  // Snapshot them for the render tick, the same one-tick memo _detRemovedMemo uses;
+  // anything that changes a filter clears it through invalidateFilterMemos().
+  var _dateCfgMemo = null;
+  function dateCfg() {
+    if (_dateCfgMemo) return _dateCfgMemo;
+    var days = detRecencyDays();
+    _dateCfgMemo = { days: days, cut: days > 0 ? isoDaysAgo(days) : "",
+                     range: detDateRange(), months: detMonths(), daySel: detDaySelActive() };
+    setTimeout(function () { _dateCfgMemo = null; }, 0);
+    return _dateCfgMemo;
+  }
+  function invalidateFilterMemos() { _detRemovedMemo = null; _dateCfgMemo = null; _plotSigMemo = null; }
   function detDatePasses(dateStr) {
+    var c = dateCfg(), d0 = String(dateStr || "").slice(0, 10);
     if (!detDaySuspend) {
-      var d0 = String(dateStr || "").slice(0, 10);
       if (detDayHover) return d0 >= detDayHover.f && d0 <= detDayHover.t;   // hover preview: that bar's day range only
-      if (detDaySelActive() && !detDaySel[d0]) return false;                // clicked bars: keep only those days
+      if (c.daySel && !detDaySel[d0]) return false;                         // clicked bars: keep only those days
     }
-    if (!detMonthPasses(dateStr)) return false;
-    var rg = detDateRange();
-    if (rg) {
-      var d = String(dateStr || "").slice(0, 10);
-      if (!d) return false;
-      if (rg.from && d < rg.from) return false;
-      if (rg.to && d > rg.to) return false;
+    if (c.months.length && (d0.length < 7 || c.months.indexOf(+d0.slice(5, 7)) < 0)) return false;
+    if (c.range) {
+      if (!d0) return false;
+      if (c.range.from && d0 < c.range.from) return false;
+      if (c.range.to && d0 > c.range.to) return false;
       return true;
     }
-    return recentEnough(dateStr, detRecencyDays());
+    if (!c.days) return true;
+    return !!d0 && d0 >= c.cut;
   }
   // Cap on how many detection dots are DRAWN at once (markers are the draw-speed
   // bottleneck). Data is never dropped — the rest still show in the Detections
@@ -11795,6 +11829,7 @@
     }, 30);
   }
   function detFiltersRefresh() {
+    invalidateFilterMemos();   // a filter just changed — never re-use the previous pass's snapshot
     withFunnelBusy(function () {
       syncAlertPlot();   // refresh the synthetic alert species before every surface re-renders
       saveLegendState(); rebuildDetLayers(); updateDetLegend();
@@ -13337,7 +13372,20 @@
   }
   // Persist the legend's UI state — collapsed, the starred-only filter, and the
   // row selection — so the map legend comes back the way the user left it.
+  // 45 call sites, and every filter change hits one: serialising this object and writing
+  // it to localStorage SYNCHRONOUSLY cost 109 ms of a 1.4 s filter change (state.js write
+  // + setItem, measured 2026-09-19) — on the main thread, between the click and the
+  // redraw. Coalesce it: the visible work happens now, the write lands 300 ms later, and
+  // a flush on pagehide/hide means nothing is lost if the app is closed or backgrounded.
+  var _legendSaveT = null;
   function saveLegendState() {
+    if (_legendSaveT) return;                      // one write per burst, not one per toggle
+    _legendSaveT = setTimeout(function () { _legendSaveT = null; saveLegendStateNow(); }, 300);
+  }
+  function flushLegendState() { if (_legendSaveT) { clearTimeout(_legendSaveT); _legendSaveT = null; saveLegendStateNow(); } }
+  window.addEventListener("pagehide", flushLegendState);
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") flushLegendState(); });
+  function saveLegendStateNow() {
     window.GeoState.save({ mapLegend: { mini: detLegendMini, bflyFilter: detBflyFilter, starFilter: detStarFilter, rareFilter: detRareFilter, yearFilter: detYearFilter, lifeFilter: detLifeFilter, alertFilter: detAlertFilter, selected: Object.keys(detSelected), excluded: Object.keys(detExcluded), selBase: { sel: Object.keys(detSelBase.sel), exc: Object.keys(detSelBase.exc) }, obsFilter: detObsFilter ? Array.from(detObsFilter) : null, locFilter: detLocFilter ? Array.from(detLocFilter) : null, srcFilter: detSrcFilter ? Array.from(detSrcFilter) : null, deleted: deletedSpecies, countMin: spCountMin, countMax: spCountMax, countMetric: spCountMetric, ageDays: speciesAgeFilterDays, newFilter: detNewFilter, newSince: detNewSince, todayFilter: detTodayFilter, daySel: Object.keys(detDaySel), rows: detLegendRows, sort: detLegendSort, regionMode: detRegionMode, regionPick: detRegionPick } });
   }
   function loadDetections() {
@@ -14135,7 +14183,26 @@
   function detVisibleCount(k) { return countPassing(k, true); }
   // Total deduped specimens for a species, ignoring the active filters and the view —
   // the fixed "/ t" denominator of the legend's summed N/T.
-  function detTotalCount(k) { var e = detPlot[k]; return (e && e.rows) ? specimenTotal(e.rows) : 0; }
+  // Filter-INDEPENDENT by definition, yet detFilteredStats() recomputed it for every
+  // species on every filter change — and each call re-runs the whole dedup grouping over
+  // that species' rows. Cache per species, keyed by the plot signature + the dedup
+  // setting (the only two things that can change the answer).
+  var _detTotMemo = Object.create(null), _detTotSig = "", _detTotChecked = false;
+  function detTotalCount(k) {
+    // Validate the cache ONCE per tick: building the signature (detPlotSig + the dedup
+    // setting) on every call made the wrapper itself the most expensive thing in a
+    // filter change — it is asked for once per legend row, and there can be thousands.
+    if (!_detTotChecked) {
+      var sig = detPlotSig() + "|" + (dedupDetections() ? 1 : 0);
+      if (_detTotSig !== sig) { _detTotMemo = Object.create(null); _detTotSig = sig; }
+      _detTotChecked = true;
+      setTimeout(function () { _detTotChecked = false; }, 0);
+    }
+    var v = _detTotMemo[k];
+    if (v !== undefined) return v;
+    var e = detPlot[k];
+    return (_detTotMemo[k] = (e && e.rows) ? specimenTotal(e.rows) : 0);
+  }
   // Deduped observations the ACTIVE FILTERS remove vs keep (species-level + row-level,
   // view-independent) — drives the kept/removed bar under the orange funnel buttons.
   // Memoised for a render burst (the three funnels re-render together on every change).
@@ -14326,10 +14393,17 @@
       setTimeout(function () { tr.classList.remove("sp-flash"); }, 1600);
     }, 60);
   }
+  // Sorts every plotted key and joins them into a string; called from several cache
+  // checks, so it showed up as 52 ms of a 2.0 s filter change. detPlot cannot change
+  // inside one synchronous pass — memoise it for the tick, like the other filter memos.
+  var _plotSigMemo = null;
   function detPlotSig() {
+    if (_plotSigMemo !== null) return _plotSigMemo;
     var ks = Object.keys(detPlot).sort(), n = 0;
     for (var i = 0; i < ks.length; i++) n += (detPlot[ks[i]].rows ? detPlot[ks[i]].rows.length : 0);
-    return ks.join("|") + "#" + n;
+    _plotSigMemo = ks.join("|") + "#" + n;
+    setTimeout(function () { _plotSigMemo = null; }, 0);
+    return _plotSigMemo;
   }
   // Duplicate key WITHIN a species: same date + count. The OBSERVER is deliberately
   // NOT matched — the same person's name is written differently across databases

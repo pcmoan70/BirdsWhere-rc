@@ -21,17 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1832";
+var VERSION = "v1833";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• Fetching that returned nothing: the two changes from two releases ago that could touch what a fetch shows are reverted, so downloading behaves exactly as it did before them. If a place still comes back empty, please say which species types are ticked in Settings.",
-  "• A remembered Location filter can no longer hide everything you fetch. The source and observer filters already healed themselves when a saved selection matched nothing on the map; the location one did not, and it is the easiest of the three to strand.",
-  "• When filters do hide every observation of a fetch, the status line now says so instead of looking like an empty download.",
-  "• The status line no longer reads \u201cN species above 15 %\u201d \u2014 it just says which point the list is for. The count is still on the list header.",
+  "• Filtering is about twice as fast. Measured on a 90-day Oslo fetch (255 species): one filter change took 2.0 seconds of work, now 1.05. The date test alone was re-parsing every observation\u2019s date and re-reading three settings from storage for every single row; species totals, names and the map signature were recomputed from scratch on every change; and the filter state was written to storage synchronously before the screen could redraw.",
+  "• \u201cShow last N days\u201d now means N calendar days, exactly. It used to compare timestamps, so a record from the oldest day in the window dropped out partway through the day.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
