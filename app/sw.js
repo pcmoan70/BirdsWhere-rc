@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1828";
+var VERSION = "v1829";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• Family and Confusion picture views now fill in seconds instead of minutes, with no gaps. They used to ask Wikimedia about one species per card — a duck family is 164 cards, so 328 requests, which took two and a half minutes and got throttled halfway through, leaving a long tail of cards stuck empty (Mute swan among them). The whole list is now looked up in a handful of batched requests: Anatidae went from 150 seconds and 48 broken cards to 4 seconds and all 164 photos, every one credited and kept on the device.",
+  "• The Family picture view now shows, under each photo, Season and Yr peak beside Here \u2014 this week as a share of the species\u2019 own yearly peak (\u2191 arriving \u00b7 \u25cf at peak \u2193 leaving \u00b7 off-season), and how likely its best week of the year gets at this point. The same numbers as the species list\u2019s own columns, so a glance down the cards tells you which relatives are here now and which never get likely here at all.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

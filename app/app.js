@@ -10870,31 +10870,55 @@
     if (!fam) { centerPhotoPopup(el); return; }
     var members = labels.filter(function (l) { return famOf(l.key) === fam; });
     var pt = (currentSpView && isFinite(+currentSpView.lat) && isFinite(+currentSpView.lon)) ? currentSpView : null;
-    var out = null;
+    // The whole 48-week curve, not just this week's: it carries Here, Season and Yr peak
+    // at once (and is the same per-point cache the species table's Season column fills,
+    // so opening the family from a list that already has it costs no inference).
+    var week = +document.getElementById("week-select").value, cell = null;
     if (pt) {
       var wait = document.createElement("div"); wait.className = "detrow-menu-hdr"; wait.textContent = "…";
       el.appendChild(wait); centerPhotoPopup(el);
-      try { out = await predictWeek(+pt.lat, +pt.lon, +document.getElementById("week-select").value); } catch (e) {}
+      try { cell = await predictAllWeeks(+pt.lat, +pt.lon); } catch (e) {}
       if (_anchMenuEl !== el) return;                        // closed while computing
       if (wait.parentNode) wait.parentNode.removeChild(wait);
     }
-    var arr = members.map(function (m) { return { m: m, p: out ? (out[m.index] || 0) : -1 }; });
-    if (out) arr.sort(function (a, b) { return b.p - a.p; });
+    var arr = members.map(function (m) {
+      return { m: m, p: cell ? ((cell[week] && cell[week][m.index]) || 0) : -1,
+               s: cell ? classifySeason(cell, m.index, week) : null };
+    });
+    if (cell) arr.sort(function (a, b) { return b.p - a.p; });
     else arr.sort(function (a, b) { return speciesName(a.m).localeCompare(speciesName(b.m)); });
-    var hereLbl = t("confusion.colHere");
+    var L = { here: t("confusion.colHere"), season: t("th.season"), ytop: t("th.ytop") };
     var pct = function (p) { var v = p * 100; return v >= 0.5 ? Math.round(v) + "%" : (p > 0 ? "<1%" : "0%"); };
+    // Same metric row as the confusion cards, data-hintkey and all: bar behind, label
+    // left, value right. `html` is built here, never user text.
+    function row(cls, label, html, wide, color, tipKey) {
+      return '<div class="cfi-row ' + cls + '" data-hintkey="' + tipKey + '"><i class="cfi-bar" style="width:' +
+        Math.max(0, Math.min(100, wide)).toFixed(0) + '%' + (color ? ";background:" + color : "") + '"></i>' +
+        '<span class="cfi-k">' + escapeHtml(label) + '</span><span class="cfi-v">' + html + "</span></div>";
+    }
     var strip = document.createElement("div"); strip.className = "cfi-strip";
     strip.innerHTML = arr.map(function (w) {
-      var m = w.m, nm = speciesName(m), here = w.p;
+      var m = w.m, nm = speciesName(m), here = w.p, s = w.s;
       var isBase = m.key === key;
+      var stats = "";
+      if (here >= 0 && s) {
+        var meta = SEASON_META[s.phase];
+        stats = '<div class="cfi-stats">' +
+          row("cfi-here", L.here, escapeHtml(pct(here)), Math.max(4, here * 100), probHueColor(here), "th.probHint") +
+          // Season: the phase glyph + this week as a share of the species' own yearly peak.
+          row("cfi-season", L.season, '<span class="cfi-sg" style="color:' + meta.c + '">' + meta.g + "</span>" +
+              Math.round(s.ratio * 100) + "%", s.ratio * 100, meta.c, "th.seasonHint") +
+          // Yr peak: how good the species' BEST week gets here — the ceiling the Season
+          // percentage is measured against, so the two only mean something together.
+          row("cfi-ytop", L.ytop, Math.round(s.peak * 100) + "%", s.peak * 100, probHueColor(s.peak), "th.ytopHint") +
+        "</div>";
+      }
       return '<div class="cfi-card' + (isBase ? ' cfi-base" title="' + escapeHtml(t("confusion.base")) + '"' : '"') +
         ' data-key="' + escapeHtml(m.key) + '" data-sci="' + escapeHtml(m.sci) + '">' +
         '<div class="spg-img"><span class="spg-none" style="display:none">' + escapeHtml(t("spg.noImage")) + "</span></div>" +
         '<div class="cfi-name">' + escapeHtml(nm) + "</div>" +
         '<div class="cfi-sci">' + escapeHtml(m.sci) + "</div>" +
-        (here >= 0 ? '<div class="cfi-stats"><div class="cfi-row cfi-here"><i class="cfi-bar" style="width:' +
-            Math.max(4, Math.min(100, here * 100)).toFixed(0) + '%;background:' + probHueColor(here) + '"></i>' +
-            '<span class="cfi-k">' + escapeHtml(hereLbl) + '</span><span class="cfi-v">' + escapeHtml(pct(here)) + "</span></div></div>" : "") +
+        stats +
         '<div class="spg-credit"></div>' +
       "</div>";
     }).join("");

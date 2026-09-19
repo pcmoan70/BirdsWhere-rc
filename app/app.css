@@ -4497,6 +4497,8 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .cfi-row[data-hintkey] { cursor: help; }                                            /* hover = the metric's explanation (wrapped tooltip) */
 .cfi-row[data-hintkey] .cfi-k { text-decoration: underline dotted 1px; text-underline-offset: 2px; }
 .cfi-v { font-variant-numeric: tabular-nums; }
+.cfi-row.cfi-season .cfi-bar { opacity: .22; }                                     /* the phase colour is also the glyph's: keep the tint quieter */
+.cfi-sg { margin-right: 3px; font-weight: 700; }                                    /* ↑ arriving · ● peak · ↓ leaving · · off-season */
 .cfi-card .spg-credit { padding: 2px 7px 6px; }
 /* While the strip's one batched lookup is out, a quiet pulse instead of 164 empty grey
    tiles — the cards are about to fill all at once, not one at a time. */

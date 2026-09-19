@@ -748,9 +748,16 @@ Two entries in the species menu (birds) help tell similar species apart, both **
 you are**: the app scores a global look-alike list offline, then at runtime keeps only the species the
 habitat model puts above 0 % at your point/week and ranks them by local likelihood.
 
-- **Family** — every model species in the same family, as a table ranked by the model's probability
-  at your point (common name only; **scientific name on hover**). Also opens by clicking a scientific
-  name anywhere.
+- **Family** — every model species in the same family, ranked by the model's probability at your
+  point. Also opens by clicking a scientific name anywhere. Two views, switched by the **Text /
+  Images** button top right (the choice is remembered): a compact *table* (common name only,
+  **scientific name on hover**) or *picture cards*, which carry the photo with its credit, both
+  names and three small bars — **Here** (the probability this week), **Season** (this week as a
+  share of the species' own yearly peak, with ↑ arriving · ● peak · ↓ leaving · · off-season) and
+  **Yr peak** (how likely the species' best week of the year gets at this point). The same numbers
+  as the species table's Probability, Season and Yr-peak columns, so the family reads like a
+  seasonal cross-section of its members. Photos for the whole family are looked up in a few batched
+  requests and cached on the device.
 - **Confusion species** — the species you're most likely to *actually mistake this bird for*. Each
   candidate carries a precomputed *confusability* weight (**Match**), and the popup shows, per row:
   **Match**, **misID** (each partner's share of this bird's real human confusions, summing to ~100 %),
