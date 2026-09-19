@@ -2100,7 +2100,7 @@
   // (in map mode the real map is already on screen).
   function inListView() {
     var sp = document.getElementById("species-panel");
-    if (sp && sp.classList.contains("as-page") && sp.style.display !== "none") return true;
+    if (sp && sp.classList.contains("as-page") && panelOnScreen(sp)) return true;
     var rp = document.getElementById("rarity-page");
     if (rp && rp.style.display !== "none") return true;   // the rarity-alerts page hides the map too
     if (document.body.getAttribute("data-nearby")) return true;
@@ -2745,7 +2745,7 @@
     var fp = document.getElementById("field-page");
     if (fp && fp.style.display !== "none") return { kind: "field", go: reshowFieldPage };
     var sp = document.getElementById("species-panel");
-    if (sp && sp.classList.contains("as-page") && sp.style.display !== "none") return { kind: "list", go: function () { exitToRecentMode(); showListView(); } };
+    if (sp && sp.classList.contains("as-page") && panelOnScreen(sp)) return { kind: "list", go: function () { exitToRecentMode(); showListView(); } };
     var bc = document.getElementById("barchart-panel");
     if (bc && bc.classList.contains("as-page") && bc.style.display !== "none") return { kind: "migration", go: reshowAnalysisPage };
     if (currentMode === "range") {
@@ -12816,9 +12816,22 @@
     // for the middle of the map (see showListView).
     return groupHasModel() && !!(labels && labels.length);
   }
+  // Is the list PAGE actually on screen? An unset inline display is NOT "visible": the
+  // stylesheet's own `#species-panel { display: none }` still applies. A restored session
+  // lands in exactly that state — renderSpeciesList sets .as-page (currentMode is "list")
+  // while the inline display has never been written — and reading the string alone then
+  // reported the list as open while the map was on screen. The toggle showed the MAP icon
+  // and, being told it was on the list, went to the map instead of opening it; on a list
+  // restored without a fetch that re-plotted an empty result and said "No located
+  // detections to plot". Worse, renderSpeciesList only hides the panel `if (!onListView())`,
+  // so the wrong answer kept itself alive. getClientRects() is empty whenever the element
+  // is display:none, from any source.
+  function panelOnScreen(el) {
+    return !!(el && el.style.display !== "none" && el.getClientRects().length > 0);
+  }
   function onListView() {
     var sp = document.getElementById("species-panel");
-    return !!(sp && sp.style.display !== "none" && sp.classList.contains("as-page"));
+    return !!(sp && sp.classList.contains("as-page") && panelOnScreen(sp));
   }
   var VT_LIST_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="8" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="8" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>';
   var VT_MAP_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5 9 4z"/><path d="M9 4v13M15 6.5v13"/></svg>';
@@ -12909,8 +12922,9 @@
       var refNow = hasPlottedDetections() ? null : listRefPoint();
       var movedAway = !!(spMissingAuto && refNow && currentSpView &&
         (Math.abs(refNow.lat - +currentSpView.lat) > 1e-4 || Math.abs(refNow.lon - +currentSpView.lon) > 1e-4));
-      if (!speciesPanelPopulated() || movedAway) {
-        var refPt = refNow;
+      var showedObsPage = false;
+      if (!speciesPanelPopulated() || movedAway || mapFromMultiFetch) {
+        var refPt = mapFromMultiFetch ? null : refNow;
         // Dots on the map → their "By observation" list. Nothing fetched at all → the model's
         // own species for the pin / map centre, commonest first (renderSpeciesList's noFetch
         // path ends in applySightings with an empty result, which is what turns that on).
@@ -12920,11 +12934,11 @@
             renderSpeciesList(refPt.lat, refPt.lon, null, { noFetch: true });
           } catch (e) { urlForceView = null; renderPlottedObsPage(); }
         }
-        else renderPlottedObsPage();
+        else { renderPlottedObsPage(); showedObsPage = true; }
       }
       sp.classList.add("as-page"); sp.style.display = "block"; sp.scrollTop = 0;
       navOpen("page", closeAnyFullPage);
-      if (speciesPanelPopulated()) {
+      if (!showedObsPage && speciesPanelPopulated()) {
         // Re-apply the cached sightings so rarity alerts that arrived AFTER the fetch
         // (whole-window set) show on open, then restrict to the current map view.
         var tb = document.getElementById("sp-tbody");
@@ -12979,7 +12993,11 @@
     // purged dots must not sneak back in via the List⇄Map switch. A fresh point
     // fetch re-stamps _plotGen, so plotting works again after the next fetch;
     // "Show in map" on a detections modal also remains an explicit way back.
-    if (currentSpView && (currentSpView.mode === "point" || currentSpView.mode === "historic") &&
+    // …and never when the dots came from a multi-location "Fetch observations": re-plotting
+    // one old point's result over them would replace what you just fetched, and when that
+    // stale result is empty (a list restored without a fetch) plotAllSightings reports
+    // "No located detections to plot" over a map that is full of them.
+    if (!mapFromMultiFetch && currentSpView && (currentSpView.mode === "point" || currentSpView.mode === "historic") &&
         (currentSpView._plotGen === undefined || currentSpView._plotGen === detPlotGen)) plotAllSightings();
     updateViewToggle();
     try { maybeShowRarityTicker(); } catch (e) {}   // a fetch that settled behind the list can run its intro now
@@ -20863,6 +20881,7 @@
     if (storedFetchBusy) { if (autoOpen && fooEngageCleanup) fooEngageCleanup(); return; }
     var locs = locsOverride || getStoredLocations().filter(function (l) { return l.on !== false; });
     if (!locs.length) { if (!silent) setStatus(t("loc.noneSelected")); if (autoOpen && fooEngageCleanup) fooEngageCleanup(); return; }
+    mapFromMultiFetch = true;   // these dots are not one point's — the list view must say so
     locs.forEach(function (l) { rememberFetchedArea(l.lat, l.lon, l.radius || recentRadiusKm(), l.name); });   // remember each fetched area's outline + its stored-place name (persists until detections cleared)
     storedFetchBusy = true;
     autoOpenPlotting = !!autoOpen;   // suppress per-location view changes while auto-open loads
@@ -20896,6 +20915,12 @@
           return;
         }
         fitToAreas();   // manual "Fetch observations": always fit to the fetched areas
+        // The list page is often still open OVER the map — a restored session, or the user
+        // was reading a list when they opened the 🔍 saved-locations panel. It shows the
+        // PREVIOUS point's species and nothing here refreshed it, so the fetch looked like
+        // it did nothing and the header toggle, correctly seeing a list open, offered "go
+        // to map" instead of the list. Re-render it for what was just fetched.
+        if (onListView()) { try { showListView(); } catch (e) {} }
         setFetchedAllStatus(locs.length);
         updateViewToggle();
         return;
@@ -21663,6 +21688,11 @@
   // Which species-panel context is showing — drives whether the Checklist
   // button creates a point-anchored checklist or a country-wide one.
   var currentSpView = null;
+  // Set when a "Fetch observations" over several saved locations last filled the map, and
+  // cleared the moment a single point's list is (re)built. While it is on, the species
+  // table on screen belongs to some earlier point and has nothing to do with the dots —
+  // so the list view must show the "By observation" page instead of re-showing that table.
+  var mapFromMultiFetch = false;
   // Bumped on every renderSpeciesList call AND on a mode change. A render that
   // suspends at its inference await while the user switches mode (or clicks a new
   // point) sees its captured gen fall behind and bails BEFORE firing its
@@ -23298,6 +23328,7 @@
     // Keep the list's ★/◉/🟠/🟡 flag filters in step with the global detection filters
     // (so a fresh fetch's list narrows the same way the map does).
     spFilters.star = detStarFilter === 1; spFilters.rare = detRareFilter === 1; spFilters.year = detYearFilter === -1; spFilters.life = detLifeFilter === -1;
+    mapFromMultiFetch = false;   // this list IS about a point again
     currentSpView = hist
       ? { mode: "historic", lat: lat, lon: lon, from: hist.from, to: hist.to, range: hist.range, months: hist.months || [] }
       : { mode: "point", lat: lat, lon: lon };

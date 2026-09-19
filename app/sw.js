@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1834";
+var VERSION = "v1835";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• Fixed: after fetching several locations, going to the list view gave you the observation list and nothing else \u2014 no funnel, no sorting, and an empty list-type dropdown. That page hid every control because it has no single point to describe, but filtering and sorting were never about a point. The funnel, the filter panes and all three list types are back, filters now re-draw the page as you change them, and picking Species list or Images builds that list from everything plotted across your locations.",
+  "• Fixed: fetching several saved locations from the \ud83d\udd0d panel, then asking for the list, could show a stale list (or none) and report \u201cNo located detections to plot\u201d over a map full of dots. The list page left open over the map was never refreshed for what you had just fetched, and the header toggle then took you to the map instead of the list. The list view now shows the observations from every location you fetched, and going back to the map no longer re-plots one old point over them.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
