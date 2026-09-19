@@ -3580,7 +3580,7 @@
         if (newReloadCtrlEl) newReloadCtrlEl.classList.remove("loading");
         try { updateDetLegend(); } catch (e) {}
         updateViewToggle();
-        setStatus(t("loc.fetchedAll", { n: total }));   // → the status bar below the header (NOT the top debug banner)
+        setFetchedAllStatus(total);   // → the status bar below the header (NOT the top debug banner)
         return;
       }
       var l = locs[i++];
@@ -4555,25 +4555,15 @@
         "|g" + fetchGroupList().join("+");   // a narrower tick set holds less: don't serve it as a wider one
     } catch (e) { return ""; }
   }
-  // May a cached copy filed under `cachedSig` answer a request made under `nowSig`?
-  // The sources / keys / dataset part must match exactly — a copy fetched without a
-  // source simply does not hold its records. The GROUP part is different: a fetch that
-  // asked for MORE types is a strict superset of one that asks for fewer, so it can
-  // serve it. Without this, narrowing the Settings type ticks (or viewing a type that is
-  // unticked, which forces it into the list) changed the signature and threw away a
-  // complete, already-downloaded result — the whole point of the superset policy.
-  // Unticking a type has never removed observations already on the map; it decides what
-  // the NEXT download asks for. Serving them from cache keeps that consistent.
-  function sigServes(cachedSig, nowSig) {
-    if (cachedSig === nowSig) return true;
-    if (!cachedSig || !nowSig) return false;
-    var ci = cachedSig.lastIndexOf("|g"), ni = nowSig.lastIndexOf("|g");
-    if (ci < 0 || ni < 0) return false;
-    if (cachedSig.slice(0, ci) !== nowSig.slice(0, ni)) return false;
-    var have = cachedSig.slice(ci + 2).split("+"), want = nowSig.slice(ni + 2).split("+");
-    for (var i = 0; i < want.length; i++) if (have.indexOf(want[i]) < 0) return false;
-    return true;
-  }
+  // A cached copy may answer only a request with the IDENTICAL config signature.
+  // v1830 relaxed the GROUP part of this (a download that asked for more species types
+  // can hold everything a narrower request wants, so narrowing the Settings ticks need
+  // not re-download) and measured the win: 14 network requests became 0. It is REVERTED
+  // in v1832 because a "fetching returns nothing" report arrived right after it and
+  // could not be reproduced — restoring the known-good behaviour beats holding on to an
+  // optimisation while the user is stuck. Re-introduce it with a test that seeds a real
+  // persisted cache, not a synthetic one.
+  function sigServes(cachedSig, nowSig) { return cachedSig === nowSig; }
   function loadPersistedSightings() {
     if (!window.AppIDB) return Promise.resolve();
     return AppIDB.get("sightingsCache").then(function (m) { if (m && typeof m === "object") persistedSightings = m; }).catch(function () {});
@@ -9326,11 +9316,29 @@
   var detLocNames = [];                 // selected non-empty place names
   var detLocAllowNone = false;          // is "(no location)" selected
   function detLocKey(r) { return placeAccurate(r) ? String(r.place || "").trim() : ""; }
-  function setDetLocFilter(set) {
+  var detLocRestored = false;           // loaded from storage (not chosen this session) → healable
+  function setDetLocFilter(set, restored) {
     // null = all locations; empty Set = "None" (a base to then tick a few); a Set
     // holding only "" is the "(no location)" bucket.
     detLocFilter = set || null; detLocNames = []; detLocAllowNone = false;
+    detLocRestored = !!restored && !!detLocFilter;
     if (detLocFilter) detLocFilter.forEach(function (n) { if (n) detLocNames.push(n); else detLocAllowNone = true; });
+  }
+  // The source and observer filters are both healed when a REMEMBERED selection matches
+  // nothing that is plotted — "brought up a list, nothing shows". The location filter was
+  // the one that never was, and it is the easiest of the three to strand: a place name is
+  // matched EXACTLY, and which bucket a record falls in depends on whether its source gave
+  // a real locality. So a remembered selection can end up matching no plotted row at all,
+  // and then every observation is hidden however many were fetched. Heal it back to "all".
+  // An explicit "None" (empty Set) is left alone — that is a deliberate show-nothing base.
+  function reconcileLocFilter() {
+    if (!detLocFilter || !detLocFilter.size) return false;   // null = all, empty = intentional None
+    if (!detLocRestored) return false;                       // chosen in this session → the user's call
+    if (!Object.keys(detPlot).length) return false;          // nothing plotted → a fetch may be incoming
+    var lc = detAllLocations(), present = detLocAllowNone && lc.hasNone;
+    for (var i = 0; !present && i < detLocNames.length; i++) if (lc.names.indexOf(detLocNames[i]) >= 0) present = true;
+    if (present) { detLocRestored = false; return false; }   // it fits the plotted data → confirmed
+    setDetLocFilter(null); saveLegendState(); return true;
   }
   function detLocPasses(r) {
     if (!detLocFilter) return true;
@@ -12638,6 +12646,7 @@
     clearSpider();
     ensureDedup();
     reconcileObsFilter();   // drop a stale observer filter that no longer matches any plotted observer
+    reconcileLocFilter();   // …and a stale location filter, which would hide every fetched record
     reconcileLocFilter();   // …and likewise a stale location filter
 
     if (detFocusKey && !detPlot[detFocusKey]) detFocusKey = null;   // focused species gone → don't mute everything
@@ -13067,7 +13076,10 @@
       if (result.dedupTotal != null) srcNote += " · " + escapeHtml(t("sp.deduped", { n: result.dedupTotal }));   // unique kept after de-dup
       // Hard failures append red, clickable text; tapping any red source opens the reasons.
       var failHtml = hasFail ? ' · <span class="status-err" role="button" tabindex="0" title="' + escapeHtml(t("fetch.clickErr")) + '">' + escapeHtml(t("fetch.failed", { sources: failedNames(result.failed) })) + "</span>" : "";
-      setStatusHtml(escapeHtml(t("sp.plotted", { n: entries.length })) + srcNote + failHtml);
+      // A fetch can land a full set and the ACTIVE FILTERS then hide all of it, which on
+      // screen is indistinguishable from "the fetch returned nothing". Say which it is.
+      var hidNote = entries.length ? fetchedAllNote() : "";
+      setStatusHtml(escapeHtml(t("sp.plotted", { n: entries.length })) + srcNote + failHtml + hidNote);
       wireStatusFetchErrs(result.failed, result.timedOut, result.timedOutInfo, result.truncInfo);
       // Fetch settled (not a partial, not a background auto-open load) → run the
       // rarest-recently ticker once the probabilities are in.
@@ -13364,7 +13376,7 @@
     detLifeFilter = stSaved(ls.lifeFilter, -1);
     detAlertFilter = stSaved(ls.alertFilter, 0);
     setDetObsFilter(Array.isArray(ls.obsFilter) ? new Set(ls.obsFilter) : null, true);   // restored → may be healed if stale
-    setDetLocFilter(Array.isArray(ls.locFilter) ? new Set(ls.locFilter) : null);
+    setDetLocFilter(Array.isArray(ls.locFilter) ? new Set(ls.locFilter) : null, true);   // restored → may be healed if stale
     detSrcFilter = (Array.isArray(ls.srcFilter) && ls.srcFilter.length) ? new Set(ls.srcFilter) : null;
     // Heal a stale source filter (none of its sources plotted) so it can't blank the map.
     if (detSrcFilter && Object.keys(detPlot).length) {
@@ -14130,6 +14142,22 @@
   // Memoised only within ONE render tick: the three funnels re-render together, but a
   // time-based cache served PRE-CHANGE stats when a filter click re-rendered within
   // the window — the bar then showed the old fractions until some later render.
+  // Do the ACTIVE FILTERS hide every observation that is plotted? A full fetch whose
+  // result is entirely filtered away looks exactly like a fetch that found nothing —
+  // which is how "fetching returns nothing (there are observations)" gets reported.
+  function allPlottedFiltered() {
+    try {
+      if (!detHasFilter()) return false;
+      var fs = detFilteredStats();
+      return !!(fs && fs.total > 0 && fs.removed >= fs.total);
+    } catch (e) { return false; }
+  }
+  function fetchedAllNote() { return allPlottedFiltered() ? ' · <span class="status-err">' + escapeHtml(t("sp.allFiltered")) + "</span>" : ""; }
+  function setFetchedAllStatus(n) {
+    var note = fetchedAllNote();
+    if (note) setStatusHtml(escapeHtml(t("loc.fetchedAll", { n: n })) + note);
+    else setStatus(t("loc.fetchedAll", { n: n }));
+  }
   var _detRemovedMemo = null;
   function detFilteredStats() {
     if (_detRemovedMemo) return _detRemovedMemo;
@@ -20772,12 +20800,12 @@
             if (!fitAllDetectionPoints()) fitToAreas();
             detLegendMini = false; saveLegendState(); updateDetLegend();
           }
-          setStatus(t("loc.fetchedAll", { n: locs.length }));
+          setFetchedAllStatus(locs.length);
           updateViewToggle();   // detections are on the map now → offer the list toggle
           return;
         }
         fitToAreas();   // manual "Fetch observations": always fit to the fetched areas
-        setStatus(t("loc.fetchedAll", { n: locs.length }));
+        setFetchedAllStatus(locs.length);
         updateViewToggle();
         return;
       }
@@ -21989,7 +22017,7 @@
         plotNoFit = prevNoFit; storedFetchBusy = false;
         try { updateDetLegend(); } catch (e) {}
         updateViewToggle();
-        setStatus(t("loc.fetchedAll", { n: total }));
+        setFetchedAllStatus(total);
         return;
       }
       var l = locs[i++];

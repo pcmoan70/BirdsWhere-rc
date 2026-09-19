@@ -1052,6 +1052,7 @@
   "sp.inView": "Žemėlapio rodinyje: {n} rūšių",
   "sp.plotting": "Žymimi stebėjimai…",
   "sp.plotted": "Pažymėti {n} rūšių stebėjimai.",
+  "sp.allFiltered": "viską paslėpė jūsų filtrai — išvalykite juos piltuvėliu",
   "sp.plottedCapped": "Pažymėtos {n} dažniausios rūšys.",
   "link.fatbirder": "Fatbirder",
   "link.birdingplaces": "Birdingplaces",

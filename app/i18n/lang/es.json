@@ -1052,6 +1052,7 @@
   "sp.inView": "En la vista del mapa: {n} especies",
   "sp.plotting": "Trazando observaciones…",
   "sp.plotted": "Observaciones trazadas para {n} especies.",
+  "sp.allFiltered": "todo oculto por tus filtros — bórralos con el embudo",
   "sp.plottedCapped": "Trazadas las {n} especies con más observaciones.",
   "link.fatbirder": "Fatbirder",
   "link.birdingplaces": "Birdingplaces",

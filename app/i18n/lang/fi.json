@@ -1052,6 +1052,7 @@
   "sp.inView": "Karttanäkymässä: {n} lajia",
   "sp.plotting": "Piirretään havaintoja…",
   "sp.plotted": "Piirretty {n} lajin havainnot.",
+  "sp.allFiltered": "kaikki piilotettu suodattimillasi — tyhjennä ne suppilosta",
   "sp.plottedCapped": "Piirretty {n} havaituinta lajia.",
   "link.fatbirder": "Fatbirder",
   "link.birdingplaces": "Birdingplaces",

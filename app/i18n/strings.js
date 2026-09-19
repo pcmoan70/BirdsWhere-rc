@@ -910,6 +910,7 @@ window.GeoI18N = (function () {
         "sp.loaded": "Loaded: {n}",
         "sp.deduped": "unique: {n}",
         "sp.plotted": "Plotted observations for {n} species.",
+        "sp.allFiltered": "all hidden by your filters — clear them with the funnel",
         "sp.plottedCapped": "Plotted the top {n} species by observation count.",
         "link.fatbirder": "Fatbirder",
         "link.birdingplaces": "Birdingplaces",

@@ -1052,6 +1052,7 @@
   "sp.inView": "Im Kartenausschnitt: {n} Arten",
   "sp.plotting": "Beobachtungen werden geplottet…",
   "sp.plotted": "Beobachtungen für {n} Arten geplottet.",
+  "sp.allFiltered": "alles von deinen Filtern ausgeblendet — über den Trichter zurücksetzen",
   "sp.plottedCapped": "Top {n} Arten nach Beobachtungszahl geplottet.",
   "link.fatbirder": "Fatbirder",
   "link.birdingplaces": "Birdingplaces",

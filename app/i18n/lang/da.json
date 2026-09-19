@@ -1052,6 +1052,7 @@
   "sp.inView": "I kortvisningen: {n} arter",
   "sp.plotting": "Tegner observationer…",
   "sp.plotted": "Tegnede observationer for {n} arter.",
+  "sp.allFiltered": "alt skjult af dine filtre — ryd dem med tragten",
   "sp.plottedCapped": "Tegnede de {n} mest observerede arter.",
   "link.fatbirder": "Fatbirder",
   "link.birdingplaces": "Birdingplaces",

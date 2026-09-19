@@ -1052,6 +1052,7 @@
   "sp.inView": "Kaardivaates: {n} liiki",
   "sp.plotting": "Vaatluste joonistamine…",
   "sp.plotted": "Joonistati {n} liigi vaatlused.",
+  "sp.allFiltered": "kõik on teie filtritega peidetud — tühjendage need lehtri kaudu",
   "sp.plottedCapped": "Joonistati {n} enim vaadeldud liiki.",
   "link.fatbirder": "Fatbirder",
   "link.birdingplaces": "Birdingplaces",

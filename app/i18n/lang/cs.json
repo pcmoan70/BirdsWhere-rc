@@ -1052,6 +1052,7 @@
   "sp.inView": "V zobrazení mapy: {n} druhů",
   "sp.plotting": "Vykreslování pozorování…",
   "sp.plotted": "Vykreslena pozorování pro {n} druhů.",
+  "sp.allFiltered": "vše skryto vašimi filtry — vymažte je nálevkou",
   "sp.plottedCapped": "Vykresleno {n} nejčastějších druhů.",
   "link.fatbirder": "Fatbirder",
   "link.birdingplaces": "Birdingplaces",

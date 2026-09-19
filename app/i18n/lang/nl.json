@@ -1052,6 +1052,7 @@
   "sp.inView": "In kaartweergave: {n} soorten",
   "sp.plotting": "Waarnemingen plotten…",
   "sp.plotted": "Waarnemingen geplot voor {n} soorten.",
+  "sp.allFiltered": "alles verborgen door je filters — wis ze met de trechter",
   "sp.plottedCapped": "De top {n} soorten op waarnemingen geplot.",
   "link.fatbirder": "Fatbirder",
   "link.birdingplaces": "Birdingplaces",

@@ -1052,6 +1052,7 @@
   "sp.inView": "Dans la vue carte : {n} espèces",
   "sp.plotting": "Tracé des observations…",
   "sp.plotted": "Observations tracées pour {n} espèces.",
+  "sp.allFiltered": "tout masqué par vos filtres — effacez-les avec l'entonnoir",
   "sp.plottedCapped": "Tracé des {n} espèces les plus observées.",
   "link.fatbirder": "Fatbirder",
   "link.birdingplaces": "Birdingplaces",

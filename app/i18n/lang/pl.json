@@ -1052,6 +1052,7 @@
   "sp.inView": "W widoku mapy: {n} gatunków",
   "sp.plotting": "Nanoszenie obserwacji…",
   "sp.plotted": "Naniesiono obserwacje dla {n} gatunków.",
+  "sp.allFiltered": "wszystko ukryte przez filtry — wyczyść je lejkiem",
   "sp.plottedCapped": "Naniesiono {n} najczęstszych gatunków.",
   "link.fatbirder": "Fatbirder",
   "link.birdingplaces": "Birdingplaces",

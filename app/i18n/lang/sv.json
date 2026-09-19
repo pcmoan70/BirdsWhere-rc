@@ -813,6 +813,7 @@
   "sp.loaded": "Inläst: {n}",
   "sp.deduped": "unika: {n}",
   "sp.plotted": "Ritade observationer för {n} arter.",
+  "sp.allFiltered": "allt döljs av dina filter — rensa dem med tratten",
   "sp.plottedCapped": "Ritade de {n} vanligaste arterna.",
   "link.fatbirder": "Fatbirder",
   "link.birdingplaces": "Birdingplaces",
