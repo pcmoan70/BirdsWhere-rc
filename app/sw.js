@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1833";
+var VERSION = "v1834";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• Filtering is about twice as fast. Measured on a 90-day Oslo fetch (255 species): one filter change took 2.0 seconds of work, now 1.05. The date test alone was re-parsing every observation\u2019s date and re-reading three settings from storage for every single row; species totals, names and the map signature were recomputed from scratch on every change; and the filter state was written to storage synchronously before the screen could redraw.",
-  "• \u201cShow last N days\u201d now means N calendar days, exactly. It used to compare timestamps, so a record from the oldest day in the window dropped out partway through the day.",
+  "• Fixed: after fetching several locations, going to the list view gave you the observation list and nothing else \u2014 no funnel, no sorting, and an empty list-type dropdown. That page hid every control because it has no single point to describe, but filtering and sorting were never about a point. The funnel, the filter panes and all three list types are back, filters now re-draw the page as you change them, and picking Species list or Images builds that list from everything plotted across your locations.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -11740,6 +11740,7 @@
         n = (n || "").trim(); if (!n) return;
         var a = getSpeciesLists(); a.push({ name: n, keys: [d.key] }); saveSpeciesLists(a);
         if (typeof speciesPanelPopulated === "function" && speciesPanelPopulated()) renderSpControls();
+      else if (onListView()) renderPlottedObsPage();   // the By-observation page: re-filter its rows (and its funnel)
       });
     }));
     positionAnchoredMenu(el, rect.left, rect.top);   // keep on-screen after the height change
@@ -12834,11 +12835,26 @@
   // A standalone "By observation" list of ALL plotted detections — shown by the header
   // toggle when there's no per-point species list (e.g. after Fetch on open). Uses the
   // same renderer as the species panel's "By observation" layout.
+  // The list page you get when several locations are fetched: no single point, so no
+  // prediction table — but the observations themselves still filter, sort and switch
+  // layout like anywhere else. The controls used to be hidden wholesale here ("no
+  // per-point controls without a point"), which left the page with no funnel, no list-type
+  // picker and no way to reach the filter panes at all.
+  function renderObsPageControls() {
+    var ctrls = document.getElementById("sp-controls"); if (!ctrls) return;
+    ctrls.style.display = "";
+    renderSpLayoutSelect();
+    // The two that genuinely need a per-point prediction table: adding the species the
+    // model expects here, and sorting by that probability.
+    var mb = document.getElementById("sp-missing-btn"); if (mb) mb.style.display = "none";
+    var psb = document.getElementById("sp-probsort-btn"); if (psb) psb.style.display = "none";
+    renderSpFilterBar();    // the filter panes (the funnel opens them)
+    renderSpFilterBtn();    // the funnel itself, with its kept/removed bar
+    updateRecencyNote();
+  }
   function renderPlottedObsPage() {
     var rec = document.getElementById("sp-records"); if (!rec) return;
     var tbl = document.getElementById("species-list-table"); if (tbl) tbl.style.display = "none";
-    var ctrls = document.getElementById("sp-controls"); if (ctrls) ctrls.style.display = "none";   // no per-point controls without a point
-    var fw = document.getElementById("sp-filters-wrap"); if (fw) fw.innerHTML = "";
     // Header: list EVERY fetched square, one line each, ordered by geography (not by
     // fetch time). No generic "species here" title.
     var spTitle = document.getElementById("sp-title");
@@ -12855,6 +12871,7 @@
     rec.style.display = "";
     rec.innerHTML = rows.length ? buildSpObsHtml(rows) : '<div class="dl-empty">' + escapeHtml(t("detlist.empty")) + "</div>";
     wireSpDetail(rec); fillObsSeasonCells(rec, rows);
+    renderObsPageControls();   // after the body: the funnel reads its stats off the current set
   }
   // Re-render whichever list page is currently open, so live changes (e.g. a new rarity
   // alert) show without the user reopening it. Per-point list → re-apply its cached
@@ -19060,7 +19077,7 @@
     });
     document.getElementById("sp-pdf-btn").addEventListener("click", exportSpeciesPdf);
     var spLayoutSel = document.getElementById("sp-layout");
-    if (spLayoutSel) spLayoutSel.addEventListener("change", function () { spLayout = this.value; window.GeoState.save({ spLayout: spLayout }); renderSpControls(); });
+    if (spLayoutSel) spLayoutSel.addEventListener("change", function () { spLayout = this.value; window.GeoState.save({ spLayout: spLayout }); applySpLayoutChange(); });
     // Funnel → the single "all filters" pane (both list layouts). Sorting still happens
     // by clicking a column name; the pane keeps a full copy of the sort + every filter.
     var spFilterBtn = document.getElementById("sp-filter-btn");
@@ -22897,6 +22914,22 @@
     if (fbB) fbB.parentNode.removeChild(fbB);
     if (fbSet) fb.insertAdjacentHTML("beforeend", fxBarHtml(fbSt));
     updateFilterBusy();
+  }
+  // A list-type change has to cope with BOTH pages. On the "By observation" page there is
+  // no prediction table, so Species list / Images have nothing to render — build the list
+  // for the reference point (the pin, else the last list's point, else the map centre)
+  // out of what is already plotted, no fetch. That is the same path a list opened without
+  // a fetch uses, so the rows come from the detections on the map.
+  function applySpLayoutChange() {
+    if (!speciesPanelPopulated() && (spLayout === "table" || spLayout === "gallery")) {
+      var p = listRefPoint();
+      if (p) {
+        try { urlForceView = "list"; renderSpeciesList(p.lat, p.lon, null, { noFetch: true }); return; }
+        catch (e) { urlForceView = null; }
+      }
+    }
+    if (speciesPanelPopulated()) renderSpControls();
+    else renderPlottedObsPage();
   }
   function renderSpControls() {
     var ctrls = document.getElementById("sp-controls");
