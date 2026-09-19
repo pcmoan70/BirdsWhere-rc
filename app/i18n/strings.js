@@ -1530,7 +1530,7 @@ window.GeoI18N = (function () {
         "status.richnessCached": "Species richness – {week} · {n} cells ({step}°) [cached]",
         "status.predicting": "Predicting species at ({lat}, {lon}) week {week}…",
         "status.predicting48": "Predicting 48 weeks at ({lat}, {lon})…",
-        "status.spResult": "{n} species above {p}% at ({lat}, {lon})",
+        "status.spResult": "At ({lat}, {lon})",
         "status.spResultObs": "Observations at ({lat}, {lon})",
         "status.error": "Error: {msg}",
         "sp.summary": "{lat}°, {lon}° · {week} · {n} species above {p}%",

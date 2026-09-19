@@ -1366,7 +1366,7 @@
   "status.richnessCached": "Lajirunsaus – {week} · {n} solua ({step}°) [välimuistissa]",
   "status.predicting": "Ennustetaan lajeja sijainnissa ({lat}, {lon}) viikolla {week}…",
   "status.predicting48": "Ennustetaan 48 viikkoa sijainnissa ({lat}, {lon})…",
-  "status.spResult": "{n} lajia yli {p}% sijainnissa ({lat}, {lon})",
+  "status.spResult": "Sijainnissa ({lat}, {lon})",
   "status.spResultObs": "Havainnot kohteessa ({lat}, {lon})",
   "status.error": "Virhe: {msg}",
   "sp.summary": "{lat}°, {lon}° · {week} · {n} lajia yli {p}%",

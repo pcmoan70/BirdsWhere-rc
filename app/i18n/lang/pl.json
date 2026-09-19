@@ -1366,7 +1366,7 @@
   "status.richnessCached": "Bogactwo gatunkowe – {week} · {n} komórek ({step}°) [z pamięci podręcznej]",
   "status.predicting": "Przewidywanie gatunków w ({lat}, {lon}) tydzień {week}…",
   "status.predicting48": "Przewidywanie 48 tygodni w ({lat}, {lon})…",
-  "status.spResult": "{n} gatunków powyżej {p}% w ({lat}, {lon})",
+  "status.spResult": "W ({lat}, {lon})",
   "status.spResultObs": "Obserwacje w ({lat}, {lon})",
   "status.error": "Błąd: {msg}",
   "sp.summary": "{lat}°, {lon}° · {week} · {n} gatunków powyżej {p}%",

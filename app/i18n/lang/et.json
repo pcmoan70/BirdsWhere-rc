@@ -1366,7 +1366,7 @@
   "status.richnessCached": "Liigirikkus – {week} · {n} ruutu ({step}°) [vahemälust]",
   "status.predicting": "Liikide prognoosimine asukohas ({lat}, {lon}) nädalal {week}…",
   "status.predicting48": "48 nädala prognoosimine asukohas ({lat}, {lon})…",
-  "status.spResult": "{n} liiki üle {p}% asukohas ({lat}, {lon})",
+  "status.spResult": "Asukohas ({lat}, {lon})",
   "status.spResultObs": "Vaatlused kohas ({lat}, {lon})",
   "status.error": "Viga: {msg}",
   "sp.summary": "{lat}°, {lon}° · {week} · {n} liiki üle {p}%",

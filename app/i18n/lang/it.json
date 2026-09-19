@@ -1366,7 +1366,7 @@
   "status.richnessCached": "Ricchezza di specie – {week} · {n} celle ({step}°) [in cache]",
   "status.predicting": "Previsione delle specie a ({lat}, {lon}) settimana {week}…",
   "status.predicting48": "Previsione di 48 settimane a ({lat}, {lon})…",
-  "status.spResult": "{n} specie sopra il {p}% a ({lat}, {lon})",
+  "status.spResult": "A ({lat}, {lon})",
   "status.spResultObs": "Osservazioni a ({lat}, {lon})",
   "status.error": "Errore: {msg}",
   "sp.summary": "{lat}°, {lon}° · {week} · {n} specie sopra il {p}%",

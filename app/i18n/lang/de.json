@@ -1366,7 +1366,7 @@
   "status.richnessCached": "Artenreichtum – {week} · {n} Zellen ({step}°) [zwischengespeichert]",
   "status.predicting": "Sage Arten bei ({lat}, {lon}) für Woche {week} voraus…",
   "status.predicting48": "Sage 48 Wochen bei ({lat}, {lon}) voraus…",
-  "status.spResult": "{n} Arten über {p}% bei ({lat}, {lon})",
+  "status.spResult": "Bei ({lat}, {lon})",
   "status.spResultObs": "Beobachtungen bei ({lat}, {lon})",
   "status.error": "Fehler: {msg}",
   "sp.summary": "{lat}°, {lon}° · {week} · {n} Arten über {p}%",

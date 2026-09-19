@@ -1366,7 +1366,7 @@
   "status.richnessCached": "Druhová bohatost – {week} · {n} buněk ({step}°) [z mezipaměti]",
   "status.predicting": "Předpověď druhů na ({lat}, {lon}) týden {week}…",
   "status.predicting48": "Předpověď 48 týdnů na ({lat}, {lon})…",
-  "status.spResult": "{n} druhů nad {p}% na ({lat}, {lon})",
+  "status.spResult": "Na ({lat}, {lon})",
   "status.spResultObs": "Pozorování na ({lat}, {lon})",
   "status.error": "Chyba: {msg}",
   "sp.summary": "{lat}°, {lon}° · {week} · {n} druhů nad {p}%",

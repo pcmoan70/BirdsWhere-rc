@@ -4675,10 +4675,19 @@
     if (fetchGroup !== "all") {
       var pa = persistedSightings[sightCK(lat, lon, rkm, "all", days)];
       if (pa && pa.out && pa.ver === SIGHT_CACHE_VER && sigServes(pa.sig, cfgSig) && (ttl === 0 || (Date.now() - (pa.ts || 0)) < ttl)) {
-        var derivedPr = Promise.resolve(filterAggByGroup(pa.out, fetchGroup));
-        allSightingsCache[ck] = derivedPr;
-        disarm();
-        return derivedPr;
+        var derived = filterAggByGroup(pa.out, fetchGroup);
+        // An "All" fetch shares each source's paging budget across every taxon, so at a
+        // dense spot it can truncate before it has any of a smaller group — and deriving
+        // that group then yields NOTHING. Serving that empty answer would leave an empty
+        // map that asking again cannot fix (it is memoised under this ck for the session),
+        // while a fetch for the group alone spends the whole budget on it and does find
+        // records. So: empty is not an answer — fall through and fetch it properly.
+        if (derived.dedupTotal > 0) {
+          var derivedPr = Promise.resolve(derived);
+          allSightingsCache[ck] = derivedPr;
+          disarm();
+          return derivedPr;
+        }
       }
     }
     var fmtD = function (d) { return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); };
@@ -23305,11 +23314,10 @@
       document.getElementById("barchart-panel").style.display = "none";
       updateViewToggle();   // a fresh list → the header List⇄Map switch applies now
       renderSpControls();   // filter bar + layout dropdown + (records view if not the table)
-      // "N species above 15 %" is a MODEL statement; for plants and fungi it could only ever
-      // read "0 species", which looked like "nothing found here" when the fetch had not even run.
-      setStatus(noModel
-        ? t("status.spResultObs", { lat: lat.toFixed(2), lon: lon.toFixed(2) })
-        : t("status.spResult", { n: summaryCount(results, pmin), p: summaryPct(pmin), lat: lat.toFixed(2), lon: lon.toFixed(2) }));
+      // Just WHERE the list is for. The species count ("N species above 15 %") used to be
+      // here too; it is a model statement that read "0 species" for plants and fungi, and
+      // it is still on the list header (sp.summary), which is where it is actually read.
+      setStatus(t("status.spResultObs", { lat: lat.toFixed(2), lon: lon.toFixed(2) }));
 
       // Build CSV for species list (includes 2nd-name + comparison columns when active,
       // plus a "seen_count" column filled from the latest fetch). Rebuilt at DOWNLOAD
@@ -23583,7 +23591,7 @@
 
     setCoordsWithPlace(document.getElementById("bc-coords"), lat, lon,
       t("sp.summary", { lat: lat.toFixed(4), lon: lon.toFixed(4), week: ctx.week, n: nVisible, p: summaryPct(ctx.thresholdFrac) }));
-    setStatus(t("status.spResult", { n: nVisible, p: summaryPct(ctx.thresholdFrac), lat: lat.toFixed(2), lon: lon.toFixed(2) }));
+    setStatus(t("status.spResult", { lat: lat.toFixed(2), lon: lon.toFixed(2) }));
 
     if (analysisTab === "timeline") renderTimelineTab(container, ctx);
     else if (analysisTab === "scatter") window.GeoAnalysis.renderScatter(container, ctx);

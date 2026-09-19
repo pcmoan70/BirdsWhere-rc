@@ -1366,7 +1366,7 @@
   "status.richnessCached": "Artsrikdom – {week} · {n} celler ({step}°) [bufret]",
   "status.predicting": "Forutsier arter ved ({lat}, {lon}) uke {week}…",
   "status.predicting48": "Forutsier 48 uker ved ({lat}, {lon})…",
-  "status.spResult": "{n} arter over {p}% ved ({lat}, {lon})",
+  "status.spResult": "Ved ({lat}, {lon})",
   "status.spResultObs": "Observasjoner ved ({lat}, {lon})",
   "status.error": "Feil: {msg}",
   "sp.summary": "{lat}°, {lon}° · {week} · {n} arter over {p}%",

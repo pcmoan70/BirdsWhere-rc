@@ -1366,7 +1366,7 @@
   "status.richnessCached": "Artsrigdom – {week} · {n} celler ({step}°) [cachelagret]",
   "status.predicting": "Forudsiger arter ved ({lat}, {lon}) uge {week}…",
   "status.predicting48": "Forudsiger 48 uger ved ({lat}, {lon})…",
-  "status.spResult": "{n} arter over {p}% ved ({lat}, {lon})",
+  "status.spResult": "Ved ({lat}, {lon})",
   "status.spResultObs": "Observationer ved ({lat}, {lon})",
   "status.error": "Fejl: {msg}",
   "sp.summary": "{lat}°, {lon}° · {week} · {n} arter over {p}%",

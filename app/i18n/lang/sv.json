@@ -1374,7 +1374,7 @@
   "status.richnessCached": "Artrikedom – {week} · {n} celler ({step}°) [cachad]",
   "status.predicting": "Förutsäger arter vid ({lat}, {lon}) vecka {week}…",
   "status.predicting48": "Förutsäger 48 veckor vid ({lat}, {lon})…",
-  "status.spResult": "{n} arter över {p}% vid ({lat}, {lon})",
+  "status.spResult": "Vid ({lat}, {lon})",
   "status.spResultObs": "Observationer vid ({lat}, {lon})",
   "status.error": "Fel: {msg}",
   "sp.summary": "{lat}°, {lon}° · {week} · {n} arter över {p}%",
