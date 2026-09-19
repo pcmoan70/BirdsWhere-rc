@@ -4559,3 +4559,7 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .fetch-groups .fg-item .bird-ico { width: var(--ico-m, 16px); height: var(--ico-m, 16px); flex: 0 0 auto; color: var(--brand-deep, #1f5b48); }
 .fetch-groups .fg-item input[disabled] + .bird-ico,
 .fetch-groups .fg-item input[disabled] ~ span { opacity: .65; }   /* the type being viewed: always fetched */
+
+/* The probability sort toggle beside [?] — one button, ↓ commonest / ↑ rarest. */
+#sp-probsort-btn .ps-gly { font-size: var(--fs-b); line-height: 1; font-weight: 700; }
+#sp-probsort-btn.on { color: var(--brand-deep, #0b3a3a); border-color: var(--brand, #2e8b74); }

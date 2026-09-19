@@ -194,6 +194,13 @@ back on the map); ‹ goes straight to the map only when the page was opened fro
 
 ## Recent Observations (species list)
 
+**Sorting and what the list contains.** Beside the funnel sit two buttons, in the species table and
+the Images view alike: a **probability sort toggle** (↓ commonest first, ↑ rarest first — one tap
+each way; ⇅ while the list is ordered by something else), and the **[!] / [?]** switch — **[!]**
+lists only what has been observed, **[?]** weaves in the species the model predicts here as well,
+and where nothing has been observed the predictions are shown on their own. Every other column
+still sorts from its own header in the table.
+
 The fetch can be shown three ways (layout dropdown above the list — the choice is remembered on the
 device; a `layout=` link parameter applies to that visit only; changing the UI or second-name language
 relabels the open list in place): the ranked **Species list** table,

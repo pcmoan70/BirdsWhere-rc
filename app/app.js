@@ -6866,6 +6866,10 @@
             '<select id="sp-layout" class="detlist-sort-sel" aria-label="Layout"></select>' +
             '<button id="sp-filter-btn" class="sp-filter-btn ico-btn" type="button" aria-label="Filters" title="Filters">' + ico("funnel") + '</button>' +
             '<button id="sp-missing-btn" class="sp-filter-btn ico-btn sp-missing-btn" type="button" data-i18n-title="sp.missingBtn" title="Also list the species the model predicts here that have no observations yet">?</button>' +
+            // One button, two states: probability descending (commonest first) or ascending
+            // (rarest first). The column headers still offer every other sort; this is the
+            // one people reach for, and the Images layout has no headers to click.
+            '<button id="sp-probsort-btn" class="sp-filter-btn ico-btn sp-probsort-btn" type="button" data-i18n-title="sp.probSort" title="Sort by probability"><span class="ps-gly">⇅</span></button>' +
             '<div id="sp-filters-bar"></div>' +
           '</div>' +
           '<div id="sp-filters-wrap"></div>' +
@@ -18691,6 +18695,17 @@
       updateSortIndicators();
       renderSpControls();   // relabels the button ("?" ↔ "!") and rebuilds the body (table rows / Images cards)
     });
+    var psBtn = document.getElementById("sp-probsort-btn");
+    if (psBtn) psBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      // Not sorted by probability yet → commonest first (the list's own default order);
+      // otherwise flip. Two states only, which is what a single arrow button should mean.
+      if (speciesListSort.col !== "prob") speciesListSort = { col: "prob", dir: "desc" };
+      else speciesListSort.dir = speciesListSort.dir === "desc" ? "asc" : "desc";
+      updateSortIndicators();
+      sortSpeciesList();
+      renderSpControls();   // re-glyphs the button and rebuilds the body (table rows / Images cards)
+    });
     var vtBtn = document.getElementById("viewtoggle-btn");
     if (vtBtn) vtBtn.addEventListener("click", function () { if (onListView()) goToMapView(); else showListView(); });
 
@@ -22382,6 +22397,17 @@
       mb.textContent = spMissingOn() ? "!" : "?";
       mb.title = t(spMissingOn() ? "sp.missingOff" : "sp.missingBtn"); mb.setAttribute("aria-label", mb.title);
       mb.style.display = (spLayout === "table" || spLayout === "gallery") ? "" : "none";
+    }
+    // ↓ = commonest first, ↑ = rarest first, ⇅ = the list is sorted by something else.
+    var psb = document.getElementById("sp-probsort-btn");
+    if (psb) {
+      var onProb = speciesListSort.col === "prob";
+      var asc = onProb && speciesListSort.dir === "asc";
+      psb.classList.toggle("on", onProb);
+      var gly = psb.querySelector(".ps-gly"); if (gly) gly.textContent = onProb ? (asc ? "↑" : "↓") : "⇅";
+      psb.title = t(onProb ? (asc ? "sp.probSortAsc" : "sp.probSortDesc") : "sp.probSort");
+      psb.setAttribute("aria-label", psb.title);
+      psb.style.display = (spLayout === "table" || spLayout === "gallery") ? "" : "none";
     }
     if (spLayout === "table" || spLayout === "gallery") {
       // Column-header panels (Species / Total / Last / Prob) open inline in
