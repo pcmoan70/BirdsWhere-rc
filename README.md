@@ -228,9 +228,12 @@ jumps to the table. Tapping a bird's **photo** opens its **Macaulay Library** ca
 it was last seen (±1 month — the same link as the species menu's *Photos*); tapping the
 **Probability** opens the **Migration** view (Location analysis → Timeline) for that species, and on
 a mouse device hovering it previews the same 48-week probability bars at the fetch point (current
-week outlined, the last-seen week in blue; on a phone, press and hold a bar for the same chart). The same
-hover chart appears over every probability-derived number in the list views — the table's Probability, Season and comparison cells (Annual Top, % of max,
-Δ), and the observation rows' Probability, Season and Yr-peak cells. The **?** button (the same
+week outlined, the last-seen week in blue). That chart is reachable two ways on **every**
+probability-derived number in the app: **hover** it with a mouse, or **press and hold** it on any
+device — the table's Probability, Season and comparison cells (Annual Top, % of max, Δ), the
+observation rows' Probability, Season and Yr-peak cells, the picture cards' three bars, and the
+Family popup's Here / Season / Yr peak (in both its table and picture views). The hold gives the
+usual click sensation, does not also open the cell's own menu, and the next tap puts the chart away. The **?** button (the same
 "show predicted species" toggle as the table's) adds the model's commonest species for the point,
 interleaved with the observed ones and ranked commonest first (probability ↓ — in the table too, with
 the arrow on the Probability header) — predicted cards are dashed and labelled, and their photos load

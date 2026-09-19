@@ -225,6 +225,13 @@ window.AppAggregate = (function () {
         if (/^(chromist|protozo|bacteri|archae)/i.test(rKingdom)) return;
       }
       var row = { lat: r.lat, lon: r.lon, date: r.date || "", src: r.src, origin: r.origin || "", url: r.url || "", place: r.place || "", count: (r.count != null ? r.count : ""), act: r.act || "", note: r.note || "", flags: r.flags || "", observer: r.observer || "",
+        // Is `place` a real locality or only an admin-level fallback, and how fuzzed are
+        // the coordinates? Every normalizer sets both, and the canonical row (detSlim,
+        // used by saved trips and shares) keeps both — but the FETCH path used to drop
+        // them, so placeAccurate() read undefined and the Location filter listed a bare
+        // municipality as if it were a place. Additive: a cached row without them behaves
+        // exactly as it does today, so this needs no SIGHT_CACHE_VER bump (= no refetch).
+        placeCoarse: r.placeCoarse ? 1 : undefined, posFuzzM: (+r.posFuzzM > 0) ? +r.posFuzzM : undefined,
         // The recorder's own photo of the bird and the species' national red-list code,
         // from the sources that report them (iNaturalist, GBIF, Artsobs, Artportalen, Laji).
         photo: r.photo || "", photoBig: r.photoBig || "", photoBy: r.photoBy || "", photos: r.photos || null, rl: r.rl || "",

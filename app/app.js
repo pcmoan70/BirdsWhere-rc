@@ -4555,6 +4555,25 @@
         "|g" + fetchGroupList().join("+");   // a narrower tick set holds less: don't serve it as a wider one
     } catch (e) { return ""; }
   }
+  // May a cached copy filed under `cachedSig` answer a request made under `nowSig`?
+  // The sources / keys / dataset part must match exactly — a copy fetched without a
+  // source simply does not hold its records. The GROUP part is different: a fetch that
+  // asked for MORE types is a strict superset of one that asks for fewer, so it can
+  // serve it. Without this, narrowing the Settings type ticks (or viewing a type that is
+  // unticked, which forces it into the list) changed the signature and threw away a
+  // complete, already-downloaded result — the whole point of the superset policy.
+  // Unticking a type has never removed observations already on the map; it decides what
+  // the NEXT download asks for. Serving them from cache keeps that consistent.
+  function sigServes(cachedSig, nowSig) {
+    if (cachedSig === nowSig) return true;
+    if (!cachedSig || !nowSig) return false;
+    var ci = cachedSig.lastIndexOf("|g"), ni = nowSig.lastIndexOf("|g");
+    if (ci < 0 || ni < 0) return false;
+    if (cachedSig.slice(0, ci) !== nowSig.slice(0, ni)) return false;
+    var have = cachedSig.slice(ci + 2).split("+"), want = nowSig.slice(ni + 2).split("+");
+    for (var i = 0; i < want.length; i++) if (have.indexOf(want[i]) < 0) return false;
+    return true;
+  }
   function loadPersistedSightings() {
     if (!window.AppIDB) return Promise.resolve();
     return AppIDB.get("sightingsCache").then(function (m) { if (m && typeof m === "object") persistedSightings = m; }).catch(function () {});
@@ -4644,7 +4663,7 @@
     // Reuse a previously-downloaded result for this exact location (same radius,
     // group + source config) that is still fresh — no network, no refetch on reopen.
     var pf = persistedSightings[ck], ttl = sightTtlMs();
-    if (pf && pf.out && pf.ver === SIGHT_CACHE_VER && pf.sig === cfgSig && (ttl === 0 || (Date.now() - (pf.ts || 0)) < ttl)) {
+    if (pf && pf.out && pf.ver === SIGHT_CACHE_VER && sigServes(pf.sig, cfgSig) && (ttl === 0 || (Date.now() - (pf.ts || 0)) < ttl)) {
       var cachedPr = Promise.resolve(pf.out);
       allSightingsCache[ck] = cachedPr;
       disarm();
@@ -4655,7 +4674,7 @@
     // aggregate — no network. (Skipped for "all" itself and when no All cache exists.)
     if (fetchGroup !== "all") {
       var pa = persistedSightings[sightCK(lat, lon, rkm, "all", days)];
-      if (pa && pa.out && pa.ver === SIGHT_CACHE_VER && pa.sig === cfgSig && (ttl === 0 || (Date.now() - (pa.ts || 0)) < ttl)) {
+      if (pa && pa.out && pa.ver === SIGHT_CACHE_VER && sigServes(pa.sig, cfgSig) && (ttl === 0 || (Date.now() - (pa.ts || 0)) < ttl)) {
         var derivedPr = Promise.resolve(filterAggByGroup(pa.out, fetchGroup));
         allSightingsCache[ck] = derivedPr;
         disarm();
@@ -10925,8 +10944,10 @@
     el.appendChild(strip);
     centerPhotoPopup(el);
     wirePhotoCards(el, strip);
+    wireYearProbTips(el);                                    // hold Here / Season / Yr peak → the year curve
     strip.addEventListener("click", function (e) {
       if (e.target.closest("a")) return;                     // the photo credit link
+      if (Date.now() - spgHoldAt < 800) return;              // a hold just showed the year curve — not a tap on the card
       var c = e.target.closest(".cfi-card"); if (!c) return;
       var mk = c.getAttribute("data-key"), ml = labelsByKey[mk]; if (!ml) return;
       closeAnchoredMenu();
@@ -10979,10 +11000,15 @@
         probCell = probBarNa();
       }
       tr.innerHTML = '<td class="conf-name" data-name="' + escapeHtml(nm) + '" data-sci="' + escapeHtml(m.sci) + '">' + escapeHtml(nm) + '</td>' + probCell;
-      tr.addEventListener("click", function () { showDetRowMenu({ key: m.key, name: nm, sci: m.sci }, x, y); });
+      tr.setAttribute("data-key", m.key);                    // so a held probability knows whose curve to draw
+      tr.addEventListener("click", function () {
+        if (Date.now() - spgHoldAt < 800) return;            // a hold just showed the year curve
+        showDetRowMenu({ key: m.key, name: nm, sci: m.sci }, x, y);
+      });
       tbl.appendChild(tr);
     });
     el.appendChild(tbl);
+    wireYearProbTips(el);
     positionAnchoredMenu(el, x, y);
   }
   // Confusion-species (look-alike) partners: a per-bird list of the most similar
@@ -11380,8 +11406,10 @@
     el.appendChild(legend);
     centerPhotoPopup(el);
     wirePhotoCards(el, strip);
+    wireYearProbTips(el);                                    // hold any metric row → the year curve
     strip.addEventListener("click", function (e) {
       if (e.target.closest("a")) return;   // the photo credit link
+      if (Date.now() - spgHoldAt < 800) return;              // a hold just showed the year curve — not a tap on the card
       var c = e.target.closest(".cfi-card"); if (!c || c.classList.contains("cfi-base")) return;
       var pk = c.getAttribute("data-key"), w = null;
       for (var i = 0; i < arr.length; i++) if (arr[i].m.key === pk) { w = arr[i]; break; }
@@ -22504,7 +22532,7 @@
       }, true);
     }, 0);
   }
-  var YEAR_TIP_CELLS = ".prob-cell, .sp-season, .sp-ytop, .cmp-bar-cell, .delta-up, .delta-down, .delta-flat, .spg-prob";
+  var YEAR_TIP_CELLS = ".prob-cell, .sp-season, .sp-ytop, .cmp-bar-cell, .delta-up, .delta-down, .delta-flat, .spg-prob, .cfi-here, .cfi-season, .cfi-ytop";
   // The species + last-seen date a hovered cell belongs to: the cell's own data-key
   // (Season / Yr-peak cells), else its row's or card's (observation rows, gallery cards
   // carry data-key), else the table row's species link.
@@ -22519,6 +22547,41 @@
   function wireYearProbTips(panel) {
     if (!panel || panel._yearTipWired) return;
     panel._yearTipWired = true;
+    // Press-and-hold ANY probability-derived cell → the same year curve the mouse gets on
+    // hover. Bound on every device: the hover path below never runs on a phone, which is
+    // exactly where these numbers are hardest to read, and a mouse hold did nothing at all.
+    // `spgHoldAt` is stamped so the click that follows the release is swallowed by the
+    // card/row handlers instead of also opening a menu.
+    var lpT = null, lpX = 0, lpY = 0;
+    function holdStart(cell, x, y) {
+      lpX = x; lpY = y; clearTimeout(lpT);
+      lpT = setTimeout(function () {
+        lpT = null;
+        var tg = yearTipTarget(cell); if (!tg) return;
+        spgHoldAt = Date.now();
+        holdFeedback(cell);
+        showSpgProbTip(cell, tg.key, tg.date);
+        armSpgTipDismiss();   // the next touch anywhere puts it away
+      }, holdDelay());
+    }
+    function holdMove(x, y) { if (lpT && (Math.abs(x - lpX) > 12 || Math.abs(y - lpY) > 12)) { clearTimeout(lpT); lpT = null; } }
+    function holdEnd() { clearTimeout(lpT); lpT = null; }
+    panel.addEventListener("mousedown", function (e) {
+      if (e.button !== 0) return;
+      var c = e.target.closest && e.target.closest(YEAR_TIP_CELLS); if (!c) return;
+      holdStart(c, e.clientX, e.clientY);
+    });
+    panel.addEventListener("mousemove", function (e) { holdMove(e.clientX, e.clientY); });
+    panel.addEventListener("mouseup", holdEnd);
+    panel.addEventListener("mouseleave", holdEnd);
+    panel.addEventListener("touchstart", function (e) {
+      var c = e.target.closest && e.target.closest(YEAR_TIP_CELLS); if (!c) return;
+      var tt = e.touches && e.touches[0];
+      holdStart(c, tt ? tt.clientX : 0, tt ? tt.clientY : 0);
+    }, { passive: true });
+    panel.addEventListener("touchmove", function (e) { var tt = e.touches && e.touches[0]; if (tt) holdMove(tt.clientX, tt.clientY); }, { passive: true });
+    panel.addEventListener("touchend", holdEnd, { passive: true });
+    panel.addEventListener("touchcancel", holdEnd, { passive: true });
     if (window.matchMedia && !window.matchMedia("(hover: hover)").matches) return;   // touch: no hover
     panel.addEventListener("mouseover", function (e) {
       var c = e.target.closest && e.target.closest(YEAR_TIP_CELLS); if (!c) return;
@@ -22641,30 +22704,25 @@
         });
       }
       {
-        // Press-and-hold ☰ → the table view; press-and-hold a Prob / Season / Yr-peak bar
-        // → the species' year curve (the popup a mouse gets on hover). Bound on EVERY
-        // device, not just touch-only ones: with a mouse (or on a touch laptop, where the
-        // app reports hover) the hold used to do nothing at all. Both give the click
-        // sensation the moment they fire, and swallow the click that follows.
+        // Press-and-hold ☰ → the table view. (The Prob / Season / Yr-peak bars are held
+        // through wireYearProbTips, which covers every such cell in the app — this used to
+        // carry its own copy for the gallery alone, and two handlers on one cell meant two
+        // haptic buzzes.) Gives the click sensation the moment it fires and swallows the
+        // click that follows.
         var lpT = null, lpX = 0, lpY = 0;
         // What a completed hold does — shared by the touch and mouse paths.
-        function spgHoldFire(b, bar) {
+        function spgHoldFire(b) {
           spgHoldAt = Date.now();
-          if (b) { holdFeedback(b); closeAnchoredMenu(); openSpGalleryRecords(b.getAttribute("data-key")); return; }
-          var card = bar.closest(".spg-card"); if (!card) return;
-          holdFeedback(bar);
-          showSpgProbTip(bar, card.getAttribute("data-key"), card.getAttribute("data-date") || "");
-          armSpgTipDismiss();   // the next touch anywhere puts it away
+          holdFeedback(b); closeAnchoredMenu(); openSpGalleryRecords(b.getAttribute("data-key"));
         }
         rec.addEventListener("mousedown", function (e) {
           if (e.button !== 0) return;
           var b = e.target.closest && e.target.closest(".spg-sub");
-          var bar = b ? null : (e.target.closest && e.target.closest(".spg-bar"));
           spgPopWasOpen = !!(b && spgRecPop && _anchMenuEl === spgRecPop && spgRecPop.getAttribute("data-key") === b.getAttribute("data-key"));
-          if (!b && !bar) return;
+          if (!b) return;
           lpX = e.clientX; lpY = e.clientY;
           clearTimeout(lpT);
-          lpT = setTimeout(function () { spgHoldFire(b, bar); }, holdDelay());
+          lpT = setTimeout(function () { spgHoldFire(b); }, holdDelay());
         });
         rec.addEventListener("mousemove", function (e) {
           if (lpT && (Math.abs(e.clientX - lpX) > 12 || Math.abs(e.clientY - lpY) > 12)) { clearTimeout(lpT); lpT = null; }
@@ -22673,14 +22731,13 @@
         rec.addEventListener("mouseleave", function () { clearTimeout(lpT); lpT = null; });
         rec.addEventListener("touchstart", function (e) {
           var b = e.target.closest && e.target.closest(".spg-sub");
-          var bar = b ? null : (e.target.closest && e.target.closest(".spg-bar"));
           // Note NOW whether this ☰'s popover is open — the click that follows arrives after the
           // outside-click handler has closed it, so the tap-to-close state must be read here.
           spgPopWasOpen = !!(b && spgRecPop && _anchMenuEl === spgRecPop && spgRecPop.getAttribute("data-key") === b.getAttribute("data-key"));
-          if (!b && !bar) return;
+          if (!b) return;
           var tt = e.touches && e.touches[0]; lpX = tt ? tt.clientX : 0; lpY = tt ? tt.clientY : 0;
           clearTimeout(lpT);
-          lpT = setTimeout(function () { spgHoldFire(b, bar); }, holdDelay());
+          lpT = setTimeout(function () { spgHoldFire(b); }, holdDelay());
         }, { passive: true });
         rec.addEventListener("touchmove", function (e) {
           var tt = e.touches && e.touches[0];
