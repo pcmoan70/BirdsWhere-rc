@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1827";
+var VERSION = "v1828";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• The Family and Confusion picture views now fetch every card's photo, a few at a time, and keep them. They used to ask for all of them at once — sixty requests in a breath, which trips the app's own \"photo service is not answering\" guard after four failures, leaving the rest of the family blank and, worse, remembering nothing, so the next visit was blank again. Now they queue politely, retry anything that fails, and the whole family is on the device for next time.",
+  "• Family and Confusion picture views now fill in seconds instead of minutes, with no gaps. They used to ask Wikimedia about one species per card — a duck family is 164 cards, so 328 requests, which took two and a half minutes and got throttled halfway through, leaving a long tail of cards stuck empty (Mute swan among them). The whole list is now looked up in a handful of batched requests: Anatidae went from 150 seconds and 48 broken cards to 4 seconds and all 164 photos, every one credited and kept on the device.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

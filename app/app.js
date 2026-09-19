@@ -11248,12 +11248,14 @@
   function confusionView() { return window.GeoState.get("confusionView", "images") === "table" ? "table" : "images"; }
   // The view switch in the popup's top-right (next to ×): table ↔ photo cards, one-off (the
   // Settings default is untouched); reopens the other view at the same anchor.
-  // Photo cards in a popup (the family view, the confusion view). Asking for sixty
-  // pictures at once is how you get rate-limited: four failures in a row trip
-  // spPhotoFailed() and every remaining card is then told the service is down, so a big
-  // family came out half empty and STAYED that way, nothing cached for next time.
-  // So: the cards on screen first, the rest as they scroll into view, at most three
-  // lookups in flight, and a transient failure puts the card back in the queue.
+  // Photo cards in a popup (the family view, the confusion view). Asking for one picture
+  // per card is how you get rate-limited: four failures in a row trip spPhotoFailed()
+  // and every remaining card is then told the service is down, so a big family came out
+  // half empty and STAYED that way, nothing cached for next time.
+  // So: one BATCHED pass for the whole strip (spImagesPrefetch — fifty species per
+  // request, so Anatidae's 164 cards cost eight round trips instead of 328), then the
+  // per-card chain, three in flight, for whatever the batch could not place — a species
+  // with no article picture, whose file is non-free, or a name Wikipedia does not know.
   function wirePhotoCards(popup, strip) {
     var PARALLEL = 3, queue = [], running = 0;
     function fill(card) {
@@ -11275,11 +11277,19 @@
           }, function () { running--; pump(); });
       }
     }
-    // EVERY card is queued, in order, so the whole family ends up fetched and cached —
-    // scrolled to or not. The pacing above is what keeps that polite; a scroll-triggered
-    // loader would leave the species you never scrolled past permanently unknown, and
-    // those are exactly the ones worth having on the next visit.
-    Array.prototype.slice.call(strip.querySelectorAll(".cfi-card")).forEach(fill);
+    // EVERY card ends up fetched and cached — scrolled to or not. The species you never
+    // scrolled past are exactly the ones worth having on the next visit.
+    var cards = Array.prototype.slice.call(strip.querySelectorAll(".cfi-card"));
+    var want = [], seen = {}, store = spImgStore();
+    cards.forEach(function (c) {
+      var sci = c.getAttribute("data-sci");
+      if (sci && !seen[sci] && !store[sci]) { seen[sci] = 1; want.push(sci); }
+    });
+    cards.forEach(function (c) { if (store[c.getAttribute("data-sci")]) fill(c); });   // already on the device: paint now
+    if (!want.length) return;
+    strip.classList.add("cfi-loading");                        // a quiet placeholder while the batch is out
+    function rest() { strip.classList.remove("cfi-loading"); cards.forEach(fill); }
+    spImagesPrefetch(want).then(rest, rest);
   }
   function confSwitchBtn(el, label, open) {
     var b = document.createElement("button");
@@ -22013,8 +22023,13 @@
   // file page.
   var spImgCache = null;   // sci → { t: thumb url, a: artist, l: licence, f: file title } | { none: 1 }
   function spImgStore() { if (!spImgCache) spImgCache = window.GeoState.get("spImages", {}) || {}; return spImgCache; }
-  function spImgRemember(sci, rec) {
-    var c = spImgStore(); c[sci] = rec;
+  function spImgRemember(sci, rec) { var o = {}; o[sci] = rec; spImgRememberMany(o); }
+  // One save for a whole batch: the family popup remembers 160 species at once, and
+  // saving per species re-serialised the entire (capped) store that many times.
+  function spImgRememberMany(recs) {
+    var c = spImgStore(), n = 0;
+    for (var k in recs) { c[k] = recs[k]; n++; }
+    if (!n) return;
     var keys = Object.keys(c); if (keys.length > 800) keys.slice(0, keys.length - 800).forEach(function (k) { delete c[k]; });   // bounded
     window.GeoState.save({ spImages: c });
   }
@@ -22113,6 +22128,96 @@
   }
   function spImageFallbacks(sci) {
     return spImgFromWikidata(sci).then(function (rec) { return rec || spImgFromInat(sci); });
+  }
+  // ---- Whole-list lookup ----------------------------------------------------
+  // A family popup opens every member at once — Anatidae is 164 cards. Asking per card
+  // is two Wikimedia requests each: measured 2026-09-19 that took 150 s to fill and
+  // tripped the app's own "photos are not answering" guard on the way (48 cards wearing
+  // the offline mark at t+60 s), so most of a big family looked broken for minutes.
+  // The MediaWiki API answers 50 titles per request, so the same family costs four
+  // round trips to en.wikipedia (which article, which picture) and four to Commons
+  // (who took it, under what licence) — and lands in a couple of seconds.
+  var SP_BATCH = 50;
+  function mwQuery(host, params) {
+    return fetch("https://" + host + "/w/api.php?action=query&format=json&formatversion=2&origin=*&" + params)
+      .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+  }
+  function spImgTitle(sci) { return String(sci || "").trim().replace(/\s+/g, "_"); }
+  // file name -> { a, l, lu, h } for up to SP_BATCH files, Commons first and then the
+  // ones that turned out to be local to en.wikipedia.
+  function spImgMetaBatch(files) {
+    var out = {};
+    function ask(host, list) {
+      if (!list.length) return Promise.resolve([]);
+      return mwQuery(host, "prop=imageinfo&iiprop=extmetadata&iiextmetadatafilter=Artist%7CLicenseShortName%7CLicenseUrl&titles=" +
+        encodeURIComponent(list.map(function (f) { return "File:" + f; }).join("|"))).then(function (j) {
+        var miss = [];
+        ((j && j.query && j.query.pages) || []).forEach(function (pg) {
+          var name = String(pg.title || "").replace(/^File:/, "").replace(/ /g, "_");   // the API answers with spaces, pageimage uses underscores
+          var ii = pg.imageinfo && pg.imageinfo[0] && pg.imageinfo[0].extmetadata;
+          if (pg.missing || !ii) { if (name) miss.push(name); return; }
+          out[name] = {
+            a: String((ii.Artist && ii.Artist.value) || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 240),
+            l: String((ii.LicenseShortName && ii.LicenseShortName.value) || "").trim(),
+            lu: String((ii.LicenseUrl && ii.LicenseUrl.value) || "").trim(), h: host };
+        });
+        return miss;
+      });
+    }
+    return ask("commons.wikimedia.org", files).then(function (miss) { return ask("en.wikipedia.org", miss); }).then(function () { return out; });
+  }
+  function spImgBatchOnce(scis) {
+    return mwQuery("en.wikipedia.org", "redirects=1&prop=pageimages%7Cpageprops&ppprop=disambiguation&piprop=thumbnail%7Cname&pithumbsize=" + SP_IMG_W +
+      "&titles=" + encodeURIComponent(scis.map(spImgTitle).join("|"))).then(function (j) {
+      var q = j && j.query; if (!q) return null;                 // transient: leave these to the per-card chain
+      // What we asked for -> the article MediaWiki actually answered about.
+      var to = {};
+      (q.normalized || []).forEach(function (n) { to[n.from] = n.to; });
+      (q.redirects || []).forEach(function (n) { to[n.from] = n.to; });
+      var byTitle = {};
+      (q.pages || []).forEach(function (pg) { byTitle[pg.title] = pg; });
+      var recs = {}, files = [];
+      scis.forEach(function (sci) {
+        var t = spImgTitle(sci);
+        for (var i = 0; i < 3 && to[t]; i++) t = to[t];          // normalise, then follow the redirect
+        var pg = byTitle[t] || byTitle[t.replace(/_/g, " ")];
+        var th = pg && pg.thumbnail && pg.thumbnail.source;
+        // No article picture, or the name leads to a disambiguation page (whose "image" is
+        // an icon, not the species) — both cases go to spImageFallbacks, as the single-species
+        // path has always done.
+        if (!th || !pg.pageimage || (pg.pageprops && pg.pageprops.disambiguation !== undefined)) return;
+        recs[sci] = { v: SP_IMG_VER, t: spImgThumb(th), f: pg.pageimage, a: "", l: "" };
+        files.push(pg.pageimage);
+      });
+      if (!files.length) return recs;
+      return spImgMetaBatch(files).then(function (meta) {
+        Object.keys(recs).forEach(function (sci) {
+          var m = meta[recs[sci].f];
+          if (m) { recs[sci].a = m.a; recs[sci].l = m.l; recs[sci].lu = m.lu; recs[sci].h = m.h; }
+        });
+        return recs;
+      });
+    });
+  }
+  // Fill the photo cache for a list of species. Batches run one after another (eight
+  // requests for a big family, not 328) and only positively-free pictures are kept —
+  // everything else is simply not remembered, so the per-card chain still gets its turn.
+  function spImagesPrefetch(scis) {
+    if (!scis.length || photoNetDown()) return Promise.resolve();
+    var chain = Promise.resolve();
+    for (var i = 0; i < scis.length; i += SP_BATCH) {
+      (function (part) {
+        chain = chain.then(function () {
+          return spImgBatchOnce(part).then(function (recs) {
+            if (!recs) return;
+            var keep = {}, n = 0;
+            Object.keys(recs).forEach(function (sci) { if (spImgLicenceOk(recs[sci].l)) { keep[sci] = recs[sci]; n++; } });
+            if (n) spImgRememberMany(keep);
+          }, function () {});
+        });
+      })(scis.slice(i, i + SP_BATCH));
+    }
+    return chain;
   }
   function spImageFor(sci) {
     var c = spImgStore();
