@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1824";
+var VERSION = "v1825";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• Fixed: switching the butterflies filter on or off left an open list showing what it showed before. The per-point species table re-filtered itself, but the plain \"by observation\" list — the one you get when no point is selected — is rebuilt rather than re-filtered, and nothing asked it to rebuild, so the filter only appeared to take hold after switching to the map and back. It now applies at once, either way.",
+  "• The butterflies filter now narrows the INSECTS and leaves everything else alone — your birds stay put while it is on, where before it emptied the list of them. The funnel turns orange whenever it is set, even where it removes nothing, so you can see it is on; the funnel's clear-all switches it off with the other filters, and its own section has an × of its own.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -194,6 +194,13 @@ back on the map); ‹ goes straight to the map only when the page was opened fro
 
 ## Recent Observations (species list)
 
+**Butterflies filter** (funnel → Butterflies) — narrows the **insects** to the day-flying
+butterflies (Papilionoidea) and leaves every other class untouched, so birds, mammals and plants
+are unaffected while it is on. A species is recognised from its genus (all 1 968 genera of the
+seven families ship with the app, `app/butterfly-genera.json`), with each record's family — or
+iNaturalist's taxon ancestry — as the fallback. It marks the funnel orange whenever it is set and
+is cleared by the funnel's clear-all.
+
 **Sorting and what the list contains.** Beside the funnel sit two buttons, in the species table and
 the Images view alike: a **probability sort toggle** (↓ commonest first, ↑ rarest first — one tap
 each way; ⇅ while the list is ordered by something else), and the **[!] / [?]** switch — **[!]**

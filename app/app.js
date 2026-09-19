@@ -9390,9 +9390,13 @@
   // A SPECIES passes when any of its observations is a butterfly. Predicted species
   // (the [?] rows) have no observations, and the model's insects are singing insects —
   // grasshoppers and cicadas — so with the filter on they drop out, which is the point.
+  // Narrows the INSECTS to butterflies and leaves every other class alone — a bird is
+  // not a butterfly, but nobody asking for butterflies wants their birds to vanish.
   function detPassesBflySp(k) {
-    if (!detBflyFilter || !k) return !detBflyFilter;
+    if (!detBflyFilter || !k) return true;
     var lbl = labelsByKey[k];
+    var cls = lbl ? ((taxByCode[lbl.key] || {}).class_name || "") : ((dEntry(k) || {}).cls || "");
+    if (String(cls).toLowerCase() !== "insecta") return true;  // not an insect → unaffected
     var sci = lbl ? lbl.sci : (String(k).indexOf("x:") === 0 ? String(k).slice(2) : "");
     var byName = sciIsButterfly(sci);
     if (byName !== null) return byName;                        // the bundled genus list decides
@@ -9403,19 +9407,19 @@
     detBflyFilter = !!on;
     saveLegendState();
     if (detBflyFilter) {
-      // Butterflies are insects: with Birds (or plants, or fungi) on screen the filter
-      // could only ever empty the list, so show insects — the filter is the request.
-      if (speciesGroup !== "all" && speciesGroup !== "insecta") showGroupWithoutSaving("insecta");
       ensureButterflyGenera().then(function () {
         rebuildDetLayers(); updateDetLegend(); applyAgeFilter();
         // applyAgeFilter only touches the per-point TABLE. Without a clicked point the
         // open list is the "By observation" page, which is rebuilt, not re-filtered — so
         // ticking the filter left it showing everything until the view was toggled.
         try { refreshOpenList(); } catch (e) {}
+        try { renderSpFilterBtn(); } catch (e) {}   // the funnel marks that it is on
         if (allFiltersPane) renderAllFiltersPane();
       });
     } else {
-      try { refreshOpenList(); } catch (e) {}   // …and the same when switching it off
+      try { refreshOpenList(); } catch (e) {}      // …and the same when switching it off
+      try { renderSpFilterBtn(); } catch (e) {}
+      if (allFiltersPane) renderAllFiltersPane();
     }
     rebuildDetLayers(); updateDetLegend();       // map dots + legend
     applyAgeFilter();                            // the list's own show/hide pass
@@ -12965,7 +12969,7 @@
   // recency days / date range.) Drives the black × (clear all) in both the legend
   // and the detections-list filter bar.
   function detHasFilter() {
-    return detSelectionActive() || detExclusionActive() || detDaySelActive() || detStarFilter || detRareFilter || detYearFilter || detLifeFilter || detAlertFilter || (detLegendRows !== "all") || detNewFilter || !!detObsFilter || !!detLocFilter || !!detSrcFilter || (detRecencyDays() !== 0) || !!detDateRange() || detMonths().length > 0 || countFilterActive() || probFilterActive() || (detRegionMode !== "off");
+    return detBflyFilter || detSelectionActive() || detExclusionActive() || detDaySelActive() || detStarFilter || detRareFilter || detYearFilter || detLifeFilter || detAlertFilter || (detLegendRows !== "all") || detNewFilter || !!detObsFilter || !!detLocFilter || !!detSrcFilter || (detRecencyDays() !== 0) || !!detDateRange() || detMonths().length > 0 || countFilterActive() || probFilterActive() || (detRegionMode !== "off");
   }
   // Reset every legend filter at once (the black ×): the species selection, the
   // ★/◉/🟡 mode filter, the observer filter, and the recency (days) window → All.
@@ -12973,6 +12977,7 @@
   function clearAllFilters() {
     detSelected = {}; detExcluded = {}; snapshotSelBase();   // selection AND its base reset → the legend's black × has nothing to revert
     detStarFilter = 0; detRareFilter = 0; detYearFilter = 0; detLifeFilter = 0; detAlertFilter = 0; detNewFilter = false; detTodayFilter = false;
+    detBflyFilter = false;                                                    // butterflies-only → off
     detObsPanelOpen = false; detDaysPanelOpen = false; detModePanelOpen = false;
     setDetObsFilter(null);                                                   // observer → all
     setDetLocFilter(null);                                                   // location → all
@@ -15117,6 +15122,7 @@
           case "lists": detSelected = {}; detExcluded = {}; snapshotSelBase(); saveLegendState(); detFiltersRefresh(); break;
           case "mode": detStarFilter = detRareFilter = detYearFilter = detLifeFilter = detAlertFilter = 0; detFiltersRefresh(); break;
           case "new": setDetNewFilter(false); break;
+          case "bfly": setDetBflyFilter(false); break;
           case "count": spCountMin = spCountMax = null; detFiltersRefresh(); break;
           case "sort": speciesListSort.col = ""; speciesListSort.dir = ""; updateSortIndicators(); sortSpeciesList(); renderAllFiltersPane(); break;
           case "prob":
@@ -22490,7 +22496,10 @@
     // Orange only when the filters actually REMOVE something (not for a set-but-harmless
     // filter or a sort override) — except the probability range, which marks the funnel
     // whenever it isn't the full 0–100.
-    fb.classList.toggle("on", !!(fbSt && fbSt.removed > 0) || probFilterActive());
+    // Orange when the filters actually REMOVE something — plus two that mark it whenever
+    // they are set at all: the probability range, and butterflies-only, which removes
+    // nothing while you are looking at birds but is still very much on.
+    fb.classList.toggle("on", !!(fbSt && fbSt.removed > 0) || probFilterActive() || detBflyFilter);
     // Kept/removed bar: the fraction the active filters keep (green) vs remove (red).
     var fbB = fb.querySelector(".fx-bar");
     if (fbB) fbB.parentNode.removeChild(fbB);
