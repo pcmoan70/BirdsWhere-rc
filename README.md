@@ -902,6 +902,11 @@ no direction can delete data on the other device.
 
 ## Persistence, settings & languages
 
+- **A poster launch (`/f/` → `?location=here`) fetches birds only** (since v1819) — the shortcut is
+  a bird errand and fetches immediately on a GPS fix, so it asks one taxon of each source instead of
+  six, and shows Birds even if the device was last on another group (the saved preference is not
+  changed). The one-shot is disarmed when that fetch settles; everything after it follows the ticks
+  below.
 - **Species types to fetch** (Settings → Fetching, since v1811) — six ticks (birds, mammals,
   amphibians, insects, plants, fungi), all on by default, deciding what a fetch ASKS FOR. Every
   source has one page budget per fetch shared across the requested types, so fewer ticks return

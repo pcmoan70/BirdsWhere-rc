@@ -213,7 +213,12 @@
   // paging budget across the types requested, so fetching fewer of them returns more of
   // each before a source's limit is reached. Default: all six, as in v1809.
   var FETCH_GROUP_IDS = ["aves", "mammalia", "amphibia", "insecta", "plantae", "fungi"];
+  // A poster launch (/f/ → ?location=here) is a BIRD errand: the first fetch asks for
+  // birds only, so the visitor waits for one taxon rather than six. Everything after it
+  // follows the Settings ticks again. One-shot, consumed by the next fetch.
+  var launchBirdsOnce = false;
   function fetchGroupsOn() {
+    if (launchBirdsOnce) return { aves: true, mammalia: false, amphibia: false, insecta: false, plantae: false, fungi: false };
     var saved = window.GeoState.get("fetchGroups", null);
     var out = {};
     FETCH_GROUP_IDS.forEach(function (g) { out[g] = saved && typeof saved === "object" ? saved[g] !== false : true; });
@@ -225,6 +230,15 @@
     return out;
   }
   function fetchGroupList() { var on = fetchGroupsOn(); return FETCH_GROUP_IDS.filter(function (g) { return on[g]; }); }
+  // Switch what is DISPLAYED without touching the stored preference — for a launch that
+  // knows what it is about (the poster), not for a choice the user made.
+  function showGroupWithoutSaving(g) {
+    if (!g || speciesGroup === g) return;
+    speciesGroup = g;
+    var sel = document.getElementById("group-select"); if (sel) sel.value = g;
+    try { updateSettingsIcon(); renderGroupPicker(); refreshGroupModeOptions(); } catch (e) {}
+    if (typeof fetchGroupsRender === "function") fetchGroupsRender();
+  }
   // "all" while more than one type is requested (the per-dataset gating in fetch.js reads
   // this), else that single type.
   function fetchScopeGroup() { var l = fetchGroupList(); return l.length === 1 ? l[0] : "all"; }
@@ -4512,10 +4526,13 @@
     if (!window.AppIDB) return Promise.resolve();
     return AppIDB.get("sightingsCache").then(function (m) { if (m && typeof m === "object") persistedSightings = m; }).catch(function () {});
   }
-  function persistSightings(ck, out) {
+  function persistSightings(ck, out, sig) {
     if (!window.AppIDB) return;
     try {
-      persistedSightings[ck] = { ts: Date.now(), sig: sightConfigSig(), ver: SIGHT_CACHE_VER, out: out };
+      // `sig` is the signature captured when the fetch STARTED (sources, keys, and which
+      // species types it asked for). Filing it under a freshly-read one could label a
+      // narrow result as a wide one — see the poster launch's birds-only fetch.
+      persistedSightings[ck] = { ts: Date.now(), sig: sig || sightConfigSig(), ver: SIGHT_CACHE_VER, out: out };
       var keys = Object.keys(persistedSightings);
       if (keys.length > 6) {   // keep the 6 most-recently fetched locations
         keys.sort(function (a, b) { return (persistedSightings[b].ts || 0) - (persistedSightings[a].ts || 0); });
@@ -4578,17 +4595,26 @@
     // Day window: an explicit override (Fetch-on-open) wins; else the general
     // "Download — last N days" setting; else 0 = each source's own default.
     var days = (daysOverride > 0) ? daysOverride : downloadDays();
-    var fetchGroup = fetchScopeGroup();   // always the superset: one fetch serves every group
+    var fetchGroup = fetchScopeGroup();   // the Settings ticks (or birds alone, right after a poster launch)
+    // The config signature decides what the cache may serve and how this result is filed.
+    // Capture it BEFORE the one-shot below is cleared, or a birds-only result would be
+    // stored as though it held every ticked type.
+    var cfgSig = sightConfigSig();
+    // The one-shot must stay armed for the WHOLE fetch: each source builds its taxon
+    // filter (gbifTaxonParam / inatIconicTaxa) while the requests go out, not here. It is
+    // disarmed when this fetch settles — or immediately when the answer comes from cache.
+    var disarm = function () { launchBirdsOnce = false; };
     var ck = sightCK(lat, lon, rkm, fetchGroup, days);   // group- + days-keyed: a different window is a different cache entry
     var fetchOrigin = { lat: lat, lon: lon, rkm: rkm };  // rides on every (partial) result → area ownership follows the FETCH, not the current view
-    if (seededSightings[ck]) return seededSightings[ck];   // shared-list import (works with NO keys/sources — never refetched)
-    if (allSightingsCache[ck]) return allSightingsCache[ck];
+    if (seededSightings[ck]) { disarm(); return seededSightings[ck]; }   // shared-list import (works with NO keys/sources — never refetched)
+    if (allSightingsCache[ck]) { disarm(); return allSightingsCache[ck]; }
     // Reuse a previously-downloaded result for this exact location (same radius,
     // group + source config) that is still fresh — no network, no refetch on reopen.
     var pf = persistedSightings[ck], ttl = sightTtlMs();
-    if (pf && pf.out && pf.ver === SIGHT_CACHE_VER && pf.sig === sightConfigSig() && (ttl === 0 || (Date.now() - (pf.ts || 0)) < ttl)) {
+    if (pf && pf.out && pf.ver === SIGHT_CACHE_VER && pf.sig === cfgSig && (ttl === 0 || (Date.now() - (pf.ts || 0)) < ttl)) {
       var cachedPr = Promise.resolve(pf.out);
       allSightingsCache[ck] = cachedPr;
+      disarm();
       return cachedPr;
     }
     // Subset reuse: for a specific group, if a still-fresh "All" fetch for the SAME
@@ -4596,9 +4622,10 @@
     // aggregate — no network. (Skipped for "all" itself and when no All cache exists.)
     if (fetchGroup !== "all") {
       var pa = persistedSightings[sightCK(lat, lon, rkm, "all", days)];
-      if (pa && pa.out && pa.ver === SIGHT_CACHE_VER && pa.sig === sightConfigSig() && (ttl === 0 || (Date.now() - (pa.ts || 0)) < ttl)) {
+      if (pa && pa.out && pa.ver === SIGHT_CACHE_VER && pa.sig === cfgSig && (ttl === 0 || (Date.now() - (pa.ts || 0)) < ttl)) {
         var derivedPr = Promise.resolve(filterAggByGroup(pa.out, fetchGroup));
         allSightingsCache[ck] = derivedPr;
+        disarm();
         return derivedPr;
       }
     }
@@ -4675,8 +4702,9 @@
       var noData = !out || !(out.dedupTotal > 0);
       var anyFail = out && ((out.failed && out.failed.length) || (out.timedOut && out.timedOut.length));
       if (noData && anyFail && allSightingsCache[ck] === pr) delete allSightingsCache[ck];
-      else if (out && out.dedupTotal > 0) persistSightings(ck, out);   // keep the download so a reopen doesn't refetch
+      else if (out && out.dedupTotal > 0) persistSightings(ck, out, cfgSig);   // keep the download so a reopen doesn't refetch
     }, function () { if (allSightingsCache[ck] === pr) delete allSightingsCache[ck]; });
+    pr.then(disarm, disarm);   // fetch settled → the next one follows the Settings ticks
     return pr;
   }
   // Historic-observations counterpart of fetchAllSightingsAt: GBIF only, over a
@@ -6194,6 +6222,8 @@
     var qs;
     try { qs = new URLSearchParams(window.location.search); } catch (e) { return; }
     if (qs.get("here") !== "1") return;
+    launchBirdsOnce = true;                 // same bird errand as /f/ (see fetchGroupsOn)
+    showGroupWithoutSaving("aves");
     stripShortcutParams();   // one-shot: a reload must not locate + fetch again
     if (!navigator.geolocation || !map) { setStatus(t("status.locateError")); return; }
     var modeSel = document.getElementById("mode-select");
@@ -6363,6 +6393,11 @@
     }
     updateSortIndicators();
     urlForceView = (p.show || "").toLowerCase() === "list" ? "list" : null;   // else map-first (also 'map')
+    // Birds only for this launch — and SHOW birds, so a visitor whose last session was on
+    // plants doesn't land on an empty map. Not saved: their own choice is untouched, and
+    // the next fetch honours the Settings ticks again.
+    launchBirdsOnce = true;
+    showGroupWithoutSaving("aves");
     launchNotePending = true;   // the first settled fetch may add the "few sightings — add keys" note
     stripShortcutParams();   // everything above is consumed — a reload must not run the shortcut again
 
