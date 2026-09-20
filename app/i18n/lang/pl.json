@@ -1,4 +1,5 @@
 {
+  "fetch.pages": "pobrano {n} stron",
   "fetch.clickErr": "Kliknij, aby zobaczyć, dlaczego to źródło zawiodło",
   "alt.loading": "Wys.: …",
   "alt.value": "Wys.: {m} m",

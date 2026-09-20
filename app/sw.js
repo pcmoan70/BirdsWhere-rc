@@ -21,21 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1840";
+var VERSION = "v1841";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• Beyond birds. Plants, fungi, insects, mammals and amphibians are now first-class: names in your language for 41 650 species bundled with the app, photographs, and no dependence on the bird model \u2014 groups it does not cover simply run on the observations. Settings decides which types are downloaded, so you need not pay for the ones you never look at.",
-  "• A butterflies-only filter, on the funnel, for the insect group.",
-  "• Family, as pictures. Tapping a scientific name opens the whole family as photo cards, each with Here, Season and Yr peak, so you can see at a glance which relatives are around now and which never get likely where you are.",
-  "• Press and hold any probability, Season or Yr-peak number \u2014 anywhere, on any device \u2014 for that species\u2019 year curve. A single arrow button sorts either list by probability.",
-  "• Faster. Filtering takes about half the work it did, and switching between Species list, Observation list and Images went from seconds of frozen screen to immediate, with the funnel blinking while it works.",
-  "• More observer photographs: Artportalen and Laji.fi records now bring their own pictures, as Artsobservasjoner and iNaturalist already did.",
-  "• Rarity alerts went over end to end \u2014 they watch every source rather than eBird alone, need no eBird key, can reach you by email, and no longer stop mid-check.",
-  "• The Settings gear: a tap opens a quick panel (species group, fetch radius, how far back to fetch), press and hold opens the full settings.",
+  "• You can now see what a fetch is actually doing. The status line names every source it is waiting on and shows \u25a4n \u2014 how many pages that source has returned so far. Sources page internally (GBIF up to 50), so a long wait is usually one source steadily working, and that now looks different from one that has hung: a source with no answer yet shows ticking dots, a finished one \u2713 and its record count. Fetching several saved locations keeps that detail visible instead of replacing it with just the location name.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -3012,6 +3012,14 @@ table.chk-table .chk-text { min-width: 100px; }
 .obs-done { opacity: 0.5; }
 /* The cycling highlight on the currently-spotlit pending source name. */
 .obs-knk { font-weight: 700; animation: obs-blink 0.9s ease-in-out infinite; }
+/* Pages turned so far, per source — "▤3". Dimmer than the name: it is progress, not a
+   result, and the record count replaces it once the source is done. */
+.obs-pages { opacity: .75; font-variant-numeric: tabular-nums; }
+/* A source that has been asked and has sent nothing back yet: three ticking dots, so
+   "waiting on the server" reads differently from "working through the pages". */
+.obs-wait::after { content: "…"; display: inline-block; width: 1.1em; text-align: left; animation: obs-wait-dots 1.2s steps(4, end) infinite; }
+@keyframes obs-wait-dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75%, 100% { content: "…"; } }
+@media (prefers-reduced-motion: reduce) { .obs-wait::after { animation: none; content: "…"; } }
 @keyframes obs-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 
 /* Timeline: ring the current-week bar (its fill stays on the red->green scale) */

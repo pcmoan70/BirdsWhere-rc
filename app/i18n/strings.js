@@ -192,6 +192,7 @@ window.GeoI18N = (function () {
         "fetch.timeoutHint": "This source was still loading when it hit the fetch-timeout limit, so only part of its data was kept. Raise this source's timeout under Settings → Data sources to give it more time to finish.",
         "fetch.raiseTimeout": "⏱ Increase timeout",
         "fetch.errUnknown": "unknown error",
+        "fetch.pages": "{n} pages fetched",
         "fetch.clickErr": "Click to see why this source failed",
         "status.loadingDet": "Loading detections…",
         "ctrl.exportPoints": "Map points",

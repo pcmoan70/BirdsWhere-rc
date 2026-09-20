@@ -1,4 +1,5 @@
 {
+  "fetch.pages": "staženo {n} stránek",
   "fetch.clickErr": "Kliknutím zjistíte, proč tento zdroj selhal",
   "alt.loading": "Nadm. výška: …",
   "alt.value": "Nadm. výška: {m} m",

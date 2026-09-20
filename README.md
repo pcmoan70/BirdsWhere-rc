@@ -353,6 +353,15 @@ model's species, and merged — around a configurable **sightings radius**. Mana
 seconds — default 120, `0` = none — and endpoint);
 failed or timed-out sources are flagged in the status line.
 
+**While a fetch runs** the status line names every source it is waiting on and what each is doing:
+`GBIF[4/5](Artsobservasjoner (NO)) ▤19 · iNaturalist ▤13 · Artsobservasjoner ✓ (15573)`. **▤n** is
+the number of pages that source has returned so far — every source pages internally (GBIF up to
+50, Artportalen and Laji.fi 6, NBN 10), so a source steadily working through page 19 now reads
+differently from one that has hung. A source that has been asked but has sent nothing back yet
+shows **ticking dots** instead; a finished one switches to **✓ (records)**. When several saved
+locations are fetched at once, `Fetching <name> (1/2)…` sits **in front of** that line rather than
+replacing it.
+
 **Direct sources**
 
 | source | scope | key |

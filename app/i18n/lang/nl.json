@@ -1,4 +1,5 @@
 {
+  "fetch.pages": "{n} pagina's opgehaald",
   "fetch.clickErr": "Klik om te zien waarom deze bron mislukte",
   "alt.loading": "Hoogte: …",
   "alt.value": "Hoogte: {m} m",

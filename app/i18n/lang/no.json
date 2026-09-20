@@ -1,4 +1,5 @@
 {
+  "fetch.pages": "{n} sider hentet",
   "fetch.clickErr": "Klikk for å se hvorfor denne kilden mislyktes",
   "alt.loading": "Høyde: …",
   "alt.value": "Høyde: {m} m",

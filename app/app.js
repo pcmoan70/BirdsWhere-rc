@@ -4990,11 +4990,23 @@
   // the line list a source twice with two different counts.
   var obsBatch = [];             // {name, done, count, bid} across any in-flight fetches
   var obsSub = Object.create(null);   // source name -> {done, total} sub-progress (GBIF datasets)
+  var obsPages = Object.create(null);  // source name -> pages fetched so far (AppFetch.onPage)
+  var obsPrefix = "";                  // e.g. "Fetching Oslo (1/2)…" — kept in front of the per-source line
   var obsBid = 0;                // current batch id
   var obsTick = 0;               // cycles the highlight through the pending sources
   var obsTimer = null;           // interval advancing the highlight while anything loads
   var obsStatusActive = false;   // a map-plot is mirroring the line into the status bar
-  function obsNewBatch() { obsBatch = obsBatch.filter(function (it) { return !it.done; }); obsSub = Object.create(null); obsBid++; }
+  function obsNewBatch() {
+    obsBatch = obsBatch.filter(function (it) { return !it.done; });
+    obsSub = Object.create(null); obsPages = Object.create(null); obsBid++;
+    try { AppFetch.resetPages(); } catch (e) {}
+  }
+  // id -> display name, straight off the source list, so a new source needs no map here.
+  function obsNameForId(id) {
+    var l = obsSources();
+    for (var i = 0; i < l.length; i++) if (l[i].id === id) return l[i].name;
+    return "";
+  }
   function obsCurrent() { var b = obsBid; return obsBatch.filter(function (it) { return it.bid === b; }); }
   function obsPendingCount() { var b = obsBid; var n = 0; obsBatch.forEach(function (it) { if (it.bid === b && !it.done) n++; }); return n; }
   function obsTrack(name, p) {
@@ -5006,9 +5018,20 @@
                                    function (e) { settle(null); throw e; });
   }
   function obsLine(html) {
+    if (obsPrefix) html = escapeHtml(obsPrefix) + '<span class="obs-sep"> · </span>' + html;
     var ld = document.getElementById("sp-loading");
     if (ld) { ld.innerHTML = html; ld.style.display = ""; }
     if (obsStatusActive) setStatusHtml(html);
+  }
+  // A multi-location fetch owns the status line ("Oslo (1/2)…"). It used to REPLACE the
+  // per-source progress, so the longest wait in the app — several locations, each querying
+  // every source — was the one place that showed neither which source it was waiting on nor
+  // how far it had got. Now it sits in front of that line instead.
+  var PAGES_GLY = "\u25a4";   // ▤ — pages
+  function obsSetPrefix(txt) {
+    obsPrefix = txt || "";
+    obsStatusActive = !!txt || obsStatusActive;
+    if (txt) obsProgress();
   }
   function obsProgress() {
     updateSpMapBtn();               // grey out "📍 Map" while any source query is still loading
@@ -5032,6 +5055,13 @@
         nm += "[" + sub.done + "/" + sub.total + "]";
         if (sub.names && sub.names.length) nm += "(" + sub.names.map(escapeHtml).join("|") + ")";   // datasets currently in-flight
       }
+      // Pages turned so far. Every adapter pages internally, and without this a source
+      // that is working steadily through page 7 looks exactly like one that has hung.
+      var pg = obsPages[it.name];
+      if (pg) nm += ' <span class="obs-pages" title="' + escapeHtml(t("fetch.pages", { n: pg })) + '">' + PAGES_GLY + pg + "</span>";
+      // A source with no answer yet gets the waiting dots, so "sent, nothing back" is
+      // visibly different from "answering".
+      if (!it.done && !pg && !sub) nm += '<span class="obs-wait" aria-hidden="true"></span>';
       return it.name === hiName ? '<span class="obs-knk">' + nm + "</span>" : '<span class="obs-pend">' + nm + "</span>";
     });
     obsLine(t("sp.plottingFrac", { n: parts.join('<span class="obs-sep"> · </span>') }));
@@ -6506,6 +6536,12 @@
     // disabled set, country-gating, the Laji-vs-GBIF rule, the iNat locale); the
     // orchestration that calls the adapters stays here.
     AppFetch.init({
+    // Pages turned, per source, into the loading line (see obsRender).
+    onPage: function (id, n) {
+      var nm = obsNameForId(id); if (!nm) return;
+      obsPages[nm] = n;
+      try { obsRender(); } catch (e) {}
+    },
       gbifDatasets: gbifDatasets,
       isGbifOff: isGbifOff,
       GBIF_DS_COUNTRY: GBIF_DS_COUNTRY,
@@ -20923,9 +20959,10 @@
       if (b.isValid()) { try { fitBoundsMin(b, 0.1); } catch (e) {} }
     }
     (function next() {
-      if (myLoopGen !== fetchLoopGen) { autoOpenPlotting = false; if (autoOpen && fooEngageCleanup) fooEngageCleanup(); return; }   // map cleared → stop
+      if (myLoopGen !== fetchLoopGen) { autoOpenPlotting = false; obsSetPrefix(""); if (autoOpen && fooEngageCleanup) fooEngageCleanup(); return; }   // map cleared → stop
       if (i >= locs.length) {
         storedFetchBusy = false; autoOpenPlotting = false;
+        obsSetPrefix("");
         if (autoOpen) {
           if (fooEngageCleanup) fooEngageCleanup();
           // Only showcase if the user never interacted AND something got plotted —
@@ -20956,6 +20993,7 @@
       // Progress goes to the status line ABOVE the map (below the header) — the old
       // fixed top banner overlaid the header bar.
       var label = t("loc.fetching", { name: l.name, i: i, n: locs.length });
+      obsSetPrefix(label);   // keeps the per-source progress visible behind it
       setStatus(label);
       fetchAllSightingsAt(l.lat, l.lon, null, l.radius || recentRadiusKm(), daysOverride)
         .then(function (result) {

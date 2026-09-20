@@ -1,4 +1,5 @@
 {
+  "fetch.pages": "{n} sivua haettu",
   "fetch.clickErr": "Napsauta nähdäksesi, miksi tämä lähde epäonnistui",
   "alt.loading": "Kork.: …",
   "alt.value": "Kork.: {m} m",

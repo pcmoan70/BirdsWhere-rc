@@ -1,4 +1,5 @@
 {
+  "fetch.pages": "{n} pagine scaricate",
   "fetch.clickErr": "Fai clic per vedere perché questa fonte non ha funzionato",
   "alt.loading": "Alt: …",
   "alt.value": "Alt: {m} m",

@@ -37,8 +37,17 @@ window.AppFetch = (function () {
   // in the fetch-issues dialog — so "a big area misses detections" is explained.
   var lastTrunc = Object.create(null);
   function noteTrunc(id, info) { if (info) lastTrunc[id] = info; else delete lastTrunc[id]; }
+  // Pages fetched, per source, for the loading line. Every adapter pages internally —
+  // GBIF up to 50, Artportalen/Laji 6, NBN 10 — and until now a slow source looked
+  // identical to a stuck one. `onPage` is injected by app.js and fires after each page
+  // lands, so the line can say which sources are still turning pages and how many.
+  var pageN = Object.create(null);
+  var onPage = function () {};
+  function notePage(id) { pageN[id] = (pageN[id] || 0) + 1; try { onPage(id, pageN[id]); } catch (e) {} }
+  function resetPages() { pageN = Object.create(null); }
   function takeTrunc(id) { var v = lastTrunc[id]; delete lastTrunc[id]; return v || null; }
   function init(deps) {
+    if (deps && deps.onPage) onPage = deps.onPage;
     deps = deps || {};
     if (deps.gbifDatasets) gbifDatasets = deps.gbifDatasets;
     if (deps.isGbifOff) isGbifOff = deps.isGbifOff;
@@ -151,6 +160,7 @@ window.AppFetch = (function () {
     try {
       var resp = await fetchRetry(url, null, extSignal);
       if (!resp || !resp.ok) return null;
+      notePage("gbif");
       try { return await resp.json(); } catch (e) { return null; }
     } finally { gbifRelease(); }
   }
@@ -346,6 +356,7 @@ window.AppFetch = (function () {
     for (var page = 1; page <= 50; page++) {
       if (signal && signal.aborted) break;   // fetch timeout → keep the pages we have
       var resp = await fetchRetry(base + "&page=" + page, null, signal);
+      if (resp && resp.ok) notePage("inat");
       if (!resp || !resp.ok) {
         if (page === 1 && !(signal && signal.aborted)) throw new Error("iNaturalist " + (resp ? "HTTP " + resp.status : "unreachable"));
         break;   // a later page failed (or aborted) → keep what we have
@@ -496,7 +507,7 @@ window.AppFetch = (function () {
     // probe below treats null as a hard failure so a down source is flagged.
     function q(from, to, ps) {
       var url = joinUrl(endpoint, "PageSize=" + ps + "&FromDate=" + from + "&ToDate=" + to + "&gmWktPolygon=" + encodeURIComponent(wkt));
-      return fetchRetry(url, null, signal).then(function (r) { return r && r.ok ? r.json().catch(function () { return null; }) : null; });
+      return fetchRetry(url, null, signal).then(function (r) { if (r && r.ok) notePage("artsobs"); return r && r.ok ? r.json().catch(function () { return null; }) : null; });
     }
     // Cheap probe (just the count) → how dense is this window?
     var probe = await q(d1, d2, 50);
@@ -547,6 +558,7 @@ window.AppFetch = (function () {
     for (var p = 0; p < 6; p++) {
       if (signal && signal.aborted) break;   // fetch timeout → keep the pages we have
       var resp = await fetchRetry(joinUrl(endpoint, "skip=" + (p * 300) + "&take=300"), post, signal);
+      if (resp && resp.ok) notePage("artportalen");
       // A rejected field must never cost Sweden its observations (the same guard the Laji
       // adapter already has): drop the photo field once for the session and ask again.
       if (resp && resp.status === 400 && p === 0 && !apNoMedia && !(signal && signal.aborted)) {
@@ -619,6 +631,7 @@ window.AppFetch = (function () {
     for (var p = 1; p <= 6; p++) {
       if (signal && signal.aborted) break;   // fetch timeout → keep the pages we have
       var resp = await fetchRetry(base + "&page=" + p, null, signal);
+      if (resp && resp.ok) notePage("laji");
       // A rejected selection (400) must not cost Finland its observations — but it must not
       // quietly cost them their photos either. Drop the red-list tag first, the photos only
       // if that was not what the warehouse objected to.
@@ -652,6 +665,7 @@ window.AppFetch = (function () {
     for (var p = 0; p < 10; p++) {   // ≤ 3000 records per fetch
       if (signal && signal.aborted) break;
       var resp = await fetchRetry(base + "&startIndex=" + (p * 300), null, signal);
+      if (resp && resp.ok) notePage("nbn");
       if (!resp || !resp.ok) {
         if (p === 0 && !(signal && signal.aborted)) throw new Error("NBN Atlas " + (resp ? "HTTP " + resp.status : "unreachable"));
         break;   // later page failed/aborted → keep what we have
@@ -686,6 +700,7 @@ window.AppFetch = (function () {
       if (signal && signal.aborted) break;
       var vars = { ne: ne, sw: sw, period: { from: d1, to: d2 }, first: 100, after: after };
       var resp = await fetchRetry(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: BW_QUERY, variables: vars }) }, signal);
+      if (resp && resp.ok) notePage("birdweather");
       if (!resp || !resp.ok) { if (p === 0 && !(signal && signal.aborted)) throw new Error("BirdWeather " + (resp ? "HTTP " + resp.status : "unreachable")); break; }
       var j = await resp.json().catch(function () { return null; });
       var conn = j && j.data && j.data.detections;
@@ -718,6 +733,7 @@ window.AppFetch = (function () {
   return {
     init: init,
     takeTrunc: takeTrunc,
+    resetPages: resetPages,
     fetchWithTimeout: fetchWithTimeout,
     gbifGeometry: gbifGeometry,
     gbifPage: gbifPage,
