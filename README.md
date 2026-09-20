@@ -295,7 +295,11 @@ sub-table.
 
 **Observation photos** — when the source ships the observer's own pictures (iNaturalist, GBIF,
 Artsobservasjoner, Artportalen, Laji.fi) a **📷** sits in its own column, with the picture count
-beside it when there are several. **Hover it** (tap on a phone, tap again to close) for a **mosaic**
+beside it when there are several. (**eBird has none**: its public API 2.0 returns no media on
+either an observation or a checklist, and the Macaulay Library's per-checklist search is
+undocumented and bot-gated — the species-level Macaulay link in the species menu is the nearest
+thing. Artportalen's pictures need `occurrence.media` asked for explicitly; the field is in
+neither the Minimum nor the Extended field set.) **Hover it** (tap on a phone, tap again to close) for a **mosaic**
 of every picture that record carries, credited and linked back to the original; a tile opens that
 picture full-size. The pictures load only when the mosaic opens, so a long list downloads nothing
 until you ask. **Red-list codes** — sources that

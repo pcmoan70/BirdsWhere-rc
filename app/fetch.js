@@ -362,6 +362,14 @@ window.AppFetch = (function () {
     noteTrunc("inat", tr);
     return all;
   }
+  // No observer photos from eBird: the public API 2.0 has no media anywhere in its
+  // responses — neither data/obs/… (speciesCode, comName, sciName, locId, locName, obsDt,
+  // howMany, lat, lng, obsValid, obsReviewed, locationPrivate, subId, exoticCategory) nor
+  // product/checklist/view/{subId}, whose obs[] entries carry the same fields and no asset
+  // ids or media counts. Photos uploaded through eBird live in the Macaulay Library, whose
+  // only per-checklist search (search.macaulaylibrary.org/api/v2) is undocumented AND sits
+  // behind an anti-bot challenge, so it is not usable from the browser. Checked 2026-09-20;
+  // the species-level Macaulay link in the species menu remains the nearest thing.
   async function fetchEbirdAll(lat, lon, tok, rkm, ep, back, signal) {
     var dist = Math.max(1, Math.min(50, rkm));
     var bk = Math.max(1, Math.min(30, +back || 30));   // eBird caps "back" at 30 days
@@ -517,15 +525,34 @@ window.AppFetch = (function () {
     return { Observations: all };
   }
   // Sweden — SLU Artdatabanken SOS API (free subscription key; Artportalen + more).
+  // The observer's own photo. SOS carries it as `occurrence.media` (a GBIF Multimedia
+  // collection: identifier = the image, references = its Artportalen page, rightsHolder =
+  // the photographer), and `occurrence.associatedMedia` is DEPRECATED — "no longer used"
+  // in SOS's own Docs/Observation.md. Neither is in the Minimum or Extended field set, so
+  // asking for "Extended" alone returned records that never had a picture on them however
+  // many the observer had uploaded. `output.fields` is UNIONED with the field set rather
+  // than replacing it (SOS's PopulateFields: it starts from the set's fields and adds
+  // yours), so naming the one extra field cannot cost us the rest.
+  var apNoMedia = false;   // set for the session if the API ever rejects the extra field
   async function fetchArtportalenAll(lat, lon, d1, d2, rkm, key, ep, signal) {
-    var body = { geographics: { geometries: [{ type: "point", coordinates: [lon, lat] }], maxDistanceFromPoint: Math.round(rkm * 1000) },
-      date: { startDate: d1, endDate: d2, dateFilterType: "OverlappingStartDateAndEndDate" }, output: { fieldSet: "Extended" } };
+    function bodyFor(withMedia) {
+      var out = withMedia ? { fieldSet: "Extended", fields: ["occurrence.media"] } : { fieldSet: "Extended" };
+      return JSON.stringify({ geographics: { geometries: [{ type: "point", coordinates: [lon, lat] }], maxDistanceFromPoint: Math.round(rkm * 1000) },
+        date: { startDate: d1, endDate: d2, dateFilterType: "OverlappingStartDateAndEndDate" }, output: out });
+    }
     var endpoint = ep || "https://api.artdatabanken.se/species-observation-system/v1/Observations/Search";
-    var post = { method: "POST", headers: { "Content-Type": "application/json", "Ocp-Apim-Subscription-Key": key }, body: JSON.stringify(body) };
+    function postFor(withMedia) { return { method: "POST", headers: { "Content-Type": "application/json", "Ocp-Apim-Subscription-Key": key }, body: bodyFor(withMedia) }; }
+    var post = postFor(!apNoMedia);
     var all = [];
     for (var p = 0; p < 6; p++) {
       if (signal && signal.aborted) break;   // fetch timeout → keep the pages we have
       var resp = await fetchRetry(joinUrl(endpoint, "skip=" + (p * 300) + "&take=300"), post, signal);
+      // A rejected field must never cost Sweden its observations (the same guard the Laji
+      // adapter already has): drop the photo field once for the session and ask again.
+      if (resp && resp.status === 400 && p === 0 && !apNoMedia && !(signal && signal.aborted)) {
+        apNoMedia = true; post = postFor(false);
+        resp = await fetchRetry(joinUrl(endpoint, "skip=0&take=300"), post, signal);
+      }
       if (!resp || !resp.ok) {
         if (p === 0 && !(signal && signal.aborted)) throw new Error("Artportalen " + (resp ? "HTTP " + resp.status : "unreachable"));
         break;   // a later page failed (or aborted) → keep what we have
