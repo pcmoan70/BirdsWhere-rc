@@ -577,10 +577,19 @@ window.AppFetch = (function () {
   // the rarity tag) are kept apart, and a rejected selection falls back to the core.
   // "unit.media" is NOT selectable: its leaves are (unit.media.fullURL etc.).
   var LAJI_CORE = "unit.linkings.taxon.scientificName,unit.linkings.taxon.nameEnglish,unit.linkings.taxon.nameFinnish,unit.interpretations.individualCount,gathering.displayDateTime,gathering.locality,gathering.interpretations.municipalityDisplayname,gathering.interpretations.coordinateAccuracy,document.documentId,unit.linkings.taxon.kingdomScientificName,unit.linkings.taxon.informalTaxonGroups,unit.notes,gathering.notes";
-  var LAJI_EXTRA = "unit.media.squareThumbnailURL,unit.media.thumbnailURL,unit.media.fullURL,unit.media.mediaType,unit.media.author," +
-    "document.media.squareThumbnailURL,document.media.thumbnailURL,document.media.fullURL,document.media.mediaType,document.media.author," +
-    "unit.linkings.taxon.latestRedListStatusFinland.status";
-  var lajiNoExtra = false;   // set for the session once the warehouse rejects the extras
+  // The observer's pictures hang off THREE levels in the warehouse, and the app used to ask
+  // for only two: the unit (one determination), the document (the form), and — added
+  // 2026-09-20 after checking the endpoint's own `selected` enum, which lists all three —
+  // the GATHERING (one visit to one spot), where Finnish records very often carry them.
+  var LAJI_MEDIA = ["unit", "document", "gathering"].map(function (pre) {
+    return ["squareThumbnailURL", "thumbnailURL", "fullURL", "mediaType", "author"].map(function (f) { return pre + ".media." + f; }).join(",");
+  }).join(",");
+  var LAJI_RED = "unit.linkings.taxon.latestRedListStatusFinland.status";
+  // The warehouse validates every "selected" path and answers the WHOLE query with 400 if
+  // one is unknown, so the nice-to-haves are dropped separately: media and the red-list tag
+  // used to share one string, which meant anything wrong with the red-list path silently
+  // cost every Finnish record its photos for the rest of the session.
+  var lajiNoMedia = false, lajiNoRed = false;
   // The API answers an error with {"status":400,"message":"..."} — quote it, so a
   // rejected parameter says what it was instead of just its number.
   async function lajiErrText(resp) {
@@ -602,16 +611,20 @@ window.AppFetch = (function () {
         "&time=" + encodeURIComponent(d1 + "/" + d2) +
         "&pageSize=1000&access_token=" + encodeURIComponent(key);
     }
-    var base = urlFor(lajiNoExtra ? LAJI_CORE : LAJI_CORE + "," + LAJI_EXTRA);
+    function fields() {
+      return LAJI_CORE + (lajiNoMedia ? "" : "," + LAJI_MEDIA) + (lajiNoRed ? "" : "," + LAJI_RED);
+    }
+    var base = urlFor(fields());
     var all = [];
     for (var p = 1; p <= 6; p++) {
       if (signal && signal.aborted) break;   // fetch timeout → keep the pages we have
       var resp = await fetchRetry(base + "&page=" + p, null, signal);
-      // A rejected selection (400) must not cost Finland its observations: drop the
-      // extras once for the session and ask again for the records alone.
-      if (resp && resp.status === 400 && p === 1 && !lajiNoExtra && !(signal && signal.aborted)) {
-        lajiNoExtra = true;
-        base = urlFor(LAJI_CORE);
+      // A rejected selection (400) must not cost Finland its observations — but it must not
+      // quietly cost them their photos either. Drop the red-list tag first, the photos only
+      // if that was not what the warehouse objected to.
+      while (resp && resp.status === 400 && p === 1 && !(signal && signal.aborted) && !(lajiNoRed && lajiNoMedia)) {
+        if (!lajiNoRed) lajiNoRed = true; else lajiNoMedia = true;
+        base = urlFor(fields());
         resp = await fetchRetry(base + "&page=" + p, null, signal);
       }
       if (!resp || !resp.ok) {

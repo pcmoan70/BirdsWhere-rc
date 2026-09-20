@@ -349,7 +349,9 @@ window.AppNormalize = (function () {
     var out = [];
     // Pictures hang off the unit (one determination) or off the whole document (the
     // form the observer filled in) — take both, the unit's own first.
-    ["unit.media.", "document.media."].forEach(function (pre) {
+    // unit = one determination, gathering = one visit to one spot, document = the whole
+    // form. Finnish records attach pictures at any of the three; the unit's own come first.
+    ["unit.media.", "gathering.media.", "document.media."].forEach(function (pre) {
       var thumbs = arr(p[pre + "squareThumbnailURL"]);
       if (!thumbs.length) thumbs = arr(p[pre + "thumbnailURL"]);
       var fulls = arr(p[pre + "fullURL"]), types = arr(p[pre + "mediaType"]), by = arr(p[pre + "author"]);

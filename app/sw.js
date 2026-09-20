@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1838";
+var VERSION = "v1839";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• Artportalen observations now bring the observer\u2019s own photos, like Artsobservasjoner and Laji.fi already did. The app was reading a field the Swedish API marks as no longer used, and the live one is in none of the field sets it was asking for \u2014 so Swedish records arrived with no picture however many had been uploaded. eBird cannot do this: its public API returns no photo on an observation or a checklist, and the Macaulay Library has no usable per-checklist lookup.",
+  "• Finnish observations should now show the observer\u2019s photos. Laji.fi attaches pictures at three levels \u2014 the determination, the visit and the form \u2014 and the app only ever asked for two, missing the one Finnish records use most. It also asked for the photos and the red-list tag as a single block, so anything the warehouse disliked about the red-list field quietly cost every Finnish record its pictures for the rest of the session; those are now separate.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
