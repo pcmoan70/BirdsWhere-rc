@@ -2171,9 +2171,89 @@
   function llFromAttrs(el2) { return { lat: parseFloat(el2.getAttribute("data-lat")), lon: parseFloat(el2.getAttribute("data-lon")) }; }
   // The observation's own photo, full size, with its credit and a link to the source
   // record. Opened from the camera button on a record row (and the ☰ popover).
+  // Pinch / wheel / double-tap zoom for one photograph. Pointer Events, so a single code
+  // path serves mouse, touch and pen; `touch-action: none` on the frame stops the browser
+  // claiming the gestures for page scroll and its own pinch-zoom.
+  function wirePhotoZoom(wrap, img) {
+    var sc = 1, tx = 0, ty = 0, MIN = 1, MAX = 6;
+    var pts = Object.create(null), nPts = 0, pinchD0 = 0, pinchS0 = 1, panX = 0, panY = 0;
+    var lastTap = 0, lastTapX = 0, lastTapY = 0;
+    function centre() { var r = wrap.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }
+    function apply() {
+      // Never let the picture be dragged off its own frame: the slack is however much the
+      // zoom adds beyond the frame, and it is zero at 1× (where the flex layout centres it).
+      var w = img.offsetWidth * sc, h = img.offsetHeight * sc;
+      var mx = Math.max(0, (w - wrap.clientWidth) / 2), my = Math.max(0, (h - wrap.clientHeight) / 2);
+      tx = Math.max(-mx, Math.min(mx, tx)); ty = Math.max(-my, Math.min(my, ty));
+      img.style.transform = "translate(" + tx.toFixed(1) + "px," + ty.toFixed(1) + "px) scale(" + sc.toFixed(3) + ")";
+      wrap.classList.toggle("zoomed", sc > 1.01);
+    }
+    // Keep the point under the fingers/cursor where it is: a point at screen offset u from
+    // the frame centre sits at u = t + s·p, so holding p fixed gives t' = u − k(u − t).
+    function zoomTo(next, cx, cy) {
+      next = Math.max(MIN, Math.min(MAX, next));
+      var k = next / sc, c = centre();
+      tx = (cx - c.x) - k * ((cx - c.x) - tx);
+      ty = (cy - c.y) - k * ((cy - c.y) - ty);
+      sc = next;
+      if (sc <= MIN + 0.002) { sc = MIN; tx = 0; ty = 0; }
+      apply();
+    }
+    function ptList() { var a = []; for (var k in pts) a.push(pts[k]); return a; }
+    wrap.addEventListener("wheel", function (e) {
+      e.preventDefault(); e.stopPropagation();
+      zoomTo(sc * (e.deltaY < 0 ? 1.18 : 1 / 1.18), e.clientX, e.clientY);
+    }, { passive: false });
+    wrap.addEventListener("pointerdown", function (e) {
+      e.stopPropagation();
+      pts[e.pointerId] = { x: e.clientX, y: e.clientY }; nPts++;
+      try { wrap.setPointerCapture(e.pointerId); } catch (err) {}
+      if (nPts === 2) {
+        var a = ptList();
+        pinchD0 = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) || 1; pinchS0 = sc;
+        lastTap = 0;   // a pinch is not a tap: without this the first finger armed the
+                       // double-tap, and the next touch after the pinch threw the zoom away
+      } else if (nPts === 1) {
+        panX = e.clientX; panY = e.clientY;
+        var now = Date.now();
+        // A double tap is two quick taps in the SAME place — a second press somewhere else
+        // is the start of a drag, not a reset.
+        if (now - lastTap < 320 && Math.hypot(e.clientX - lastTapX, e.clientY - lastTapY) < 30) {
+          zoomTo(sc > 1.01 ? MIN : 2.5, e.clientX, e.clientY); lastTap = 0;
+        } else { lastTap = now; lastTapX = e.clientX; lastTapY = e.clientY; }
+      }
+    });
+    wrap.addEventListener("pointermove", function (e) {
+      if (!pts[e.pointerId]) return;
+      e.preventDefault(); e.stopPropagation();
+      pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      var a = ptList();
+      if (nPts >= 2) {
+        var d = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) || 1;
+        zoomTo(pinchS0 * (d / pinchD0), (a[0].x + a[1].x) / 2, (a[0].y + a[1].y) / 2);
+      } else if (sc > 1.01) {
+        tx += e.clientX - panX; ty += e.clientY - panY; panX = e.clientX; panY = e.clientY; apply();
+      }
+    });
+    function up(e) {
+      if (!pts[e.pointerId]) return;
+      delete pts[e.pointerId]; nPts = Math.max(0, nPts - 1);
+      try { wrap.releasePointerCapture(e.pointerId); } catch (err) {}
+      var a = ptList(); if (a.length === 1) { panX = a[0].x; panY = a[0].y; }
+    }
+    wrap.addEventListener("pointerup", up);
+    wrap.addEventListener("pointercancel", up);
+    wrap.addEventListener("dblclick", function (e) { e.preventDefault(); e.stopPropagation(); zoomTo(sc > 1.01 ? MIN : 2.5, e.clientX, e.clientY); });
+    img.addEventListener("load", function () { sc = 1; tx = 0; ty = 0; apply(); });
+    img.addEventListener("dragstart", function (e) { e.preventDefault(); });
+  }
   function showObsPhoto(btn, pickUrl) {
     var url = pickUrl || btn.getAttribute("data-photo") || btn.getAttribute("data-thumb"); if (!url) return;
-    var m = createModal({ boxClass: "obs-photo-box", escClose: true });
+    // The mosaic stays open behind this viewer, so closing one picture puts the set back
+    // rather than ending the whole visit — the point of pinning it.
+    var reopen = obsMosaicPinned ? btn : null;
+    var m = createModal({ boxClass: "obs-photo-box", escClose: true,
+      onClose: function () { if (reopen) showObsMosaic(reopen, true); } });
     var by = btn.getAttribute("data-by") || "", src = btn.getAttribute("data-url") || "";
     m.box.innerHTML = '<button type="button" class="conf-close obs-photo-x" aria-label="' + escapeHtml(t("btn.close")) + '" title="' + escapeHtml(t("btn.close")) + '">×</button>' +
       '<div class="ui-modal-msg">' + escapeHtml(btn.getAttribute("data-name") || "") + "</div>" +
@@ -2182,6 +2262,7 @@
         (src ? (by ? " · " : "") + '<a href="' + escapeHtml(src) + '" target="_blank" rel="noopener">' + escapeHtml(t("det.openSource")) + "</a>" : "") + "</div>";
     m.box.querySelector(".obs-photo-x").addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); m.close(); });
     var img = m.box.querySelector("img");
+    wirePhotoZoom(m.box.querySelector(".obs-photo-wrap"), img);
     img.addEventListener("error", function () {   // the big version may not exist → fall back to the thumbnail
       var th = pickUrl ? "" : btn.getAttribute("data-thumb");
       if (th && img.src !== th) img.src = th; else { img.remove(); m.box.querySelector(".obs-photo-wrap").textContent = t("spg.noImage"); }
@@ -2199,19 +2280,26 @@
     if (!list.length) { var one = btn.getAttribute("data-photo") || btn.getAttribute("data-thumb"); if (one) list = [one]; }
     return list;
   }
+  var obsMosaicPinned = false;   // opened by a click → survives until the × / the same camera
   function closeObsMosaic() {
     clearTimeout(obsMosaicTimer);
+    obsMosaicPinned = false;
     if (obsMosaicPop && _anchMenuEl === obsMosaicPop) closeAnchoredMenu();
     obsMosaicPop = null;
   }
   function scheduleObsMosaicClose() {
+    if (obsMosaicPinned) return;   // clicked open → only the × (or the same camera) closes it
     clearTimeout(obsMosaicTimer);
     obsMosaicTimer = setTimeout(closeObsMosaic, 250);   // a gap to cross from the icon into the mosaic
   }
   function obsMosaicOpenFor(btn) { return !!(obsMosaicPop && obsMosaicPop._btn === btn && _anchMenuEl === obsMosaicPop); }
-  function showObsMosaic(btn) {
+  // `pin` = opened by a deliberate click rather than a hover preview: it then stays until
+  // the × (or a tap on the same camera), so pictures can be opened one at a time and come
+  // back to the set. A hover-opened mosaic still closes itself when the pointer leaves.
+  function showObsMosaic(btn, pin) {
     var list = obsPhotoList(btn); if (!list.length) return;
     clearTimeout(obsMosaicTimer);
+    if (pin) obsMosaicPinned = true;
     if (obsMosaicOpenFor(btn)) return;   // already up for this record
     var el = openAnchoredMenu("detrow-menu obs-mosaic");
     el._btn = btn;
@@ -2229,7 +2317,7 @@
         (src ? (by ? " · " : "") + '<a href="' + escapeHtml(src) + '" target="_blank" rel="noopener">' + escapeHtml(t("det.openSource")) + "</a>" : "") + "</div>";
     el.querySelector(".obs-mosaic-x").addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); closeObsMosaic(); });
     Array.prototype.forEach.call(el.querySelectorAll(".obs-mos-tile"), function (tile) {
-      tile.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); closeObsMosaic(); showObsPhoto(btn, list[+this.getAttribute("data-i")]); });
+      tile.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showObsPhoto(btn, list[+this.getAttribute("data-i")]); });
       tile.querySelector("img").addEventListener("error", function () { tile.classList.add("bad"); });   // a dead URL leaves no gap
     });
     el.addEventListener("mouseenter", function () { clearTimeout(obsMosaicTimer); });
@@ -2279,12 +2367,12 @@
     Array.prototype.forEach.call(container.querySelectorAll(".obs-photo"), function (b) {
       b.addEventListener("click", function (e) {
         e.preventDefault(); e.stopPropagation();
-        if (canHoverPh) { showObsPhoto(this); return; }            // mouse: the mosaic is already open from the hover
+        if (canHoverPh) { showObsMosaic(this, true); return; }     // mouse: hover already previewed it — the click pins it
         // Touch: tap opens the mosaic, tapping the same 📷 again closes it. Whether it WAS
         // open is taken at touch-start — the anchored menu's own outside-click handler has
         // already closed it by the time this click runs.
         if (obsMosaicWasOpen) { obsMosaicWasOpen = false; closeObsMosaic(); return; }
-        showObsMosaic(this);
+        showObsMosaic(this, true);
       });
       b.addEventListener("touchstart", function () { obsMosaicWasOpen = obsMosaicOpenFor(this); }, { passive: true });
       if (canHoverPh) {
