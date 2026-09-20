@@ -13731,7 +13731,15 @@
   // labelled with the count. null = not touched yet: short lists stay open (no extra
   // click for three places), long ones start closed. Once the user opens or closes it,
   // that choice is kept across the pane's re-renders.
-  var detLocDdOpen = null, LOC_DD_INLINE = 8;
+  var detLocDdOpen = null, detObsDdOpen = null, detSrcDdOpen = null, LOC_DD_INLINE = 8;
+  // A filter checklist behind its own count. `openState` is the section's remembered
+  // choice — null until the user touches it, when a short list shows itself and a long
+  // one stays out of the way.
+  function filterDd(cls, openState, n, summary, bodyHtml) {
+    var open = (openState === null) ? (n <= LOC_DD_INLINE) : openState;
+    return '<details class="filter-dd ' + cls + '"' + (open ? " open" : "") + '>' +
+      '<summary>' + escapeHtml(summary) + "</summary>" + bodyHtml + "</details>";
+  }
   // An observer list is ticked when all its observers are in the active filter.
   function obsListTicked(L) {
     if (!detObsFilter || !L.observers || !L.observers.length) return false;
@@ -14200,7 +14208,8 @@
     return '<div class="det-obs-panel">' +
       '<div class="det-obs-head">' + head + allTog +
         '<button type="button" class="det-obs-editlists" title="' + escapeHtml(t("obs.lists")) + '">✎</button></div>' +
-      '<div class="det-obs-list">' + rows.join("") + "</div></div>";
+      filterDd("det-obs-dd", detObsDdOpen, rows.length, t("det.obsCount", { n: rows.length }),
+        '<div class="det-obs-list">' + rows.join("") + "</div>") + "</div>";
   }
   // Time-window subwindow: preset chips (1/2/3 days, weeks, months + All) and a
   // from–to date range. A preset and a range are mutually exclusive — picking one
@@ -14330,12 +14339,10 @@
     if (lo.hasNone) rows.push(row("", t("det.noLocation")));
     var allOn = !detLocFilter;
     var allTog = '<label class="det-obs-alltoggle" title="' + escapeHtml(t("det.locToggleAll")) + '"><input type="checkbox" class="det-loc-allcb"' + (allOn ? " checked" : "") + '> ' + escapeHtml(t("det.allLoc")) + "</label>";
-    var nLoc = rows.length;
-    var open = (detLocDdOpen === null) ? (nLoc <= LOC_DD_INLINE) : detLocDdOpen;
     return '<div class="det-obs-panel">' +
       '<div class="det-obs-head"><span class="det-obs-scope">' + escapeHtml(locFilterLabel()) + "</span>" + allTog + "</div>" +
-      '<details class="det-loc-dd"' + (open ? " open" : "") + '><summary>' + escapeHtml(t("det.locCount", { n: nLoc })) + "</summary>" +
-      '<div class="det-loc-list">' + rows.join("") + "</div></details></div>";
+      filterDd("det-loc-dd", detLocDdOpen, rows.length, t("det.locCount", { n: rows.length }),
+        '<div class="det-loc-list">' + rows.join("") + "</div>") + "</div>";
   }
   // Clicking a location name → its filter chooser: Show only / Add / Remove / Show all.
   function locationActionMenu(name, anchor) {
@@ -15380,6 +15387,10 @@
     // Applied on a 1 s debounce (scheduleLocApply) so ticking several places rebuilds once.
     var locDd = el.querySelector(".det-loc-dd");
     if (locDd) locDd.addEventListener("toggle", function () { detLocDdOpen = locDd.open; });
+    var obsDdList = el.querySelector(".det-obs-dd");
+    if (obsDdList) obsDdList.addEventListener("toggle", function () { detObsDdOpen = obsDdList.open; });
+    var srcDd = el.querySelector(".aff-src-dd");
+    if (srcDd) srcDd.addEventListener("toggle", function () { detSrcDdOpen = srcDd.open; });
     var allLocCb = el.querySelector(".det-loc-allcb");
     if (allLocCb) allLocCb.addEventListener("change", function (e) { e.stopPropagation(); scheduleLocApply(this.checked ? null : new Set()); });
     el.querySelectorAll(".det-loc-cb").forEach(function (cb) {
@@ -15431,10 +15442,12 @@
   function affSrcHtml() {
     var present = detSourcesPresent();
     if (!present.length) return "";
-    return '<div class="aff-src-list">' + present.map(function (s) {
+    var rows = present.map(function (s) {
       var kept = !detSrcFilter || detSrcFilter.has(s);
       return '<label class="det-obs-row"><input type="checkbox" class="aff-src-cb" data-src="' + escapeHtml(s) + '"' + (kept ? " checked" : "") + ">" + escapeHtml(s) + "</label>";
-    }).join("") + "</div>";
+    }).join("");
+    return filterDd("aff-src-dd", detSrcDdOpen, present.length, t("det.srcCount", { n: present.length }),
+      '<div class="aff-src-list">' + rows + "</div>");
   }
   // Sort controls for the pane — one tap-to-cycle button per sortable column (mirrors
   // clicking a column name in the table). Only meaningful in the multi-column table
@@ -21523,6 +21536,7 @@
     }
     return undefined;
   }
+  var spAreasOpen = false;   // the fetched-areas list: open across its own re-renders
   function renderSpCoordsAreas(el, lat, lon, summary) {
     if (!el) return;
     lastSpCoords = { el: el, lat: lat, lon: lon, summary: summary };
@@ -21580,7 +21594,20 @@
                '<button type="button" class="sp-area-del" data-ids="' + escapeHtml(g.ids.join("|")) + '" title="' + escapeHtml(t("area.removeObs")) + '" aria-label="' + escapeHtml(t("area.removeObs")) + '">×</button>' +
              "</span>";
     }).join("");
+    // One area IS the header — leave it as a plain line. Several stack into a block that
+    // pushes the map down the screen (four fetched places cost four lines plus their ×),
+    // so they collapse behind a summary carrying the count and the total observations.
+    // The open/closed choice is kept: this re-renders every time a place name or a
+    // species count resolves, and it must not snap shut under the user each time.
+    if (order.length > 1) {
+      var totObs = order.reduce(function (n, l) { return n + agg[l].obs; }, 0);
+      var sum = t("sp.areasN", { n: order.length }) + " · " + t("sp.obsN", { n: totObs });
+      html = '<details class="sp-areas-dd"' + (spAreasOpen ? " open" : "") + '>' +
+        '<summary class="sp-areas-sum">' + escapeHtml(sum) + "</summary>" + html + "</details>";
+    }
     el.innerHTML = html;
+    var areasDd = el.querySelector(".sp-areas-dd");
+    if (areasDd) areasDd.addEventListener("toggle", function () { spAreasOpen = areasDd.open; });
     el.dataset.flat = flatParts.join(" · ");
     delete el.dataset.placeKey;
     // Delegated once on the container so it survives the innerHTML re-renders (name /

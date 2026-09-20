@@ -719,6 +719,9 @@ input[type="range"] { accent-color: var(--brand); }
 #species-panel.as-page #sp-back { margin-top: 2px; flex: 0 0 auto; }
 .sp-head-lines { display: flex; flex-direction: column; min-width: 0; }
 #species-panel .sp-area-line { display: flex; align-items: baseline; gap: 6px; line-height: 1.35; }
+/* Several fetched areas collapse behind their count so the header stays one line. */
+.sp-areas-dd > summary { cursor: pointer; list-style: revert; user-select: none; }
+.sp-areas-dd > summary:hover { text-decoration: underline; }
 #species-panel .sp-area-txt { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
 /* Red × to remove all observations for a location (overlap-safe, like the map's per-area delete). */
 #species-panel .sp-area-del { flex: 0 0 auto; border: none; background: none; cursor: pointer; color: #c0392b; font-size: 1.15em; line-height: 1; padding: 0 3px; opacity: 0.75; }
@@ -3275,9 +3278,9 @@ tr.row-list-only .prob-na { color: var(--ink-muted, #999); }
 .det-obs-list, .det-loc-list { max-height: 30vh; overflow-y: auto; padding: 3px 4px; }
 /* The location checklist as a disclosure: the summary carries the count, so a fetch with
    two hundred place names no longer buries every filter under it. */
-.det-loc-dd > summary { cursor: pointer; padding: 3px 4px; font-size: var(--fs-s); opacity: .85; user-select: none; }
-.det-loc-dd > summary:hover { opacity: 1; }
-.det-loc-dd[open] > summary { margin-bottom: 2px; }
+.filter-dd > summary { cursor: pointer; padding: 3px 4px; font-size: var(--fs-s); opacity: .85; user-select: none; }
+.filter-dd > summary:hover { opacity: 1; }
+.filter-dd[open] > summary { margin-bottom: 2px; }
 .det-obs-row { display: flex; align-items: center; gap: 6px; padding: 2px 3px; font-size: var(--fs-s); font-weight: 400; cursor: pointer; }
 .det-obs-row input { margin: 0; flex: 0 0 auto; }
 .det-obs-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

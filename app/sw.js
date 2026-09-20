@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1846";
+var VERSION = "v1847";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• Another go at Artportalen photographs. Last time the app asked for the field Artdatabanken\u2019s own documentation names \u2014 but reading their processing code shows that field is never filled for Artportalen: the pictures are stored somewhere else entirely, and the documented one was quietly abandoned years ago. The app now asks for the place the pictures actually are. Swedish records should show the \ud83d\udcf7 where the observer uploaded one.",
+  "• The list of fetched places above the map is one line again. Four places cost four lines and pushed the map down the screen; they now sit behind a summary \u2014 \u201c3 omr\u00e5der \u00b7 3 839 obs\u201d \u2014 that opens when you want the individual lines and their \u00d7 buttons.",
+  "• Locations, Observers and Source in the filters are each a dropdown labelled with their count, so one long checklist no longer buries the rest. Eight entries or fewer open by themselves; whatever you open or close stays that way.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
