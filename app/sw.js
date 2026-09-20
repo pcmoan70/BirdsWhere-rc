@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1841";
+var VERSION = "v1842";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• You can now see what a fetch is actually doing. The status line names every source it is waiting on and shows \u25a4n \u2014 how many pages that source has returned so far. Sources page internally (GBIF up to 50), so a long wait is usually one source steadily working, and that now looks different from one that has hung: a source with no answer yet shows ticking dots, a finished one \u2713 and its record count. Fetching several saved locations keeps that detail visible instead of replacing it with just the location name.",
+  "• The rarest-finds intro now runs once for the whole fetch. Fetching several saved places restarted it after every place \u2014 three places meant three runs, each wiping the one before it before you could read it \u2014 and the \u2713 Update across your fetched areas never ran it at all. Now each place\u2019s new species are collected and the whole set is introduced when the last place finishes.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

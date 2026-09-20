@@ -3591,7 +3591,7 @@
     (function next() {
       if (myLoopGen !== fetchLoopGen) return;   // map cleared → cancelPendingFetches() already reset state
       if (i >= total) {
-        plotNoFit = prevNoFit; storedFetchBusy = false;
+        plotNoFit = prevNoFit; storedFetchBusy = false; tickerFireMulti();
         if (newReloadCtrlEl) newReloadCtrlEl.classList.remove("loading");
         try { updateDetLegend(); } catch (e) {}
         updateViewToggle();
@@ -3639,7 +3639,7 @@
     (function next() {
       if (myLoopGen !== fetchLoopGen) return;
       if (i >= total) {
-        plotNoFit = prevNoFit; storedFetchBusy = false;
+        plotNoFit = prevNoFit; storedFetchBusy = false; tickerFireMulti();
         if (areaUpdateCtrlEl) areaUpdateCtrlEl.classList.remove("loading");
         try { updateDetLegend(); } catch (e) {}
         updateViewToggle();
@@ -4642,7 +4642,7 @@
     abortRaritySweep();
     activeFetchCtrls.forEach(function (c) { try { c.abort(); } catch (e) {} });
     activeFetchCtrls.clear();
-    storedFetchBusy = false;
+    storedFetchBusy = false; tickerDropMulti();   // cancelled mid-run → no intro for a half-done fetch
     plotNoFit = false;                                                // loops left it on; reset so future plots fit
     if (newReloadCtrlEl) newReloadCtrlEl.classList.remove("loading");
     mapFetchPending = 0; try { renderStatusDots(); updateFilterBusy(); } catch (e) {}     // clear the fetch hourglass
@@ -13204,7 +13204,8 @@
       wireStatusFetchErrs(result.failed, result.timedOut, result.timedOutInfo, result.truncInfo);
       // Fetch settled (not a partial, not a background auto-open load) → run the
       // rarest-recently ticker once the probabilities are in.
-      if (!plotNoFit && !autoOpenPlotting) requestRarityTicker(rtFresh);
+      if (storedFetchBusy) tickerCollect(rtFresh);   // one intro for the whole run, fired when it ends
+      else if (!plotNoFit && !autoOpenPlotting) requestRarityTicker(rtFresh);
   }
   // Plot every per-entry GPS fix from the open field checklist on the map,
   // grouped by species — reuses the detPlot legend / recency filter / spider,
@@ -14392,6 +14393,23 @@
   }
   var rarityTickerKeys = null;   // species THIS fetch added; the intro is limited to them
   var rtBaseline = null;         // species on the map when the current fetch started
+  // A multi-place run — several saved locations, or the ✓ Update across every fetched
+  // area — is ONE fetch as far as the user is concerned, so the intro belongs at the end
+  // of it. Per place it fired once per location, each run replacing the one before it
+  // before it could be read; and in the two Update loops (which plot with plotNoFit set,
+  // to stay on the current view) it never ran at all. Each place's new species are
+  // collected instead and introduced together when the loop finishes.
+  var multiFetchFresh = null;
+  function tickerCollect(fresh) {
+    if (!fresh) return;
+    if (!multiFetchFresh) multiFetchFresh = Object.create(null);
+    for (var k in fresh) multiFetchFresh[k] = 1;
+  }
+  function tickerDropMulti() { multiFetchFresh = null; }   // aborted run → nothing to introduce
+  function tickerFireMulti() {
+    var f = multiFetchFresh; multiFetchFresh = null;
+    if (f && Object.keys(f).length) { try { requestRarityTicker(f); } catch (e) {} }
+  }
   function requestRarityTicker(freshKeys) {
     if (!rarityTickerOn()) return;   // opt-in
     // Nothing NEW on the map → nothing to introduce. This also keeps plain re-plots
@@ -20961,7 +20979,7 @@
     (function next() {
       if (myLoopGen !== fetchLoopGen) { autoOpenPlotting = false; obsSetPrefix(""); if (autoOpen && fooEngageCleanup) fooEngageCleanup(); return; }   // map cleared → stop
       if (i >= locs.length) {
-        storedFetchBusy = false; autoOpenPlotting = false;
+        storedFetchBusy = false; autoOpenPlotting = false; tickerFireMulti();
         obsSetPrefix("");
         if (autoOpen) {
           if (fooEngageCleanup) fooEngageCleanup();
@@ -22200,7 +22218,7 @@
     (function next() {
       if (myLoopGen !== fetchLoopGen) return;   // map cleared → already reset by cancelPendingFetches()
       if (i >= total) {
-        plotNoFit = prevNoFit; storedFetchBusy = false;
+        plotNoFit = prevNoFit; storedFetchBusy = false; tickerFireMulti();
         try { updateDetLegend(); } catch (e) {}
         updateViewToggle();
         setFetchedAllStatus(total);

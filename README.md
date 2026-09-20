@@ -362,6 +362,14 @@ shows **ticking dots** instead; a finished one switches to **✓ (records)**. Wh
 locations are fetched at once, `Fetching <name> (1/2)…` sits **in front of** that line rather than
 replacing it.
 
+**Rarest-finds intro** (*Settings → Rarest-finds intro*, **off** by default) — when a fetch adds
+species to the map, the rarest of them scroll up the right-hand side of the map as tiles in their
+dot colours, rarest at the top, and stay until you act: tap a tile to jump to that species in the
+list, hover one to isolate its dots, any other tap/key/map-move dismisses it. It runs **once per
+fetch** — a fetch over several saved locations, or the ✓ Update across every fetched area, collects
+what each place added and introduces the whole set when the last one finishes, rather than
+restarting after every place.
+
 **Direct sources**
 
 | source | scope | key |
