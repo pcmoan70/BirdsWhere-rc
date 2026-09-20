@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1847";
+var VERSION = "v1848";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• The list of fetched places above the map is one line again. Four places cost four lines and pushed the map down the screen; they now sit behind a summary \u2014 \u201c3 omr\u00e5der \u00b7 3 839 obs\u201d \u2014 that opens when you want the individual lines and their \u00d7 buttons.",
-  "• Locations, Observers and Source in the filters are each a dropdown labelled with their count, so one long checklist no longer buries the rest. Eight entries or fewer open by themselves; whatever you open or close stays that way.",
+  "• Sooty Shearwater (and species like it) get their name back. When a bird is moved to a new genus the Latin ending moves with it \u2014 Puffinus griseus became Ardenna grisea \u2014 and records still filed under the old name fell through as unnamed. The app now recognises those endings, using the record\u2019s own family to be sure it has the right bird: nine other birds are called \u201cgriseus\u201d, so the family is what separates the shearwater from the vireo.",
+  "• In the Images view the date on a card is clickable, like it is in the table: it opens the same day / before / after / months options.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

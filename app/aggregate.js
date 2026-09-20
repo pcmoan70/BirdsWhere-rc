@@ -27,6 +27,7 @@ window.AppAggregate = (function () {
   var getLabelsByKey = function () { return {}; };
   var getTaxByCode = function () { return {}; };
   var recordFamily = function () { return false; };   // (key, family) -> changed?
+  var familyOfKey = function () { return ""; };       // model species key -> family name
   var saveFamIndex = function () {};
   var getSpeciesGroup = function () { return "all"; };   // "all" | aves | mammalia | amphibia | insecta
   function init(deps) {
@@ -35,6 +36,7 @@ window.AppAggregate = (function () {
     if (deps.getLabelsByKey) getLabelsByKey = deps.getLabelsByKey;
     if (deps.getTaxByCode) getTaxByCode = deps.getTaxByCode;
     if (deps.recordFamily) recordFamily = deps.recordFamily;
+    if (deps.familyOfKey) familyOfKey = deps.familyOfKey;
     if (deps.saveFamIndex) saveFamIndex = deps.saveFamIndex;
     if (deps.getSpeciesGroup) getSpeciesGroup = deps.getSpeciesGroup;
   }
@@ -77,23 +79,70 @@ window.AppAggregate = (function () {
   // Last-resort scientific-name match for genus renames: the epithet. Returns a
   // model label when it's the only one with that epithet, or — when several
   // share it — the one whose class matches `cls` (the observation's class).
-  function labelBySciEpithet(sciName, cls) {
+  // A Latin adjectival epithet agrees in gender with its genus, so moving a species to a new
+  // genus can rewrite its ending — the model's Ardenna grisea is still widely reported as
+  // Puffinus griseus. These are the gender FORMS of one epithet, so they are looked up
+  // exactly rather than stemmed: stemming "griseus" to "grise" collects eleven unrelated
+  // birds, while "grisea" is a set of three that the family can then decide between.
+  function epiGenderForms(ep) {
+    var pairs = [["us", "a"], ["us", "um"], ["a", "us"], ["a", "um"], ["um", "us"], ["um", "a"], ["is", "e"], ["e", "is"]];
+    var out = [];
+    for (var i = 0; i < pairs.length; i++) {
+      var from = pairs[i][0];
+      if (ep.length > from.length && ep.slice(-from.length) === from) {
+        var v = ep.slice(0, ep.length - from.length) + pairs[i][1];
+        if (out.indexOf(v) < 0) out.push(v);
+      }
+    }
+    return out;
+  }
+  function labelBySciEpithet(sciName, cls, family) {
     if (!sciByEpithet) return null;
     var parts = String(sciName || "").toLowerCase().split(/\s+/);
-    var cands = parts.length >= 2 && sciByEpithet[parts[1]];
-    if (!cands || !cands.length) return null;
-    if (cands.length === 1) {
-      // Even a unique epithet match must not cross classes (an insect epithet that
-      // happens to equal an exotic bird's) when the record's class is known.
-      if (cls) { var c1 = labelClassOf(cands[0]); if (c1 && c1.toLowerCase() !== String(cls).toLowerCase()) return null; }
-      return cands[0];
+    if (parts.length < 2) return null;
+    var ep = parts[1], fam = String(family || "").toLowerCase();
+    // A label with no known class is kept: only a POSITIVE class conflict rules one out
+    // (an insect epithet that happens to equal an exotic bird's).
+    function ofClass(list) {
+      if (!cls) return (list || []).slice();
+      var want = String(cls).toLowerCase();
+      return (list || []).filter(function (l) { var c = labelClassOf(l); return !c || c.toLowerCase() === want; });
     }
-    if (cls) {
-      var m = cands.filter(function (l) { return String(labelClassOf(l)).toLowerCase() === String(cls).toLowerCase(); });
-      if (m.length === 1) return m[0];
+    function inFamily(pool) {
+      if (!fam) return null;
+      var m = pool.filter(function (l) { return String(familyOfKey(l.key) || "").toLowerCase() === fam; });
+      return m.length === 1 ? m[0] : null;
     }
+    function genderPool() {
+      var alt = [];
+      epiGenderForms(ep).forEach(function (v) {
+        (sciByEpithet[v] || []).forEach(function (l) { if (alt.indexOf(l) < 0) alt.push(l); });
+      });
+      return ofClass(alt);
+    }
+    var pool = ofClass(sciByEpithet[ep]);
+    if (pool.length === 1) return pool[0];
+    if (pool.length > 1) {
+      var hit = inFamily(pool);
+      if (hit) return hit;
+      // The epithet as written is real and common — the model has nine BIRDS called
+      // "griseus" — but none of them is in this record's family. That is the signature of a
+      // genus rename that took the epithet's gender with it (Puffinus griseus → Ardenna
+      // grisea), so look for the family among the epithet's other gender forms.
+      var g = inFamily(genderPool());
+      if (g) return g;
+      return null;
+    }
+    // Nothing of the right class under the epithet at all → its other gender forms, on the
+    // ordinary "must be unique" terms.
+    pool = genderPool();
+    if (pool.length === 1) return pool[0];
+    if (pool.length > 1) { var g2 = inFamily(pool); if (g2) return g2; }
     return null;   // still ambiguous → don't guess
   }
+
+
+
   // True if two strings differ by at most one edit (insert/delete/substitute) —
   // enough to bridge orthographic variants between taxonomies (e.g. GBIF's
   // "sibillatrix" vs the model's "sibilatrix").
@@ -254,7 +303,7 @@ window.AppAggregate = (function () {
       if (!key) {
         var l = sci[snLower];                                                   // exact binomial (or full trinomial)
         if (!l && !r.noFuzzy) l = labelBySubspecies(r.sciName);                  // "Genus species subspecies" → the split species "Genus subspecies"
-        if (!l && !r.noFuzzy) l = labelBySciEpithet(r.sciName, r.cls);           // genus-rename (epithet across genera)
+        if (!l && !r.noFuzzy) l = labelBySciEpithet(r.sciName, r.cls, r.family);   // genus rename: epithet across genera, gender forms included
         if (!l && !r.noFuzzy) l = labelBySciGenus(r.sciName, r.cls);             // same-genus exact/≤1-edit epithet (orthographic variants, subspecies)
         if (!l && !r.noFuzzy && r.comName) { var lc = comByLower[comNorm(r.comName)]; if (lc) l = lc; }   // shared English common name (split synonyms, e.g. Tyto alba vs furcata "American Barn Owl")
         if (l) key = l.key;

@@ -6627,6 +6627,7 @@
     AppGeo.init({ onBordersLoaded: function () { allSightingsCache = {}; } });
     AppAggregate.init({
       getLabels: function () { return labels; },
+      familyOfKey: function (key) { return famOf(key); },   // disambiguates a shared epithet across genera
       getLabelsByKey: function () { return labelsByKey; },
       getTaxByCode: function () { return taxByCode; },
       getSpeciesGroup: function () { return speciesGroup; },
@@ -22772,6 +22773,16 @@
       var probLink = !!key && !!labelsByKey[key];   // model species only: the Migration view / year curve need the model
       var predicted = !!key && !tr.classList.contains("sp-has-det") && !tr.classList.contains("sp-extra");   // [?] mode: a model prediction with no records here
       function plain(prefix, el) { var v = el ? el.textContent.trim() : ""; return v ? '<span class="spg-m">' + escapeHtml(prefix + v) + "</span>" : ""; }
+      // The last-seen date, clickable like the table's: plain() keeps only textContent, so
+      // the card used to lose the .dl-date-click the Last column carries and the date was
+      // the one number on a card you could not filter by.
+      function dateChip(el, iso) {
+        var v = el ? el.textContent.trim() : "";
+        if (!v) return "";
+        if (!iso) return '<span class="spg-m">' + escapeHtml(v) + "</span>";
+        return '<span class="spg-m spg-date dl-date-click" role="button" tabindex="0" data-date="' + escapeHtml(iso) +
+          '" title="' + escapeHtml(t("detlist.dateFilterHint")) + '">' + escapeHtml(v) + "</span>";
+      }
       function cell(label, el, attrs) { var v = el ? el.textContent.trim() : ""; return v ? '<span class="spg-m' + (attrs ? " " + attrs.cls : "") + '"' + (attrs ? attrs.a : "") + '><span class="spg-k">' + escapeHtml(label) + "</span> " + escapeHtml(v) + "</span>" : ""; }
       // Prob · Season · Yr peak as bar cells on one line (the table's / observation list's cells);
       // Season + Yr peak are filled once the point's 48-week prediction is in (fillSpGalleryBars).
@@ -22788,7 +22799,7 @@
           (showSci ? ' <span class="spg-sci">(' + (sciEl ? sciEl.outerHTML : escapeHtml(sci)) + ")</span>" : "") + "</span>" + subBtn + "</div>" +
         // Compact, label-free meta line: "#total(n)  last-seen  distance" (the bars row below
         // carries the probabilities; a card without the bars keeps a labelled Probability).
-        '<div class="spg-meta">' + plain("#", nd) + plain("", last) + plain("", dist) + (barsRow ? "" : cell(lbl.prob, prob)) + "</div>" +
+        '<div class="spg-meta">' + plain("#", nd) + dateChip(last, lastDate) + plain("", dist) + (barsRow ? "" : cell(lbl.prob, prob)) + "</div>" +
         barsRow +
         '<div class="spg-credit"></div>' +
       "</div>";
@@ -23072,6 +23083,10 @@
           showSpgRecordsPop(b, b.getAttribute("data-key"));
           return;
         }
+        // The date opens the same Last-column panel (This day / Before / After …) the table
+        // gives — checked before the card actions so it is not swallowed by them.
+        var dc = e.target.closest && e.target.closest(".dl-date-click[data-date]");
+        if (dc) { e.preventDefault(); e.stopPropagation(); openSpHeadPanel("last", dc.getAttribute("data-date")); return; }
         var card = e.target.closest && e.target.closest(".spg-card"); if (!card) return;
         var key = card.getAttribute("data-key"), date = card.getAttribute("data-date") || "";
         if (e.target.closest(".spg-img-link")) {   // the photo → Macaulay Library, ±1 month around the last sighting
@@ -23285,7 +23300,10 @@
       '<button type="button" class="sp-date-clear" title="' + escapeHtml(t("btn.close")) + '" aria-label="' + escapeHtml(t("btn.close")) + '">' + X_MARK_SVG + "</button>";
   }
   function spHeadPanelHtml() {
-    if (spLayout !== "table" || !spHeadPanel) return "";
+    // The Images layout shows the same rows as cards and renderSpControls already gives it
+    // this wrapper — it was only this gate that kept the panels to the table, which made the
+    // date on a card the one value in the list you could not filter by.
+    if ((spLayout !== "table" && spLayout !== "gallery") || !spHeadPanel) return "";
     if (currentSpView && currentSpView.mode !== "point" && currentSpView.mode !== "historic") return "";   // panels are for the observation table only
     if (spHeadPanel === "species") return spSpeciesPanelHtml();
     if (spHeadPanel === "total") return spTotalPanelHtml();
