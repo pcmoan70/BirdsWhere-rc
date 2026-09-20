@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1845";
+var VERSION = "v1846";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• The picture mosaic behind the \ud83d\udcf7 stays put now. Clicking the camera pins it until you press its \u00d7, opening one picture no longer closes the set, and closing that picture brings the set back \u2014 so you can work through a record\u2019s photographs one at a time.",
-  "• And the full-size picture zooms: mouse wheel or pinch, drag to pan, double-click or double-tap to zoom in and again to reset. The same on a phone and on a computer.",
+  "• Another go at Artportalen photographs. Last time the app asked for the field Artdatabanken\u2019s own documentation names \u2014 but reading their processing code shows that field is never filled for Artportalen: the pictures are stored somewhere else entirely, and the documented one was quietly abandoned years ago. The app now asks for the place the pictures actually are. Swedish records should show the \ud83d\udcf7 where the observer uploaded one.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

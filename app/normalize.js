@@ -170,6 +170,10 @@ window.AppNormalize = (function () {
     arr.forEach(function (it) {
       var u = anyUrl(it); if (!u) return;
       var m = (it && typeof it === "object") ? it : {};
+      // Some sources list sounds and video in the same media array (Artportalen carries the
+      // file type; GBIF Multimedia a "StillImage"/"Sound" type) — only pictures here.
+      var ty = String(m.mediaType || m.type || m.format || "");
+      if (/audio|video|sound|movie|\.(mp3|wav|ogg|m4a|mp4|mov|avi|webm)$/i.test(ty)) return;
       if (!cred) cred = String(m.author || m.creator || m.rightsHolder || "").trim();
       out.push({ small: u, big: String(m.fullURL || m.largeURL || u) });
     });
@@ -329,7 +333,11 @@ window.AppNormalize = (function () {
         act: (o.occurrence && o.occurrence.activity && (o.occurrence.activity.value || o.occurrence.activity)) || "",
         note: (o.occurrence && o.occurrence.occurrenceRemarks) || "" });
       var slast = out[out.length - 1], occ2 = o.occurrence || {}, tx = o.taxon || {}, ta = tx.attributes || {};
-      var sp = mediaPhoto(occ2.media || occ2.associatedMedia || o.media, ""); if (sp) { slast.photo = sp.photo; slast.photoBig = sp.photoBig; slast.photoBy = sp.photoBy; slast.photos = sp.photos; }
+      // Artportalen's own pictures live under artportalenInternal.media (the Occurrence.Media
+      // the docs describe is never filled for this provider); occurrence.media stays first for
+      // anything that does use it, and the deprecated associatedMedia string still works.
+      var apInt = o.artportalenInternal || o.ArtportalenInternal || {};
+      var sp = mediaPhoto(occ2.media || apInt.media || apInt.Media || occ2.associatedMedia || o.media, ""); if (sp) { slast.photo = sp.photo; slast.photoBig = sp.photoBig; slast.photoBy = sp.photoBy; slast.photos = sp.photos; }
       var srl = rlCode(String(ta.redlistCategory || ta.redListCategory || tx.redlistCategory || "").split(/[\s(]/)[0]);
       if (srl) slast.rl = srl;
     });
