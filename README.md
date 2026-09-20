@@ -299,9 +299,13 @@ beside it when there are several. (**eBird has none**: its public API 2.0 return
 either an observation or a checklist, and the Macaulay Library's per-checklist search is
 undocumented and bot-gated — the species-level Macaulay link in the species menu is the nearest
 thing. Artportalen's pictures need `occurrence.media` asked for explicitly; the field is in
-neither the Minimum nor the Extended field set.) **Hover it** (tap on a phone, tap again to close) for a **mosaic**
-of every picture that record carries, credited and linked back to the original; a tile opens that
-picture full-size. The pictures load only when the mosaic opens, so a long list downloads nothing
+neither the Minimum nor the Extended field set.) **Hover it** for a preview **mosaic** of every
+picture that record carries, credited and linked back to the original; **clicking** the camera
+(tapping, on a phone) **pins** the mosaic — it then stays until you press its **×** (or tap the same
+camera again), so you can open the pictures one at a time and come back to the set. A tile opens
+that picture full-size, and **closing it returns you to the mosaic**. The full-size picture
+**zooms**: mouse wheel or pinch, drag to pan, double-click/double-tap to toggle 1× ↔ 2.5× and again
+to reset. The pictures load only when the mosaic opens, so a long list downloads nothing
 until you ask. **Red-list codes** — sources that
 publish a national red list (Artsobservasjoner, Artportalen, Laji.fi) tag the species name with its
 category (**DD · NT · VU · EN · CR · RE**), coloured by severity, in both the species table and the
