@@ -89,6 +89,7 @@
   "det.noLocation": "(nėra vietos)",
   "det.allLoc": "Visos",
   "det.locToggleAll": "Visos vietos įj./išj.",
+  "det.locCount": "{n} vietovių",
   "det.locNone": "Nė viena",
   "det.locCustom": "Pasirinkta",
   "filters.locations": "Vietos",

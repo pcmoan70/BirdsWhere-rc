@@ -536,7 +536,10 @@ The control line opens three mutually-exclusive **filter subwindows**:
 - **Species** — **– All · ★ Starred · ◉ Rare · 🟠 Not on this year's list · 🟡 Not on your life list**.
 - **📍 Locations** (all-filters pane, just above Observers) — a checklist of the **named places**
   among the plotted observations; tick a subset to restrict the map dots, legend, histogram and
-  every list to those spots (All/None master toggle; the section × clears it). Records without an
+  every list to those spots (All/None master toggle; the section × clears it). The checklist is a
+  **dropdown labelled with the count** ("2 042 localities") — a wide fetch can name thousands of
+  places, which used to bury every other filter under it. Short lists (8 or fewer) open by
+  themselves; once you open or close it, that choice is kept. Records without an
   accurate place name (coordinate-only, or bare country/region names) group under **"(no
   location)"**. Ticking applies after a ~1 s pause, so several boxes rebuild the map once. You can
   also filter straight from a record: tap a **location name** in a species' expanded records or

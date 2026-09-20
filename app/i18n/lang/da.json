@@ -89,6 +89,7 @@
   "det.noLocation": "(intet sted)",
   "det.allLoc": "Alle",
   "det.locToggleAll": "Alle steder til/fra",
+  "det.locCount": "{n} lokaliteter",
   "det.locNone": "Ingen",
   "det.locCustom": "Tilpasset",
   "filters.locations": "Steder",

@@ -13638,6 +13638,12 @@
   function getObserverLists() { return window.GeoState.get("observerLists", []) || []; }
   function saveObserverLists(a) { window.GeoState.save({ observerLists: a }); }
   var obsListsDdOpen = false;   // keep the observer-lists dropdown open across re-renders
+  // The location checklist is as long as the fetch has distinct place names — hundreds
+  // after a wide fetch, which buried every other filter under it. It is a dropdown now,
+  // labelled with the count. null = not touched yet: short lists stay open (no extra
+  // click for three places), long ones start closed. Once the user opens or closes it,
+  // that choice is kept across the pane's re-renders.
+  var detLocDdOpen = null, LOC_DD_INLINE = 8;
   // An observer list is ticked when all its observers are in the active filter.
   function obsListTicked(L) {
     if (!detObsFilter || !L.observers || !L.observers.length) return false;
@@ -14236,9 +14242,12 @@
     if (lo.hasNone) rows.push(row("", t("det.noLocation")));
     var allOn = !detLocFilter;
     var allTog = '<label class="det-obs-alltoggle" title="' + escapeHtml(t("det.locToggleAll")) + '"><input type="checkbox" class="det-loc-allcb"' + (allOn ? " checked" : "") + '> ' + escapeHtml(t("det.allLoc")) + "</label>";
+    var nLoc = rows.length;
+    var open = (detLocDdOpen === null) ? (nLoc <= LOC_DD_INLINE) : detLocDdOpen;
     return '<div class="det-obs-panel">' +
       '<div class="det-obs-head"><span class="det-obs-scope">' + escapeHtml(locFilterLabel()) + "</span>" + allTog + "</div>" +
-      '<div class="det-loc-list">' + rows.join("") + "</div></div>";
+      '<details class="det-loc-dd"' + (open ? " open" : "") + '><summary>' + escapeHtml(t("det.locCount", { n: nLoc })) + "</summary>" +
+      '<div class="det-loc-list">' + rows.join("") + "</div></details></div>";
   }
   // Clicking a location name → its filter chooser: Show only / Add / Remove / Show all.
   function locationActionMenu(name, anchor) {
@@ -15281,6 +15290,8 @@
     });
     // Location checklist: All/None master toggle + per-location checkboxes + name→menu.
     // Applied on a 1 s debounce (scheduleLocApply) so ticking several places rebuilds once.
+    var locDd = el.querySelector(".det-loc-dd");
+    if (locDd) locDd.addEventListener("toggle", function () { detLocDdOpen = locDd.open; });
     var allLocCb = el.querySelector(".det-loc-allcb");
     if (allLocCb) allLocCb.addEventListener("change", function (e) { e.stopPropagation(); scheduleLocApply(this.checked ? null : new Set()); });
     el.querySelectorAll(".det-loc-cb").forEach(function (cb) {

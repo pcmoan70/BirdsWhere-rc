@@ -89,6 +89,7 @@
   "det.noLocation": "(sem local)",
   "det.allLoc": "Todos",
   "det.locToggleAll": "Todos os locais lig./desl.",
+  "det.locCount": "{n} localidades",
   "det.locNone": "Nenhum",
   "det.locCustom": "Personalizado",
   "filters.locations": "Locais",

@@ -89,6 +89,7 @@
   "det.noLocation": "(kein Ort)",
   "det.allLoc": "Alle",
   "det.locToggleAll": "Alle Orte ein/aus",
+  "det.locCount": "{n} Orte",
   "det.locNone": "Keine",
   "det.locCustom": "Eigene",
   "filters.locations": "Orte",

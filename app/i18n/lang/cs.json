@@ -89,6 +89,7 @@
   "det.noLocation": "(bez místa)",
   "det.allLoc": "Vše",
   "det.locToggleAll": "Všechna místa zap./vyp.",
+  "det.locCount": "{n} lokalit",
   "det.locNone": "Žádná",
   "det.locCustom": "Vlastní",
   "filters.locations": "Místa",

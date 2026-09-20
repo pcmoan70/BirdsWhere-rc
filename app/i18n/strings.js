@@ -649,6 +649,7 @@ window.GeoI18N = (function () {
         "det.noLocation": "(no location)",
         "det.allLoc": "All",
         "det.locToggleAll": "All locations on/off",
+        "det.locCount": "{n} localities",
         "det.locNone": "None",
         "det.locCustom": "Custom",
         "filters.locations": "Locations",

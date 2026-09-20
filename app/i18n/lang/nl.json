@@ -89,6 +89,7 @@
   "det.noLocation": "(geen locatie)",
   "det.allLoc": "Alle",
   "det.locToggleAll": "Alle locaties aan/uit",
+  "det.locCount": "{n} locaties",
   "det.locNone": "Geen",
   "det.locCustom": "Aangepast",
   "filters.locations": "Locaties",

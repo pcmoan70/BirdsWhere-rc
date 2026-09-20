@@ -3273,6 +3273,11 @@ tr.row-list-only .prob-na { color: var(--ink-muted, #999); }
 .det-obs-head .det-obs-cycle { flex: 1 1 auto; min-width: 0; border: 1px solid var(--brand); background: transparent; cursor: pointer; font: inherit; font-size: var(--fs-xs); color: var(--brand); padding: 2px 8px; border-radius: 999px; text-transform: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .det-obs-head .det-obs-cycle:hover { background: var(--brand); color: #fff; }
 .det-obs-list, .det-loc-list { max-height: 30vh; overflow-y: auto; padding: 3px 4px; }
+/* The location checklist as a disclosure: the summary carries the count, so a fetch with
+   two hundred place names no longer buries every filter under it. */
+.det-loc-dd > summary { cursor: pointer; padding: 3px 4px; font-size: var(--fs-s); opacity: .85; user-select: none; }
+.det-loc-dd > summary:hover { opacity: 1; }
+.det-loc-dd[open] > summary { margin-bottom: 2px; }
 .det-obs-row { display: flex; align-items: center; gap: 6px; padding: 2px 3px; font-size: var(--fs-s); font-weight: 400; cursor: pointer; }
 .det-obs-row input { margin: 0; flex: 0 0 auto; }
 .det-obs-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

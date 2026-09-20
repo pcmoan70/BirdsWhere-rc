@@ -89,6 +89,7 @@
   "det.noLocation": "(ingen plats)",
   "det.allLoc": "Alla",
   "det.locToggleAll": "Alla platser på/av",
+  "det.locCount": "{n} lokaler",
   "det.locNone": "Inga",
   "det.locCustom": "Anpassad",
   "filters.locations": "Platser",

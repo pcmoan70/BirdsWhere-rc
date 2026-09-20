@@ -89,6 +89,7 @@
   "det.noLocation": "(ei paikkaa)",
   "det.allLoc": "Kaikki",
   "det.locToggleAll": "Kaikki paikat päälle/pois",
+  "det.locCount": "{n} paikkaa",
   "det.locNone": "Ei mitään",
   "det.locCustom": "Mukautettu",
   "filters.locations": "Paikat",

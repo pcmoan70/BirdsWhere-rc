@@ -89,6 +89,7 @@
   "det.noLocation": "(asukoht puudub)",
   "det.allLoc": "Kõik",
   "det.locToggleAll": "Kõik asukohad sisse/välja",
+  "det.locCount": "{n} asukohta",
   "det.locNone": "Puudub",
   "det.locCustom": "Kohandatud",
   "filters.locations": "Asukohad",

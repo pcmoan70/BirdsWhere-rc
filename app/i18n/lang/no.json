@@ -89,6 +89,7 @@
   "det.noLocation": "(ingen lokalitet)",
   "det.allLoc": "Alle",
   "det.locToggleAll": "Alle lokaliteter på/av",
+  "det.locCount": "{n} lokaliteter",
   "det.locNone": "Ingen",
   "det.locCustom": "Egendefinert",
   "filters.locations": "Lokaliteter",

@@ -89,6 +89,7 @@
   "det.noLocation": "(brak lokalizacji)",
   "det.allLoc": "Wszystkie",
   "det.locToggleAll": "Wszystkie lokalizacje wł./wył.",
+  "det.locCount": "{n} miejscowości",
   "det.locNone": "Brak",
   "det.locCustom": "Własne",
   "filters.locations": "Lokalizacje",
