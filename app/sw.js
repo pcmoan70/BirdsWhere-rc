@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1835";
+var VERSION = "v1836";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• Fixed: fetching several saved locations from the \ud83d\udd0d panel, then asking for the list, could show a stale list (or none) and report \u201cNo located detections to plot\u201d over a map full of dots. The list page left open over the map was never refreshed for what you had just fetched, and the header toggle then took you to the map instead of the list. The list view now shows the observations from every location you fetched, and going back to the map no longer re-plots one old point over them.",
+  "• Switching between Species list / Observation list / Images is far faster, and the funnel now blinks while it happens so you can see it working. On a 90-day fetch, switching to the observation list locked the screen for nearly four seconds; it is now immediate. The date of every row was being formatted from scratch \u2014 thousands of times, each building a new formatter \u2014 and saving the new layout wrote the whole settings file before the list was drawn.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

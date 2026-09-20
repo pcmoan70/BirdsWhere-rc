@@ -1092,13 +1092,28 @@
   // Display an ISO date (YYYY-MM-DD) in the current locale's format (day/month
   // order + separators). Partial/odd values (year-only, ranges, empty) are kept
   // as-is. Parsed at local midnight so the day never shifts across time zones.
+  // toLocaleDateString builds a fresh Intl formatter on every call, and this is called
+  // once per observation row: switching to the observation list was 3.8 s of blocked main
+  // thread on a 90-day Oslo fetch, 1.79 s of it in here (measured 2026-09-20). One
+  // formatter per language, and each date string remembered — a list of thousands of rows
+  // holds only a few hundred distinct dates.
+  var _fmtDateCache = Object.create(null), _fmtDateLang = null, _fmtDateFmt = null;
   function fmtDate(s) {
     s = String(s || "");
     if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    if (_fmtDateLang !== lang) {
+      _fmtDateLang = lang; _fmtDateCache = Object.create(null);
+      try { _fmtDateFmt = new Intl.DateTimeFormat(lang, { year: "numeric", month: "2-digit", day: "2-digit" }); }
+      catch (e) { _fmtDateFmt = null; }
+    }
+    var hit = _fmtDateCache[s];
+    if (hit !== undefined) return hit;
     var d = new Date(s + "T00:00:00");
-    if (isNaN(d.getTime())) return s;
-    try { return d.toLocaleDateString(lang, { year: "numeric", month: "2-digit", day: "2-digit" }); }
-    catch (e) { return s; }
+    if (isNaN(d.getTime())) return (_fmtDateCache[s] = s);
+    var out;
+    try { out = _fmtDateFmt ? _fmtDateFmt.format(d) : d.toLocaleDateString(lang, { year: "numeric", month: "2-digit", day: "2-digit" }); }
+    catch (e) { out = s; }
+    return (_fmtDateCache[s] = out);
   }
   // The LOCAL calendar date (YYYY-MM-DD) of a timestamp. Never toISOString() here —
   // that's UTC, which shifts the day for any non-UTC timezone (e.g. a local-midnight
@@ -19095,7 +19110,19 @@
     });
     document.getElementById("sp-pdf-btn").addEventListener("click", exportSpeciesPdf);
     var spLayoutSel = document.getElementById("sp-layout");
-    if (spLayoutSel) spLayoutSel.addEventListener("change", function () { spLayout = this.value; window.GeoState.save({ spLayout: spLayout }); applySpLayoutChange(); });
+    if (spLayoutSel) spLayoutSel.addEventListener("change", function () {
+      spLayout = this.value;
+      // Rebuilding a list of thousands of rows takes a moment: blink the funnel the way
+      // every other heavy list pass does, so the switch is visibly happening. withFunnelBusy
+      // also defers the work by a frame, which is what lets that blink paint at all.
+      withFunnelBusy(function () {
+        applySpLayoutChange();
+        // AFTER the render: GeoState.save re-serialises the whole settings object (species
+        // photos included), so saving the new layout first put a full localStorage write
+        // in front of the thing the user is waiting for.
+        window.GeoState.save({ spLayout: spLayout });
+      });
+    });
     // Funnel → the single "all filters" pane (both list layouts). Sorting still happens
     // by clicking a column name; the pane keeps a full copy of the sort + every filter.
     var spFilterBtn = document.getElementById("sp-filter-btn");
