@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1842";
+var VERSION = "v1843";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• The rarest-finds intro now runs once for the whole fetch. Fetching several saved places restarted it after every place \u2014 three places meant three runs, each wiping the one before it before you could read it \u2014 and the \u2713 Update across your fetched areas never ran it at all. Now each place\u2019s new species are collected and the whole set is introduced when the last place finishes.",
+  "• Species the habitat model does not cover \u2014 the wolverine, most plants, fungi and insects \u2014 now behave like every other row: a coloured dot matching their dots on the map (the class glyph stays, after it), a row that expands to its records however many it has, a tappable name that opens the species menu (\u2605, year and life lists, saved lists, pictures, Wikipedia), a scientific name that opens the family, and a second-language name. They were missing all of that, not just the probability. Probability, Season, Yr peak, the comparison column and the \u25c9 locally-rare mark are still blank for them \u2014 those come from the model and there is nothing to show.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

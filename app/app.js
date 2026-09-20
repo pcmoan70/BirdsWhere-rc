@@ -1727,7 +1727,7 @@
   function findSpRow(tbody, key) {
     var links = tbody.querySelectorAll(".sp-link[data-key]");
     for (var i = 0; i < links.length; i++) if (links[i].getAttribute("data-key") === key) return links[i].closest("tr");
-    return null;
+    return tbody.querySelector('tr[data-key="' + String(key).replace(/"/g, '\\"') + '"]');   // extras carry the key on the row
   }
   function spDetailRowsFor(key) {
     // Build the expanded records from the SAME aggregation the Total column counts
@@ -1769,7 +1769,8 @@
     // Mark expanded species rows so the row shows it's open (the ▸ caret was removed;
     // the whole row is the expand target now — see the sp-tbody click handler).
     Array.prototype.forEach.call(tbody.querySelectorAll("tr"), function (tr) {
-      var sl = tr.querySelector(".sp-link[data-key]"); var k = sl && sl.getAttribute("data-key");
+      var sl = tr.querySelector(".sp-link[data-key]");
+      var k = (sl && sl.getAttribute("data-key")) || tr.getAttribute("data-key");
       if (k) tr.classList.toggle("sp-open", !!spExpanded[k]);
     });
     Object.keys(spExpanded).forEach(function (key) {
@@ -5390,13 +5391,25 @@
       tr.setAttribute("data-name", name);
       if (e.latestTs) tr.setAttribute("data-last", e.latestTs);
       if (exKm != null) tr.setAttribute("data-dist", exKm);
+      var exKey = "x:" + k;   // the key detPlot/spExpanded use for a non-model species
+      tr.setAttribute("data-key", exKey);   // so findSpRow / the row-expand click / refreshSpExpansions can reach it
       var clsBadge = e.cls ? '<span class="sp-extra-cls" title="' + escapeHtml(e.cls) + '">' + classGlyph(e.cls) + "</span> " : "";
       tr.innerHTML =   // not a model species → no list/star status to show
         '<td class="num det-nd"><button type="button" class="det-count-btn det-count-extra" data-sci="' + escapeHtml(e.sci) + '" data-name="' + escapeHtml(name) + '">' + eSpec + '</button>' +
           (ePairs ? '<span class="det-pairs">(' + ePairs + ")</span>" : "") + '</td>' +
-        '<td>' + clsBadge + '<span class="sp-extra-name" title="' + escapeHtml(t("sp.extraHint")) + '">' + escapeHtml(name) + '</span></td>' +
-        '<td class="name2"></td>' +
-        '<td class="sci">' + escapeHtml(e.sci) + '</td>' +
+        // The species dot FIRST, exactly as a model row has it — an extra is plotted on the
+        // map in its own colour, so the list had no reason to show only the class glyph and
+        // leave the row without the swatch that ties it to its dots.
+        // Carries .sp-link with the same data attributes a model name does, so the ONE
+        // delegated handler opens the species menu here too — drmRenderMain already knows
+        // an "x:" key (isExtra) and offers everything that is not model-derived.
+        '<td>' + spListDot(exKey) + clsBadge +
+          '<span class="sp-link sp-extra-name" data-key="' + escapeHtml(exKey) + '" data-name="' + escapeHtml(name) +
+          '" data-sci="' + escapeHtml(e.sci) + '" title="' + escapeHtml(t("sp.extraHint")) + '">' + escapeHtml(name) + '</span></td>' +
+        '<td class="name2">' + escapeHtml(extraSecondName(e.sci)) + '</td>' +
+        // …and the scientific name opens the family, which these DO have: the aggregator
+        // records it under the same "x:<sci>" key (recordFamily) as it does for a model species.
+        '<td class="sci"><span class="sci-link" data-key="' + escapeHtml(exKey) + '" title="' + escapeHtml(t("sci.familyTip")) + '">' + escapeHtml(e.sci) + '</span></td>' +
         '<td class="num sp-last">' + (e.latestTs ? lastDateCellHtml(e.latestTs) : "") + '</td>' +
         '<td class="num sp-dist">' + (exKm != null ? escapeHtml(nearbyFmtDist(exKm)) : "") + '</td>' +
         '<td class="prob-cell prob-na">—</td>' +
@@ -9830,6 +9843,15 @@
     if (sciFallbackFor(cls)) return sciCase(sci);
     return speciesCase(lang, recName || sci);
   }
+  // The SECOND-language column for a non-model species. The model's positional name packs
+  // have no row for these species at all, so the bundled names-extra dictionary for that
+  // language answers instead — the same source the primary name uses.
+  function extraSecondName(sci) {
+    if (!secondLang || !sci) return "";
+    var d = extraNameDict[secondLang];
+    if (!d) { ensureExtraNames(secondLang); return ""; }   // first miss starts the load; a later render fills it
+    return d[sciBinomial(sci).toLowerCase()] || "";
+  }
   function bundledExtraName(sci) {
     var d = extraNameDict[lang];
     if (!d) { ensureExtraNames(lang); return ""; }        // first miss kicks the load off
@@ -10069,7 +10091,12 @@
   }
   // Just the 2nd-language name of a species key ("" if no 2nd language / no label) —
   // used to sort the detections list by the second language.
-  function detName2(key) { var lbl = key && labelsByKey[key]; return (secondLang && lbl) ? (secondName(lbl) || "") : ""; }
+  function detName2(key) {
+    if (!secondLang || !key) return "";
+    var lbl = labelsByKey[key];
+    if (lbl) return secondName(lbl) || "";
+    return key.indexOf("x:") === 0 ? extraSecondName(key.slice(2)) : "";   // non-model species have a 2nd name too
+  }
   // Legend / list swatch: a coloured ★ for starred species, a coloured dot with a
   // black centre for locally-rare species, a star-with-centre-dot when both, else
   // a plain coloured dot.
@@ -10974,8 +11001,7 @@
   // is what a family list is for: seeing what the neighbours look like. Ranked by the
   // model's probability at the point when there is one, else alphabetically.
   async function openFamilyImages(key, x, y) {
-    var lbl = key && labelsByKey[key]; if (!lbl) return;
-    var fam = famOf(key);
+    var fam = famOf(key); if (!fam && !(key && labelsByKey[key])) return;
     var el = openAnchoredMenu("detrow-menu family-menu conf-menu conf-img-menu");
     el.style.width = "min(97vw,900px)";
     var hdr = document.createElement("div");
@@ -11058,8 +11084,9 @@
   }
   async function openFamilyMenu(key, x, y) {
     if (familyView() === "images" && navigator.onLine !== false) { openFamilyImages(key, x, y); return; }
-    var lbl = key && labelsByKey[key]; if (!lbl) return;
-    var fam = famOf(key);
+    // A non-model species has a family too — the aggregator records it under "x:<sci>" —
+    // so the family browser opens for those as well; only its own row cannot be marked.
+    var fam = famOf(key); if (!fam && !(key && labelsByKey[key])) return;
     var el = openAnchoredMenu("detrow-menu family-menu");
     el.style.maxHeight = "min(72vh,560px)"; el.style.overflowY = "auto";
     el.style.maxWidth = "min(94vw,380px)";                    // never overflow a phone
@@ -19233,9 +19260,10 @@
         // toggles its expanded record list — EXCEPT on the active elements in the row
         // (the species name opens the species view, the date/count/flag cells filter).
         if (e.target.closest && e.target.closest(".sp-link, .dl-date-click, .spf, [role=button], a, button, input, select")) return;
-        var trg = e.target.closest && e.target.closest("tr.sp-has-det");
+        var trg = e.target.closest && e.target.closest("tr.sp-has-det, tr.sp-extra");
         if (trg && !trg.classList.contains("sp-detail-row")) {
-          var slk = trg.querySelector(".sp-link[data-key]"), rk = slk && slk.getAttribute("data-key");
+          var slk = trg.querySelector(".sp-link[data-key]");
+          var rk = (slk && slk.getAttribute("data-key")) || trg.getAttribute("data-key");   // extras: the key is on the row
           if (rk) { e.preventDefault(); toggleSpExpand(rk); return; }
         }
         return;
