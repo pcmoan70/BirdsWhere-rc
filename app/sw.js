@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1836";
+var VERSION = "v1837";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• Switching between Species list / Observation list / Images is far faster, and the funnel now blinks while it happens so you can see it working. On a 90-day fetch, switching to the observation list locked the screen for nearly four seconds; it is now immediate. The date of every row was being formatted from scratch \u2014 thousands of times, each building a new formatter \u2014 and saving the new layout wrote the whole settings file before the list was drawn.",
+  "• The About text no longer describes this as a bird app. It opens on what the app actually covers \u2014 birds, mammals, amphibians, insects, plants and fungi \u2014 and is straight about the habitat model behind the predictions: of its 12 012 species, 10 208 are birds, with partial cover for mammals, amphibians and insects and none at all for plants and fungi. Groups the model does not cover run on the observations alone: lists, map, filters, names and photos, but no probability, range map or migration timing.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
