@@ -320,6 +320,23 @@ window.AppAggregate = (function () {
       if (key) { bump(key, r.dt || r.date, row); if (r.family && recordFamily(key, r.family)) famDirty = true; }
       else { bumpExtra(r.sciName, r.comName, r.dt || r.date, r.cls, row); if (r.family && recordFamily("x:" + snLower, r.family)) famDirty = true; }
     });
+    // A trinomial that arrived NEXT TO its own binomial ("Lepus timidus timidus" beside
+    // "Lepus timidus") is the same animal to every list the app draws, and the two rows
+    // carry one name — "hare" listed twice, once with each row's own count. Fold the
+    // subspecies in; only when the binomial is actually present, so a subspecies-only
+    // record still keeps its own identity.
+    Object.keys(extras).forEach(function (k) {
+      var w = k.split(" ");
+      if (w.length !== 3) return;
+      var into = extras[w[0] + " " + w[1]]; if (!into) return;
+      var from = extras[k];
+      into.count += from.count;
+      if (from.latestTs > into.latestTs) into.latestTs = from.latestTs;
+      into.rows = into.rows.concat(from.rows);
+      if (!into.name && from.name) into.name = from.name;
+      if (!into.cls && from.cls) into.cls = from.cls;
+      delete extras[k];
+    });
     if (famDirty) saveFamIndex();
     // dedupTotal = unique records kept after de-dup + the birds-only filter (sum
     // of all agg/extras counts); returned so callers don't re-walk the result.

@@ -1910,7 +1910,10 @@
     return '<td class="prob-cell' + (cls ? " " + cls : "") + '"><span class="prob-num">' + numHtml +
       '</span><div class="prob-bar" style="width:' + widthPct + '%' + (bg ? ";background:" + bg : "") + '"></div></td>';
   }
-  function probBarNa(cls) { return '<td class="prob-cell prob-na' + (cls ? " " + cls : "") + '">—</td>'; }
+  // No model number to show (a species the model doesn't cover, or no prediction at this
+  // point): the cell stays EMPTY. Probability, Season and Yr peak are the only things a
+  // non-model species lacks — everything else about its row reads like any other.
+  function probBarNa(cls) { return '<td class="prob-cell prob-na' + (cls ? " " + cls : "") + '"></td>'; }
   // One record row: colour swatch + species name, 2nd name, probability, [date],
   // distance, count, [observer] — separate columns (no parenthesised 2nd name).
   // Observer names as tappable filter spans. Long lists (shared checklists) show the
@@ -5481,7 +5484,11 @@
       if (exKm != null) tr.setAttribute("data-dist", exKm);
       var exKey = "x:" + k;   // the key detPlot/spExpanded use for a non-model species
       tr.setAttribute("data-key", exKey);   // so findSpRow / the row-expand click / refreshSpExpansions can reach it
-      var clsBadge = e.cls ? '<span class="sp-extra-cls" title="' + escapeHtml(e.cls) + '">' + classGlyph(e.cls) + "</span> " : "";
+      // The class travels as data, not as a glyph: a non-model species is drawn exactly
+      // like a model one (dot, name, 2nd name, scientific name), and only the model-derived
+      // cells stay empty. A little 🦊 beside four mammals and not beside the rest was the
+      // one thing that still told the two kinds of row apart.
+      if (e.cls) tr.setAttribute("data-cls", e.cls);
       tr.innerHTML =   // not a model species → no list/star status to show
         '<td class="num det-nd"><button type="button" class="det-count-btn det-count-extra" data-sci="' + escapeHtml(e.sci) + '" data-name="' + escapeHtml(name) + '">' + eSpec + '</button>' +
           (ePairs ? '<span class="det-pairs">(' + ePairs + ")</span>" : "") + '</td>' +
@@ -5491,16 +5498,16 @@
         // Carries .sp-link with the same data attributes a model name does, so the ONE
         // delegated handler opens the species menu here too — drmRenderMain already knows
         // an "x:" key (isExtra) and offers everything that is not model-derived.
-        '<td>' + spListDot(exKey) + clsBadge +
+        '<td>' + spListDot(exKey) +
           '<span class="sp-link sp-extra-name" data-key="' + escapeHtml(exKey) + '" data-name="' + escapeHtml(name) +
           '" data-sci="' + escapeHtml(e.sci) + '" title="' + escapeHtml(t("sp.extraHint")) + '">' + escapeHtml(name) + '</span></td>' +
         '<td class="name2">' + escapeHtml(extraSecondName(e.sci)) + '</td>' +
         // …and the scientific name opens the family, which these DO have: the aggregator
         // records it under the same "x:<sci>" key (recordFamily) as it does for a model species.
-        '<td class="sci"><span class="sci-link" data-key="' + escapeHtml(exKey) + '" title="' + escapeHtml(t("sci.familyTip")) + '">' + escapeHtml(e.sci) + '</span></td>' +
+        '<td class="sci"><span class="sci-link" data-key="' + escapeHtml(exKey) + '" title="' + escapeHtml(t("sci.familyTip")) + '">' + escapeHtml(sciShow(e.sci)) + '</span></td>' +
         '<td class="num sp-last">' + (e.latestTs ? lastDateCellHtml(e.latestTs) : "") + '</td>' +
         '<td class="num sp-dist">' + (exKm != null ? escapeHtml(nearbyFmtDist(exKm)) : "") + '</td>' +
-        '<td class="prob-cell prob-na">—</td>' +
+        probBarNa() +
         '<td class="season-cell"></td>' +   // extras have no model prediction → no Season
         '<td></td>';
       frag.appendChild(tr);
@@ -6264,6 +6271,11 @@
     }
     if (!best) return null;
     if (best.indexOf("//") === 0) best = "https:" + best;
+    // Wikipedia now serves article images from thumb.wikimedia.org with an ?utm_source=…
+    // tracking query. Only upload.wikimedia.org holds the ORIGINAL: the same path on
+    // thumb.wikimedia.org 301s to the Commons main page, which is where "Open full image"
+    // was landing. Same normalisation spImgThumb already does for the species photos.
+    best = best.split("?")[0].replace(/^https:\/\/thumb\.wikimedia\.org\//, "https://upload.wikimedia.org/");
     // `best` is the page's own thumbnail (already generated, so it loads
     // reliably). The full image is the un-thumbnailed original. We avoid
     // requesting an arbitrary thumbnail width — Wikimedia won't always
@@ -7876,12 +7888,25 @@
     var tbody = document.getElementById("sp-tbody"); if (!tbody) return;
     Array.prototype.forEach.call(tbody.children, function (tr) {
       var link = tr.querySelector(".sp-link[data-key]"); if (!link) return;
-      var lbl = labelsByKey[link.getAttribute("data-key")]; if (!lbl) return;
-      var nm = speciesName(lbl);
+      var lbl = labelsByKey[link.getAttribute("data-key")];
+      var nm, n2v;
+      if (lbl) { nm = speciesName(lbl); n2v = secondLang ? secondName(lbl) : ""; }
+      else if (link.classList.contains("sp-extra-name")) {
+        // A species the model doesn't cover has no label — its name comes from the extras
+        // dictionary, exactly as the map legend's does. Skipping these left the LIST showing
+        // whatever name the source happened to send (GBIF and iNaturalist answer in English)
+        // while the legend beside it showed the local one: the same animal, two names.
+        var sciTd = tr.querySelector("td.sci");
+        var sci = link.getAttribute("data-sci") || (sciTd ? sciTd.textContent.trim() : "");
+        if (!sci) return;
+        nm = extraDisplayName(sci, link.textContent, tr.getAttribute("data-cls") || "");
+        n2v = secondLang ? extraSecondName(sci) : "";
+      } else return;
+      if (!nm) return;
       for (var n = link.lastChild; n; n = n.previousSibling) if (n.nodeType === 3) { n.nodeValue = nm; break; }   // the name text (after any ★)
       link.setAttribute("data-name", nm);
       tr.setAttribute("data-name", nm.toLowerCase());
-      var n2 = tr.querySelector("td.name2"); if (n2) n2.textContent = secondLang ? secondName(lbl) : "";
+      var n2 = tr.querySelector("td.name2"); if (n2) n2.textContent = n2v;
     });
     var tbl = document.getElementById("species-list-table"); if (tbl) tbl.classList.toggle("has-name2", !!secondLang);   // the column shows only with a second language
     renderSpControls();
@@ -9921,6 +9946,10 @@
     return b.charAt(0).toUpperCase() + b.slice(1).toLowerCase();   // "fragaria viridis" → "Fragaria viridis"
   }
   function sciFallbackFor(cls) { return lang !== "en" && !!SCI_FALLBACK_GROUPS[String(cls || "").toLowerCase()]; }
+  // A scientific name AS SHOWN. An extra is keyed by its lowercased name (the key IS an
+  // id), so without this a model row printed "Lepus europaeus" and the row under it
+  // "ovibos moschatus". Unlike sciCase this keeps any subspecies epithet.
+  function sciShow(sci) { var s = String(sci || "").trim(); return s ? s.charAt(0).toUpperCase() + s.slice(1) : ""; }
   function extraDisplayName(sci, recName, cls) {
     var h = harvestedName(sci);                       // bundled pack, then the device's harvest
     if (h) return speciesCase(lang, h);
@@ -10058,9 +10087,9 @@
       }
       var ex = tr.querySelector(".sp-extra-name");
       if (!ex) return null;
-      var sciTd = tr.querySelector("td.sci"), badge = tr.querySelector(".sp-extra-cls");
+      var sciTd = tr.querySelector("td.sci");
       var sci = sciTd ? sciTd.textContent.trim() : "";
-      return sci ? { el: ex, nm: extraDisplayName(sci, ex.textContent, badge ? badge.getAttribute("title") : "") } : null;
+      return sci ? { el: ex, nm: extraDisplayName(sci, ex.textContent, tr.getAttribute("data-cls") || "") } : null;
     }
     if (tbody) Array.prototype.forEach.call(tbody.children, function (tr) {
       var r = rowName(tr); if (!r || !r.nm) return;
@@ -10074,9 +10103,8 @@
     if (rec) Array.prototype.forEach.call(rec.querySelectorAll(".spg-card"), function (c) {
       var key = c.getAttribute("data-key") || "", sci = c.getAttribute("data-sci") || "";
       var lbl = labelsByKey[key];
-      var badge = c.querySelector(".sp-extra-cls");
       var nm = lbl ? speciesName(lbl)
-        : (sci ? extraDisplayName(sci, "", badge ? badge.getAttribute("title") : "") : "");
+        : (sci ? extraDisplayName(sci, "", c.getAttribute("data-cls") || "") : "");
       setText(c.querySelector(".sp-link, .sp-extra-name"), nm);
     });
   }
@@ -11548,17 +11576,24 @@
       queue.push(card); pump();
     }
     function pump() {
+      // `c` MUST be captured per card. It used to be a plain `var` in this loop, which the
+      // while runs up to PARALLEL times before any promise settles — so all three callbacks
+      // closed over the LAST card: a card whose lookup came back null re-queued its
+      // neighbour instead of itself and never retried, leaving it blank until the popup was
+      // closed and opened again (a fresh card clears _cfiDone). That is the "open it twice
+      // and then the pictures are there" in the confusion and family views.
       while (running < PARALLEL && queue.length) {
-        var c = queue.shift();
         running++;
-        loadSpPhoto(c.querySelector(".spg-img"), c.querySelector(".spg-none"), c.querySelector(".spg-credit"), c.getAttribute("data-sci"))
-          .then(function (ok) {
-            running--;
-            // null = the lookup could not be reached (offline, rate limit): nothing was
-            // remembered, so let it be asked for again rather than leaving a blank card.
-            if (ok === null && popup.isConnected) { c._cfiDone = false; setTimeout(function () { fill(c); }, 4000); }
-            pump();
-          }, function () { running--; pump(); });
+        (function (c) {
+          loadSpPhoto(c.querySelector(".spg-img"), c.querySelector(".spg-none"), c.querySelector(".spg-credit"), c.getAttribute("data-sci"))
+            .then(function (ok) {
+              running--;
+              // null = the lookup could not be reached (offline, rate limit): nothing was
+              // remembered, so let it be asked for again rather than leaving a blank card.
+              if (ok === null && popup.isConnected) { c._cfiDone = false; setTimeout(function () { fill(c); }, 4000); }
+              pump();
+            }, function () { running--; pump(); });
+        })(queue.shift());
       }
     }
     // EVERY card ends up fetched and cached — scrolled to or not. The species you never
@@ -22758,7 +22793,6 @@
       // every plant, fungus and most insects — carries its name in .sp-extra-name instead,
       // and without this the card showed a scientific name and nothing else.
       var link = tr.querySelector(".sp-link") || tr.querySelector(".sp-extra-name");
-      var clsBadge = tr.querySelector(".sp-extra-cls");
       var sciTd = tr.querySelector("td.sci");
       var sci = sciTd ? sciTd.textContent.trim() : (link ? link.getAttribute("data-sci") || "" : "");
       var sciEl = sciTd ? sciTd.querySelector(".sci-link") : null;   // the table's clickable sci (→ Family menu), reused as-is
@@ -22807,11 +22841,11 @@
           '<span class="spg-bar season-cell sp-season" data-key="' + escapeHtml(key) + '" role="button" title="' + escapeHtml(t("th.seasonHint")) + '"><span class="spg-k">' + escapeHtml(t("th.season")) + "</span></span>" +
           '<span class="spg-bar prob-cell sp-ytop" data-key="' + escapeHtml(key) + '" role="button"><span class="spg-k">' + escapeHtml(t("th.ytop")) + "</span></span>" +
         "</div>" : "";
-      return '<div class="spg-card' + (predicted ? " spg-pred" : "") + '" data-sci="' + escapeHtml(sci) + '" data-key="' + escapeHtml(key) + '" data-date="' + escapeHtml(lastDate) + '">' +
+      return '<div class="spg-card' + (predicted ? " spg-pred" : "") + '" data-sci="' + escapeHtml(sci) + '" data-key="' + escapeHtml(key) + '" data-cls="' + escapeHtml(tr.getAttribute("data-cls") || "") + '" data-date="' + escapeHtml(lastDate) + '">' +
         '<div class="spg-img' + (photoLink ? ' spg-img-link" role="button" title="' + escapeHtml(t("spg.photosTip")) : '"') + '">' +
           (predicted ? '<span class="spg-tag">' + escapeHtml(t("spg.predicted")) + "</span>" : "") +
           '<span class="spg-none" style="display:none">' + escapeHtml(t("spg.noImage")) + "</span></div>" +
-        '<div class="spg-name"><span class="spg-nm">' + (dot ? dot.outerHTML : "") + (clsBadge ? clsBadge.outerHTML : "") + (link ? link.outerHTML : "") +
+        '<div class="spg-name"><span class="spg-nm">' + (dot ? dot.outerHTML : "") + (link ? link.outerHTML : "") +
           (showSci ? ' <span class="spg-sci">(' + (sciEl ? sciEl.outerHTML : escapeHtml(sci)) + ")</span>" : "") + "</span>" + subBtn + "</div>" +
         // Compact, label-free meta line: "#total(n)  last-seen  distance" (the bars row below
         // carries the probabilities; a card without the bars keeps a labelled Probability).
