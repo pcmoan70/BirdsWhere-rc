@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1849";
+var VERSION = "v1850";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• Confusion species: a look-alike now has to be a real candidate before it scores. A Match under 10 % or a misID under 5 % counts as nothing, so a 3 % resemblance or one stray misidentification can no longer buy a species a place in the ranking \u2014 those fall to 0 and sink to the bottom. Anything that was genuinely similar, or genuinely confused, scores exactly as before.",
+  "• Confusion species that score 0 are no longer listed. A bird whose resemblance is under 10 % and whose real-misidentification share is under 5 % is not a confusion anyone makes, and putting it at the bottom of the list still said \u201cconsider this one\u201d. Barn Owl in Sydney drops from 15 look-alikes to 10 \u2014 the Tawny Frogmouth and the Laughing Kookaburra go, every owl stays.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

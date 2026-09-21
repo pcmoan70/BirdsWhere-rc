@@ -11518,7 +11518,11 @@
     if (pt) { try { out = await predictWeek(+pt.lat, +pt.lon, +document.getElementById("week-select").value); } catch (e) {} }
     var arr = members.map(function (mm) { return { m: mm.m, w: mm.w, mid: mm.mid, p: out ? (out[mm.m.index] || 0) : -1 }; });
     if (out) {
-      arr = arr.filter(function (w) { return w.p > 0; });                   // occurs-here only (0% hidden)
+      // Occurs-here only, and only where the Score survives its floors: a look-alike that
+      // scores 0 is one whose resemblance is under 10 % AND whose real-misidentification
+      // share is under 5 %, which is not a confusion anyone would make — listing it at the
+      // bottom said "consider this bird" about a bird nobody mistakes for this one.
+      arr = arr.filter(function (w) { return w.p > 0 && confScore(w) > 0; });
       arr.sort(function (a, b) { return confScore(b) - confScore(a); });    // by Score, most likely-confusion first
     } else {
       arr.sort(function (a, b) { return b.w - a.w; });                      // no point: by Match (confusion score)
