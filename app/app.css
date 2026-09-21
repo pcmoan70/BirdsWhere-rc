@@ -3220,12 +3220,11 @@ th.sort-live::after { color: #1976d2; opacity: 1; animation: sort-live-pulse 1.2
 @keyframes gd-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
 #sync-wrap .cu-hint { font-size: var(--fs-xs); color: var(--ink-muted); margin: 8px 0 0; }
 
-/* Species observed at the point that the prediction model doesn't cover —
-   listed above the model rows with a subtle highlight + bold name. */
-tr.sp-extra { background: #fff8e7; }
-tr.sp-extra .sp-extra-name { font-weight: 700; }
+/* Species the prediction model doesn't cover are listed below the model rows and
+   otherwise look like EVERY other row — no tinted background, no bold name, no dashed
+   rule. They keep the table's own cell border. The only thing that sets them apart is
+   what they genuinely lack: the Probability, Season and Yr peak cells are empty. */
 .rc-cls { display: inline-block; font-size: var(--fs-b); vertical-align: baseline; }
-tr.sp-extra td { border-bottom: 1px dashed var(--md-default-fg-color--lightest, #ddd); }
 
 /* Per-point species list: clickable "# Recent" button → opens recent panel. */
 .det-count-btn { cursor: pointer; border: none; background: transparent; padding: 0 2px;

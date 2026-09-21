@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1852";
+var VERSION = "v1853";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Every species is drawn the same way now. A species the habitat model does not cover \u2014 the wolverine, the muskox, the lemming, most plants and insects \u2014 no longer carries a small animal icon that set it apart from the rest of the list; it gets the same dot, the same name, the same properly capitalised scientific name. Only Probability, Season and Yr peak stay blank, because those are the model\u2019s own numbers.",
+  "\u2022 Every species is drawn the same way now. A species the habitat model does not cover \u2014 the wolverine, the muskox, the lemming, most plants and insects \u2014 used to be set apart three times over: a small animal icon, a bold name and a yellow-tinted row. All three are gone. It gets the same dot, the same plain name, the same cell borders and a properly capitalised scientific name as every other row. Only Probability, Season and Yr peak stay blank, because those are the model\u2019s own numbers and there are none.",
   "\u2022 Those species keep their local name everywhere. The list used to show whatever name the source happened to send \u2014 English, from GBIF or iNaturalist \u2014 while the map legend beside it showed the Norwegian one. Both now read from the same dictionary, and they follow you when you change language.",
   "\u2022 A subspecies reported next to its own species no longer makes a second row under the same name.",
   "\u2022 The model\u2019s own distribution map is now labelled \u201c(AI-)Artsutbredelse\u201d, so it is never mistaken for the drawn maps from Wikipedia.",

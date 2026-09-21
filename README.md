@@ -253,9 +253,9 @@ probability. Options:
   same panel as **"More of these"** in a species menu, which fetches that species' sightings of the
   **last 90 days** within **1.5 × your fetch radius** (eBird / GBIF / iNaturalist).
 - Species the model doesn't cover but that the sources reported are appended below the
-  predicted rows, and are drawn **exactly like every other row** — the same coloured dot as their
-  dots on the map, a name that opens the species menu, a scientific name that opens the family, a
-  second-language name. Only the model's own columns — **Probability, Season and Yr peak** — stay
+  predicted rows, and are drawn **exactly like every other row** — no tinted background, no bold
+  name, no dashed rule; the same coloured dot as their dots on the map, a name that opens the
+  species menu, a scientific name that opens the family, a second-language name. Only the model's own columns — **Probability, Season and Yr peak** — stay
   empty, because there is no model number to put there. Their names come from the bundled
   `i18n/names-extra/<lang>.json` dictionary (grown by the iNaturalist name harvest), the same
   source the map legend uses, so the two always agree and both follow a language change. A
