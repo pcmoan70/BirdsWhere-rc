@@ -795,6 +795,10 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
   **Match**, **misID** (each partner's share of this bird's real human confusions, summing to ~100 %),
   **Here** (the model's probability at your location) and **Score** = `(0.25·Match + 0.75·misID) ×
   Here` — so the look-alikes people genuinely confuse *and* that occur where you are rank first.
+  Each input must be **significant** before it counts: a **Match below 10 %** or a **misID below
+  5 %** contributes nothing, so a species cannot earn a place in the ranking on a 3 % resemblance
+  or a single stray misidentification. A look-alike under both floors scores 0 and sinks to the
+  bottom of the list.
   Clicking a row opens a **compare card** (focal bird vs look-alike): a **plumage-colour deviation chart**
   (one diverging strip per sex, ♂ above ♀ — collapsing to a single ♂♀ strip when the sexes match; each colour scored `200·(base − look-alike)/(base + look-alike)`
   so the bar rises when the base bird has relatively more of that colour and drops when the look-alike does —

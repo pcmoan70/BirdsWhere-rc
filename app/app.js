@@ -11491,7 +11491,19 @@
   // Score = (0.25·Match + 0.75·misID) × Here. Match is the fused morphology weight
   // (0-1); misID is the % share (0-100) → /100; Here is local probability (0-1).
   // Either input absent is taken as 0 (a species with no iNat data leans on Match).
-  function confScore(w) { return (0.25 * w.w + 0.75 * (w.mid / 100)) * w.p; }
+  //
+  // Each input must be SIGNIFICANT before it contributes: a 3 % Match or a 1 % misID is
+  // noise, and letting it through gave a species a non-zero Score — and so a place in the
+  // ranking — on the strength of a resemblance nobody would ever make. Below its floor an
+  // input counts as nothing; a look-alike under both floors scores 0 and sinks to the
+  // bottom of the list rather than pretending to be a candidate.
+  var CONF_MATCH_MIN = 0.10;   // Match < 10 % contributes nothing
+  var CONF_MISID_MIN = 5;      // misID < 5 % contributes nothing (mid is already a percentage)
+  function confScore(w) {
+    var m = w.w >= CONF_MATCH_MIN ? w.w : 0;
+    var d = w.mid >= CONF_MISID_MIN ? w.mid : 0;
+    return (0.25 * m + 0.75 * (d / 100)) * w.p;
+  }
   // The ranked look-alikes of a species: [{ m: label, w: Match, mid: misID %, p: Here }]
   // by Score (most likely confusion first) when a point is open, else by Match; `out`
   // is that week's prediction at the point (null without one). Shared by the

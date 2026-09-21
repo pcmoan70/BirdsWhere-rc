@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1848";
+var VERSION = "v1849";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• Sooty Shearwater (and species like it) get their name back. When a bird is moved to a new genus the Latin ending moves with it \u2014 Puffinus griseus became Ardenna grisea \u2014 and records still filed under the old name fell through as unnamed. The app now recognises those endings, using the record\u2019s own family to be sure it has the right bird: nine other birds are called \u201cgriseus\u201d, so the family is what separates the shearwater from the vireo.",
-  "• In the Images view the date on a card is clickable, like it is in the table: it opens the same day / before / after / months options.",
+  "• Confusion species: a look-alike now has to be a real candidate before it scores. A Match under 10 % or a misID under 5 % counts as nothing, so a 3 % resemblance or one stray misidentification can no longer buy a species a place in the ranking \u2014 those fall to 0 and sink to the bottom. Anything that was genuinely similar, or genuinely confused, scores exactly as before.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
