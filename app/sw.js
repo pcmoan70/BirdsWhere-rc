@@ -21,14 +21,20 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1850";
+var VERSION = "v1851";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "• Confusion species that score 0 are no longer listed. A bird whose resemblance is under 10 % and whose real-misidentification share is under 5 % is not a confusion anyone makes, and putting it at the bottom of the list still said \u201cconsider this one\u201d. Barn Owl in Sydney drops from 15 look-alikes to 10 \u2014 the Tawny Frogmouth and the Laughing Kookaburra go, every owl stays.",
+  "• Species outside the habitat model \u2014 the wolverine, most plants, fungi and insects \u2014 behave like every other row now: a coloured dot matching their dots on the map, a row that opens to its records, a name that opens the species menu (\u2605, year and life lists, pictures), a scientific name that opens the family, and a name in your second language. Only the model\u2019s own columns stay blank for them.",
+  "• Long lists fold away. The fetched places above the map, and the Locations, Observers and Source checklists in the filters, each sit behind a summary carrying their count \u2014 2 042 localities no longer buries every other filter, and four fetched places no longer push the map down the screen.",
+  "• Photographs: the mosaic behind the \ud83d\udcf7 stays until you close it, so you can work through a record\u2019s pictures one at a time, and each picture zooms \u2014 wheel or pinch, drag to pan, double-tap to reset. Artportalen records should bring their pictures too, from the field they are really stored in.",
+  "• You can see what a fetch is doing: the status line names every source it is waiting on and counts the pages each has returned, so a long wait looks different from a stuck one. The rarest-finds intro now runs once at the end of a multi-place fetch instead of restarting after every place.",
+  "• Birds reported under an old genus find their name again. When a species moves genus the Latin ending often moves with it \u2014 Puffinus griseus became Ardenna grisea \u2014 and those records used to arrive unnamed.",
+  "• Confusion species must be real candidates: a resemblance under 10 %, or a misidentification share under 5 %, counts for nothing, and anything left scoring zero is no longer listed.",
+  "• Switching between Species list, Observation list and Images is far faster, filtering takes about half the work it did, and the date on an Images card now opens the date filters like the table\u2019s does.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
