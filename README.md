@@ -761,6 +761,12 @@ shared payload is all that is shown.
 Right-click / long-press / tap any species name for a menu **led by the species name in bold**
 (wrapping when long), followed by the record's *Open source* link when opened from an observation, then:
 
+- Scientific names are **canonicalised once, for every source**: the author citation and year are
+  stripped (`Sonchus arvensis L.` → `Sonchus arvensis`) and an infraspecific name folds into its
+  species when both were found, so one organism is one row however each database spells it. Only
+  GBIF sends a pre-cleaned name; the national portals and iNaturalist do not, which is why
+  botanical lists were worst affected.
+
 - **Popups all behave the same way**: every one carries a ×, and closes only when you click that ×
   or interact with something outside it — never on its own because the pointer moved away. A popup
   opened from inside another (a picture from a record list, a ⓘ note) sits *on* it rather than

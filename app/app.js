@@ -13072,22 +13072,37 @@
   }
   // "x:lepus timidus timidus" plotted beside "x:lepus timidus" is ONE species to the map,
   // the legend and every list — and both carry the same common name, so it read as the same
-  // animal listed twice. aggregateRecords folds these as records arrive, but detPlot keeps
-  // whatever key each dot was plotted with: anything fetched before that fold existed, or a
-  // subspecies that arrived in one fetch and its species in the next, still sits here as two
-  // entries. Fold them wherever the plotted set changes, so the next save writes the merged
-  // form. Only when the binomial is actually present — a subspecies-only record keeps its
-  // own identity, as it does in the aggregator.
+  // animal listed twice. The same thing happens to plants through a different door: the
+  // sources send "Sonchus arvensis L.", "Sonchus arvensis subsp. uliginosus" and "Sonchus
+  // arvensis" for one plant, all of which show as "åkerdylle".
+  // aggregateRecords now canonicalises as records arrive, but detPlot keeps whatever key each
+  // dot was plotted with: anything fetched before that existed still sits here under its old
+  // spelling. So fold wherever the plotted set changes — first onto the canonical name, then
+  // an infraspecific form into its binomial when that is present (a subspecies-only record
+  // keeps its own identity, exactly as in the aggregator).
   function foldDetPlotSubspecies() {
+    var canon = (window.AppAggregate && window.AppAggregate.sciCanon) || null;
     var folded = 0;
     Object.keys(detPlot).forEach(function (k) {
-      if (k.indexOf("x:") !== 0) return;
-      var w = k.slice(2).split(" ");
-      if (w.length !== 3) return;
-      var into = detPlot["x:" + w[0] + " " + w[1]]; if (!into) return;
-      into.rows = mergeDetRows(into.rows, detPlot[k].rows || []);
-      delete detPlot[k];
-      delete detSelected[k]; delete detExcluded[k];
+      if (k.indexOf("x:") !== 0 || !detPlot[k]) return;
+      var sci = k.slice(2);
+      var c = canon ? String(canon(sci) || sci).toLowerCase() : sci;
+      var w = c.split(" ");
+      // An infraspecific name whose own binomial is also plotted folds into it.
+      if (w.length > 2 && detPlot["x:" + w[0] + " " + w[1]]) c = w[0] + " " + w[1];
+      var nk = "x:" + c;
+      if (nk === k) return;
+      var into = detPlot[nk];
+      if (into) {
+        into.rows = mergeDetRows(into.rows, detPlot[k].rows || []);
+        delete detPlot[k];
+      } else {
+        // Nothing to merge with — just re-file it under the clean name, so the row stops
+        // showing an author citation where the scientific name belongs.
+        detPlot[nk] = detPlot[k]; detPlot[nk].key = nk; delete detPlot[k];
+      }
+      if (detSelected[k]) { delete detSelected[k]; detSelected[nk] = true; }
+      if (detExcluded[k]) { delete detExcluded[k]; detExcluded[nk] = true; }
       folded++;
     });
     return folded;

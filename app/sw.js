@@ -21,19 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1860";
+var VERSION = "v1861";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Popups behave the same way everywhere now: every one carries a \u00d7, and there are exactly two ways to close one \u2014 click its \u00d7, or interact with something outside it. None of them closes itself any more just because the pointer moved away.",
-  "\u2022 A popup opened from inside another one now sits ON it instead of replacing it. The record list stays put while you open a picture from it, and closing the picture puts you back in the list where you were.",
-  "\u2022 The \u24d8 note opens where your pointer is, not in the corner of the screen \u2014 it was being positioned from an icon that had just been removed \u2014 and it opens on a click rather than in passing.",
-  "\u2022 Pictures open on a click too. Merely sweeping the pointer across a list of records no longer throws the list away behind a photograph.",
-  "\u2022 A species\u2019 record list now shows Probability, Season and Yr peak on every row, as the observation list does.",
-  "\u2022 The funnel pulses while ANY fetch is running \u2014 a stored place, an update of every area, a source still arriving \u2014 not only a map click.",
+  "\u2022 One plant, one row. The databases write a scientific name in several ways \u2014 \u201cSonchus arvensis\u201d, \u201cSonchus arvensis L.\u201d, \u201cSonchus arvensis subsp. uliginosus (M.Bieb.) Nyman\u201d \u2014 and the app was treating each spelling as its own species, so \u00e5kerdylle appeared several times in the plant list, each row holding part of the count. The author\u2019s name and the year are now stripped before anything is counted, and a subspecies folds into its own species when both were found.",
+  "\u2022 The scientific-name column shows the name, not the citation: \u201cBetula pubescens\u201d rather than \u201cBetula pubescens Ehrh.\u201d.",
+  "\u2022 Observations from Artsobservasjoner, Artportalen and Laji.fi now match the habitat model even when they carry an author citation, so those records land on the right species instead of below the list as an unmatched one.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

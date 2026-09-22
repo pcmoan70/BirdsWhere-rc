@@ -193,6 +193,42 @@ window.AppAggregate = (function () {
   // ---- Aggregation ----------------------------------------------------------
   // Map a flat list of normalised records to model species (agg) + everything the
   // model doesn't cover (extras), harvesting families for colouring along the way.
+  // A scientific name as the app should KEY and SHOW it. The sources disagree about what
+  // belongs in that field: GBIF hands over a clean binomial, but Artsobservasjoner,
+  // Artportalen, Laji.fi and iNaturalist pass their raw string — "Sonchus arvensis L.",
+  // "Sonchus arvensis subsp. uliginosus (M.Bieb.) Nyman", "Betula pubescens Ehrh.". Keyed
+  // raw, ONE plant becomes several rows under a single Norwegian name (the "åkerdylle twice"
+  // report), and the author tail also stops the vernacular-name packs matching, which is why
+  // so many plants showed as Latin. Botanical names carry authorship far more often than
+  // bird names, so this bites the plant and fungus lists hardest.
+  // Keep: genus, species epithet, and any infraspecific epithet (with or without a
+  // "subsp."/"var." marker). Drop: parenthesised or bracketed authorship, and everything
+  // after the epithets — author citations, years, "sensu lato".
+  var RANK_TOK = { "subsp.": 1, "ssp.": 1, "var.": 1, "f.": 1, "subvar.": 1, "subf.": 1, "cv.": 1, "nothosubsp.": 1, "nothovar.": 1 };
+  var EPITHET_RE = /^[×x\u00d7]?[a-z\u00e0-\u00ff][a-z\u00e0-\u00ff-]*$/;
+  function sciCanon(sci) {
+    var s = String(sci || "").replace(/\([^)]*\)/g, " ").replace(/\[[^\]]*\]/g, " ");
+    s = s.replace(/\s+/g, " ").trim();
+    if (!s) return "";
+    var w = s.split(" "), out = [w[0]];
+    if (w.length > 1 && EPITHET_RE.test(w[1])) {
+      out.push(w[1]);
+      for (var i = 2; i < w.length; i++) {
+        var t = String(w[i]).toLowerCase();
+        // "subsp. uliginosus" — the marker AND its epithet, together.
+        if (RANK_TOK[t] && w[i + 1] && EPITHET_RE.test(w[i + 1])) { out.push(t, w[i + 1]); i++; continue; }
+        // A bare trinomial ("Sonchus arvensis uliginosus", as iNaturalist writes it) only
+        // where it is the FIRST thing after the epithet; past that it is an author name.
+        if (i === 2 && EPITHET_RE.test(w[i])) { out.push(w[i]); continue; }
+        break;
+      }
+    }
+    // Safety net: never collapse a two-word name to a bare GENUS — that would merge every
+    // species of it into one row. A source that capitalises the epithet ("Sonchus Arvensis")
+    // keeps both words; only a true author tail ("Abies Mill.", which has a dot) is dropped.
+    if (out.length === 1 && w.length > 1 && /^[A-Za-z\u00c0-\u00ff-]+$/.test(w[1])) out.push(w[1]);
+    return out.join(" ");
+  }
   function aggregateRecords(records, groupOverride) {
     var sci = ensureSciIndex();
     var labelsByKey = getLabelsByKey();
@@ -251,7 +287,8 @@ window.AppAggregate = (function () {
     var wantKingdom = GROUP_KINGDOM[grp] || null;   // set only for plantae / fungi
     (records || []).forEach(function (r) {
       if (!r || !r.sciName) return;
-      var snLower = r.sciName.toLowerCase();
+      var sciC = sciCanon(r.sciName) || r.sciName;   // one spelling per taxon, whatever the source sent
+      var snLower = sciC.toLowerCase();
       // Skip a GBIF record that duplicates a sighting we already have natively:
       // by observer when GBIF kept one, else by the observer-independent date key.
       if (r.src === "GBIF") {
@@ -318,16 +355,16 @@ window.AppAggregate = (function () {
         if (mCls && mCls.toLowerCase() !== r.cls.toLowerCase()) key = null;
       }
       if (key) { bump(key, r.dt || r.date, row); if (r.family && recordFamily(key, r.family)) famDirty = true; }
-      else { bumpExtra(r.sciName, r.comName, r.dt || r.date, r.cls, row); if (r.family && recordFamily("x:" + snLower, r.family)) famDirty = true; }
+      else { bumpExtra(sciC, r.comName, r.dt || r.date, r.cls, row); if (r.family && recordFamily("x:" + snLower, r.family)) famDirty = true; }
     });
-    // A trinomial that arrived NEXT TO its own binomial ("Lepus timidus timidus" beside
-    // "Lepus timidus") is the same animal to every list the app draws, and the two rows
-    // carry one name — "hare" listed twice, once with each row's own count. Fold the
-    // subspecies in; only when the binomial is actually present, so a subspecies-only
-    // record still keeps its own identity.
+    // An infraspecific name that arrived NEXT TO its own binomial — "Lepus timidus timidus"
+    // beside "Lepus timidus", or "Sonchus arvensis subsp. uliginosus" beside "Sonchus
+    // arvensis" — is the same organism to every list the app draws, and the rows carry one
+    // vernacular name, so it read as the same plant listed twice. Fold it in; only when the
+    // binomial is actually present, so a subspecies-only record keeps its own identity.
     Object.keys(extras).forEach(function (k) {
       var w = k.split(" ");
-      if (w.length !== 3) return;
+      if (w.length < 3) return;
       var into = extras[w[0] + " " + w[1]]; if (!into) return;
       var from = extras[k];
       into.count += from.count;
@@ -351,5 +388,6 @@ window.AppAggregate = (function () {
     labelBySciEpithet: labelBySciEpithet,
     labelBySciGenus: labelBySciGenus,
     comNorm: comNorm,
+    sciCanon: sciCanon,
   };
 })();
