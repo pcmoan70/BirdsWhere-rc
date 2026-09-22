@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1861";
+var VERSION = "v1862";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 One plant, one row. The databases write a scientific name in several ways \u2014 \u201cSonchus arvensis\u201d, \u201cSonchus arvensis L.\u201d, \u201cSonchus arvensis subsp. uliginosus (M.Bieb.) Nyman\u201d \u2014 and the app was treating each spelling as its own species, so \u00e5kerdylle appeared several times in the plant list, each row holding part of the count. The author\u2019s name and the year are now stripped before anything is counted, and a subspecies folds into its own species when both were found.",
-  "\u2022 The scientific-name column shows the name, not the citation: \u201cBetula pubescens\u201d rather than \u201cBetula pubescens Ehrh.\u201d.",
-  "\u2022 Observations from Artsobservasjoner, Artportalen and Laji.fi now match the habitat model even when they carry an author citation, so those records land on the right species instead of below the list as an unmatched one.",
+  "\u2022 Insects and plants have pictures now. The app looked for a species photograph in the encyclopaedias, which is where those two groups run out: of 30 insects recorded in Norway the English Wikipedia illustrates 22, and iNaturalist\u2019s own picture covers only 2 more (most of theirs may not be re-published). Observers\u2019 own photographs from GBIF \u2014 asked for under CC0 and CC BY only \u2014 cover all 30, and all 30 of the plants.",
+  "\u2022 A photograph is credited to whoever took it, with a link to the record it came from; where the photographer is not named, the service is credited rather than the wrong one.",
+  "\u2022 Curated pictures still come first \u2014 a field photograph is used only where there was no picture at all before, so nothing you already see changes.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
