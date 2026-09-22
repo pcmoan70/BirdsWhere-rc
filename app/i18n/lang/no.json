@@ -131,6 +131,8 @@
   "ctrl.probPerObsHint": "På (standard): hver observasjons modellsannsynlighet bruker sitt eget sted (25 km-rutenett) og uken for datoen — slik gjenspeiler rekkefølgen i tegnforklaringen/listen og ◉-merket for sjeldenhet hvor & når ting faktisk ble sett (verdier bufres). Av: hele settet bruker ett oppslag i midten av det hentede området og midten av datointervallet.",
   "th.probAbbr": "Sanns.",
   "sp.areasN": "{n} områder",
+  "sp.areasOff": "{n} utelatt",
+  "area.filterHint": "klikk for å utelate dette området fra listene og kartet",
   "sp.obsN": "{n} obs",
   "sp.spN": "{n} arter",
   "sp.missingBtn": "Vis også artene modellen predikerer her som ennå ikke er observert",

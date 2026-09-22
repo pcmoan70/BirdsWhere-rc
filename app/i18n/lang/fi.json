@@ -131,6 +131,8 @@
   "ctrl.probPerObsHint": "Päällä (oletus): kunkin havainnon mallitodennäköisyys käyttää omaa sijaintiaan (25 km:n ruudukko) ja päivämääränsä viikkoa — niinpä selitteen/luettelon järjestys ja harvinaisuuden ◉-merkki kuvastavat, missä ja milloin asiat todella nähtiin (arvot tallennetaan välimuistiin). Pois: koko joukko käyttää yhtä laskentaa haetun alueen keskellä ja päivämäärävälin keskellä.",
   "th.probAbbr": "Tod.",
   "sp.areasN": "{n} aluetta",
+  "sp.areasOff": "{n} jätetty pois",
+  "area.filterHint": "napsauta jättääksesi tämän alueen pois listoilta ja kartalta",
   "sp.obsN": "{n} hav.",
   "sp.spN": "{n} lajia",
   "sp.missingBtn": "Näytä myös lajit, joita malli ennustaa täällä mutta joista ei vielä ole havaintoja",

@@ -3225,6 +3225,12 @@ th.sort-live::after { color: #1976d2; opacity: 1; animation: sort-live-pulse 1.2
    rule. They keep the table's own cell border. The only thing that sets them apart is
    what they genuinely lack: the Probability, Season and Yr peak cells are empty. */
 .rc-cls { display: inline-block; font-size: var(--fs-b); vertical-align: baseline; }
+/* Fetched-square header lines double as a filter: the name is a toggle — default
+   (included) takes the header's own muted colour, red = excluded. */
+#species-panel .sp-area-pick { cursor: pointer; }
+#species-panel .sp-area-pick:hover { text-decoration: underline; }
+#species-panel .sp-area-off { color: #c92a1d; text-decoration: line-through; }
+
 /* Administer lists — the add-by-search bar above the table, and its results. */
 .lists-admin-bar { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 8px; }
 .lists-add-wrap { position: relative; flex: 1 1 auto; min-width: 0; }

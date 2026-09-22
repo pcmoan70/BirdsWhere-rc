@@ -131,6 +131,8 @@
   "ctrl.probPerObsHint": "Aan (standaard): de modelkans van elke waarneming gebruikt haar eigen locatie (raster van 25 km) en de week van haar datum — zo weerspiegelen de volgorde in legenda/lijst en de ◉-markering voor zeldzaam waar & wanneer iets echt is gezien (waarden worden gecached). Uit: de hele set gebruikt één berekening in het midden van het opgehaalde gebied en het midden van het datumbereik.",
   "th.probAbbr": "Kans",
   "sp.areasN": "{n} gebieden",
+  "sp.areasOff": "{n} uitgesloten",
+  "area.filterHint": "klik om dit vak uit te sluiten van de lijsten en de kaart",
   "sp.obsN": "{n} waarn.",
   "sp.spN": "{n} soorten",
   "sp.missingBtn": "Toon ook de soorten die het model hier voorspelt maar die nog niet zijn waargenomen",

@@ -21,16 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1856";
+var VERSION = "v1857";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Species lists are yours to arrange. Settings \u2192 Administer lists now has a search box that adds any species to any list, and a + that makes a new list with a name you choose \u2014 alongside the life list and the year lists, which work as before. A list you made can be deleted outright, and a species moved between lists or taken off one.",
-  "\u2022 The search follows the languages you have chosen: type the name in your own language, in your second language, or the scientific one, and each hit reads \u201cname [second language] (Scientific name)\u201d.",
-  "\u2022 Putting a species on a list of your own does not add it to your life list \u2014 only a year list means \u201cseen\u201d.",
+  "\u2022 The fetched-places list above the map is now a filter. Click a place\u2019s name to leave it out \u2014 it turns red and struck through \u2014 and click again to bring it back. The species list, the observation list, the legend and the map dots all follow, and the summary line says how many places are left out so a collapsed list cannot hide it.",
+  "\u2022 Zooming into an observation\u2019s photograph now fetches the full-resolution original. iNaturalist hands the app a ~500 px copy, which is right for the thumbnails but soft the moment you zoom; the original is typically ten to thirty times the detail. It is fetched only when you zoom, and only once, so simply opening a picture still costs what it did.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

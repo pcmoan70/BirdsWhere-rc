@@ -131,6 +131,8 @@
   "ctrl.probPerObsHint": "Wł. (domyślnie): prawdopodobieństwo modelu dla każdej obserwacji korzysta z jej własnego miejsca (siatka 25 km) i tygodnia jej daty — dzięki temu kolejność w legendzie/liście oraz znacznik rzadkości ◉ odzwierciedlają, gdzie i kiedy coś rzeczywiście widziano (wartości są buforowane). Wył.: cały zbiór korzysta z jednego odczytu w środku pobranego obszaru i w środku zakresu dat.",
   "th.probAbbr": "Prawd.",
   "sp.areasN": "{n} obszarów",
+  "sp.areasOff": "{n} wykluczonych",
+  "area.filterHint": "kliknij, aby wykluczyć ten obszar z list i mapy",
   "sp.obsN": "{n} obs.",
   "sp.spN": "{n} gatunków",
   "sp.missingBtn": "Pokaż także gatunki, które model przewiduje tutaj, a które nie mają jeszcze obserwacji",

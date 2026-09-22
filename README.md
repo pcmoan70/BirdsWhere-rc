@@ -761,6 +761,17 @@ shared payload is all that is shown.
 Right-click / long-press / tap any species name for a menu **led by the species name in bold**
 (wrapping when long), followed by the record's *Open source* link when opened from an observation, then:
 
+- The **fetched-places list above the map doubles as a filter**: clicking a place's name leaves it
+  out (red, struck through) and clicking again brings it back. The species list, the observation
+  list, the legend and the map dots all follow, and the summary line counts how many are left out.
+  A record fetched by two overlapping squares stays while either is included, and the exclusion is
+  forgotten when its square is deleted.
+
+- **Zooming an observation photograph fetches the full-resolution original** (iNaturalist serves a
+  ~500 px copy for lists; the original is typically 10–30× the detail). Fetched on the first zoom
+  only, preloaded so the picture is replaced only once the sharper one has arrived, and your zoom
+  position is kept.
+
 - **Administer lists** (Settings → 🐦 Lists…) holds the **life list**, the **year lists** and any
   **lists you make yourself**. One search box at the top adds a species to any of them — it matches
   the languages you have selected (your own, your second, and the scientific name) and shows each

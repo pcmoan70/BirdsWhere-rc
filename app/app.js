@@ -2204,7 +2204,22 @@
   // Pinch / wheel / double-tap zoom for one photograph. Pointer Events, so a single code
   // path serves mouse, touch and pen; `touch-action: none` on the frame stops the browser
   // claiming the gestures for page scroll and its own pinch-zoom.
-  function wirePhotoZoom(wrap, img) {
+  // The full-resolution copy of an observation photo, when the source's URL says how to
+  // ask for one. iNaturalist serves a size ladder under one photo id and the app lists the
+  // MEDIUM copy (~500 px) — fine for a mosaic tile, not for zooming into: measured over six
+  // research-grade bird photos, `original` is 9–28× the bytes (avg 17×, one of them 6.6 MB).
+  // That is exactly why this is fetched on the first ZOOM and never on open.
+  // Other sources already hand over the file itself (Laji's fullURL, GBIF's identifier,
+  // the Nordic portals' media links), so there is nothing to upgrade and this returns "".
+  function obsPhotoFullUrl(url) {
+    var u = String(url || "");
+    if (!u) return "";
+    var hi = u.replace(/\/(square|thumb|small|medium|large)\.(jpe?g|png|gif)(\?[^\/]*)?$/i, "/original.$2$3");
+    return hi !== u ? hi : "";
+  }
+  // `onZoomIn` (optional) fires the first time the picture is zoomed past 1× — the moment
+  // a sharper copy is worth its bytes.
+  function wirePhotoZoom(wrap, img, onZoomIn) {
     var sc = 1, tx = 0, ty = 0, MIN = 1, MAX = 6;
     var pts = Object.create(null), nPts = 0, pinchD0 = 0, pinchS0 = 1, panX = 0, panY = 0;
     var lastTap = 0, lastTapX = 0, lastTapY = 0;
@@ -2216,7 +2231,9 @@
       var mx = Math.max(0, (w - wrap.clientWidth) / 2), my = Math.max(0, (h - wrap.clientHeight) / 2);
       tx = Math.max(-mx, Math.min(mx, tx)); ty = Math.max(-my, Math.min(my, ty));
       img.style.transform = "translate(" + tx.toFixed(1) + "px," + ty.toFixed(1) + "px) scale(" + sc.toFixed(3) + ")";
-      wrap.classList.toggle("zoomed", sc > 1.01);
+      var zoomed = sc > 1.01;
+      wrap.classList.toggle("zoomed", zoomed);
+      if (zoomed && onZoomIn) { var f = onZoomIn; onZoomIn = null; f(); }   // once
     }
     // Keep the point under the fingers/cursor where it is: a point at screen offset u from
     // the frame centre sits at u = t + s·p, so holding p fixed gives t' = u − k(u − t).
@@ -2274,7 +2291,12 @@
     wrap.addEventListener("pointerup", up);
     wrap.addEventListener("pointercancel", up);
     wrap.addEventListener("dblclick", function (e) { e.preventDefault(); e.stopPropagation(); zoomTo(sc > 1.01 ? MIN : 2.5, e.clientX, e.clientY); });
-    img.addEventListener("load", function () { sc = 1; tx = 0; ty = 0; apply(); });
+    img.addEventListener("load", function () {
+      // A sharper copy of the SAME picture arriving must not throw away where the user has
+      // zoomed to — that is the whole point of fetching it.
+      if (img._keepZoom) { img._keepZoom = 0; apply(); return; }
+      sc = 1; tx = 0; ty = 0; apply();
+    });
     img.addEventListener("dragstart", function (e) { e.preventDefault(); });
   }
   function showObsPhoto(btn, pickUrl) {
@@ -2292,7 +2314,15 @@
         (src ? (by ? " · " : "") + '<a href="' + escapeHtml(src) + '" target="_blank" rel="noopener">' + escapeHtml(t("det.openSource")) + "</a>" : "") + "</div>";
     m.box.querySelector(".obs-photo-x").addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); m.close(); });
     var img = m.box.querySelector("img");
-    wirePhotoZoom(m.box.querySelector(".obs-photo-wrap"), img);
+    // Zooming in swaps in the full-resolution original — preloaded, so the picture on
+    // screen is only replaced once the sharper one has actually arrived, and a copy that
+    // does not exist simply leaves the current one alone.
+    var hiUrl = obsPhotoFullUrl(url);
+    wirePhotoZoom(m.box.querySelector(".obs-photo-wrap"), img, hiUrl ? function () {
+      var pre = new Image();
+      pre.onload = function () { if (img.isConnected) { img._keepZoom = 1; img.src = hiUrl; } };
+      pre.src = hiUrl;
+    } : null);
     img.addEventListener("error", function () {   // the big version may not exist → fall back to the thumbnail
       var th = pickUrl ? "" : btn.getAttribute("data-thumb");
       if (th && img.src !== th) img.src = th; else { img.remove(); m.box.querySelector(".obs-photo-wrap").textContent = t("spg.noImage"); }
@@ -3823,6 +3853,14 @@
       if (!a || !isFinite(+a.s) || !isFinite(+a.w) || !isFinite(+a.n) || !isFinite(+a.e)) return;
       addFetchedAreaRect(a.id || (+a.s).toFixed(3) + "," + (+a.w).toFixed(3), L.latLngBounds([[+a.s, +a.w], [+a.n, +a.e]]), a.nm || null, +a.d || undefined);
     });
+    // Heal a remembered exclusion that names squares which are no longer here: it would
+    // hide rows with nothing on screen to explain it (the same trap reconcileLocFilter fixes).
+    if (detAreaExcl) {
+      var live = Object.create(null);
+      (fetchedAreas || []).forEach(function (a) { live[a.id] = 1; });
+      detAreaExcl.forEach(function (id) { if (!live[id]) detAreaExcl.delete(id); });
+      if (!detAreaExcl.size) detAreaExcl = null;
+    }
   }
   // The distinct place names of the fetched areas (stored-location names, or a
   // point's reverse-geocoded name), in fetch order — for the list view's header
@@ -3874,6 +3912,9 @@
   function deleteFetchedArea(id) {
     var idx = -1; for (var i = 0; i < fetchedAreas.length; i++) if (fetchedAreas[i].id === id) { idx = i; break; }
     if (idx < 0) return;
+    // The square is going: forget any exclusion on it, or the filter would keep a state
+    // nothing on screen can explain or undo.
+    if (detAreaExcl) { detAreaExcl.delete(id); if (!detAreaExcl.size) detAreaExcl = null; }
     var area = fetchedAreas[idx], b = area.bounds;
     // Geometric fallback for rows without ownership tags (older persisted data,
     // "Show in map" plots): a 5% padded box, so edge/fuzzed dots go too.
@@ -9688,6 +9729,33 @@
     if (present) { detLocRestored = false; return false; }   // it fits the plotted data → confirmed
     setDetLocFilter(null); saveLegendState(); return true;
   }
+  // Fetched-area filter. The dropdown above the map lists every square that has been
+  // fetched; clicking one's name excludes it (red) and clicking again brings it back.
+  // Held as the EXCLUDED set, so a newly fetched square is included without being touched.
+  // Rows already carry their owning squares in r._areas (stamped at plot time for the
+  // per-area delete), so this costs a array scan per row and needs no new bookkeeping.
+  var detAreaExcl = null;
+  function detAreaOff(id) { return !!(detAreaExcl && detAreaExcl.has(id)); }
+  function detAreaPasses(r) {
+    if (!detAreaExcl || !detAreaExcl.size) return true;
+    var as = r && r._areas;
+    if (!as || !as.length) return true;   // untagged (an older save, a rarity alert) — an area filter must not swallow it
+    // Overlap-safe, the same rule the per-area delete uses: a record fetched by two
+    // squares survives while ANY of its owners is still included.
+    for (var i = 0; i < as.length; i++) if (!detAreaExcl.has(as[i])) return true;
+    return false;
+  }
+  // Toggle every square behind one line of the header (a place resolved from two
+  // squares is one line, so it carries several ids) and re-run every surface.
+  function toggleAreaFilter(ids) {
+    if (!ids || !ids.length) return;
+    if (!detAreaExcl) detAreaExcl = new Set();
+    var on = !detAreaOff(ids[0]);   // the line's state follows its first id
+    ids.forEach(function (id) { if (on) detAreaExcl.add(id); else detAreaExcl.delete(id); });
+    if (!detAreaExcl.size) detAreaExcl = null;
+    detFiltersRefresh();       // map dots, legend, histogram and every list, through detRowPasses
+    refreshSpCoords();         // and the header itself, so the colour follows
+  }
   function detLocPasses(r) {
     if (!detLocFilter) return true;
     var loc = detLocKey(r);
@@ -9809,7 +9877,7 @@
     applyAgeFilter();                            // the list's own show/hide pass
     if (allFiltersPane) renderAllFiltersPane();  // keep the pane's own summary line current
   }
-  function detRowPasses(r) { return detDatePasses(r.date) && detObsPasses(r) && detLocPasses(r) && detPassesSrc(r) && detPassesNew(r); }
+  function detRowPasses(r) { return detDatePasses(r.date) && detObsPasses(r) && detLocPasses(r) && detAreaPasses(r) && detPassesSrc(r) && detPassesNew(r); }
   // A species is an "alert" when its detPlot entry carries injected rarity rows
   // (syncAlertDetections flags the entry `alert`).
   function isAlertSpecies(k) { return !!(detPlot[k] && detPlot[k].alert); }
@@ -10678,6 +10746,7 @@
         if (!detDatePasses(r.date)) return;
         if (!detObsPasses(r)) return;          // observer filter (legend 👤)
         if (!detLocPasses(r)) return;          // location filter (📍)
+        if (!detAreaPasses(r)) return;         // excluded fetched square (the list header's dropdown)
         if (!detPassesSrc(r)) return;          // data-source filter (click a source in the list)
         if (!detPassesNew(r)) return;          // "New" filter (only detections fetched after the baseline)
         if (center) {
@@ -12822,6 +12891,7 @@
       if (allowed && !allowed.has(r)) return;   // global cap: only the newest N are drawn
       if (!detObsPasses(r)) return;             // observer filter (legend 👤)
       if (!detLocPasses(r)) return;             // location filter (📍)
+      if (!detAreaPasses(r)) return;            // excluded fetched square (the header's dropdown)
       if (!detPassesSrc(r)) return;             // data-source filter
       if (!detPassesNew(r)) return;             // "New" filter
       var lk = (+r.lat).toFixed(4) + "," + (+r.lon).toFixed(4);
@@ -13868,7 +13938,7 @@
   window.addEventListener("pagehide", flushLegendState);
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") flushLegendState(); });
   function saveLegendStateNow() {
-    window.GeoState.save({ mapLegend: { mini: detLegendMini, bflyFilter: detBflyFilter, starFilter: detStarFilter, rareFilter: detRareFilter, yearFilter: detYearFilter, lifeFilter: detLifeFilter, alertFilter: detAlertFilter, selected: Object.keys(detSelected), excluded: Object.keys(detExcluded), selBase: { sel: Object.keys(detSelBase.sel), exc: Object.keys(detSelBase.exc) }, obsFilter: detObsFilter ? Array.from(detObsFilter) : null, locFilter: detLocFilter ? Array.from(detLocFilter) : null, srcFilter: detSrcFilter ? Array.from(detSrcFilter) : null, deleted: deletedSpecies, countMin: spCountMin, countMax: spCountMax, countMetric: spCountMetric, ageDays: speciesAgeFilterDays, newFilter: detNewFilter, newSince: detNewSince, todayFilter: detTodayFilter, daySel: Object.keys(detDaySel), rows: detLegendRows, sort: detLegendSort, regionMode: detRegionMode, regionPick: detRegionPick } });
+    window.GeoState.save({ mapLegend: { mini: detLegendMini, bflyFilter: detBflyFilter, starFilter: detStarFilter, rareFilter: detRareFilter, yearFilter: detYearFilter, lifeFilter: detLifeFilter, alertFilter: detAlertFilter, selected: Object.keys(detSelected), excluded: Object.keys(detExcluded), selBase: { sel: Object.keys(detSelBase.sel), exc: Object.keys(detSelBase.exc) }, obsFilter: detObsFilter ? Array.from(detObsFilter) : null, locFilter: detLocFilter ? Array.from(detLocFilter) : null, srcFilter: detSrcFilter ? Array.from(detSrcFilter) : null, areaExcl: detAreaExcl ? Array.from(detAreaExcl) : null, deleted: deletedSpecies, countMin: spCountMin, countMax: spCountMax, countMetric: spCountMetric, ageDays: speciesAgeFilterDays, newFilter: detNewFilter, newSince: detNewSince, todayFilter: detTodayFilter, daySel: Object.keys(detDaySel), rows: detLegendRows, sort: detLegendSort, regionMode: detRegionMode, regionPick: detRegionPick } });
   }
   function loadDetections() {
     // Self-heal a store left over-quota by an older build: cap the stored
@@ -13909,6 +13979,9 @@
     setDetObsFilter(Array.isArray(ls.obsFilter) ? new Set(ls.obsFilter) : null, true);   // restored → may be healed if stale
     setDetLocFilter(Array.isArray(ls.locFilter) ? new Set(ls.locFilter) : null, true);   // restored → may be healed if stale
     detSrcFilter = (Array.isArray(ls.srcFilter) && ls.srcFilter.length) ? new Set(ls.srcFilter) : null;
+    // Excluded fetched squares. Dropped when none of them is still a remembered area —
+    // a stale exclusion would silently hide rows with nothing on screen to explain it.
+    detAreaExcl = (Array.isArray(ls.areaExcl) && ls.areaExcl.length) ? new Set(ls.areaExcl) : null;
     // Heal a stale source filter (none of its sources plotted) so it can't blank the map.
     if (detSrcFilter && Object.keys(detPlot).length) {
       var pres = detSourcesPresent();
@@ -21870,8 +21943,11 @@
       parts.push(t("sp.radius", { km: g.rkm }));
       var txt = parts.join(" · ");
       flatParts.push(txt);
+      var off = detAreaOff(g.ids[0]);
       return '<span class="sp-area-line">' +
-               '<span class="sp-area-txt" title="' + escapeHtml(txt) + '">' + escapeHtml(txt) + "</span>" +
+               '<span class="sp-area-txt sp-area-pick' + (off ? " sp-area-off" : "") + '" role="button" tabindex="0"' +
+                 ' data-ids="' + escapeHtml(g.ids.join("|")) + '" aria-pressed="' + (off ? "true" : "false") + '"' +
+                 ' title="' + escapeHtml(txt + " — " + t("area.filterHint")) + '">' + escapeHtml(txt) + "</span>" +
                '<button type="button" class="sp-area-del" data-ids="' + escapeHtml(g.ids.join("|")) + '" title="' + escapeHtml(t("area.removeObs")) + '" aria-label="' + escapeHtml(t("area.removeObs")) + '">×</button>' +
              "</span>";
     }).join("");
@@ -21882,7 +21958,9 @@
     // species count resolves, and it must not snap shut under the user each time.
     if (order.length > 1) {
       var totObs = order.reduce(function (n, l) { return n + agg[l].obs; }, 0);
-      var sum = t("sp.areasN", { n: order.length }) + " · " + t("sp.obsN", { n: totObs });
+      var nOff = order.reduce(function (n, l) { return n + (detAreaOff(agg[l].ids[0]) ? 1 : 0); }, 0);
+      var sum = t("sp.areasN", { n: order.length }) + " · " + t("sp.obsN", { n: totObs }) +
+        (nOff ? " · " + t("sp.areasOff", { n: nOff }) : "");
       html = '<details class="sp-areas-dd"' + (spAreasOpen ? " open" : "") + '>' +
         '<summary class="sp-areas-sum">' + escapeHtml(sum) + "</summary>" + html + "</details>";
     }
@@ -21896,7 +21974,20 @@
     // overlap-safe (same deleteFetchedArea the map's per-area × uses).
     if (!el._areaDelWired) {
       el._areaDelWired = true;
+      el.addEventListener("keydown", function (e) {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        var pk = e.target && e.target.closest ? e.target.closest(".sp-area-pick") : null;
+        if (!pk || !el.contains(pk)) return;
+        e.preventDefault();
+        toggleAreaFilter((pk.getAttribute("data-ids") || "").split("|").filter(Boolean));
+      });
       el.addEventListener("click", function (e) {
+        var pick = e.target && e.target.closest ? e.target.closest(".sp-area-pick") : null;
+        if (pick && el.contains(pick)) {
+          e.stopPropagation(); e.preventDefault();   // inside a <details> summary this would also toggle the disclosure
+          toggleAreaFilter((pick.getAttribute("data-ids") || "").split("|").filter(Boolean));
+          return;
+        }
         var btn = e.target && e.target.closest ? e.target.closest(".sp-area-del") : null;
         if (!btn || !el.contains(btn)) return;
         e.stopPropagation(); e.preventDefault();

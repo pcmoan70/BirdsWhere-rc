@@ -131,6 +131,8 @@
   "ctrl.probPerObsHint": "Zapnuto (výchozí): pravděpodobnost modelu u každého pozorování používá vlastní místo (mřížka 25 km) a týden jeho data — pořadí v legendě/seznamu a značka vzácnosti ◉ tak odrážejí, kde a kdy byly věci skutečně viděny (hodnoty se ukládají do mezipaměti). Vypnuto: celá sada používá jediný výpočet uprostřed staženého území a uprostřed rozsahu dat.",
   "th.probAbbr": "Pravd.",
   "sp.areasN": "{n} oblastí",
+  "sp.areasOff": "{n} vyloučeno",
+  "area.filterHint": "kliknutím vyloučíte tento čtverec ze seznamů a mapy",
   "sp.obsN": "{n} pozorování",
   "sp.spN": "{n} druhů",
   "sp.missingBtn": "Zobrazit i druhy, které model zde předpovídá, ale zatím nemají pozorování",

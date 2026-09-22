@@ -131,6 +131,8 @@
   "ctrl.probPerObsHint": "Sees (vaikimisi): iga vaatluse mudeli tõenäosus kasutab oma asukohta (25 km ruudustik) ja kuupäeva nädalat — nii peegeldavad legendi/loendi järjekord ja haruldase märk ◉, kus ja millal asju tegelikult nähti (väärtused salvestatakse vahemällu). Väljas: kogu komplekt kasutab üht arvutust tõmmatud ala keskel ja kuupäevavahemiku keskel.",
   "th.probAbbr": "Tõen.",
   "sp.areasN": "{n} ala",
+  "sp.areasOff": "{n} välja jäetud",
+  "area.filterHint": "klõpsa, et jätta see ruut loenditest ja kaardilt välja",
   "sp.obsN": "{n} vaatl.",
   "sp.spN": "{n} liiki",
   "sp.missingBtn": "Näita ka liike, mida mudel siin ennustab, kuid mida pole veel vaadeldud",

@@ -131,6 +131,8 @@
   "ctrl.probPerObsHint": "Įjungta (numatyta): kiekvieno stebėjimo modelio tikimybė naudoja savo vietą (25 km tinklelis) ir jo datos savaitę — todėl legendos/sąrašo tvarka ir retumo žymė ◉ atspindi, kur ir kada dalykai iš tikrųjų buvo matyti (reikšmės talpinamos podėlyje). Išjungta: visas rinkinys naudoja vieną skaičiavimą gauto ploto viduryje ir datų intervalo viduryje.",
   "th.probAbbr": "Tikim.",
   "sp.areasN": "{n} sričių",
+  "sp.areasOff": "{n} neįtraukta",
+  "area.filterHint": "spustelėkite, kad neįtrauktumėte šio kvadrato į sąrašus ir žemėlapį",
   "sp.obsN": "{n} steb.",
   "sp.spN": "{n} rūšių",
   "sp.missingBtn": "Rodyti ir rūšis, kurias modelis čia prognozuoja, bet kurios dar nestebėtos",

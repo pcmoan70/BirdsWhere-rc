@@ -1549,6 +1549,8 @@ window.GeoI18N = (function () {
         "sp.summaryObs": "{lat}°, {lon}° · {week}",
         "sp.radius": "{km} km neighbourhood",
         "sp.areasN": "{n} areas",
+        "sp.areasOff": "{n} excluded",
+        "area.filterHint": "click to exclude this square from the lists and the map",
         "sp.obsN": "{n} obs",
         "sp.spN": "{n} species",
         "sp.missingBtn": "Also list the species the model predicts here that have no observations yet",

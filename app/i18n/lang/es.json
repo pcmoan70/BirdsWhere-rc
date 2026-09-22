@@ -131,6 +131,8 @@
   "ctrl.probPerObsHint": "Activado (predeterminado): la probabilidad del modelo de cada observación usa su propia ubicación (cuadrícula de 25 km) y la semana de su fecha — así el orden de la leyenda/lista y la marca ◉ de rareza reflejan dónde y cuándo se vio realmente cada cosa (los valores se almacenan en caché). Desactivado: todo el conjunto usa una sola consulta en el centro del área obtenida y en el centro del intervalo de fechas.",
   "th.probAbbr": "Prob.",
   "sp.areasN": "{n} áreas",
+  "sp.areasOff": "{n} excluidos",
+  "area.filterHint": "haz clic para excluir este cuadro de las listas y el mapa",
   "sp.obsN": "{n} obs.",
   "sp.spN": "{n} especies",
   "sp.missingBtn": "Mostrar también las especies que el modelo predice aquí y que aún no tienen observaciones",
