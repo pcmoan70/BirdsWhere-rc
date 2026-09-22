@@ -21,19 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1858";
+var VERSION = "v1859";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Every species is drawn the same way. A species the habitat model does not cover \u2014 the wolverine, the muskox, most plants and insects \u2014 used to be set apart by a small animal icon, a bold name and a yellow-tinted row. All three are gone: it gets the same dot, the same plain name and a properly capitalised scientific name as every other row, and keeps its local name in the lists as well as in the map legend. Only Probability, Season and Yr peak stay blank, because those are the model\u2019s own numbers and there are none.",
-  "\u2022 Species lists are yours to arrange. Settings \u2192 Administer lists has a search box that adds any species to any list \u2014 type its name in your language, your second language or Latin \u2014 and a + that makes a new list with a name you choose, alongside the life list and the year lists. A list you made can be deleted outright, and a species moved between lists or taken off one.",
-  "\u2022 The fetched-places list above the map is now a filter: click a place\u2019s name to leave it out and click again to bring it back. The species list, the observation list, the legend and the map dots all follow.",
-  "\u2022 Photographs got sharper and lighter. Zooming into an observation\u2019s picture now fetches the full-resolution original \u2014 typically ten to thirty times the detail \u2014 and only when you zoom. Family and confusion pictures load as you look at them rather than all at once, and one that does not arrive is tried again.",
-  "\u2022 The model\u2019s own distribution map is labelled \u201c(AI-)Artsutbredelse\u201d so it is never mistaken for a drawn map, and \u201cOpen full image\u201d opens the map again instead of the Wikimedia Commons front page.",
-  "\u2022 Smaller things: in the Images layout a card reads \u201cl\u00f8ve [lion] (Panthera leo)\u201d and the scientific name now follows your setting; a subspecies reported next to its own species is no longer a second row under the same name; and confusion species need a real resemblance and a real misidentification record before they are scored or listed at all.",
+  "\u2022 A record reported by several observers now lets you pick which one you meant. Tapping any of the names \u2014 or the \u201c\u2026\u201d standing in for the ones that did not fit \u2014 lists everyone on that record, and choosing a name opens the usual actions for that person. A record with a single observer still acts straight away, as before.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

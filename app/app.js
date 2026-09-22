@@ -1949,12 +1949,20 @@
   function obsNamesHtml(observer) {
     var names = detObsRealNames(observer);
     if (!names.length) return escapeHtml(String(observer || ""));
-    var spans = names.map(function (n) { return '<span class="sp-obs-filter" role="button" data-obs="' + escapeHtml(n) + '" title="' + escapeHtml(t("obs.filterHint")) + '">' + escapeHtml(n) + "</span>"; });
+    // ONE observer: the click acts on them straight away. SEVERAL: every name — and the
+    // "…" standing in for the ones that did not fit — carries the WHOLE group, so a click
+    // offers the choice among them (observerClickMenu) instead of silently acting on
+    // whichever name the finger happened to land on. detObsSplit separates on "|" and ";",
+    // never on a comma, so the group is joined with "|" (names themselves contain commas).
+    var many = names.length > 1, all = names.join(" | ");
+    var spans = names.map(function (n) {
+      return '<span class="sp-obs-filter" role="button" data-obs="' + escapeHtml(many ? all : n) + '" title="' +
+        escapeHtml(many ? t("obs.people") : t("obs.filterHint")) + '">' + escapeHtml(n) + "</span>";
+    });
     var OBS_SHOWN = 2;
     if (spans.length <= OBS_SHOWN) return spans.join(", ");
     return spans.slice(0, OBS_SHOWN).join(", ") +
-      '<span class="sp-obs-rest" hidden>, ' + spans.slice(OBS_SHOWN).join(", ") + "</span>" +
-      '<span class="sp-obs-more" role="button" title="' + escapeHtml(t("obs.showAll")) + '">\u2026</span>';
+      '<span class="sp-obs-more sp-obs-filter" role="button" data-obs="' + escapeHtml(all) + '" title="' + escapeHtml(t("obs.showAll")) + '">\u2026</span>';
   }
   function spRecRowHtml(d, opts) {
     var km = spRecDistKm(d); km = isFinite(km) ? escapeHtml(nearbyFmtDist(km)) : "";
@@ -2411,16 +2419,6 @@
           detDaysPanelOpen = true; detModePanelOpen = false; detObsPanelOpen = false;   // show the date pane
           reRenderFilterBar(); scrollSpFiltersIntoView();
         } else showDateFilterMenu(this.getAttribute("data-date"), e.clientX, e.clientY);
-      });
-    });
-    // "+N" → reveal the truncated rest of a long observer list inline (as the usual list).
-    Array.prototype.forEach.call(container.querySelectorAll(".sp-obs-more"), function (m) {
-      m.addEventListener("click", function (e) {
-        e.preventDefault(); e.stopPropagation();
-        var rest = this.parentNode && this.parentNode.querySelector(".sp-obs-rest");
-        if (rest) rest.hidden = false;
-        var cell = this.closest && this.closest("td"); if (cell) cell.classList.add("sp-obs-expanded");   // let the full list wrap
-        this.parentNode && this.parentNode.removeChild(this);   // drop the "…" once expanded
       });
     });
     var canHoverPh = !window.matchMedia || window.matchMedia("(hover: hover)").matches;

@@ -761,6 +761,10 @@ shared payload is all that is shown.
 Right-click / long-press / tap any species name for a menu **led by the species name in bold**
 (wrapping when long), followed by the record's *Open source* link when opened from an observation, then:
 
+- A record reported by **several observers** lets you pick which one you meant: tapping any of the
+  names — or the "…" standing in for those that did not fit — lists everyone on that record, and
+  choosing one opens the usual actions for that person. A single-observer record acts immediately.
+
 - The **fetched-places list above the map doubles as a filter**: clicking a place's name leaves it
   out (red, struck through) and clicking again brings it back. The species list, the observation
   list, the legend and the map dots all follow, and the summary line counts how many are left out.
