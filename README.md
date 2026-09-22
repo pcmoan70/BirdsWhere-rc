@@ -761,6 +761,15 @@ shared payload is all that is shown.
 Right-click / long-press / tap any species name for a menu **led by the species name in bold**
 (wrapping when long), followed by the record's *Open source* link when opened from an observation, then:
 
+- **Administer lists** (Settings → 🐦 Lists…) holds the **life list**, the **year lists** and any
+  **lists you make yourself**. One search box at the top adds a species to any of them — it matches
+  the languages you have selected (your own, your second, and the scientific name) and shows each
+  hit as *name* **[second language]** *(Scientific name)*; picking one asks which list. **+ New
+  list** names a list of your own, **×** deletes it, and inside a list each species can be removed
+  or moved elsewhere. Putting a species on a list of your own does **not** make it a lifer — only
+  a year list means "seen" — and your own lists carry no map edges or legend filter, which stay
+  the year/life "still needed" scheme.
+
 - The **family** and **Confusion species** picture views load on demand: the cards on screen plus
   the next five, with more fetched as you scroll, and a failed lookup retried once.
 

@@ -1434,11 +1434,22 @@
   // merged across devices on sync. yearLists shape: { "YYYY": { key: true } }.
   var lifeList = {};
   var yearLists = {};
+  // Lists the user makes and names ("Garden", "Varanger 2027"), same shape as a year list.
+  // Kept apart from life/year on purpose: those record what has been SEEN (which is why a
+  // year tick is also a lifer), a custom list records whatever the user wants in it, so
+  // adding to one must never make a lifer. Ids are "c:<name>" so they cannot collide with
+  // "life" or a "YYYY".
+  var customLists = {};
   function curYear() { return String(new Date().getFullYear()); }
+  function customId(name) { return "c:" + name; }
+  function isCustomId(id) { return String(id || "").indexOf("c:") === 0; }
+  function customName(id) { return String(id || "").slice(2); }
   function loadLists() {
     lifeList = {}; (window.GeoState.get("lifeList", []) || []).forEach(function (k) { lifeList[k] = true; });
     yearLists = {}; var yl = window.GeoState.get("yearLists", {}) || {};
     Object.keys(yl).forEach(function (y) { yearLists[y] = {}; (yl[y] || []).forEach(function (k) { yearLists[y][k] = true; }); });
+    customLists = {}; var cl = window.GeoState.get("customLists", {}) || {};
+    Object.keys(cl).forEach(function (n) { customLists[n] = {}; (cl[n] || []).forEach(function (k) { customLists[n][k] = true; }); });
     reconcileLifeFromYears();
   }
   // The life list is the union of everything ever seen, so every species on ANY
@@ -1454,7 +1465,20 @@
   }
   function persistLists() {
     var yl = {}; Object.keys(yearLists).forEach(function (y) { yl[y] = Object.keys(yearLists[y]); });
-    window.GeoState.save({ lifeList: Object.keys(lifeList), yearLists: yl });
+    var cl = {}; Object.keys(customLists).forEach(function (n) { cl[n] = Object.keys(customLists[n]); });
+    window.GeoState.save({ lifeList: Object.keys(lifeList), yearLists: yl, customLists: cl });
+  }
+  // The set behind a list id, or null. One lookup for every id form the admin window,
+  // the move targets and the add-by-search picker deal in.
+  function listSetById(id) {
+    if (id === "life") return lifeList;
+    if (isCustomId(id)) return customLists[customName(id)] || null;
+    return yearLists[id] || null;
+  }
+  function listLabelById(id) {
+    if (id === "life") return t("lists.life");
+    if (isCustomId(id)) return customName(id);
+    return t("lists.year", { year: id });
   }
   function inLifeList(k) { return !!lifeList[k]; }
   function inYearList(k, y) { var s = yearLists[y || curYear()]; return !!(s && s[k]); }
@@ -4136,11 +4160,22 @@
     Object.keys(years).sort(function (a, b) { return b.localeCompare(a); }).forEach(function (y) {
       if (y !== fromId) out.push({ v: y, l: t("lists.year", { year: y }) });
     });
+    Object.keys(customLists).sort(function (a, b) { return a.localeCompare(b); }).forEach(function (n) {
+      if (customId(n) !== fromId) out.push({ v: customId(n), l: n });
+    });
     return out;
   }
   function listsRemoveSpecies(id, key) {
-    if (id === "life") delete lifeList[key];
-    else if (yearLists[id]) delete yearLists[id][key];
+    var set = listSetById(id); if (set) delete set[key];
+    persistLists(); rebuildDetLayers(); updateDetLegend(); renderListsModal();
+  }
+  // Put a species on a list. A year tick is also a lifer (that is what a year list
+  // means); a custom list is whatever the user wants in it, so it never implies one.
+  function listsAddSpecies(id, key) {
+    if (!key) return;
+    if (id === "life") lifeList[key] = true;
+    else if (isCustomId(id)) { var n = customName(id); if (!customLists[n]) customLists[n] = {}; customLists[n][key] = true; }
+    else { if (!yearLists[id]) yearLists[id] = {}; yearLists[id][key] = true; lifeList[key] = true; }
     persistLists(); rebuildDetLayers(); updateDetLegend(); renderListsModal();
   }
   // Per-point rows for an expanded map-point list (general or detection-saved):
@@ -4206,16 +4241,124 @@
   // source list and add it to the target ("life" or a year).
   function listsMoveSpecies(fromId, key, toId) {
     if (!key || !toId || toId === fromId) return;
-    if (fromId === "life") delete lifeList[key]; else if (yearLists[fromId]) delete yearLists[fromId][key];
+    var from = listSetById(fromId); if (from) delete from[key];
     if (toId === "life") lifeList[key] = true;
+    else if (isCustomId(toId)) { var n = customName(toId); if (!customLists[n]) customLists[n] = {}; customLists[n][key] = true; }
     else { if (!yearLists[toId]) yearLists[toId] = {}; yearLists[toId][key] = true; lifeList[key] = true; }   // onto a year list → also a lifer
     persistLists(); rebuildDetLayers(); updateDetLegend(); renderListsModal();
   }
   // Settings → Year & life lists: the life list + each year's list. Each row
   // expands to show (and individually remove) the species it contains, and
   // carries a × to clear the whole list.
+  // Add-by-search for the Administer-lists window. Matches the languages the user has
+  // SELECTED — the UI language, and the second one when set — plus the scientific name and
+  // the eBird code. Deliberately NOT filtered by the current species group: you are
+  // administering a list here, not browsing the map, and "Birds" hiding every mammal from
+  // the search would just look broken.
+  function listsSearchMatches(q) {
+    q = String(q || "").trim().toLowerCase();
+    if (q.length < 2 || !labels || !labels.length) return [];
+    var out = [];
+    for (var i = 0; i < labels.length; i++) {
+      var l = labels[i];
+      var n2 = secondLang ? secondName(l) : "";
+      if (speciesName(l).toLowerCase().indexOf(q) < 0 &&
+          (!n2 || n2.toLowerCase().indexOf(q) < 0) &&
+          l.sci.toLowerCase().indexOf(q) < 0 && l.key.indexOf(q) < 0) continue;
+      out.push(l);
+      if (out.length >= 200) break;
+    }
+    var probs = searchProbsCurrent();   // rank by likelihood at the open point, as the map search does
+    if (probs) out.sort(function (a, b) { return (probs[b.index] || 0) - (probs[a.index] || 0); });
+    return out.slice(0, 20);
+  }
+  // Every list a species can be put on, newest year first, the user's own lists last.
+  function listsAllIds() {
+    var ids = ["life"];
+    var years = {}; Object.keys(yearLists).forEach(function (y) { years[y] = 1; }); years[curYear()] = 1;
+    Object.keys(years).sort(function (a, b) { return b.localeCompare(a); }).forEach(function (y) { ids.push(y); });
+    Object.keys(customLists).sort(function (a, b) { return a.localeCompare(b); }).forEach(function (n) { ids.push(customId(n)); });
+    return ids;
+  }
+  function listsRenderSearch() {
+    var inp = document.getElementById("lists-add-search"), res = document.getElementById("lists-add-results");
+    if (!inp || !res) return;
+    var hits = listsSearchMatches(inp.value);
+    if (!inp.value.trim()) { res.style.display = "none"; res.innerHTML = ""; return; }
+    if (!hits.length) {
+      res.innerHTML = '<div class="lists-add-none">' + escapeHtml(t("lists.noMatch")) + "</div>";
+      res.style.display = "block"; return;
+    }
+    // Same name shape as the Images cards: own name, [second language], (Scientific name).
+    res.innerHTML = hits.map(function (l) {
+      var n2 = secondLang ? secondName(l) : "";
+      return '<div class="lists-add-item" data-key="' + escapeHtml(l.key) + '">' +
+        '<span class="lists-add-nm">' + escapeHtml(speciesName(l)) + "</span>" +
+        (n2 ? ' <span class="lists-add-n2">[' + escapeHtml(n2) + "]</span>" : "") +
+        ' <span class="lists-add-sci">(' + escapeHtml(l.sci) + ")</span></div>";
+    }).join("");
+    res.style.display = "block";
+    res.querySelectorAll(".lists-add-item").forEach(function (it) {
+      it.addEventListener("click", function () { listsShowPicker(it.getAttribute("data-key")); });
+    });
+  }
+  // A species was picked: which list should it go on? Shown in place of the results, so
+  // there is no second popup to dismiss.
+  function listsShowPicker(key) {
+    var res = document.getElementById("lists-add-results"); if (!res) return;
+    var l = labelsByKey[key]; if (!l) return;
+    res.innerHTML = '<div class="lists-pick"><div class="lists-pick-hd">' +
+        escapeHtml(t("lists.addTo", { name: speciesName(l) })) + "</div>" +
+      listsAllIds().map(function (id) {
+        var on = !!(listSetById(id) || {})[key];
+        return '<button type="button" class="lists-pick-btn" data-id="' + escapeHtml(id) + '"' + (on ? " disabled" : "") + ">" +
+          escapeHtml(listLabelById(id)) + (on ? " \u2713" : "") + "</button>";
+      }).join("") +
+      '<button type="button" class="lists-pick-cancel">' + escapeHtml(t("btn.cancel")) + "</button></div>";
+    res.style.display = "block";
+    res.querySelectorAll(".lists-pick-btn").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var inp = document.getElementById("lists-add-search");
+        listsAddSpecies(this.getAttribute("data-id"), key);   // re-renders the table
+        if (inp) { inp.value = ""; }
+        var r = document.getElementById("lists-add-results"); if (r) { r.style.display = "none"; r.innerHTML = ""; }
+      });
+    });
+    var cx = res.querySelector(".lists-pick-cancel");
+    if (cx) cx.addEventListener("click", function () { listsRenderSearch(); });
+  }
+  function listsNewList() {
+    modalPrompt(t("lists.newPrompt"), "").then(function (name) {
+      name = String(name == null ? "" : name).trim();
+      if (!name) return;
+      if (customLists[name]) { modalConfirm(t("lists.nameTaken", { name: name })); return; }
+      customLists[name] = {};
+      listsExpanded[customId(name)] = true;
+      persistLists(); renderListsModal();
+    });
+  }
+  // Settings → Year & life lists: the life list, each year's list, and the lists the user
+  // has made. Each row expands to show (and individually remove or move) the species it
+  // contains, and carries a × that deletes the whole list. Above the table: one search box
+  // that adds a species to any of them, and + New list.
   function renderListsModal() {
     var el = document.getElementById("lists-list"); if (!el) return;
+    // The toolbar is built ONCE and then left alone — rebuilding it on every render would
+    // take the caret out of the search box on the first keystroke.
+    if (!el.querySelector(".lists-admin-bar")) {
+      el.innerHTML = '<div class="lists-admin-bar">' +
+          '<div class="lists-add-wrap">' +
+            '<input id="lists-add-search" type="text" autocomplete="off" placeholder="' + escapeHtml(t("lists.addSearch")) + '" />' +
+            '<div id="lists-add-results" class="lists-add-results" style="display:none"></div>' +
+          '</div>' +
+          '<button type="button" id="lists-new" class="btn btn-light">' + escapeHtml(t("lists.new")) + "</button>" +
+        '</div><div class="lists-table-wrap"></div>';
+      el.querySelector("#lists-new").addEventListener("click", listsNewList);
+      var si = el.querySelector("#lists-add-search");
+      si.addEventListener("input", listsRenderSearch);
+      si.addEventListener("focus", listsRenderSearch);
+    }
+    var wrap = el.querySelector(".lists-table-wrap");
     var rows = [];
     function section(id, label, keys, delHtml) {
       var n = keys.length, open = !!listsExpanded[id] && n > 0;
@@ -4233,26 +4376,42 @@
       section(y, t("lists.year", { year: y }), Object.keys(yearLists[y]),
         '<button type="button" class="src-del lists-del-year" data-year="' + escapeHtml(y) + '" aria-label="' + escapeHtml(t("offline.delete")) + '">×</button>');
     });
+    // The user's own lists last — an empty one still shows (it was just made, and it is
+    // the row you drop the next species onto).
+    Object.keys(customLists).sort(function (a, b) { return a.localeCompare(b); }).forEach(function (n) {
+      section(customId(n), n, Object.keys(customLists[n]),
+        '<button type="button" class="src-del lists-del-custom" data-name="' + escapeHtml(n) + '" aria-label="' + escapeHtml(t("offline.delete")) + '">×</button>');
+    });
     // (Map-point lists are managed in their own popup — press-and-hold the Points
-    // button; see renderMpAdmin. This window is species year/life lists only.)
-    el.innerHTML = '<table class="src-tbl"><tbody>' + rows.join("") + "</tbody></table>";
-    el.querySelectorAll(".lists-toggle").forEach(function (b) {
+    // button; see renderMpAdmin. This window is species lists only.)
+    wrap.innerHTML = '<table class="src-tbl"><tbody>' + rows.join("") + "</tbody></table>";
+    wrap.querySelectorAll(".lists-toggle").forEach(function (b) {
       b.addEventListener("click", function () { var id = this.getAttribute("data-id"); listsExpanded[id] = !listsExpanded[id]; renderListsModal(); });
     });
-    el.querySelectorAll(".lists-sp-del").forEach(function (b) {
+    wrap.querySelectorAll(".lists-sp-del").forEach(function (b) {
       b.addEventListener("click", function () { listsRemoveSpecies(this.getAttribute("data-id"), this.getAttribute("data-key")); });
     });
-    el.querySelectorAll(".lists-sp-move").forEach(function (s) {
-      s.addEventListener("change", function () { listsMoveSpecies(this.getAttribute("data-id"), this.getAttribute("data-key"), this.value); });
+    wrap.querySelectorAll(".lists-sp-move").forEach(function (sel) {
+      sel.addEventListener("change", function () { listsMoveSpecies(this.getAttribute("data-id"), this.getAttribute("data-key"), this.value); });
     });
-    var cl = el.querySelector(".lists-clear-life");
+    var cl = wrap.querySelector(".lists-clear-life");
     if (cl) cl.addEventListener("click", function () {
       modalConfirm(t("lists.clearLifePrompt")).then(function (ok) { if (ok) { lifeList = {}; persistLists(); rebuildDetLayers(); updateDetLegend(); renderListsModal(); } });
     });
-    el.querySelectorAll(".lists-del-year").forEach(function (b) {
+    wrap.querySelectorAll(".lists-del-year").forEach(function (b) {
       b.addEventListener("click", function () {
         var y = this.getAttribute("data-year");
         modalConfirm(t("lists.deleteYearPrompt", { year: y })).then(function (ok) { if (ok) { delete yearLists[y]; delete listsExpanded[y]; persistLists(); rebuildDetLayers(); updateDetLegend(); renderListsModal(); } });
+      });
+    });
+    wrap.querySelectorAll(".lists-del-custom").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var n = this.getAttribute("data-name");
+        modalConfirm(t("lists.deletePrompt", { name: n })).then(function (ok) {
+          if (!ok) return;
+          delete customLists[n]; delete listsExpanded[customId(n)];
+          persistLists(); rebuildDetLayers(); updateDetLegend(); renderListsModal();
+        });
       });
     });
   }
@@ -5833,6 +5992,12 @@
       Object.keys(yl || {}).forEach(function (y) { yearMerge[y] = yearMerge[y] || {}; (yl[y] || []).forEach(function (k) { if (k) yearMerge[y][k] = 1; }); });
     });
     var yearMergeArr = {}; Object.keys(yearMerge).forEach(function (y) { yearMergeArr[y] = Object.keys(yearMerge[y]); });
+    // The user's own named lists: union by name, exactly as the year lists are.
+    var custMerge = {};
+    [local.customLists, incoming.customLists].forEach(function (cl) {
+      Object.keys(cl || {}).forEach(function (n) { custMerge[n] = custMerge[n] || {}; (cl[n] || []).forEach(function (k) { if (k) custMerge[n][k] = 1; }); });
+    });
+    var custMergeArr = {}; Object.keys(custMerge).forEach(function (n) { custMergeArr[n] = Object.keys(custMerge[n]); });
     // Learned families (for dot colours): union both sides so a species keeps the
     // family — and therefore the colour — learned on either device.
     var mergedFam = {}; [local.detFamilies, incoming.detFamilies].forEach(function (m) { Object.keys(m || {}).forEach(function (k) { if (m[k]) mergedFam[k] = m[k]; }); });
@@ -5922,6 +6087,7 @@
     newState.interesting = Object.keys(interestUnion);
     newState.lifeList = Object.keys(lifeUnion);
     newState.yearLists = yearMergeArr;
+    newState.customLists = custMergeArr;
     newState.detFamilies = mergedFam;
     // Blogs: UNION the user-added links (by cc|url) and the removed-tombstones across
     // both sides, so a blog added/deleted on one device isn't clobbered by the other.
@@ -6019,7 +6185,7 @@
     fetched: ["mapDetections"]
   };
   // Small, union-safe lists that always sync regardless of the toggles.
-  var SYNC_ALWAYS_KEYS = { interesting: 1, lifeList: 1, yearLists: 1, detFamilies: 1, updatedAt: 1 };
+  var SYNC_ALWAYS_KEYS = { interesting: 1, lifeList: 1, yearLists: 1, customLists: 1, detFamilies: 1, updatedAt: 1 };
   // "settings" = every scalar key present on either side that no other category
   // owns and that isn't in the always-synced set.
   function syncSettingsKeys(stA, stB) {

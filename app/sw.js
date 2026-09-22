@@ -21,15 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1855";
+var VERSION = "v1856";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Family and confusion pictures now load as you look at them: the cards on screen plus the next five, and more as you scroll. Opening a big family used to fetch every picture in it whether or not you ever scrolled down \u2014 Paridae asked for 61 pictures on open, now it asks for 20.",
-  "\u2022 A picture whose lookup does not get through is tried once more, then left alone \u2014 instead of being retried for as long as the window stays open.",
+  "\u2022 Species lists are yours to arrange. Settings \u2192 Administer lists now has a search box that adds any species to any list, and a + that makes a new list with a name you choose \u2014 alongside the life list and the year lists, which work as before. A list you made can be deleted outright, and a species moved between lists or taken off one.",
+  "\u2022 The search follows the languages you have chosen: type the name in your own language, in your second language, or the scientific one, and each hit reads \u201cname [second language] (Scientific name)\u201d.",
+  "\u2022 Putting a species on a list of your own does not add it to your life list \u2014 only a year list means \u201cseen\u201d.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

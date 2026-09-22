@@ -3225,6 +3225,27 @@ th.sort-live::after { color: #1976d2; opacity: 1; animation: sort-live-pulse 1.2
    rule. They keep the table's own cell border. The only thing that sets them apart is
    what they genuinely lack: the Probability, Season and Yr peak cells are empty. */
 .rc-cls { display: inline-block; font-size: var(--fs-b); vertical-align: baseline; }
+/* Administer lists — the add-by-search bar above the table, and its results. */
+.lists-admin-bar { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 8px; }
+.lists-add-wrap { position: relative; flex: 1 1 auto; min-width: 0; }
+#lists-add-search { width: 100%; box-sizing: border-box; padding: 5px 8px; font: inherit;
+  border: 1px solid var(--border, #ccc); border-radius: 6px; background: var(--surface, #fff); color: var(--ink, #222); }
+.lists-add-results { position: absolute; z-index: 5; left: 0; right: 0; top: 100%; margin-top: 2px;
+  max-height: 46vh; overflow: auto; background: var(--surface, #fff); color: var(--ink, #222);
+  border: 1px solid var(--border, #ccc); border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+.lists-add-item { padding: 5px 8px; cursor: pointer; font-size: var(--fs-s); }
+.lists-add-item:hover { background: var(--surface-2, #f2f2f2); }
+.lists-add-nm { font-weight: 700; }
+.lists-add-n2, .lists-add-sci { font-size: var(--fs-xs); font-weight: 400; color: var(--ink-muted, #777); }
+.lists-add-sci { font-style: italic; }
+.lists-add-none { padding: 6px 8px; font-size: var(--fs-s); color: var(--ink-muted, #777); }
+.lists-pick { padding: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
+.lists-pick-hd { flex: 1 0 100%; font-size: var(--fs-s); color: var(--ink-muted, #777); }
+.lists-pick-btn, .lists-pick-cancel { font: inherit; font-size: var(--fs-s); padding: 4px 9px; cursor: pointer;
+  border: 1px solid var(--border, #ccc); border-radius: 999px; background: var(--surface, #fff); color: var(--ink, #222); }
+.lists-pick-btn:disabled { opacity: .55; cursor: default; }
+.lists-pick-cancel { border-style: dashed; color: var(--ink-muted, #777); }
+
 
 /* Per-point species list: clickable "# Recent" button → opens recent panel. */
 .det-count-btn { cursor: pointer; border: none; background: transparent; padding: 0 2px;
