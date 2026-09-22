@@ -761,6 +761,12 @@ shared payload is all that is shown.
 Right-click / long-press / tap any species name for a menu **led by the species name in bold**
 (wrapping when long), followed by the record's *Open source* link when opened from an observation, then:
 
+- Where **no picture exists at all**, the frame carries a link to where the pictures are, for the
+  groups that have such a place: **Kew Plants of the World Online** for plants, **iNaturalist** for
+  fungi, insects, spiders and snails. Neither can be shown inline — Kew answers only to a person at
+  a browser, iNaturalist's photos are mostly CC BY-NC — so a link is what can honestly be offered.
+  Birds and mammals are well covered and unchanged.
+
 - **Species photographs** come from, in order: the English Wikipedia article image, Wikidata's
   P18, iNaturalist's own taxon photo, **observers' photographs from GBIF** (requested under CC0/CC
   BY only), and finally **a photograph from your own fetched observations** — credited to the

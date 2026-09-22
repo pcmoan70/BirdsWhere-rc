@@ -21,16 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1863";
+var VERSION = "v1864";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 A species with no picture anywhere now borrows one from YOUR OWN observations. Many fetched records carry the observer\u2019s photograph, and for an insect or a plant that nothing has illustrated, the person who found it nearby usually has. Nothing is downloaded for this \u2014 the pictures are already on the device.",
-  "\u2022 Those pictures are credited to the photographer by name, and the name links to the observation report they came from. Where a photograph states its licence, the credit shows it; where the records offer a choice, a freely-licensed photograph is preferred.",
-  "\u2022 Reference pictures still come first, so nothing you already see changes \u2014 this only fills what was blank.",
+  "\u2022 A plant, fungus or insect the app can find no picture of now offers a link where the picture would have been, instead of an empty frame: Kew\u2019s Plants of the World Online for plants, iNaturalist for fungi, insects, spiders and snails. Those are the places that do have photographs of them \u2014 Kew answers only to a person at a browser, and iNaturalist\u2019s pictures are mostly licensed in a way that does not allow showing them here, so a link is what can honestly be offered.",
+  "\u2022 Birds and mammals are well covered by the picture sources, so nothing changes for them.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -889,6 +889,14 @@ input[type="range"] { accent-color: var(--brand); }
    from the popup's rect whenever it is positioned (placeAnchClose), so it stays in the
    corner of the popup however far the list inside is scrolled. */
 .anch-x { position: fixed; top: auto; right: auto; }
+
+/* A plant with no picture anywhere: a link to Kew POWO fills the picture frame. */
+.spg-powo {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  padding: 6px; text-align: center; font-size: var(--fs-xs); line-height: 1.3;
+  color: var(--brand-strong, var(--brand, #2e8b74)); text-decoration: none; overflow-wrap: anywhere;
+}
+.spg-powo:hover { text-decoration: underline; background: var(--brand-soft, #e3efe9); }
 /* View switch (table ↔ photo cards), left of the ×. */
 .conf-switch { position: absolute; top: 6px; right: 34px; z-index: 3; border: 1px solid var(--border, #d7ded9); background: var(--surface-2, #f2f6f4); color: var(--ink, #222); font: inherit; font-size: var(--fs-xs); padding: 3px 8px; border-radius: 6px; cursor: pointer; }
 .conf-switch:hover { background: var(--brand-soft, #e3efe9); }

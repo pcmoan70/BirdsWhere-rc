@@ -23397,8 +23397,48 @@
     var o = document.createElement("span"); o.className = "spg-offline"; o.title = t("spg.offline"); o.setAttribute("aria-label", t("spg.offline"));
     o.innerHTML = OFFLINE_ICO; box.appendChild(o);
   }
-  function markNoImage(box, none) {
+  // The taxonomic class behind a picture card: the Images cards carry it as data-cls,
+  // and an observed species that does not is looked up among the plotted extras.
+  function cardClassFor(box, sci) {
+    var host = (box && box.closest) ? box.closest("[data-cls]") : null;
+    var c = host ? host.getAttribute("data-cls") : "";
+    if (c) return c;
+    var e = (typeof detPlot !== "undefined" && detPlot) ? detPlot["x:" + String(sci || "").trim().toLowerCase()] : null;
+    return (e && e.cls) || "";
+  }
+  function inatPhotosUrl(sci) { return "https://www.inaturalist.org/taxa/search?q=" + encodeURIComponent(String(sci || "").trim()); }
+  // Where to send someone when the app can show no picture itself: per group, the site that
+  // does have photographs AND whose photographs we may not put on the card.
+  //   plants — Kew's Plants of the World Online. Measured: Cloudflare answers 403 to its API
+  //            and to a taxon page alike, with or without a browser User-Agent, and sends no
+  //            CORS header, so it can only ever be a link.
+  //   fungi, insects and the other invertebrates — iNaturalist, far the largest photo archive
+  //            for them, whose pictures are mostly CC BY-NC and so cannot be redistributed here.
+  var NO_IMG_REF = { plantae: 1, fungi: 2, insecta: 2, arachnida: 2, mollusca: 2 };
+  function noImageRef(cls, sci) {
+    var which = NO_IMG_REF[String(cls || "").toLowerCase()];
+    if (which === 1) return { url: powoUrl(sci), label: t("menu.powo") };
+    if (which === 2) return { url: inatPhotosUrl(sci), label: t("menu.inat") };
+    return null;   // birds and mammals are well covered — an empty frame is the honest answer
+  }
+  // No picture anywhere. For a plant, a fungus or an insect that is the common case, so rather
+  // than an empty frame saying "no image", the card carries a LINK to where the pictures are.
+  function markNoImage(box, none, sci) {
     var o = box && box.querySelector(".spg-offline"); if (o) o.remove();
+    if (!box) { if (none) none.style.display = ""; return; }
+    var old = box.querySelector(".spg-powo"); if (old) old.remove();
+    var ref = sci ? noImageRef(cardClassFor(box, sci), sci) : null;
+    if (ref) {
+      if (none) none.style.display = "none";
+      var a = document.createElement("a");
+      a.className = "spg-powo";
+      a.href = ref.url; a.target = "_blank"; a.rel = "noopener";
+      a.textContent = ref.label + " \u2197";
+      a.title = sci;
+      a.addEventListener("click", function (e) { e.stopPropagation(); });   // the card itself opens other things
+      box.appendChild(a);
+      return;
+    }
     if (none) none.style.display = "";
   }
   // Back online: retry every photo that was marked offline (gallery cards + confusion cards).
@@ -23417,7 +23457,7 @@
     if (photoNetDown() && !spImgStore()[sci]) { markOffline(box, none); return Promise.resolve(null); }   // no connection: don't queue a doomed lookup
     return spImageFor(sci).then(function (r) {
       if (r && r.tmp) { spPhotoFailed(); markOffline(box, none); return null; }   // lookup unreachable: not remembered, retried later
-      if (!r || r.none) { spPhotoOk(); markNoImage(box, none); return false; }
+      if (!r || r.none) { spPhotoOk(); markNoImage(box, none, sci); return false; }
       spPhotoOk();
       var img = document.createElement("img"); img.alt = sci; img.decoding = "async";
       // CORS load → the SW's species-images cache stores a real (sized) response, not an
@@ -23433,7 +23473,7 @@
         if (!img._retried && alt !== img.src) { img._retried = 1; img.src = alt; return; }
         img.remove();
         if (photoNetDown()) markOffline(box, none);   // known photo, just not cached on the device
-        else markNoImage(box, none);
+        else markNoImage(box, none, sci);
       });
       box.insertBefore(img, box.firstChild);
       if (cr) {
