@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1862";
+var VERSION = "v1863";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Insects and plants have pictures now. The app looked for a species photograph in the encyclopaedias, which is where those two groups run out: of 30 insects recorded in Norway the English Wikipedia illustrates 22, and iNaturalist\u2019s own picture covers only 2 more (most of theirs may not be re-published). Observers\u2019 own photographs from GBIF \u2014 asked for under CC0 and CC BY only \u2014 cover all 30, and all 30 of the plants.",
-  "\u2022 A photograph is credited to whoever took it, with a link to the record it came from; where the photographer is not named, the service is credited rather than the wrong one.",
-  "\u2022 Curated pictures still come first \u2014 a field photograph is used only where there was no picture at all before, so nothing you already see changes.",
+  "\u2022 A species with no picture anywhere now borrows one from YOUR OWN observations. Many fetched records carry the observer\u2019s photograph, and for an insect or a plant that nothing has illustrated, the person who found it nearby usually has. Nothing is downloaded for this \u2014 the pictures are already on the device.",
+  "\u2022 Those pictures are credited to the photographer by name, and the name links to the observation report they came from. Where a photograph states its licence, the credit shows it; where the records offer a choice, a freely-licensed photograph is preferred.",
+  "\u2022 Reference pictures still come first, so nothing you already see changes \u2014 this only fills what was blank.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

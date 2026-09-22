@@ -23164,7 +23164,52 @@
     }
     return chain;
   }
+  // The observations YOU have fetched are the last resort for a species picture: many of
+  // them carry the observer's own photograph, and for an insect or a plant that nothing has
+  // illustrated anywhere, the person who found it down the road usually has. Nothing is
+  // downloaded to do this — the pictures are already on the device, listed behind the 📷 of
+  // each record — so it costs one walk of the plotted rows.
+  // Credit is the photographer's name, linked to the observation report it came from.
+  function obsPhotoForSci(sci) {
+    if (typeof detPlot === "undefined" || !detPlot) return null;
+    var want = String(sci || "").trim().toLowerCase(); if (!want) return null;
+    var keys = Object.keys(detPlot);
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i], e = detPlot[k]; if (!e) continue;
+      // A species the model covers is keyed by its code; everything else by "x:<sci name>".
+      var esci = k.indexOf("x:") === 0 ? k.slice(2) : ((labelsByKey[k] && labelsByKey[k].sci) || "");
+      if (String(esci).trim().toLowerCase() !== want) continue;
+      // Prefer a photograph whose credit does NOT say NonCommercial / NoDerivatives: the
+      // app's own picture sources are filtered to freely-licensed images, so where the
+      // observations offer a choice, take one under the same terms. Whatever is chosen is
+      // shown with the credit exactly as its source wrote it (licence included) and a link
+      // to the record, which is what these licences ask for.
+      var rows = e.rows || [], best = null;
+      for (var j = 0; j < rows.length; j++) {
+        var r = rows[j], u = r.photoBig || r.photo;
+        if (!u || !/^https:\/\//i.test(u)) continue;
+        var by = String(r.photoBy || r.observer || "").trim().replace(/^(\(c\)|©)\s*/i, "");
+        var rec = { v: SP_IMG_VER, t: u, a: by.slice(0, 240), l: "", lu: "", pg: r.url || "", f: "", h: "", obs: 1 };
+        if (!/non-?commercial|\bnc\b|no-?deriv|\bnd\b/i.test(by)) return rec;   // free, or no licence stated
+        if (!best) best = rec;
+      }
+      if (best) return best;
+    }
+    return null;
+  }
   function spImageFor(sci) {
+    return spImageFromRefs(sci).then(function (rec) {
+      if (rec && !rec.none) return rec;                 // a reference source had one — it wins
+      if (rec && rec.tmp) return rec;                   // couldn't reach them (offline): a remote
+                                                        // observation photo would not load either
+      return obsPhotoForSci(sci) || rec || { none: 1 };
+    });
+  }
+  // The reference sources, in order, with their own caching. Deliberately kept separate from
+  // the wrapper above: a "no picture anywhere" answer is still remembered here, so the
+  // network chain runs once — while the local observation lookup is redone each time, and so
+  // picks up photographs from whatever has been fetched since.
+  function spImageFromRefs(sci) {
     var c = spImgStore();
     if (c[sci] && c[sci].v === SP_IMG_VER) return Promise.resolve(c[sci]);
     if (c[sci] && c[sci].none && c[sci].tmp) return Promise.resolve(c[sci]);   // transient miss: unchanged by the rules above
@@ -23395,7 +23440,10 @@
         var page = r.pg || ("https://" + (r.h || "commons.wikimedia.org") + "/wiki/File:" + encodeURIComponent((r.f || "").replace(/ /g, "_")));
         // With no photographer to name, credit the service the picture actually came from —
         // saying "Wikimedia Commons" under a GBIF field photograph would be simply untrue.
-        var site = /gbif\.org/i.test(page) ? "GBIF" : (/inaturalist\.org/i.test(page) ? "iNaturalist" : "Wikimedia Commons");
+        var hm = String(page || "").match(/^https?:\/\/([^\/]+)/), host = hm ? hm[1].replace(/^www\./i, "") : "";
+        var site = /gbif\.org$/i.test(host) ? "GBIF"
+          : (/inaturalist\.org$/i.test(host) ? "iNaturalist"
+          : (!host || /wiki(m|p)edia\.org$/i.test(host) ? "Wikimedia Commons" : host));
         cr.innerHTML = '<a href="' + escapeHtml(page) + '" target="_blank" rel="noopener">' + escapeHtml(r.a ? "© " + r.a : site) + "</a>" +
           (r.l ? " · " + (r.lu
             ? '<a href="' + escapeHtml(r.lu) + '" target="_blank" rel="noopener">' + escapeHtml(r.l) + "</a>"   // the licence deed itself

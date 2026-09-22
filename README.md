@@ -762,8 +762,9 @@ Right-click / long-press / tap any species name for a menu **led by the species 
 (wrapping when long), followed by the record's *Open source* link when opened from an observation, then:
 
 - **Species photographs** come from, in order: the English Wikipedia article image, Wikidata's
-  P18, iNaturalist's own taxon photo, and — new — **observers' photographs from GBIF**, requested
-  under CC0/CC BY only. The first three are curated and still win; GBIF fills the gaps, which for
+  P18, iNaturalist's own taxon photo, **observers' photographs from GBIF** (requested under CC0/CC
+  BY only), and finally **a photograph from your own fetched observations** — credited to the
+  photographer, whose name links to the observation report it came from. The first three are curated and still win; GBIF fills the gaps, which for
   insects and plants is most of them (measured over 30 species of each from Norwegian records:
   Wikipedia 73 %/93 %, GBIF 100 %/100 %). Every picture is credited to its photographer with a link
   to the record, or to the service when no photographer is named.
