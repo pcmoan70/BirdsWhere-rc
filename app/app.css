@@ -871,6 +871,24 @@ input[type="range"] { accent-color: var(--brand); }
   padding: 2px 7px; border-radius: 5px;
 }
 .conf-close:hover { background: var(--hover, #eef4f2); color: var(--ink, #222); }
+
+/* The × every other popup gets, injected centrally (ensureAnchClose / createModal) so
+   there is no popup you can only dismiss by clicking away from it. Same look as
+   .conf-close; the padding class keeps a popup's own content clear of the button. */
+.anch-x, .ui-modal-x {
+  position: absolute; top: 3px; right: 5px; z-index: 6;
+  border: 0; background: transparent; cursor: pointer;
+  font-size: 20px; line-height: 1; color: var(--ink-muted, #888);
+  padding: 2px 7px; border-radius: 5px;
+}
+.anch-x:hover, .ui-modal-x:hover { background: var(--hover, #eef4f2); color: var(--ink, #222); }
+.has-anch-x, .has-modal-x { position: relative; }
+.has-anch-x > *:not(.anch-x):first-of-type, .has-modal-x > *:not(.ui-modal-x):first-of-type { padding-right: 26px; }
+/* Most of these popups scroll their own body, and an absolutely-positioned × scrolls away
+   with the content. The anchored ones therefore carry a FIXED × whose coordinates are set
+   from the popup's rect whenever it is positioned (placeAnchClose), so it stays in the
+   corner of the popup however far the list inside is scrolled. */
+.anch-x { position: fixed; top: auto; right: auto; }
 /* View switch (table ↔ photo cards), left of the ×. */
 .conf-switch { position: absolute; top: 6px; right: 34px; z-index: 3; border: 1px solid var(--border, #d7ded9); background: var(--surface-2, #f2f6f4); color: var(--ink, #222); font: inherit; font-size: var(--fs-xs); padding: 3px 8px; border-radius: 6px; cursor: pointer; }
 .conf-switch:hover { background: var(--brand-soft, #e3efe9); }

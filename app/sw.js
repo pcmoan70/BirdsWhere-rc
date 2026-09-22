@@ -21,14 +21,19 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1859";
+var VERSION = "v1860";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 A record reported by several observers now lets you pick which one you meant. Tapping any of the names \u2014 or the \u201c\u2026\u201d standing in for the ones that did not fit \u2014 lists everyone on that record, and choosing a name opens the usual actions for that person. A record with a single observer still acts straight away, as before.",
+  "\u2022 Popups behave the same way everywhere now: every one carries a \u00d7, and there are exactly two ways to close one \u2014 click its \u00d7, or interact with something outside it. None of them closes itself any more just because the pointer moved away.",
+  "\u2022 A popup opened from inside another one now sits ON it instead of replacing it. The record list stays put while you open a picture from it, and closing the picture puts you back in the list where you were.",
+  "\u2022 The \u24d8 note opens where your pointer is, not in the corner of the screen \u2014 it was being positioned from an icon that had just been removed \u2014 and it opens on a click rather than in passing.",
+  "\u2022 Pictures open on a click too. Merely sweeping the pointer across a list of records no longer throws the list away behind a photograph.",
+  "\u2022 A species\u2019 record list now shows Probability, Season and Yr peak on every row, as the observation list does.",
+  "\u2022 The funnel pulses while ANY fetch is running \u2014 a stored place, an update of every area, a source still arriving \u2014 not only a map click.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -761,6 +761,17 @@ shared payload is all that is shown.
 Right-click / long-press / tap any species name for a menu **led by the species name in bold**
 (wrapping when long), followed by the record's *Open source* link when opened from an observation, then:
 
+- **Popups all behave the same way**: every one carries a ×, and closes only when you click that ×
+  or interact with something outside it — never on its own because the pointer moved away. A popup
+  opened from inside another (a picture from a record list, a ⓘ note) sits *on* it rather than
+  replacing it, so closing the picture puts you back in the list. The ⓘ note opens at your pointer.
+
+- A species' **record list** shows Probability, Season and Yr peak on every row, as the observation
+  list does (blank for species the model does not cover).
+
+- The **funnel pulses while anything is loading** — any fetch (a stored place, an update of every
+  area, a source still arriving) as well as a filter being applied.
+
 - A record reported by **several observers** lets you pick which one you meant: tapping any of the
   names — or the "…" standing in for those that did not fit — lists everyone on that record, and
   choosing one opens the usual actions for that person. A single-observer record acts immediately.

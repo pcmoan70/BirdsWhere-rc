@@ -667,6 +667,19 @@
     }
     if (opts.backdropClose !== false) ov.addEventListener("click", function (e) { if (e.target === ov) close(); });
     if (opts.escClose) { onKey = function (e) { if (e.key === "Escape") { e.preventDefault(); close(); } }; document.addEventListener("keydown", onKey, true); }
+    // Every popup carries a × (the app-wide rule). Callers fill `box` synchronously right
+    // after this returns, so it goes in on the next tick — after their own markup, and
+    // skipped where they already built a close control.
+    setTimeout(function () {
+      if (closed || !box.isConnected || box.querySelector(".conf-close, .anch-x, .ui-modal-x")) return;
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "ui-modal-x";
+      b.setAttribute("aria-label", t("btn.close")); b.title = t("btn.close");
+      b.textContent = "\u00d7";
+      b.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); close(); });
+      box.insertBefore(b, box.firstChild);
+      box.classList.add("has-modal-x");
+    }, 0);
     return { overlay: ov, box: box, close: close };
   }
 
@@ -1069,9 +1082,11 @@
   var filterStale = false;   // pan/zoom happened; the filtered counts are pending a recompute
   function updateFilterBusy() {
     var on = false;
-    // Pulse for ANY pending fetch (even the first, with nothing plotted yet) and
-    // for stale recounts (panning left the filtered counts pending).
-    try { on = mapFetchPending > 0 || filterStale; } catch (e) {}
+    // Pulse for ANY fetch in progress — a map click, a stored-location run, an "update all
+    // areas" sweep, a source still streaming — and for stale recounts (panning left the
+    // filtered counts pending). It used to watch mapFetchPending alone, so the long fetches
+    // (the stored places, the ones actually worth a progress cue) left the funnel still.
+    try { on = userFetchActive() || filterStale; } catch (e) {}
     var fb = document.getElementById("sp-filter-btn");
     if (fb) fb.classList.toggle("busy", !!on);
     Array.prototype.forEach.call(document.querySelectorAll(".filterclear-btn, .det-clear-sel, .sp-head-funnel"), function (el) {
@@ -1810,7 +1825,7 @@
       td.innerHTML = spDetailTableHtml(key, recs);
       tr.appendChild(td);
       row.parentNode.insertBefore(tr, row.nextSibling);
-      wireSpDetail(td);
+      wireSpDetail(td); fillObsSeasonCells(td, null);   // Season / Yr peak arrive with the point's prediction
     });
   }
   // The expanded sub-list as a columns table matching the species list: species name ·
@@ -2035,12 +2050,18 @@
   function spDetailTableHtml(key, rows) {
     // The species name / 2nd name are already on the row above (the species this list
     // expands), so drop them here and show the observation's LOCATION instead.
+    // Probability · Season · Yr peak, as the per-observation list carries them: the three
+    // model numbers belong together (Season is a share of the species' OWN yearly peak, so
+    // it says nothing without that peak beside it). This table is table-layout:auto, so the
+    // two extra columns need no width bookkeeping.
     var hdr = "<thead><tr>" + spObsHeadCell("count", t("th.count"), true) +
-      spObsHeadCell("prob", t("th.probAbbr"), true) + spObsHeadCell("date", t("th.date")) +
+      spObsHeadCell("prob", t("th.probAbbr"), true) +
+      spObsHeadCell("season", t("th.season")) + spObsHeadCell("ytop", t("th.ytop"), true) +
+      spObsHeadCell("date", t("th.date")) +
       spObsHeadCell("loc", t("th.location")) +
       spObsHeadCell("src", t("th.source")) + '<th class="sp-obs-ph" aria-hidden="true"></th>' + spObsHeadCell("obs", t("th.obs")) +
       spObsHeadCell("dist", t("th.dist"), true) + "</tr></thead>";   // photo column between source and observer; distance rightmost
-    var body = rows.slice().sort(spObsCmp).map(function (d) { return spRecRowHtml(d, { name: false, date: true, loc: true, src: true, obs: true }); }).join("");
+    var body = rows.slice().sort(spObsCmp).map(function (d) { return spRecRowHtml(d, { name: false, season: true, date: true, loc: true, src: true, obs: true }); }).join("");
     // Column widths are pinned on the cells in CSS (.sp-detail-tbl is table-layout:fixed),
     // so EVERY expanded species' sub-table has identical columns and they line up
     // vertically across the screen. (Cell widths are used rather than a <colgroup>, which
@@ -2337,7 +2358,7 @@
     });
   }
   // ---- The observation's pictures as a mosaic -------------------------------
-  // Most sources ship SEVERAL pictures per record. Hovering the 📷 (tapping it on a
+  // Most sources ship SEVERAL pictures per record. Clicking the 📷 (tapping it on a
   // phone) lays them all out as a small grid — loaded only when it opens, so a list
   // of hundreds of records downloads nothing until you ask for a picture. A tile
   // opens that one full-size.
@@ -2352,24 +2373,22 @@
   function closeObsMosaic() {
     clearTimeout(obsMosaicTimer);
     obsMosaicPinned = false;
-    if (obsMosaicPop && _anchMenuEl === obsMosaicPop) closeAnchoredMenu();
+    if (anchMenuOpen(obsMosaicPop)) closeAnchoredMenu(obsMosaicPop);   // just the mosaic — the list it opened from stays
     obsMosaicPop = null;
   }
-  function scheduleObsMosaicClose() {
-    if (obsMosaicPinned) return;   // clicked open → only the × (or the same camera) closes it
-    clearTimeout(obsMosaicTimer);
-    obsMosaicTimer = setTimeout(closeObsMosaic, 250);   // a gap to cross from the icon into the mosaic
-  }
-  function obsMosaicOpenFor(btn) { return !!(obsMosaicPop && obsMosaicPop._btn === btn && _anchMenuEl === obsMosaicPop); }
-  // `pin` = opened by a deliberate click rather than a hover preview: it then stays until
-  // the × (or a tap on the same camera), so pictures can be opened one at a time and come
-  // back to the set. A hover-opened mosaic still closes itself when the pointer leaves.
+  function obsMosaicOpenFor(btn) { return !!(obsMosaicPop && obsMosaicPop._btn === btn && anchMenuOpen(obsMosaicPop)); }
+  // Opened by a deliberate click (never by hovering past): it stays until its × or a tap on
+  // the same camera, so pictures can be opened one at a time and come back to the set.
+  // Hovering used to open it, which meant merely crossing the list to reach a picture threw
+  // the list away underneath — the pictures are the point, so they wait to be asked for.
   function showObsMosaic(btn, pin) {
     var list = obsPhotoList(btn); if (!list.length) return;
     clearTimeout(obsMosaicTimer);
     if (pin) obsMosaicPinned = true;
     if (obsMosaicOpenFor(btn)) return;   // already up for this record
-    var el = openAnchoredMenu("detrow-menu obs-mosaic");
+    // Anchored to the camera, so a mosaic opened from inside a records list stacks ON it
+    // rather than replacing it — the list stays put underneath while you look at a picture.
+    var el = openAnchoredMenu("detrow-menu obs-mosaic", btn);
     el._btn = btn;
     // One picture → show it whole. Otherwise square tiles in the shape that leaves no
     // hole in the last row: 2 or 3 side by side, then two rows, up to 4 across.
@@ -2388,8 +2407,6 @@
       tile.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showObsPhoto(btn, list[+this.getAttribute("data-i")]); });
       tile.querySelector("img").addEventListener("error", function () { tile.classList.add("bad"); });   // a dead URL leaves no gap
     });
-    el.addEventListener("mouseenter", function () { clearTimeout(obsMosaicTimer); });
-    el.addEventListener("mouseleave", scheduleObsMosaicClose);
     obsMosaicPop = el;
     centerPhotoPopup(el);
   }
@@ -2425,7 +2442,7 @@
     Array.prototype.forEach.call(container.querySelectorAll(".obs-photo"), function (b) {
       b.addEventListener("click", function (e) {
         e.preventDefault(); e.stopPropagation();
-        if (canHoverPh) { showObsMosaic(this, true); return; }     // mouse: hover already previewed it — the click pins it
+        if (canHoverPh) { showObsMosaic(this, true); return; }     // mouse: the click opens it
         // Touch: tap opens the mosaic, tapping the same 📷 again closes it. Whether it WAS
         // open is taken at touch-start — the anchored menu's own outside-click handler has
         // already closed it by the time this click runs.
@@ -2433,10 +2450,6 @@
         showObsMosaic(this, true);
       });
       b.addEventListener("touchstart", function () { obsMosaicWasOpen = obsMosaicOpenFor(this); }, { passive: true });
-      if (canHoverPh) {
-        b.addEventListener("mouseenter", function () { showObsMosaic(this); });
-        b.addEventListener("mouseleave", scheduleObsMosaicClose);
-      }
     });
     Array.prototype.forEach.call(container.querySelectorAll(".dl-src-click"), function (s) {
       s.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showSrcFilterMenu(this.getAttribute("data-src"), e.clientX, e.clientY); });
@@ -3731,14 +3744,14 @@
     detNewSince = Date.now();
     saveLegendState();
     if (detNewFilter) { try { rebuildDetLayers(); } catch (e) {} }
-    storedFetchBusy = true;
+    storedFetchBusy = true; try { updateFilterBusy(); } catch (e) {}
     if (newReloadCtrlEl) newReloadCtrlEl.classList.add("loading");   // spin the button → clear "reloading" feedback
     var i = 0, total = locs.length, prevNoFit = plotNoFit, myLoopGen = fetchLoopGen;
     plotNoFit = true;   // stay on the current view — don't yank to each area; the new dots just light up in place
     (function next() {
       if (myLoopGen !== fetchLoopGen) return;   // map cleared → cancelPendingFetches() already reset state
       if (i >= total) {
-        plotNoFit = prevNoFit; storedFetchBusy = false; tickerFireMulti();
+        plotNoFit = prevNoFit; storedFetchBusy = false; try { updateFilterBusy(); } catch (e) {} tickerFireMulti();
         if (newReloadCtrlEl) newReloadCtrlEl.classList.remove("loading");
         try { updateDetLegend(); } catch (e) {}
         updateViewToggle();
@@ -3779,14 +3792,14 @@
       return { lat: c.lat, lon: c.lng, radius: rkm, days: Math.ceil(ageD) + cfg.overlapDays };   // since end-date − overlap → now
     }).filter(Boolean);
     if (!locs.length) { setStatus(t("update.noAreas")); return; }
-    storedFetchBusy = true;
+    storedFetchBusy = true; try { updateFilterBusy(); } catch (e) {}
     if (areaUpdateCtrlEl) areaUpdateCtrlEl.classList.add("loading");
     var i = 0, total = locs.length, myLoopGen = fetchLoopGen, prevNoFit = plotNoFit;
     plotNoFit = true;   // stay on the current view; new dots just light up in place
     (function next() {
       if (myLoopGen !== fetchLoopGen) return;
       if (i >= total) {
-        plotNoFit = prevNoFit; storedFetchBusy = false; tickerFireMulti();
+        plotNoFit = prevNoFit; storedFetchBusy = false; try { updateFilterBusy(); } catch (e) {} tickerFireMulti();
         if (areaUpdateCtrlEl) areaUpdateCtrlEl.classList.remove("loading");
         try { updateDetLegend(); } catch (e) {}
         updateViewToggle();
@@ -4935,7 +4948,7 @@
     abortRaritySweep();
     activeFetchCtrls.forEach(function (c) { try { c.abort(); } catch (e) {} });
     activeFetchCtrls.clear();
-    storedFetchBusy = false; tickerDropMulti();   // cancelled mid-run → no intro for a half-done fetch
+    storedFetchBusy = false; try { updateFilterBusy(); } catch (e) {} tickerDropMulti();   // cancelled mid-run → no intro for a half-done fetch
     plotNoFit = false;                                                // loops left it on; reset so future plots fit
     if (newReloadCtrlEl) newReloadCtrlEl.classList.remove("loading");
     mapFetchPending = 0; try { renderStatusDots(); updateFilterBusy(); } catch (e) {}     // clear the fetch hourglass
@@ -5022,12 +5035,12 @@
         // source's label is flagged red (timedOut) rather than a hard error.
         var ctrl = (typeof AbortController !== "undefined") ? new AbortController() : null;
         var T = (s.timeout != null) ? +s.timeout : 120, tmr = null, killed = false;
-        if (ctrl) activeFetchCtrls.add(ctrl);   // registered so a map-clear can abort it
+        if (ctrl) { activeFetchCtrls.add(ctrl); try { updateFilterBusy(); } catch (e) {} }   // registered so a map-clear can abort it; the funnel pulses while it runs
         if (ctrl && T > 0) tmr = setTimeout(function () { killed = true; try { ctrl.abort(); } catch (e) {} }, T * 1000);
         var cs = ctrl ? Object.assign({}, c, { signal: ctrl.signal }) : c;
         return guardFetch(failed, s.name, obsTrack(s.name, s.run(cs))).then(function (recs) {
           if (tmr) clearTimeout(tmr);
-          if (ctrl) activeFetchCtrls.delete(ctrl);
+          if (ctrl) { activeFetchCtrls.delete(ctrl); try { updateFilterBusy(); } catch (e) {} }
           var rr = recs || [];
           if (killed) {
             timedOut.push(s.name); var fi = failed.indexOf(s.name); if (fi >= 0) failed.splice(fi, 1);   // a timeout isn't a hard failure
@@ -11206,20 +11219,86 @@
   // on-screen; an outside click (capture phase) dismisses it. Shared by the
   // species/record menu (detrow-menu) and the observer add-to-list menus
   // (obs-addmenu) so they don't each re-implement open/position/close plumbing.
-  var _anchMenuEl = null, _anchMenuOutside = null;
-  function closeAnchoredMenu() {
-    if (_anchMenuEl && _anchMenuEl.parentNode) _anchMenuEl.parentNode.removeChild(_anchMenuEl);
-    _anchMenuEl = null;
-    if (_anchMenuOutside) { document.removeEventListener("click", _anchMenuOutside, true); _anchMenuOutside = null; }
+  // Anchored popups STACK. A popup opened from INSIDE another one — the 📷 mosaic and the
+  // ⓘ note both live inside a records list that is itself a popup — used to call
+  // closeOtherPopups and so destroy its own parent. That is one bug with two faces: the
+  // records list vanished the moment you reached for a picture, and the ⓘ note landed in
+  // the top-left corner of the screen because its anchor had been removed from the document
+  // a moment earlier, leaving getBoundingClientRect() reading all zeros.
+  // `_anchMenuEl` stays the TOP of the stack, so the "did my menu close while I was
+  // computing?" guards keep working; they ask anchMenuOpen() instead, which is true for a
+  // popup that is still up with a child stacked over it.
+  var _anchStack = [], _anchMenuEl = null, _anchMenuOutside = null, _anchOpening = false;
+  function anchMenuOpen(el) { return !!el && _anchStack.indexOf(el) >= 0; }
+  // No argument: close every anchored popup — what choosing an action from one means.
+  // With one: close that popup and anything stacked above it, leaving its parent up.
+  function closeAnchoredMenu(el) {
+    var from = el ? _anchStack.indexOf(el) : 0;
+    if (from < 0) return;   // already gone
+    for (var i = _anchStack.length - 1; i >= from; i--) {
+      var m = _anchStack[i];
+      if (m && m.parentNode) m.parentNode.removeChild(m);
+    }
+    _anchStack.length = from;
+    _anchMenuEl = _anchStack.length ? _anchStack[_anchStack.length - 1] : null;
+    if (!_anchStack.length && _anchMenuOutside) { document.removeEventListener("click", _anchMenuOutside, true); _anchMenuOutside = null; }
   }
-  function openAnchoredMenu(className) {
-    closeOtherPopups(true);   // incl. the previous anchored menu; keeps map popups
+  // `anchor` (optional): the element the popup is opened FROM. When it sits inside a popup
+  // that is already up, the new one stacks on top instead of replacing it.
+  function openAnchoredMenu(className, anchor) {
+    var host = null, i;
+    if (anchor) for (i = _anchStack.length - 1; i >= 0; i--) { if (_anchStack[i].contains(anchor)) { host = _anchStack[i]; break; } }
+    // Drop anything already stacked above the host — but ONLY if there is something there:
+    // closeAnchoredMenu(undefined) means "close every popup", which would take the host too.
+    if (host) { var hi = _anchStack.indexOf(host); if (hi + 1 < _anchStack.length) closeAnchoredMenu(_anchStack[hi + 1]); }
+    else closeOtherPopups(true);                                            // incl. every anchored menu; keeps map popups
     var el = document.createElement("div"); el.className = className;
     document.body.appendChild(el);
+    _anchStack.push(el);
     _anchMenuEl = el;
-    _anchMenuOutside = function (e) { if (_anchMenuEl && !_anchMenuEl.contains(e.target)) closeAnchoredMenu(); };
-    setTimeout(function () { if (_anchMenuEl === el) document.addEventListener("click", _anchMenuOutside, true); }, 0);
+    // The click that OPENS a popup is still propagating, and the outside-click handler is
+    // already listening once a stack exists — without this it would see a target that is
+    // not inside the brand-new popup and shut it again the instant it appeared. (The base
+    // case used to be covered by the delayed attach below; a nested open needs this.)
+    _anchOpening = true;
+    setTimeout(function () { _anchOpening = false; }, 0);
+    if (!_anchMenuOutside) {
+      // ONE listener for the whole stack: a click closes every popup it is not inside,
+      // from the top down — so clicking the parent dismisses only the child.
+      _anchMenuOutside = function (e) {
+        if (_anchOpening) return;   // this very click just opened one of them
+        for (var k = _anchStack.length - 1; k >= 0; k--) {
+          if (_anchStack[k].contains(e.target)) return;
+          closeAnchoredMenu(_anchStack[k]);
+        }
+      };
+      setTimeout(function () { if (_anchStack.length && _anchMenuOutside) document.addEventListener("click", _anchMenuOutside, true); }, 0);
+    }
     return el;
+  }
+  // Every anchored popup carries a ×. The rule across the app: a popup closes when you
+  // click its × or interact with the UI outside it — never on its own because the pointer
+  // wandered off. Popups that build their own × (the picture views' .conf-close) keep it.
+  function ensureAnchClose(el) {
+    if (!el || el._anchX || el.querySelector(".conf-close")) return;
+    el._anchX = 1;
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "anch-x";
+    b.setAttribute("aria-label", t("btn.close")); b.title = t("btn.close");
+    b.textContent = "\u00d7";
+    b.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); closeAnchoredMenu(el); });
+    el.insertBefore(b, el.firstChild);
+    el.classList.add("has-anch-x");
+  }
+  // The × sits OUTSIDE the popup's scroll flow (position: fixed), so it has to be told
+  // where the popup's top-right corner is each time the popup is placed — otherwise a long
+  // list would scroll its own close button out of reach.
+  function placeAnchClose(el) {
+    var b = el && el._anchX && el.querySelector(":scope > .anch-x");
+    if (!b) return;
+    var r = el.getBoundingClientRect();
+    b.style.left = Math.round(r.right - 30) + "px";
+    b.style.top = Math.round(r.top + 3) + "px";
   }
   // Keyboard navigation for a popup list of <button>s (PC): ↑/↓ move a green "active"
   // highlight, Enter clicks it, Escape closes. Moving the MOUSE clears the highlight,
@@ -11245,8 +11324,10 @@
     try { el.focus({ preventScroll: true }); } catch (e) { try { el.focus(); } catch (e2) {} }
   }
   function positionAnchoredMenu(el, left, top) {
+    ensureAnchClose(el);
     el.style.left = Math.max(6, Math.min(left, window.innerWidth - el.offsetWidth - 8)) + "px";
     el.style.top = Math.max(6, Math.min(top, window.innerHeight - el.offsetHeight - 8)) + "px";
+    placeAnchClose(el);
     enableMenuKeys(el, closeAnchoredMenu);
   }
   // A popup whose height only settles once its PICTURES have loaded cannot be anchored to
@@ -11255,8 +11336,10 @@
   // ends up hanging below the fold. Centre those instead — the pictures are the subject,
   // there is nothing they need to stay attached to — and re-centre as each one lands.
   function centerAnchoredMenu(el) {
+    ensureAnchClose(el);
     el.style.left = Math.max(6, Math.round((window.innerWidth - el.offsetWidth) / 2)) + "px";
     el.style.top = Math.max(6, Math.round((window.innerHeight - el.offsetHeight) / 2)) + "px";
+    placeAnchClose(el);
     enableMenuKeys(el, closeAnchoredMenu);
   }
   function centerPhotoPopup(el) {
@@ -11278,14 +11361,7 @@
     var M = { U: "obs.unconfirmed", X: "obs.exEscapee", N: "obs.exNaturalized", P: "obs.exProvisional" };
     return String(flags || "").split(",").map(function (c) { return M[c] ? t(M[c]) : ""; }).filter(Boolean);
   }
-  // Hover reveal (desktop): a short delay before hiding so moving the pointer from
-  // the ⓘ into the popup (to read/scroll a long note) doesn't flicker it shut.
-  var _obsInfoHideT = null, _obsInfoAnchor = null;
-  function obsInfoCancelHide() { clearTimeout(_obsInfoHideT); }
-  function obsInfoScheduleHide() {
-    clearTimeout(_obsInfoHideT);
-    _obsInfoHideT = setTimeout(function () { if (_anchMenuEl && _anchMenuEl.className === "obs-info-pop") closeAnchoredMenu(); }, 160);
-  }
+  var _obsInfoAnchor = null, _obsInfoPop = null;
   // Escape text, then turn any http(s) URL in it into a link that opens in a new tab
   // (observer notes often carry a photo / checklist link). Trailing punctuation stays text.
   function linkifyHtml(text) {
@@ -11293,21 +11369,25 @@
       return '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + u + "</a>";
     });
   }
-  function showObsInfoPopup(anchor, act, note, flags, src) {
+  // `x`,`y`: where the pointer was. The note opens THERE rather than under the icon — the
+  // ⓘ usually sits in a list that is itself a popup, and that is where the eye already is.
+  function showObsInfoPopup(anchor, act, note, flags, src, x, y) {
     var al = act ? actLabel(act) : "", nt = String(note || "").trim(), fls = obsFlagLabels(flags);
     if (!al && !nt && !fls.length) return;
-    obsInfoCancelHide();
-    var el = openAnchoredMenu("obs-info-pop");
+    // Anchored to the ⓘ, so a note opened from inside a records list stacks on it.
+    var el = openAnchoredMenu("obs-info-pop", anchor);
+    _obsInfoPop = el;
     var html = '<div class="oip-head">' + escapeHtml(src || t("obs.infoLabel")) + "</div>";
     if (fls.length) html += '<div class="oip-row"><span class="oip-lbl">' + escapeHtml(t("obs.status")) + '</span><span class="oip-val">' + escapeHtml(fls.join(" · ")) + "</span></div>";
     if (al) html += '<div class="oip-row"><span class="oip-lbl">' + escapeHtml(t("obs.activity")) + '</span><span class="oip-val">' + escapeHtml(al) + "</span></div>";
     if (nt) html += '<div class="oip-row"><span class="oip-lbl">' + escapeHtml(t("obs.notes")) + '</span><span class="oip-val">' + linkifyHtml(nt) + "</span></div>";
     el.innerHTML = html;
-    // Keep it open while the pointer is over the popup; close shortly after leaving.
-    el.addEventListener("mouseenter", obsInfoCancelHide);
-    el.addEventListener("mouseleave", obsInfoScheduleHide);
-    var r = anchor.getBoundingClientRect();
-    positionAnchoredMenu(el, r.left, r.bottom + 4);
+    // Just clear of the pointer, so the note does not open under the finger/cursor that
+    // asked for it. Without coordinates (a keyboard activation) fall back to the icon.
+    var px, py;
+    if (isFinite(x) && isFinite(y)) { px = x + 12; py = y + 14; }
+    else { var r = anchor.getBoundingClientRect(); px = r.left; py = r.bottom + 4; }
+    positionAnchoredMenu(el, px, py);
   }
   // A toggle row in the species menu's "actions" section. The leading icon shows
   // STATE using the app's colour convention (★ yellow = interesting, 🟡 gold =
@@ -11379,7 +11459,7 @@
       var wait = document.createElement("div"); wait.className = "detrow-menu-hdr"; wait.textContent = "…";
       el.appendChild(wait); centerPhotoPopup(el);
       try { cell = await predictAllWeeks(+pt.lat, +pt.lon); } catch (e) {}
-      if (_anchMenuEl !== el) return;                        // closed while computing
+      if (!anchMenuOpen(el)) return;                        // closed while computing
       if (wait.parentNode) wait.parentNode.removeChild(wait);
     }
     var arr = members.map(function (m) {
@@ -11458,7 +11538,7 @@
       var wait = document.createElement("div"); wait.className = "detrow-menu-hdr"; wait.textContent = "…";
       el.appendChild(wait); positionAnchoredMenu(el, x, y);
       try { out = await predictWeek(+pt.lat, +pt.lon, +document.getElementById("week-select").value); } catch (e) {}
-      if (_anchMenuEl !== el) return;                     // menu closed while computing
+      if (!anchMenuOpen(el)) return;                     // menu closed while computing
       if (wait.parentNode) wait.parentNode.removeChild(wait);
     }
     var arr = members.map(function (m) { return { m: m, p: out ? (out[m.index] || 0) : -1 }; });
@@ -11742,7 +11822,7 @@
     // presence curves on ONE shared-scale chart, current week dashed.
     if (pt) {
       var cell = await predictAllWeeks(+pt.lat, +pt.lon);
-      if (_anchMenuEl !== el) return;
+      if (!anchMenuOpen(el)) return;
       var ai = (labelsByKey[focalKey] || {}).index, bi = (labelsByKey[partnerKey] || {}).index;
       var sc = tbl.querySelector("[data-season]");
       if (sc) sc.innerHTML = seasonChart(cell, ai == null ? null : ai, bi == null ? null : bi);
@@ -11910,7 +11990,7 @@
     var wait = document.createElement("div"); wait.className = "detrow-menu-hdr"; wait.textContent = "…";
     el.appendChild(wait); positionAnchoredMenu(el, x, y);
     var rk = await confusionRanked(key);
-    if (_anchMenuEl !== el) return;
+    if (!anchMenuOpen(el)) return;
     if (rk.none) { wait.textContent = t("confusion.none"); positionAnchoredMenu(el, x, y); return; }
     var out = rk.out, arr = rk.arr;
     if (!arr.length) { wait.textContent = t("confusion.noneHere"); positionAnchoredMenu(el, x, y); return; }
@@ -11977,7 +12057,7 @@
     var wait = document.createElement("div"); wait.className = "detrow-menu-hdr"; wait.textContent = "…";
     el.appendChild(wait); positionAnchoredMenu(el, x, y);
     var rk = await confusionRanked(key);
-    if (_anchMenuEl !== el) return;                          // menu closed while loading
+    if (!anchMenuOpen(el)) return;                          // menu closed while loading
     if (rk.none) { wait.textContent = t("confusion.none"); positionAnchoredMenu(el, x, y); return; }
     var out = rk.out, arr = rk.arr;
     if (!arr.length) { wait.textContent = t("confusion.noneHere"); positionAnchoredMenu(el, x, y); return; }
@@ -19781,33 +19861,20 @@
     // menu (info · this observation · lists & actions) on a single click/tap.
     // The observation-list ⓘ (activity/note popup) — capture phase so it fires
     // before any row-level handler, and stops the click from bubbling into them.
-    function openObsInfoFrom(ib) {
+    function openObsInfoFrom(ib, x, y) {
       _obsInfoAnchor = ib;
-      showObsInfoPopup(ib, ib.getAttribute("data-act") || "", ib.getAttribute("data-note") || "", ib.getAttribute("data-flags") || "", ib.getAttribute("data-src") || "");
+      showObsInfoPopup(ib, ib.getAttribute("data-act") || "", ib.getAttribute("data-note") || "", ib.getAttribute("data-flags") || "", ib.getAttribute("data-src") || "", x, y);
     }
+    // A CLICK opens the note, on every device. It used to open on hover too, but a popup
+    // that only its × or an outside click can dismiss must not appear merely because the
+    // pointer crossed the icon on its way somewhere else.
     document.addEventListener("click", function (e) {
       var ib = e.target.closest ? e.target.closest(".obs-info") : null;
       if (!ib) return;
       e.preventDefault(); e.stopPropagation();
-      openObsInfoFrom(ib);
+      if (anchMenuOpen(_obsInfoPop) && _obsInfoAnchor === ib) { closeAnchoredMenu(_obsInfoPop); return; }   // the same ⓘ again closes it
+      openObsInfoFrom(ib, e.clientX, e.clientY);
     }, true);
-    // Hover reveal on pointer devices (touch still uses the tap above).
-    if (!window.matchMedia || window.matchMedia("(hover: hover)").matches) {
-      document.addEventListener("mouseover", function (e) {
-        var ib = e.target.closest ? e.target.closest(".obs-info") : null;
-        if (!ib) return;
-        obsInfoCancelHide();
-        if (_anchMenuEl && _anchMenuEl.className === "obs-info-pop" && _obsInfoAnchor === ib) return;   // already showing for this ⓘ
-        openObsInfoFrom(ib);
-      });
-      document.addEventListener("mouseout", function (e) {
-        var ib = e.target.closest ? e.target.closest(".obs-info") : null;
-        if (!ib) return;
-        var to = e.relatedTarget;
-        if (to && to.closest && (to.closest(".obs-info") === ib || to.closest(".obs-info-pop"))) return;   // into the same ⓘ or the popup → keep
-        obsInfoScheduleHide();
-      });
-    }
     // Hover a localized common name anywhere → its scientific name as a native
     // tooltip. Delegated so every list, table and the map legend get it without
     // per-site markup: .sp-link carries data-sci directly; the legend's .det-nm
@@ -21408,7 +21475,7 @@
   // Fetch observations from every SELECTED stored location, each within its own
   // radius, and plot them (accumulating on the map). Sequential with a small gap
   // between locations — kind to the source APIs (which also self-rate-limit).
-  var storedFetchBusy = false;
+  var storedFetchBusy = false; try { updateFilterBusy(); } catch (e) {}
   var autoOpenPlotting = false;   // true while a Fetch-on-open load runs → plotSightingsResult stays in the background
   var fooEngaged = false;         // did the user interact during the load? (then don't hijack the view)
   var fooEngageCleanup = null;    // removes the interaction listeners
@@ -21456,7 +21523,7 @@
     if (!locs.length) { if (!silent) setStatus(t("loc.noneSelected")); if (autoOpen && fooEngageCleanup) fooEngageCleanup(); return; }
     mapFromMultiFetch = true;   // these dots are not one point's — the list view must say so
     locs.forEach(function (l) { rememberFetchedArea(l.lat, l.lon, l.radius || recentRadiusKm(), l.name); });   // remember each fetched area's outline + its stored-place name (persists until detections cleared)
-    storedFetchBusy = true;
+    storedFetchBusy = true; try { updateFilterBusy(); } catch (e) {}
     autoOpenPlotting = !!autoOpen;   // suppress per-location view changes while auto-open loads
     var i = 0, myLoopGen = fetchLoopGen;
     function fitToAreas() {
@@ -21471,7 +21538,7 @@
     (function next() {
       if (myLoopGen !== fetchLoopGen) { autoOpenPlotting = false; obsSetPrefix(""); if (autoOpen && fooEngageCleanup) fooEngageCleanup(); return; }   // map cleared → stop
       if (i >= locs.length) {
-        storedFetchBusy = false; autoOpenPlotting = false; tickerFireMulti();
+        storedFetchBusy = false; try { updateFilterBusy(); } catch (e) {} autoOpenPlotting = false; tickerFireMulti();
         obsSetPrefix("");
         if (autoOpen) {
           if (fooEngageCleanup) fooEngageCleanup();
@@ -22736,13 +22803,13 @@
     var sp = document.getElementById("species-panel");   // show the map (dots), not a stale single-point list
     if (sp) { sp.classList.remove("as-page"); sp.style.display = "none"; }
     if (map) map.invalidateSize();
-    storedFetchBusy = true;
+    storedFetchBusy = true; try { updateFilterBusy(); } catch (e) {}
     var prevNoFit = plotNoFit; plotNoFit = true;   // stay on the current view; new dots light up in place
     var i = 0, total = locs.length, myLoopGen = fetchLoopGen;
     (function next() {
       if (myLoopGen !== fetchLoopGen) return;   // map cleared → already reset by cancelPendingFetches()
       if (i >= total) {
-        plotNoFit = prevNoFit; storedFetchBusy = false; tickerFireMulti();
+        plotNoFit = prevNoFit; storedFetchBusy = false; try { updateFilterBusy(); } catch (e) {} tickerFireMulti();
         try { updateDetLegend(); } catch (e) {}
         updateViewToggle();
         setFetchedAllStatus(total);
@@ -23417,7 +23484,7 @@
   function showSpgRecordsPop(btn, key) {
     var recs = spDetailRowsFor(key); if (!recs.length) return;
     clearTimeout(spgPopTimer);
-    if (spgRecPop && _anchMenuEl === spgRecPop && spgRecPop.getAttribute("data-key") === key) return;   // already up for this species
+    if (anchMenuOpen(spgRecPop) && spgRecPop.getAttribute("data-key") === key) return;   // already up for this species
     var r = btn.getBoundingClientRect();
     var el = openAnchoredMenu("detrow-menu spg-recpop");
     el.setAttribute("data-key", key);
@@ -23432,15 +23499,9 @@
     var popName = lbl ? speciesName(lbl)
       : (key && key.indexOf("x:") === 0 ? detName(dEntry(key) || { key: key }) : key);
     el.innerHTML = '<div class="detrow-menu-hdr detrow-menu-name">' + escapeHtml(popName) + ' <span class="spg-recpop-n">(' + recs.length + ")</span></div>" + spDetailTableHtml(key, recs);
-    wireSpDetail(el);
-    el.addEventListener("mouseenter", function () { clearTimeout(spgPopTimer); });
-    el.addEventListener("mouseleave", function () { scheduleSpgPopClose(); });
+    wireSpDetail(el); fillObsSeasonCells(el, null);   // Season / Yr peak arrive with the point's prediction
     spgRecPop = el;
     positionAnchoredMenu(el, Math.round(r.left), Math.round(r.bottom + 4));
-  }
-  function scheduleSpgPopClose() {
-    clearTimeout(spgPopTimer);
-    spgPopTimer = setTimeout(function () { if (spgRecPop && _anchMenuEl === spgRecPop) closeAnchoredMenu(); spgRecPop = null; }, 250);
   }
   function wireSpGallery(rec) {
     if (spGalleryObs) { spGalleryObs.disconnect(); spGalleryObs = null; }
@@ -23476,18 +23537,20 @@
         }
       });
       if (canHover) {
-        // Hover ☰ → the record popover (a short delay so scanning past buttons doesn't flash it);
-        // it stays while the pointer is on the button or the popover, and closes shortly after.
+        // Hover ☰ → the record popover (a short delay so scanning past buttons doesn't flash it).
+        // It then stays until its × or a click outside, like every other popup.
         var hoverT = null;
         rec.addEventListener("mouseover", function (e) {
           var b = e.target.closest && e.target.closest(".spg-sub"); if (!b) return;
           clearTimeout(spgPopTimer); clearTimeout(hoverT);
           hoverT = setTimeout(function () { if (b.isConnected) showSpgRecordsPop(b, b.getAttribute("data-key")); }, 180);
         });
+        // Leaving the ☰ only cancels a hover that has not fired yet — it never closes a
+        // popover that is already up. That is what made reaching for a picture inside the
+        // list a race against the pointer.
         rec.addEventListener("mouseout", function (e) {
           var b = e.target.closest && e.target.closest(".spg-sub"); if (!b) return;
-          var to = e.relatedTarget; if (to && to.closest && (to.closest(".spg-sub") === b || to.closest(".spg-recpop"))) return;
-          clearTimeout(hoverT); scheduleSpgPopClose();
+          clearTimeout(hoverT);
         });
       }
       {
@@ -23505,7 +23568,7 @@
         rec.addEventListener("mousedown", function (e) {
           if (e.button !== 0) return;
           var b = e.target.closest && e.target.closest(".spg-sub");
-          spgPopWasOpen = !!(b && spgRecPop && _anchMenuEl === spgRecPop && spgRecPop.getAttribute("data-key") === b.getAttribute("data-key"));
+          spgPopWasOpen = !!(b && anchMenuOpen(spgRecPop) && spgRecPop.getAttribute("data-key") === b.getAttribute("data-key"));
           if (!b) return;
           lpX = e.clientX; lpY = e.clientY;
           clearTimeout(lpT);
@@ -23520,7 +23583,7 @@
           var b = e.target.closest && e.target.closest(".spg-sub");
           // Note NOW whether this ☰'s popover is open — the click that follows arrives after the
           // outside-click handler has closed it, so the tap-to-close state must be read here.
-          spgPopWasOpen = !!(b && spgRecPop && _anchMenuEl === spgRecPop && spgRecPop.getAttribute("data-key") === b.getAttribute("data-key"));
+          spgPopWasOpen = !!(b && anchMenuOpen(spgRecPop) && spgRecPop.getAttribute("data-key") === b.getAttribute("data-key"));
           if (!b) return;
           var tt = e.touches && e.touches[0]; lpX = tt ? tt.clientX : 0; lpY = tt ? tt.clientY : 0;
           clearTimeout(lpT);
