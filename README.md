@@ -761,6 +761,9 @@ shared payload is all that is shown.
 Right-click / long-press / tap any species name for a menu **led by the species name in bold**
 (wrapping when long), followed by the record's *Open source* link when opened from an observation, then:
 
+- The **family** and **Confusion species** picture views load on demand: the cards on screen plus
+  the next five, with more fetched as you scroll, and a failed lookup retried once.
+
 - In the **Images** layout each card's name line reads *name* **[second language]** *(Scientific
   name)* — the species' own name in bold, the second language in square brackets when one is set,
   the scientific name in italics inside parentheses when the Scientific-names setting is on.

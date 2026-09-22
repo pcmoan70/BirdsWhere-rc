@@ -11568,12 +11568,16 @@
   // per card is how you get rate-limited: four failures in a row trip spPhotoFailed()
   // and every remaining card is then told the service is down, so a big family came out
   // half empty and STAYED that way, nothing cached for next time.
-  // So: one BATCHED pass for the whole strip (spImagesPrefetch — fifty species per
-  // request, so Anatidae's 164 cards cost eight round trips instead of 328), then the
-  // per-card chain, three in flight, for whatever the batch could not place — a species
-  // with no article picture, whose file is non-free, or a name Wikipedia does not know.
+  // So: a BATCHED pass (spImagesPrefetch — fifty species per request) over the cards that
+  // are actually ON SCREEN plus the next five, then the per-card chain, three in flight,
+  // for whatever the batch could not place — a species with no article picture, whose file
+  // is non-free, or a name Wikipedia does not know. Scrolling sweeps again for whatever has
+  // come into view. Anatidae's 164 cards used to cost eight round trips on open whether or
+  // not you ever scrolled; now opening it costs one, and the rest arrive as you go.
   function wirePhotoCards(popup, strip) {
-    var PARALLEL = 3, queue = [], running = 0;
+    var PARALLEL = 3, AHEAD = 5, queue = [], running = 0, pending = 0;
+    var cards = Array.prototype.slice.call(strip.querySelectorAll(".cfi-card"));
+    if (!cards.length) return;
     function fill(card) {
       if (!card || card._cfiDone) return;
       card._cfiDone = true;
@@ -11593,26 +11597,57 @@
             .then(function (ok) {
               running--;
               // null = the lookup could not be reached (offline, rate limit): nothing was
-              // remembered, so let it be asked for again rather than leaving a blank card.
-              if (ok === null && popup.isConnected) { c._cfiDone = false; setTimeout(function () { fill(c); }, 4000); }
+              // remembered, so it is worth asking again — ONCE. Past that the card is left
+              // as it is rather than retrying for as long as the popup stays open.
+              if (ok === null && popup.isConnected && !c._cfiRetried) {
+                c._cfiRetried = 1; c._cfiDone = false;
+                setTimeout(function () { fill(c); }, 4000);
+              }
               pump();
             }, function () { running--; pump(); });
         })(queue.shift());
       }
     }
-    // EVERY card ends up fetched and cached — scrolled to or not. The species you never
-    // scrolled past are exactly the ones worth having on the next visit.
-    var cards = Array.prototype.slice.call(strip.querySelectorAll(".cfi-card"));
-    var want = [], seen = {}, store = spImgStore();
-    cards.forEach(function (c) {
-      var sci = c.getAttribute("data-sci");
-      if (sci && !seen[sci] && !store[sci]) { seen[sci] = 1; want.push(sci); }
-    });
-    cards.forEach(function (c) { if (store[c.getAttribute("data-sci")]) fill(c); });   // already on the device: paint now
-    if (!want.length) return;
-    strip.classList.add("cfi-loading");                        // a quiet placeholder while the batch is out
-    function rest() { strip.classList.remove("cfi-loading"); cards.forEach(fill); }
-    spImagesPrefetch(want).then(rest, rest);
+    // The cards on screen, plus AHEAD below the fold so a short scroll finds them already
+    // loading. Cards are in document order, so the walk stops as soon as it is far enough
+    // past the bottom — a 164-card family never measures 164 rectangles for one scroll.
+    function cardsToLoad() {
+      var pr = popup.getBoundingClientRect(), out = [], after = 0;
+      for (var i = 0; i < cards.length; i++) {
+        var c = cards[i], r = c.getBoundingClientRect();
+        if (r.bottom <= pr.top) continue;                      // scrolled past, above the view
+        if (r.top >= pr.bottom && ++after > AHEAD) break;       // five past the bottom is enough for now
+        if (!c._cfiDone && !c._cfiClaimed) out.push(c);
+      }
+      return out;
+    }
+    function sweep() {
+      if (!popup.isConnected) return;
+      var pick = cardsToLoad(); if (!pick.length) return;
+      var store = spImgStore(), want = [], seen = {};
+      pick.forEach(function (c) {
+        c._cfiClaimed = 1;                                     // a later sweep must not ask for it again
+        var sci = c.getAttribute("data-sci"); if (!sci) return;
+        if (store[sci]) return;                                // already on the device: no request needed
+        if (!seen[sci]) { seen[sci] = 1; want.push(sci); }
+      });
+      if (!want.length) { pick.forEach(fill); return; }        // all cached (or nothing to look up): paint now
+      strip.classList.add("cfi-loading");                      // a quiet placeholder while the batch is out
+      pending++;
+      function rest() { if (!--pending) strip.classList.remove("cfi-loading"); pick.forEach(fill); }
+      spImagesPrefetch(want).then(rest, rest);
+    }
+    var frame = 0;
+    function onScroll() {
+      if (!popup.isConnected) { window.removeEventListener("resize", onScroll); return; }   // the popup outlives nothing; the scroll listener goes with it
+      if (typeof requestAnimationFrame === "undefined") { sweep(); return; }
+      if (frame) return;
+      frame = requestAnimationFrame(function () { frame = 0; sweep(); });
+    }
+    popup.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    // The first sweep MEASURES the popup, so let the layout it was just given settle.
+    if (typeof requestAnimationFrame === "undefined") sweep(); else requestAnimationFrame(sweep);
   }
   function confSwitchBtn(el, label, open) {
     var b = document.createElement("button");

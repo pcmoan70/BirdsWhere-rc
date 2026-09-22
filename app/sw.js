@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1854";
+var VERSION = "v1855";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Images list: the name line now reads \u201cl\u00f8ve [lion] (Panthera leo)\u201d \u2014 your own language in bold, the second language in square brackets when you have one set, and the scientific name in italics inside parentheses. The scientific name now follows the Scientific-names setting here too; the cards used to print it whatever that setting said.",
-  "\u2022 A subspecies no longer appears as a second copy of its own species. \u201cLepus timidus timidus\u201d plotted beside \u201cLepus timidus\u201d carried the same common name, so the same animal was listed twice \u2014 on the map, in the legend and in every list. They are merged wherever the plotted set changes, including dots saved before this. A subspecies reported on its own still keeps its own name.",
+  "\u2022 Family and confusion pictures now load as you look at them: the cards on screen plus the next five, and more as you scroll. Opening a big family used to fetch every picture in it whether or not you ever scrolled down \u2014 Paridae asked for 61 pictures on open, now it asks for 20.",
+  "\u2022 A picture whose lookup does not get through is tried once more, then left alone \u2014 instead of being retried for as long as the window stays open.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
