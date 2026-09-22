@@ -158,6 +158,9 @@
   function applyShowSci() {
     var tbl = document.getElementById("species-list-table");
     if (tbl) tbl.classList.toggle("hide-sci", !showSci);
+    // The Images cards write "(Scientific name)" into their own markup, so the class above
+    // cannot reach them — rebuild them when the setting changes.
+    if (spLayout === "gallery" && typeof speciesPanelPopulated === "function" && speciesPanelPopulated()) { try { renderSpBody(); } catch (e) {} }
   }
 
   // ---- Species-group filter (taxonomic class) ------------------------------
@@ -4910,6 +4913,7 @@
     if (isFinite(+currentSpView.lat) && isFinite(+currentSpView.lon)) currentFetchAreaId = rememberFetchedArea(+currentSpView.lat, +currentSpView.lon, recentRadiusKm(), currentSpView.name || currentSpView.locName);
     entries.forEach(function (e) { plotDetections(e.key, e.name, e.rows, false, true, e.cls); });   // defer=true → rebuild once below
     currentFetchAreaId = null;
+    foldDetPlotSubspecies();   // a subspecies may have arrived in one fetch and its species in another
     rebuildDetLayers(); updateDetLegend();
     refreshSpCoords();   // the just-fetched square + its obs count now show in the header
   }
@@ -12717,6 +12721,28 @@
     });
     return out;
   }
+  // "x:lepus timidus timidus" plotted beside "x:lepus timidus" is ONE species to the map,
+  // the legend and every list — and both carry the same common name, so it read as the same
+  // animal listed twice. aggregateRecords folds these as records arrive, but detPlot keeps
+  // whatever key each dot was plotted with: anything fetched before that fold existed, or a
+  // subspecies that arrived in one fetch and its species in the next, still sits here as two
+  // entries. Fold them wherever the plotted set changes, so the next save writes the merged
+  // form. Only when the binomial is actually present — a subspecies-only record keeps its
+  // own identity, as it does in the aggregator.
+  function foldDetPlotSubspecies() {
+    var folded = 0;
+    Object.keys(detPlot).forEach(function (k) {
+      if (k.indexOf("x:") !== 0) return;
+      var w = k.slice(2).split(" ");
+      if (w.length !== 3) return;
+      var into = detPlot["x:" + w[0] + " " + w[1]]; if (!into) return;
+      into.rows = mergeDetRows(into.rows, detPlot[k].rows || []);
+      delete detPlot[k];
+      delete detSelected[k]; delete detExcluded[k];
+      folded++;
+    });
+    return folded;
+  }
   function plotDetections(key, name, rows, fit, defer, cls) {
     var slim = detSlim(rows);
     if (currentFetchAreaId) slim.forEach(function (r) { r._areas = [currentFetchAreaId]; });
@@ -13333,6 +13359,7 @@
       // Use the legend's "Clear" to start over. No species cap — plot them all.
       entries.forEach(function (e) { plotDetections(e.key, e.name, e.rows, false, true, e.cls); });
       currentFetchAreaId = null;
+      foldDetPlotSubspecies();                 // a subspecies and its species can arrive in different fetches
       rebuildDetLayers();                      // recolour existing dots if families were just learned
       // A fresh fetch re-opens the per-day histogram strip (a collapse is a "not
       // needed right now" — new data is exactly when it IS needed).
@@ -13659,6 +13686,7 @@
       var cls = d.cls || (taxByCode[key] && taxByCode[key].class_name) || "";
       detPlot[key] = { key: key, name: d.name || sk, color: d.color, rows: d.rows, group: null, cls: cls };
     });
+    foldDetPlotSubspecies();   // saved dots keep the keys they were plotted with
     // Restore the saved legend state, then render the layers honouring it.
     var ls = window.GeoState.get("mapLegend", {}) || {};
     detLegendMini = !!ls.mini;
@@ -22818,7 +22846,15 @@
       // observed (.sp-has-det) OR an extra, which exists only BECAUSE it was observed.
       var subBtn = (key && (tr.classList.contains("sp-has-det") || tr.classList.contains("sp-extra")))
         ? '<button type="button" class="spg-sub" data-key="' + escapeHtml(key) + '" title="' + escapeHtml(t("spg.records")) + '" aria-label="' + escapeHtml(t("spg.records")) + '">\u2630</button>' : "";
-      var showSci = sci && !(link && link.textContent.trim() === sci);   // no "(sci)" when the name already IS the sci
+      // The card's name line reads "name [second language] (Scientific name)". The second
+      // name is taken from the row's own name2 cell, so it is whatever the table shows and
+      // stays right through a language change; the scientific name follows the
+      // Scientific-names setting exactly as the table's column does — this local used to
+      // SHADOW the module's `showSci` flag, so the cards printed it whatever the setting
+      // said. Still suppressed when the name already IS the scientific name.
+      var sciDiff = sci && !(link && link.textContent.trim() === sci);
+      var n2El = tr.querySelector("td.name2");
+      var n2 = (secondLang && n2El) ? n2El.textContent.trim() : "";
       var photoLink = !!key && isBirdKey(key);   // Macaulay Library is birds-only (as in the species menu)
       var probLink = !!key && !!labelsByKey[key];   // model species only: the Migration view / year curve need the model
       var predicted = !!key && !tr.classList.contains("sp-has-det") && !tr.classList.contains("sp-extra");   // [?] mode: a model prediction with no records here
@@ -22846,7 +22882,8 @@
           (predicted ? '<span class="spg-tag">' + escapeHtml(t("spg.predicted")) + "</span>" : "") +
           '<span class="spg-none" style="display:none">' + escapeHtml(t("spg.noImage")) + "</span></div>" +
         '<div class="spg-name"><span class="spg-nm">' + (dot ? dot.outerHTML : "") + (link ? link.outerHTML : "") +
-          (showSci ? ' <span class="spg-sci">(' + (sciEl ? sciEl.outerHTML : escapeHtml(sci)) + ")</span>" : "") + "</span>" + subBtn + "</div>" +
+          (n2 ? ' <span class="spg-n2">[' + escapeHtml(n2) + "]</span>" : "") +
+          (showSci && sciDiff ? ' <span class="spg-sci">(' + (sciEl ? sciEl.outerHTML : escapeHtml(sci)) + ")</span>" : "") + "</span>" + subBtn + "</div>" +
         // Compact, label-free meta line: "#total(n)  last-seen  distance" (the bars row below
         // carries the probabilities; a card without the bars keeps a labelled Probability).
         '<div class="spg-meta">' + plain("#", nd) + dateChip(last, lastDate) + plain("", dist) + (barsRow ? "" : cell(lbl.prob, prob)) + "</div>" +

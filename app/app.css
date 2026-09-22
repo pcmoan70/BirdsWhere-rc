@@ -4466,7 +4466,8 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .spg-name { padding: 6px 8px 0; font-size: var(--fs-b); font-weight: 600; line-height: 1.25; display: flex; align-items: flex-start; gap: 6px; min-width: 0; }
 .spg-nm { flex: 1 1 auto; min-width: 0; }
 .spg-nm .sp-dot, .spg-nm .sp-cdot, .spg-nm .det-sw { vertical-align: middle; margin-right: 4px; }
-.spg-name .sp-link { cursor: pointer; overflow-wrap: anywhere; }
+.spg-name .sp-link { cursor: pointer; overflow-wrap: anywhere; font-weight: 700; }   /* the species' own name, bold, ahead of the bracketed ones */
+.spg-n2 { font-size: var(--fs-xs); font-weight: 400; color: var(--ink-muted, #777); overflow-wrap: anywhere; }   /* "[second language]" after the name */
 .spg-sci { font-size: var(--fs-xs); font-weight: 400; font-style: italic; color: var(--ink-muted, #777); overflow-wrap: anywhere; }   /* "(Scientific name)" right after the name */
 .spg-sub { flex: 0 0 auto; margin-left: auto; width: 26px; height: 26px; padding: 0; border: 1px solid var(--border, #d7ded9); border-radius: 6px; background: var(--surface-2, #f2f6f4); color: var(--ink-muted, #555); font-size: 13px; line-height: 1; cursor: pointer; }   /* ☰ → this species' record sub-list (Table layout) */
 .spg-sub:hover { background: var(--brand-soft, #e3efe9); color: var(--ink); }

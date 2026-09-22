@@ -21,19 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1853";
+var VERSION = "v1854";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Every species is drawn the same way now. A species the habitat model does not cover \u2014 the wolverine, the muskox, the lemming, most plants and insects \u2014 used to be set apart three times over: a small animal icon, a bold name and a yellow-tinted row. All three are gone. It gets the same dot, the same plain name, the same cell borders and a properly capitalised scientific name as every other row. Only Probability, Season and Yr peak stay blank, because those are the model\u2019s own numbers and there are none.",
-  "\u2022 Those species keep their local name everywhere. The list used to show whatever name the source happened to send \u2014 English, from GBIF or iNaturalist \u2014 while the map legend beside it showed the Norwegian one. Both now read from the same dictionary, and they follow you when you change language.",
-  "\u2022 A subspecies reported next to its own species no longer makes a second row under the same name.",
-  "\u2022 The model\u2019s own distribution map is now labelled \u201c(AI-)Artsutbredelse\u201d, so it is never mistaken for the drawn maps from Wikipedia.",
-  "\u2022 \u201cOpen full image\u201d in the distribution window opens the map again. Wikipedia moved its images to another host, and the link had been landing on the Wikimedia Commons front page instead.",
-  "\u2022 Confusion-species and family pictures load the first time you open them. A picture whose lookup did not get through used to be given up on \u2014 which is why opening the same list a second time filled it in.",
+  "\u2022 Images list: the name line now reads \u201cl\u00f8ve [lion] (Panthera leo)\u201d \u2014 your own language in bold, the second language in square brackets when you have one set, and the scientific name in italics inside parentheses. The scientific name now follows the Scientific-names setting here too; the cards used to print it whatever that setting said.",
+  "\u2022 A subspecies no longer appears as a second copy of its own species. \u201cLepus timidus timidus\u201d plotted beside \u201cLepus timidus\u201d carried the same common name, so the same animal was listed twice \u2014 on the map, in the legend and in every list. They are merged wherever the plotted set changes, including dots saved before this. A subspecies reported on its own still keeps its own name.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

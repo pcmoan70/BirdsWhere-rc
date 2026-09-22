@@ -761,6 +761,10 @@ shared payload is all that is shown.
 Right-click / long-press / tap any species name for a menu **led by the species name in bold**
 (wrapping when long), followed by the record's *Open source* link when opened from an observation, then:
 
+- In the **Images** layout each card's name line reads *name* **[second language]** *(Scientific
+  name)* — the species' own name in bold, the second language in square brackets when one is set,
+  the scientific name in italics inside parentheses when the Scientific-names setting is on.
+
 - **Information**, in this order — **Confusion species** (birds), **Distribution**: the model's own
   range map — labelled **"(AI‑)Artsutbredelse"** / *"(AI) Species distribution"* so it is never
   confused with a drawn map — or Wikipedia's range image (with a BirdLife link in its popup;
