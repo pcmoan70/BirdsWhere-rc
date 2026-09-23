@@ -21,16 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1866";
+var VERSION = "v1867";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Names for everything that is not a bird. The bundled name packs were built for birds, so most insects, plants and fungi had no name in your language. Settings \u2192 Display &amp; language now carries \u201cLook up missing names at iNaturalist\u201d: when a species turns up without a name the app asks once and keeps every language it answers with. It was already doing this quietly \u2014 now you can see it, and turn it off.",
-  "\u2022 Those names are their own cache. Settings \u2192 Storage shows how many are held under \u201cDownloaded names\u201d and clears them like any other cache.",
-  "\u2022 And you can take them with you: Download CSV saves one row per species and language, and Send CSV hands that file to your phone\u2019s share sheet, where Mail will attach it.",
+  "\u2022 The last probability column now answers to Settings \u2192 Compare to, and it does so everywhere: the species list, the bars under the picture cards, the observation list and the family and look-alike cards. Pick Annual mean, Previous week or Next week and that is what the column shows \u2014 and the heading says which, instead of claiming \u201cYr peak\u201d over another week\u2019s number. It used to name only the species list\u2019s own comparison column and leave this one permanently on the annual peak.",
+  "\u2022 Season is unchanged on purpose: it is this week as a share of the species\u2019 own best week, which is what makes it comparable between species, so it stays measured against the true peak whatever you compare against.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

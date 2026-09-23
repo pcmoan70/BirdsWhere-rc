@@ -764,6 +764,12 @@ shared payload is all that is shown.
 Right-click / long-press / tap any species name for a menu **led by the species name in bold**
 (wrapping when long), followed by the record's *Open source* link when opened from an observation, then:
 
+- The **Yr column** (beside Season, in the species list, the observation list, the picture-card bars
+  and the family/look-alike cards) shows whatever **Settings → Compare to** names: the annual peak
+  (default), the annual mean, or the previous/next week — and the heading says which. *Season* is
+  always measured against the species' own true annual peak, so it stays comparable between species
+  whatever the comparison is set to.
+
 - **Names beyond birds.** The bundled name packs were built for birds, so most insects, plants and
   fungi have no name in your language. Settings → Display & language → **Look up missing names at
   iNaturalist** (on by default) asks iNaturalist once per species and keeps every language it

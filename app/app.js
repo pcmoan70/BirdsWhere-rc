@@ -1840,7 +1840,7 @@
   function curObsSeasonSig() {
     if (!currentSpView || !isFinite(+currentSpView.lat)) return "";
     var w = document.getElementById("week-select");
-    return (+currentSpView.lat).toFixed(3) + "," + (+currentSpView.lon).toFixed(3) + ":" + (w ? w.value : "");
+    return (+currentSpView.lat).toFixed(3) + "," + (+currentSpView.lon).toFixed(3) + ":" + (w ? w.value : "") + ":" + cmpRefMode();
   }
   function obsSeasonOf(key) { return (obsSeasonCache.sig && obsSeasonCache.sig === curObsSeasonSig()) ? obsSeasonCache.byKey[key] : null; }
   function speciesColor(key) {
@@ -1919,7 +1919,7 @@
     if (col === "loc") return sgn * String(a.place || "").localeCompare(String(b.place || ""));
     if (col === "src") return sgn * srcLabel(a).localeCompare(srcLabel(b));
     if (col === "season") { var sa = obsSeasonOf(a.key), sb = obsSeasonOf(b.key); return sgn * ((sa ? sa.ratio : -1) - (sb ? sb.ratio : -1)); }
-    if (col === "ytop") { var ya = obsSeasonOf(a.key), yb = obsSeasonOf(b.key); return sgn * ((ya ? ya.peak : -1) - (yb ? yb.peak : -1)); }
+    if (col === "ytop") { var ya = obsSeasonOf(a.key), yb = obsSeasonOf(b.key); return sgn * ((ya ? (ya.ref != null ? ya.ref : ya.peak) : -1) - (yb ? (yb.ref != null ? yb.ref : yb.peak) : -1)); }
     var pa2 = a.prob >= 0 ? a.prob : Infinity, pb2 = b.prob >= 0 ? b.prob : Infinity;   // default: rarest first
     return (pa2 - pb2) || String(a.name || "").localeCompare(String(b.name || ""));
   }
@@ -2056,7 +2056,7 @@
     // two extra columns need no width bookkeeping.
     var hdr = "<thead><tr>" + spObsHeadCell("count", t("th.count"), true) +
       spObsHeadCell("prob", t("th.probAbbr"), true) +
-      spObsHeadCell("season", t("th.season")) + spObsHeadCell("ytop", t("th.ytop"), true) +
+      spObsHeadCell("season", t("th.season")) + spObsHeadCell("ytop", ytopLabel(), true) +
       spObsHeadCell("date", t("th.date")) +
       spObsHeadCell("loc", t("th.location")) +
       spObsHeadCell("src", t("th.source")) + '<th class="sp-obs-ph" aria-hidden="true"></th>' + spObsHeadCell("obs", t("th.obs")) +
@@ -2077,7 +2077,7 @@
       (name2On ? spObsHeadCell("name2", window.GeoI18N.langByCode(secondLang).name) : "") +
       spObsHeadCell("prob", t("th.probAbbr"), true) +
       spObsHeadCell("season", t("th.season")) +
-      spObsHeadCell("ytop", t("th.ytop"), true) +
+      spObsHeadCell("ytop", ytopLabel(), true) +
       '<th class="sp-obs-ph" aria-hidden="true"></th>' +
       '<th class="sp-obs-ih" aria-hidden="true"></th></tr></thead>';   // the per-row 📷 and ⓘ columns
     var byDate = {}, dates = [];
@@ -11497,7 +11497,7 @@
     });
     if (cell) arr.sort(function (a, b) { return b.p - a.p; });
     else arr.sort(function (a, b) { return speciesName(a.m).localeCompare(speciesName(b.m)); });
-    var L = { here: t("confusion.colHere"), season: t("th.season"), ytop: t("th.ytop") };
+    var L = { here: t("confusion.colHere"), season: t("th.season"), ytop: ytopLabel() };
     var pct = function (p) { var v = p * 100; return v >= 0.5 ? Math.round(v) + "%" : (p > 0 ? "<1%" : "0%"); };
     // Same metric row as the confusion cards, data-hintkey and all: bar behind, label
     // left, value right. `html` is built here, never user text.
@@ -11520,7 +11520,7 @@
               Math.round(s.ratio * 100) + "%", s.ratio * 100, meta.c, "th.seasonHint") +
           // Yr peak: how good the species' BEST week gets here — the ceiling the Season
           // percentage is measured against, so the two only mean something together.
-          row("cfi-ytop", L.ytop, Math.round(s.peak * 100) + "%", s.peak * 100, probHueColor(s.peak), "th.ytopHint") +
+          row("cfi-ytop", L.ytop, Math.round((s.ref != null ? s.ref : s.peak) * 100) + "%", (s.ref != null ? s.ref : s.peak) * 100, probHueColor(s.ref != null ? s.ref : s.peak), "th.ytopHint") +
         "</div>";
       }
       return '<div class="cfi-card' + (isBase ? ' cfi-base" title="' + escapeHtml(t("confusion.base")) + '"' : '"') +
@@ -19513,6 +19513,10 @@
     document.getElementById("compare-select").addEventListener("change", function () {
       window.GeoState.save({ compare: this.value });
       rerenderPointList();
+      // The Yr column answers to this too — in the picture cards and the observation
+      // list, not only the species table — so redraw whichever of them is open.
+      try { obsSeasonCache = { sig: "", byKey: Object.create(null) }; } catch (e) {}
+      try { if (typeof speciesPanelPopulated === "function" && speciesPanelPopulated()) renderSpBody(); } catch (e) {}
     });
 
     // Two-sided probability range (min/max) shared by the Species List and the
@@ -20432,6 +20436,25 @@
   // Classify one species' 48-week curve at the point: off-season / arriving / at
   // peak / leaving. `ratio` = current ÷ yearly-peak (0..1, the bar length + sort key).
   var SEASON_OFF = 0, SEASON_ARRIVING = 1, SEASON_PEAK = 2, SEASON_LEAVING = 3;
+  // Settings → "Compare to". It named the species list's own comparison column; the
+  // Yr column beside Season answered to nothing and was always the annual peak, in the
+  // list, under the picture cards and in the observation list alike. It now follows this
+  // setting everywhere, so one choice governs every surface.
+  function cmpRefMode() {
+    var el = document.getElementById("compare-select");
+    var v = el ? el.value : window.GeoState.get("compare", "annualmax");
+    return v == null ? "annualmax" : v;
+  }
+  // What that column is called, so the header never claims "Yr peak" over another week's
+  // number. Modes that are not an absolute probability of their own — Annual Top (a ratio,
+  // which is what Season already shows) and "none" — leave it as the annual peak.
+  function ytopLabel() {
+    var m = cmpRefMode();
+    if (m === "mean") return t("compare.mean");
+    if (m === "prev") return t("compare.prev");
+    if (m === "next") return t("compare.next");
+    return t("th.ytop");
+  }
   function classifySeason(cell, idx, week) {
     var peak = 0, w, v;
     for (w = 1; w <= 48; w++) { v = cell[w] ? cell[w][idx] : 0; if (v > peak) peak = v; }
@@ -20440,7 +20463,14 @@
     var pw = ((week - 2 + 48) % 48) + 1, nw = (week % 48) + 1;   // circular neighbours (weeks 1..48)
     var slope = (cell[nw] ? cell[nw][idx] : 0) - (cell[pw] ? cell[pw][idx] : 0);
     var phase = ratio < 0.15 ? SEASON_OFF : ratio >= 0.80 ? SEASON_PEAK : slope >= 0 ? SEASON_ARRIVING : SEASON_LEAVING;
-    return { ratio: ratio, phase: phase, peak: peak };   // peak = the species' yearly-top probability at this point
+    // `ratio` and `phase` stay measured against the true annual peak — Season means "this
+    // week as a share of the species' OWN best week", and that must not move with a setting.
+    // `ref` is what the Yr column shows.
+    var m = cmpRefMode(), ref = peak;
+    if (m === "mean") { var sum = 0; for (w = 1; w <= 48; w++) sum += cell[w] ? cell[w][idx] : 0; ref = sum / 48; }
+    else if (m === "prev") ref = cell[pw] ? cell[pw][idx] : 0;
+    else if (m === "next") ref = cell[nw] ? cell[nw][idx] : 0;
+    return { ratio: ratio, phase: phase, peak: peak, ref: ref };
   }
   var SEASON_META = {};
   SEASON_META[SEASON_OFF] = { g: "·", c: "var(--ink-muted, #9aa0a6)", k: "season.off" };
@@ -20449,8 +20479,9 @@
   SEASON_META[SEASON_LEAVING] = { g: "↓", c: "#e0872a", k: "season.leaving" };
   // The Yr-peak cell: the species' yearly top probability at the point, as number + bar.
   function ytopCellHtml(s) {
-    var pk = Math.round(s.peak * 100);
-    return '<span class="prob-num">' + pk + '%</span><div class="prob-bar" style="width:' + pk + "%;background:" + probHueColor(s.peak) + '"></div>';
+    var r = (s && s.ref != null) ? s.ref : (s ? s.peak : 0);
+    var pk = Math.round(r * 100);
+    return '<span class="prob-num">' + pk + '%</span><div class="prob-bar" style="width:' + pk + "%;background:" + probHueColor(r) + '"></div>';
   }
   function seasonCellHtml(s) {
     if (!s) return "";
@@ -23410,7 +23441,7 @@
       var barsRow = (probLink && probTd) ? '<div class="spg-bars">' +
           '<span class="spg-bar prob-cell spg-prob" role="button" title="' + escapeHtml(t("spg.probTip")) + '"><span class="spg-k">' + escapeHtml(t("th.probAbbr")) + "</span>" + probTd.innerHTML + "</span>" +
           '<span class="spg-bar season-cell sp-season" data-key="' + escapeHtml(key) + '" role="button" title="' + escapeHtml(t("th.seasonHint")) + '"><span class="spg-k">' + escapeHtml(t("th.season")) + "</span></span>" +
-          '<span class="spg-bar prob-cell sp-ytop" data-key="' + escapeHtml(key) + '" role="button"><span class="spg-k">' + escapeHtml(t("th.ytop")) + "</span></span>" +
+          '<span class="spg-bar prob-cell sp-ytop" data-key="' + escapeHtml(key) + '" role="button"><span class="spg-k">' + escapeHtml(ytopLabel()) + "</span></span>" +
         "</div>" : "";
       return '<div class="spg-card' + (predicted ? " spg-pred" : "") + '" data-sci="' + escapeHtml(sci) + '" data-key="' + escapeHtml(key) + '" data-cls="' + escapeHtml(tr.getAttribute("data-cls") || "") + '" data-date="' + escapeHtml(lastDate) + '">' +
         '<div class="spg-img' + (photoLink ? ' spg-img-link" role="button" title="' + escapeHtml(t("spg.photosTip")) : '"') + '">' +
