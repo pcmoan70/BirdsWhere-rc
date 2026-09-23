@@ -491,7 +491,10 @@ When a **never-seen-before** rarity arrives it:
   the next message rather than being dropped. *Send test* mails the **latest real alerts** (a plain
   note when the list is empty), so what arrives is what an alert mail looks like, and the line under
   the address always says what became of the last message (alert sent · test sent · not confirmed
-  yet · failed). Your address and the alert text pass through that service, and — like every other
+  yet · failed). The relay composes the message itself from the fields it is handed and prints every
+  value literally — it accepts no HTML body of ours — so each sighting is sent as its own field
+  (bird · place · date · probability, with the record's link beside it) and arrives laid out as a
+  table. Your address and the alert text pass through that service, and — like every other
   alert — mail only goes out **while the app is open**.
 
 The **first** check of each location arms silently (everything already reported is marked

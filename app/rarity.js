@@ -759,10 +759,21 @@ window.AppRarity = (function () {
   function rarityEmailValid(a) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(a || "").trim()); }
   // Resolves with { ok, activate } — `activate` when the relay is still waiting for the
   // address to confirm. Rejects only on a transport failure.
+  // The relay builds the email ITSELF out of the fields it is given, and escapes every
+  // value. Its only special fields are _subject, _captcha, _template, _replyto, _next,
+  // _autoresponse, _blacklist, _data and _webhook — there is no way to hand it a body of
+  // our own HTML. A `message` field holding markup therefore arrives as literal
+  // "<p>…</p>" text, which is exactly what the alert mails were showing. So pass STRUCTURED
+  // FIELDS and let the relay lay them out; `body` may still be a plain string (the note sent
+  // when there is nothing to report), which becomes a single row.
   function rarityEmailPost(to, subject, body) {
+    var payload = { _subject: subject, _captcha: "false", _template: "table" };
+    if (body && typeof body === "object") {
+      for (var k in body) if (Object.prototype.hasOwnProperty.call(body, k)) payload[k] = body[k];
+    } else payload.message = String(body == null ? "" : body);
     var opts = {
       method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ _subject: subject, _captcha: "false", _template: "box", message: body })
+      body: JSON.stringify(payload)
     };
     // Through the app's own timeout helper: a relay that never answers used to leave
     // the send hanging for as long as the browser allowed, with the 5-minute window
@@ -788,17 +799,18 @@ window.AppRarity = (function () {
     if (f && f.area) bits.push(f.area);
     return { text: bits.join(" — "), url: o.subId ? "https://ebird.org/checklist/" + o.subId : (o._url || "") };
   }
-  // The message body. The DESCRIPTIVE TEXT is the link, so the mail carries no wall of
-  // URLs — and EVERY alert gets one, not just the first few. The same lines follow in
-  // plain text, for a client (or relay) that does not render HTML.
-  function rarityMailBody(entries, headline) {
-    var rows = entries.map(function (e) {
-      var txt = escapeHtml(e.text);
-      return "<li>" + (e.url ? '<a href="' + escapeHtml(safeHref(e.url)) + '">' + txt + "</a>" : txt) + "</li>";
-    }).join("");
-    var plain = entries.map(function (e) { return "• " + e.text; }).join("\n");
-    return "<p>" + escapeHtml(headline) + "</p><ul>" + rows + "</ul><p>" + escapeHtml(t("rarity.emailFoot")) + "</p>" +
-      "\n\n" + headline + "\n" + plain + "\n\n" + t("rarity.emailFoot");
+  // One field per alert: the sighting as the row's label, its record's link as the value.
+  // The relay renders that as a table, so the mail arrives as a formatted document rather
+  // than the escaped markup a hand-built HTML body turned into. The number keeps two
+  // identical sightings from collapsing into one row (field names are unique).
+  function rarityMailFields(entries) {
+    var f = {};
+    entries.forEach(function (e, i) {
+      var label = (i + 1) + ". " + String(e.text || "").replace(/\s+/g, " ").trim();
+      f[label] = e.url ? safeHref(e.url) : "\u2014";
+    });
+    f[t("rarity.emailFoot")] = " ";   // a closing row; the relay drops a field with no value at all
+    return f;
   }
   // One mail per batch of new alerts, rate-limited; failures are silent (the bell,
   // the list and the chirp have already done their job).
@@ -821,7 +833,7 @@ window.AppRarity = (function () {
     var to = rarityEmailTo();
     if (!batch.length || !rarityEmailValid(to)) return;
     var subject = t("rarity.emailSubject", { n: batch.length });
-    var body = rarityMailBody(batch.map(rarityMailEntry), subject);
+    var body = rarityMailFields(batch.map(rarityMailEntry));
     rarityEmailPost(to, subject, body).then(function (r) {
       // The window is spent on a message the relay actually answered for. A transport
       // failure used to burn it too, so the next batch waited five minutes for nothing.
@@ -847,13 +859,13 @@ window.AppRarity = (function () {
       subject = t("rarity.emailSubject", { n: list.length });
       // Through the same builder as a real alert, so a test shows exactly what an alert
       // will look like — linked text, no bare URLs.
-      body = rarityMailBody(list.map(function (e) {
+      body = rarityMailFields(list.map(function (e) {
         var bits = [e.name || e.sci];
         if (e.place) bits.push(e.place);
         if (e.dt) bits.push(String(e.dt).slice(0, 10));
         if (e.prob != null) bits.push(e.prob + "%");
         return { text: bits.join(" — "), url: e.url || "" };
-      }), subject);
+      }));
     } else { subject = t("rarity.emailTestSubj"); body = t("rarity.emailTestBody"); }
     return rarityEmailPost(to, subject, body);
   }
