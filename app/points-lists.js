@@ -495,10 +495,43 @@ window.AppPoints = (function () {
   // Parse a KML document into plain placemark records. Each carries its name,
   // coordinates, description, the enclosing folder name, and any ExtendedData /
   // SimpleData fields — which become the selectable import "fields".
+  // KML writes colour as aabbggrr — alpha first and BLUE before red, the reverse of CSS.
+  function kmlColorToHex(v) {
+    var c = String(v || "").trim().replace(/^#/, "");
+    if (!/^[0-9a-fA-F]{8}$/.test(c)) return "";
+    return "#" + c.slice(6, 8) + c.slice(4, 6) + c.slice(2, 4);   // rr gg bb
+  }
+  // Every <Style> in the document, by id → its icon colour. <StyleMap> is followed to its
+  // "normal" pair, which is how most exporters (Google Earth included) write styles.
+  function kmlStyleColors(doc) {
+    var out = {}, i, id, st;
+    var ss = doc.getElementsByTagName("Style");
+    for (i = 0; i < ss.length; i++) {
+      id = ss[i].getAttribute("id"); if (!id) continue;
+      var ic = ss[i].getElementsByTagName("IconStyle")[0];
+      var col = ic && ic.getElementsByTagName("color")[0];
+      var hex = col ? kmlColorToHex(col.textContent) : "";
+      if (hex) out[id] = hex;
+    }
+    var sm = doc.getElementsByTagName("StyleMap");
+    for (i = 0; i < sm.length; i++) {
+      id = sm[i].getAttribute("id"); if (!id) continue;
+      var pairs = sm[i].getElementsByTagName("Pair");
+      for (var k = 0; k < pairs.length; k++) {
+        var key = pairs[k].getElementsByTagName("key")[0];
+        if (!key || (key.textContent || "").trim() !== "normal") continue;
+        var su = pairs[k].getElementsByTagName("styleUrl")[0];
+        var ref = su ? (su.textContent || "").trim().replace(/^#/, "") : "";
+        if (ref && out[ref]) out[id] = out[ref];
+      }
+    }
+    return out;
+  }
   function parseKmlText(text) {
     var doc = new DOMParser().parseFromString(text, "application/xml");
     if (doc.getElementsByTagName("parsererror").length) throw new Error(t("kml.parseErr"));
     var marks = [], fieldSet = {}, folderSet = {};
+    var styleCol = kmlStyleColors(doc);
     var pms = doc.getElementsByTagName("Placemark");
     function txt(el, tag) { var n = el.getElementsByTagName(tag)[0]; return n ? (n.textContent || "").trim() : ""; }
     for (var i = 0; i < pms.length; i++) {
@@ -519,7 +552,20 @@ window.AppPoints = (function () {
       var folder = "", a = pm.parentNode;
       while (a && a.nodeType === 1) { if (a.tagName === "Folder") { var fn = a.getElementsByTagName("name")[0]; if (fn) { folder = (fn.textContent || "").trim(); break; } } a = a.parentNode; }
       if (folder) folderSet[folder] = 1;
-      marks.push({ name: txt(pm, "name"), lat: lat, lon: lon, desc: txt(pm, "description"), data: data, folder: folder });
+      // The placemark's own colour: an inline <Style> first, else the <styleUrl> it names.
+      var pcol = "";
+      var inline = pm.getElementsByTagName("Style")[0];
+      if (inline) {
+        var iic = inline.getElementsByTagName("IconStyle")[0];
+        var icol = iic && iic.getElementsByTagName("color")[0];
+        if (icol) pcol = kmlColorToHex(icol.textContent);
+      }
+      if (!pcol) {
+        var suEl = pm.getElementsByTagName("styleUrl")[0];
+        var sref = suEl ? (suEl.textContent || "").trim().replace(/^#/, "") : "";
+        if (sref && styleCol[sref]) pcol = styleCol[sref];
+      }
+      marks.push({ name: txt(pm, "name"), lat: lat, lon: lon, desc: txt(pm, "description"), data: data, folder: folder, color: pcol });
     }
     return { marks: marks, fields: Object.keys(fieldSet), folders: Object.keys(folderSet) };
   }
@@ -603,6 +649,10 @@ window.AppPoints = (function () {
         var pt = { id: mpUid(), lat: pm.lat, lon: pm.lon,
           name: kmlFieldValue(pm, nameTok).trim() || pm.name || "",
           tags: tag ? [tag] : [], note: note, source: "kml", createdAt: new Date().toISOString() };
+        // A file that says what colour a point should be is obeyed — without this every
+        // imported set came out in ONE colour hashed from the list name, whatever the
+        // file's own styling said.
+        if (pm.color) pt.color = pm.color;
         if (noteIsHtml && note) pt.noteHtml = true;
         return pt;
       });
