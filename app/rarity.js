@@ -799,17 +799,22 @@ window.AppRarity = (function () {
     if (f && f.area) bits.push(f.area);
     return { text: bits.join(" — "), url: o.subId ? "https://ebird.org/checklist/" + o.subId : (o._url || "") };
   }
-  // One field per alert: the sighting as the row's label, its record's link as the value.
-  // The relay renders that as a table, so the mail arrives as a formatted document rather
-  // than the escaped markup a hand-built HTML body turned into. The number keeps two
-  // identical sightings from collapsing into one row (field names are unique).
+  // One field per alert. The relay prints each field as a BOLD HEADING with the value
+  // beneath it (seen in a delivered message), so the heading is kept SHORT — the bird —
+  // and everything else goes in the body, where a bare URL is auto-linked by the mail
+  // client. A long heading would be a wall of bold text.
+  // The number keeps two sightings of the same bird from collapsing into one field, since
+  // field names have to be unique.
   function rarityMailFields(entries) {
     var f = {};
     entries.forEach(function (e, i) {
-      var label = (i + 1) + ". " + String(e.text || "").replace(/\s+/g, " ").trim();
-      f[label] = e.url ? safeHref(e.url) : "\u2014";
+      var parts = String(e.text || "").split(" \u2014 ");
+      var head = (i + 1) + ". " + (parts.shift() || "?").trim();
+      var body = parts.join(" \u00b7 ").trim();
+      if (e.url) body += (body ? "\n" : "") + safeHref(e.url);
+      f[head] = body || "\u2014";
     });
-    f[t("rarity.emailFoot")] = " ";   // a closing row; the relay drops a field with no value at all
+    f[t("rarity.emailFoot")] = " ";   // a closing field; the relay drops one with no value at all
     return f;
   }
   // One mail per batch of new alerts, rate-limited; failures are silent (the bell,

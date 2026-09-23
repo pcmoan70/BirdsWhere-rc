@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1867";
+var VERSION = "v1868";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The last probability column now answers to Settings \u2192 Compare to, and it does so everywhere: the species list, the bars under the picture cards, the observation list and the family and look-alike cards. Pick Annual mean, Previous week or Next week and that is what the column shows \u2014 and the heading says which, instead of claiming \u201cYr peak\u201d over another week\u2019s number. It used to name only the species list\u2019s own comparison column and leave this one permanently on the annual peak.",
-  "\u2022 Season is unchanged on purpose: it is this week as a share of the species\u2019 own best week, which is what makes it comparable between species, so it stays measured against the true peak whatever you compare against.",
+  "\u2022 Rarity-alert emails read as a proper message now. Each bird is its own heading with the place, date and how unlikely it was underneath, and its link below that. The mail relay composes the message from the fields it is handed and prints every value literally, so the page of HTML the app used to write by hand could only ever arrive as visible markup \u2014 which is what it was doing.",
+  "\u2022 If an alert mail still arrives as code, the app on that device is running the old version: open Settings and use Reload to update.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
