@@ -7190,6 +7190,8 @@
                 // Names picked up from iNaturalist while browsing (see the harvest above):
                 // exportable so a device's own browsing can grow the app's shipped packs.
                 '<button type="button" id="names-export" class="btn btn-light" data-i18n="names.export">Export species names</button>' +
+                '<button type="button" id="names-csv" class="btn btn-light" data-i18n="names.csv">Download CSV</button>' +
+                '<button type="button" id="names-mail" class="btn btn-light" data-i18n="names.send">Send CSV</button>' +
                 '<p class="cu-hint" id="names-export-note"></p>' +
               '</div>' +
               '<div class="ctrl-group">' +
@@ -7203,6 +7205,7 @@
                   '<button type="button" class="clear-cache-btn" data-clear="birds"><span class="clear-lbl" data-i18n="clear.birds">Viewpoints</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="best"><span class="clear-lbl" data-i18n="clear.best">Best sites</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="names"><span class="clear-lbl" data-i18n="clear.names">Species names (iNat)</span><span class="clear-cnt"></span></button>' +
+                  '<button type="button" class="clear-cache-btn" data-clear="harvest"><span class="clear-lbl" data-i18n="clear.harvest">Downloaded names</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="offline"><span class="clear-lbl" data-i18n="clear.offline">Offline areas</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="images"><span class="clear-lbl" data-i18n="clear.images">Species photos</span><span class="clear-cnt"></span></button>' +
                 '</div>' +
@@ -7211,6 +7214,10 @@
               '<div class="ctrl-group">' +
                 '<label for="lang-select" data-i18n="ctrl.language">Language</label>' +
                 '<select id="lang-select"></select>' +
+              '</div>' +
+              '<div class="ctrl-group">' +
+                '<label class="ctrl-check"><input type="checkbox" id="name-lookup-toggle"> <span data-i18n="ctrl.nameLookup">Look up missing names at iNaturalist</span></label>' +
+                '<p class="cu-hint" data-i18n="ctrl.nameLookupHint">The bundled name packs were built for birds, so most insects, plants and fungi have no name in your language. When a species turns up without one, the app asks iNaturalist once and keeps every language it answers with. Off: those species show their scientific name.</p>' +
               '</div>' +
               '<div class="ctrl-group" id="secondlang-wrap">' +
                 '<label for="secondlang-select" data-i18n="ctrl.secondlang">2nd name</label>' +
@@ -10263,7 +10270,13 @@
     if (!r || !r.n) return "";
     return r.n[inatLocaleFor(lang)] || r.n[lang] || "";
   }
+  // Looking names up at iNaturalist is a setting (on by default). It is how anything
+  // outside the bird packs gets a name at all — the shipped packs are 95 % English
+  // repeats for insects and amphibians, about half for mammals, and carry no plants or
+  // fungi — so turning it off means those groups stay in Latin.
+  function nameLookupOn() { return window.GeoState.get("nameLookup", true) !== false; }
   function queueNameHarvest(sci) {
+    if (!nameLookupOn()) return;
     if (lang === "en") return;                       // English is the base, nothing to fill
     var k = nhKey(sci);
     if (!k || k.indexOf(" ") < 0) return;            // genus-only / unusable
@@ -10374,8 +10387,24 @@
     if (!b || !p) return;
     var n = nameHarvestCount();
     b.disabled = !n;
-    p.textContent = t("names.exportNote", { n: n });
+    ["names-csv", "names-mail"].forEach(function (id) { var x = document.getElementById(id); if (x) x.disabled = !n; });
+    p.textContent = t("names.exportNote", { n: n }) + (n ? " · " + t("names.csvNote", { rows: nameHarvestCsvRows() }) : "");
   }
+  // Every harvested name as CSV, one row per (species, language) — the shape a spreadsheet
+  // and tools/inat-names.mjs can both read, unlike the nested JSON export beside it.
+  function nameHarvestCsv() {
+    function q(v) { v = String(v == null ? "" : v); return /[",\n;]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+    var all = nameHarvest(), rows = ["scientific_name,language,common_name,inat_taxon_id"];
+    Object.keys(all).sort().forEach(function (k) {
+      var r = all[k]; if (!r || !r.n) return;
+      Object.keys(r.n).sort().forEach(function (lc) {
+        if (!r.n[lc]) return;
+        rows.push([q(k), q(lc), q(r.n[lc]), q(r.id || "")].join(","));
+      });
+    });
+    return rows.join("\n") + "\n";
+  }
+  function nameHarvestCsvRows() { return Math.max(0, nameHarvestCsv().split("\n").length - 2); }
   function nameHarvestCount() {
     var all = nameHarvest(), n = 0;
     Object.keys(all).forEach(function (k) { if (all[k] && all[k].n && Object.keys(all[k].n).length) n++; });
@@ -18368,6 +18397,12 @@
         try { updateDetLegend(); } catch (e) {}
         try { if (typeof refreshCurrentView === "function") refreshCurrentView(); } catch (e) {}
       }
+      else if (what === "harvest") {   // the multilingual names looked up at iNaturalist (every language it answered with)
+        nhMem = {}; nhDirty = false;
+        p = (window.AppIDB && AppIDB.available()) ? AppIDB.del("nameHarvest").catch(function () {}) : Promise.resolve();
+        try { updateNamesExportNote(); } catch (e) {}
+        try { if (typeof refreshSpeciesNames === "function") refreshSpeciesNames(); } catch (e) {}
+      }
       else if (what === "offline") p = (window.AppOffline && AppOffline.clearAllAreas) ? AppOffline.clearAllAreas() : Promise.resolve();   // all downloaded offline map areas (pinned caches + frames)
       else if (what === "images") {   // species photos: the cached thumbnails (SW cache) + the remembered lookups (which photo / credit per species)
         spImgCache = null; window.GeoState.save({ spImages: null });
@@ -18419,9 +18454,14 @@
           m = (m && typeof m === "object") ? m : {};
           setCnt("names", Object.keys(m).length, jsonBytes(m));
         }).catch(function () {});
+        AppIDB.get("nameHarvest").then(function (m) {
+          m = (m && typeof m === "object") ? m : {};
+          setCnt("harvest", Object.keys(m).length, jsonBytes(m));
+        }).catch(function () {});
       } else {
         var vn = vernacCache();
         setCnt("names", Object.keys(vn).length, jsonBytes(vn));
+        setCnt("harvest", Object.keys(nameHarvest()).length, jsonBytes(nameHarvest()));
       }
       // Birding spots + Best sites: count the tiles actually CACHED by the
       // service worker (what the clear buttons clear) — the session stores are
@@ -19574,6 +19614,38 @@
       downloadCsv("birdswhere-names-" + new Date().toISOString().slice(0, 10) + ".json",
         JSON.stringify(j), "application/json;charset=utf-8;");
     });
+    function namesCsvFile() {
+      return { name: "birdswhere-names-" + new Date().toISOString().slice(0, 10) + ".csv", body: nameHarvestCsv() };
+    }
+    document.getElementById("names-csv").addEventListener("click", function () {
+      if (!nameHarvestCount()) return;
+      var f = namesCsvFile();
+      downloadCsv(f.name, f.body, "text/csv;charset=utf-8;");
+    });
+    // "Send": hand the CSV to whatever the device uses to send files — on a phone the
+    // share sheet lists Mail with the file already attached. The app has no server and the
+    // mail relay it uses for rarity alerts takes no attachments (its only fields are
+    // _subject/_captcha/_template/…), so a genuine attachment can only come from the device
+    // itself. Without that API there is nothing honest to do but save the file and say so.
+    document.getElementById("names-mail").addEventListener("click", function () {
+      if (!nameHarvestCount()) return;
+      var f = namesCsvFile(), file = null;
+      try { file = new File([f.body], f.name, { type: "text/csv" }); } catch (e) {}
+      if (file && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+        navigator.share({ files: [file], title: f.name }).catch(function () {});
+        return;
+      }
+      downloadCsv(f.name, f.body, "text/csv;charset=utf-8;");
+      setStatus(t("names.sendFallback"));
+    });
+    var nlTog = document.getElementById("name-lookup-toggle");
+    if (nlTog) {
+      nlTog.checked = nameLookupOn();
+      nlTog.addEventListener("change", function () {
+        window.GeoState.save({ nameLookup: !!this.checked });
+        if (this.checked) { try { refreshSpeciesNames(); } catch (e) {} }   // start filling what is on screen
+      });
+    }
     document.getElementById("errlog-open").addEventListener("click", function () {
       closeDropdowns();
       var m = createModal({ escClose: true });

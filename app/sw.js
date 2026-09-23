@@ -21,15 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1865";
+var VERSION = "v1866";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Rarity-alert emails arrive as a formatted message again, not as a page of visible HTML code. The mail relay builds the message itself out of the fields it is handed and prints every value literally, so the page the app was writing by hand could only ever show up as its own markup. Each sighting is now a row of its own \u2014 the bird, the place, the date and how unlikely it was, with a link to the record beside it.",
-  "\u2022 Settings \u2192 Rarity alerts \u2192 Send test shows exactly what a real alert will look like.",
+  "\u2022 Names for everything that is not a bird. The bundled name packs were built for birds, so most insects, plants and fungi had no name in your language. Settings \u2192 Display &amp; language now carries \u201cLook up missing names at iNaturalist\u201d: when a species turns up without a name the app asks once and keeps every language it answers with. It was already doing this quietly \u2014 now you can see it, and turn it off.",
+  "\u2022 Those names are their own cache. Settings \u2192 Storage shows how many are held under \u201cDownloaded names\u201d and clears them like any other cache.",
+  "\u2022 And you can take them with you: Download CSV saves one row per species and language, and Send CSV hands that file to your phone\u2019s share sheet, where Mail will attach it.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -764,6 +764,14 @@ shared payload is all that is shown.
 Right-click / long-press / tap any species name for a menu **led by the species name in bold**
 (wrapping when long), followed by the record's *Open source* link when opened from an observation, then:
 
+- **Names beyond birds.** The bundled name packs were built for birds, so most insects, plants and
+  fungi have no name in your language. Settings → Display & language → **Look up missing names at
+  iNaturalist** (on by default) asks iNaturalist once per species and keeps every language it
+  answers with; off, those species show their scientific name. What it collects is its own cache —
+  Settings → Storage → **Downloaded names** (count, size, clear) — and can be taken out with
+  **Download CSV** (one row per species and language) or **Send CSV**, which hands the file to the
+  device's share sheet where Mail can attach it.
+
 - Where **no picture exists at all**, the frame carries a link to where the pictures are, for the
   groups that have such a place: **Kew Plants of the World Online** for plants, **iNaturalist** for
   fungi, insects, spiders and snails. Neither can be shown inline — Kew answers only to a person at
