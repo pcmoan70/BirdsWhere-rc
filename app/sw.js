@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1888";
+var VERSION = "v1889";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 \u201cNo observations here \u2014 this is what the model expects\u2026\u201d no longer appears above a list that is showing observations. The decision was made from the LATEST fetch alone, while the list shows every plotted fetch merged together \u2014 so a point that found nothing of its own put that line over a full list. It is now decided from what the list actually holds.",
+  "\u2022 Species group and Sightings radius are gone from the long Settings panel. Both are in the gear's quick panel \u2014 one tap \u2014 which is enough, and having them in two places meant two things to keep in step.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -92,7 +92,8 @@ OpenFreeMap's OpenMapTiles data, no key) on the Voyager and Satellite maps, so l
 smoothly by zoom + importance with collision avoidance (yr.no-style); it falls back to raster labels
 where WebGL is unavailable.
 
-**Species-group filter** (Settings → *Species group*): **All 🔭 · Birds · Mammals · Amphibians ·
+**Species-group filter** (tap the gear → the quick panel; since v1889 it is not repeated in the
+long Settings panel): **All 🔭 · Birds · Mammals · Amphibians ·
 Insects · Plants · Fungi**. It restricts every view — model layers, the species list, the
 map dots and the observation fetch. Choosing **All** (the binoculars) shows every group you have
 fetched at once; it is a *display* choice, so what a fetch asks for is still decided by the
@@ -413,8 +414,9 @@ station and day, tunable by **min detections/day** and **min confidence**. **eBi
 (FR, historic)**, **SABAP2 (ZA)** and **Birdata (AU)**. You can add your own datasets by hand (country
 code + dataset key or gbif.org URL).
 
-**Sightings radius** — set it with the Settings slider **or Shift + mouse-wheel over the map**
-(scroll up = larger). It steps a 0.1 … 150 km ladder (default **25 km**), controls the fetch
+**Sightings radius** — set it in the gear's **quick panel** (tap the gear) **or Shift +
+mouse-wheel over the map** (scroll up = larger). Since v1889 it is not duplicated in the long
+Settings panel. It steps a 0.1 … 150 km ladder (default **25 km**), controls the fetch
 box for Recent/Historic mode (previewed as a live dashed square), and sets the default radius
 of newly saved locations.
 

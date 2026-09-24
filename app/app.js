@@ -203,8 +203,6 @@
         modeEl.dispatchEvent(new Event("change"));   // run the full mode switch
       }
     }
-    var hint = document.getElementById("group-nomodel-hint");
-    if (hint) hint.style.display = hasModel ? "none" : "";
   }
   // WHAT A FETCH RETRIEVES, as opposed to what the app is currently showing. Since
   // v1809 a fetch is not limited to the group on screen: the active group filters what
@@ -7109,9 +7107,13 @@
               '<button type="button" id="settings-update" class="settings-update" style="display:none"></button>' +
               '<div id="settings-update-notes" class="cu-hint" style="display:none"></div>' +
               '<div class="settings-section" data-i18n="settings.secView">View</div>' +
-              '<div class="ctrl-group">' +
-                '<label for="group-select" data-i18n="ctrl.group">Species group</label>' +
-                '<select id="group-select" style="display:none">' +
+              // Species group and Sightings radius are NOT shown here: both live in the gear's
+              // quick panel (a tap), which is where they belong — one tap instead of opening
+              // the long panel. The controls themselves stay as the app's registers, hidden:
+              // the quick panel builds itself by reading them, and every other call site keeps
+              // them in step. Same arrangement as the probability inputs further down.
+              '<div id="settings-registers" style="display:none">' +
+                '<select id="group-select">' +
                   '<option value="all" data-i18n="group.all">All groups</option>' +
                   '<option value="aves" data-i18n="group.aves">Birds</option>' +
                   '<option value="mammalia" data-i18n="group.mammalia">Mammals</option>' +
@@ -7120,15 +7122,13 @@
                   '<option value="plantae" data-i18n="group.plantae">Plants</option>' +
                   '<option value="fungi" data-i18n="group.fungi">Fungi</option>' +
                 '</select>' +
-                // Custom picker in front of the hidden select: a native <option>
-                // can't render SVG, and the group icons should match the app's
-                // line-icon set (same rows as the gear's long-press quick menu).
+                // Kept (hidden) because the group picker and several callers address them.
                 '<div id="group-picker-wrap">' +
                   '<button type="button" id="group-picker-btn" aria-haspopup="listbox"></button>' +
                   '<div id="group-picker-panel" class="group-quick-panel" style="display:none" role="listbox"></div>' +
                 '</div>' +
-                '<p class="cu-hint" id="group-nomodel-hint" style="display:none" data-i18n="group.noModelHint">No habitat model for this group — observation search only (no range, richness or migration).</p>' +
-                '<p class="cu-hint" data-i18n="ctrl.groupHint">Limit the whole app — lists, Range, Richness and observation search — to one group: birds, mammals, amphibians, insects, plants or fungi.</p>' +
+                '<span id="recent-radius-val" class="radius-val"></span>' +
+                '<input type="range" id="recent-radius" min="0" max="18" step="1" />' +
               '</div>' +
               // Which TYPES a fetch asks for (the group picker above only decides what is
               // shown). Every source shares one paging budget across the types requested,
@@ -7137,11 +7137,6 @@
                 '<label data-i18n="ctrl.fetchGroups">Species types to fetch</label>' +
                 '<div class="fetch-groups" id="fetch-groups"></div>' +
                 '<p class="cu-hint" data-i18n="ctrl.fetchGroupsHint">Every source has one page budget per fetch, shared across the types you ask for — so fetching fewer types returns more of each in a busy place. The type you are viewing is always fetched.</p>' +
-              '</div>' +
-              '<div class="ctrl-group">' +
-                '<div class="ctrl-label-row"><label for="recent-radius" data-i18n="ctrl.recentradius">Sightings radius</label><span id="recent-radius-val" class="radius-val"></span></div>' +
-                '<div class="radius-row"><input type="range" id="recent-radius" min="0" max="18" step="1" /></div>' +
-                '<p class="cu-hint" data-i18n="ctrl.recentradiusHint">How far around a clicked point or stored location each source is searched for recent observations.</p>' +
               '</div>' +
               // The probability range is no longer a Settings control — it lives in the
               // list's own Filters pane (the funnel → Probability), where the other
