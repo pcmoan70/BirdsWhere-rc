@@ -219,7 +219,26 @@ window.AppPoints = (function () {
         .map(function (k) { return all[k]; }).filter(function (c) { return c && c.name; });
       mpCollections.forEach(function (c) { try { mpSetSig[c.name] = mpSig(JSON.stringify(c)); } catch (e) {} });
       mpIdbReady = true;
-    } catch (e) { mpIdbReady = false; }
+    } catch (e) {
+      mpIdbReady = false;
+      // IndexedDB can refuse to open for reasons that pass: another tab holding the
+      // database during a version upgrade makes open() fire `onblocked`. Giving up for
+      // the session then showed NO lists at all — the blob no longer carries them, it was
+      // emptied when they moved into IndexedDB — so the lists looked lost when they were
+      // merely unreachable. Try again a few times, and redraw once one succeeds.
+      scheduleMpStoreRetry();
+    }
+  }
+  var mpRetryLeft = 4, mpRetryT = null;
+  function scheduleMpStoreRetry() {
+    if (mpIdbReady || mpRetryLeft <= 0 || mpRetryT) return;
+    mpRetryT = setTimeout(function () {
+      mpRetryT = null; mpRetryLeft--;
+      initMpSetStore().then(function () {
+        if (!mpIdbReady) return;
+        try { loadMapPoints(); renderMapPoints(); if (typeof refreshMpPanel === "function") refreshMpPanel(); } catch (e) {}
+      }, function () {});
+    }, (5 - mpRetryLeft) * 1500);
   }
   // Write the current lists to IndexedDB and retire the records of any that are gone.
   // Only the lists that actually CHANGED are written: these run to megabytes, and
@@ -284,9 +303,16 @@ window.AppPoints = (function () {
     // Named lists are IndexedDB's business when it is available: persist them there
     // and let the blob drop the key (undefined removes it), so the ~5 MB cap applies
     // only to the small state again.
-    if (mpIdbReady && patch && Object.prototype.hasOwnProperty.call(patch, "mapPointSets")) {
-      persistMpSets(patch.mapPointSets);
-      patch.mapPointSets = undefined;
+    if (patch && Object.prototype.hasOwnProperty.call(patch, "mapPointSets")) {
+      if (mpIdbReady) {
+        persistMpSets(patch.mapPointSets);
+        patch.mapPointSets = undefined;
+      } else if (window.AppIDB && window.AppIDB.available()) {
+        // The store exists but has not hydrated (yet). `mpCollections` is therefore an
+        // empty MIRROR, not the truth — writing it into the blob would record "no lists"
+        // over the top of lists that are sitting safely in IndexedDB.
+        patch.mapPointSets = undefined;
+      }
     }
     window.GeoState.save(patch);
     if (window.GeoState.lastSaveOk && !window.GeoState.lastSaveOk()) { setStatus(t("err.storageFull")); return false; }

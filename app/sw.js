@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1891";
+var VERSION = "v1892";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 A sync now shows its progress: a bar under the status line, a count while the files go up (\u201c3/12\u201d) and the name of the one being written. The bar sweeps for the steps that have no count \u2014 signing in, reading Drive, merging \u2014 so a slow sync never looks stuck.",
-  "\u2022 Syncing twice no longer leaves a duplicate. Two syncs in the same minute share a folder name, and Drive is happy to hold two folders called the same thing \u2014 so the second sync made a second copy of the run and of every file in it. The second sync now reuses the folder and replaces the files.",
+  "\u2022 Fixes point lists appearing to vanish after an update. Your lists live in the browser's database, and that database can refuse to open for a moment \u2014 classically when the app is open in a SECOND TAB while the new version installs. The app gave up for the rest of the session and showed no lists at all. It now retries and redraws as soon as the database answers.",
+  "\u2022 Nothing was lost in that state: the lists were unreachable, not deleted. The app also no longer records \u201cno lists\u201d while the database is unreachable, so an empty screen can never be saved over the real thing.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
