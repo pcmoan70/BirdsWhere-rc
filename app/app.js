@@ -16506,6 +16506,10 @@
     return out;
   }
   function openPointsDownloadMenu(anchor, type, name) {
+    // Measure the arrow BEFORE opening: openAnchoredMenu closes the dropdowns, and the
+    // Points panel is one — once it is hidden the anchor's rect collapses to zeros and
+    // the menu gets clamped into the top-left corner instead of sitting under the arrow.
+    var br = anchor.getBoundingClientRect();
     var el = openAnchoredMenu("detrow-menu mp-dl-menu", anchor);
     el.innerHTML = '<div class="dd-head">' + escapeHtml(t("points.downloadAs", { name: name })) + "</div>" +
       ["kml", "kmz", "geojson"].map(function (f) {
@@ -16520,6 +16524,10 @@
         setStatus(t("points.downloaded", { n: pts.length, name: name }));
       });
     });
+    // Place it AFTER the content, so the viewport clamp measures the real size —
+    // and because positionAnchoredMenu is what gives the popup its × and key nav.
+    // Right-aligned under the arrow that opened it.
+    positionAnchoredMenu(el, br.right - el.offsetWidth, br.bottom + 4);
   }
   function mpTipHtml(p) {
     var name = escapeHtml(p.name || "(point)");
