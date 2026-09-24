@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1893";
+var VERSION = "v1894";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Fixes freshly synced point lists vanishing when the app is closed or reloaded. A sync put the merged lists on screen immediately but stored them in the background, and finished without waiting \u2014 so closing the app, or the reload a sync does by itself, cut the storing short and the lists were gone on the next open. A sync, a backup restore and a file import now all wait for the data to be written before they report success.",
+  "\u2022 While a sync runs, a turning \u27f3 now sits at the top of the screen wherever you are in the app, with the current step and the file count beside it \u2014 \u201c3/12 Skriver Points - Leks.kmz\u201d. The old spinner only lived in the Settings panel, which is shut for most of a sync.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

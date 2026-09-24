@@ -5841,6 +5841,35 @@
     var due = now > 0 && now > was && Date.now() - from > BACKUP_DUE_MS;
     return { at: at, pts: now, was: was, due: due, from: from };
   }
+  // A sync runs while the Settings panel is usually shut, so its spinner and progress bar
+  // are out of sight. This is the one indicator that is always on screen: a turning ⟳ in
+  // the corner for as long as the sync is busy, with the step and the file count beside it.
+  // Registered at boot, independent of the Settings wiring, so it works even if that panel
+  // is never opened.
+  function wireSyncSpinner() {
+    if (!window.GDriveSync || !window.GDriveSync.onStatus) return;
+    var PH = { signin: "sync.phSignin", read: "sync.phRead", merge: "sync.phMerge",
+               write: "sync.phWrite", files: "sync.phFiles" };
+    window.GDriveSync.onStatus(function (st) {
+      var el = document.getElementById("sync-spinner");
+      if (!st || !st.busy) { if (el) el.remove(); return; }
+      if (!el) {
+        el = document.createElement("div");
+        el.id = "sync-spinner"; el.className = "sync-spinner";
+        el.setAttribute("role", "status"); el.setAttribute("aria-live", "polite");
+        el.innerHTML = '<svg class="sync-spinner-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" ' +
+          'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+          '<path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg><span class="sync-spinner-txt"></span>';
+        document.body.appendChild(el);
+      }
+      var txt = st.phaseName ? t("sync.phWriteFile", { name: st.phaseName })
+                             : (PH[st.phase] ? t(PH[st.phase]) : t("gdrive.syncing"));
+      if (st.total > 1) txt = st.done + "/" + st.total + " " + txt;
+      var sp = el.querySelector(".sync-spinner-txt");
+      if (sp) sp.textContent = txt;
+      el.title = txt;
+    });
+  }
   function updateBackupNudge() {
     var st = backupState();
     var gear = document.getElementById("settings-toggle");
@@ -7976,7 +8005,7 @@
       if (plainOpen && fetchOnOpen()) { armFetchOnOpen(); setTimeout(fetchOnOpenLocations, 1200); }
       // Start Google Drive sync last, after all init-time GeoState writes, so
       // its open-time pull isn't fooled into thinking local is newer.
-      if (window.GDriveSync) window.GDriveSync.init();
+      if (window.GDriveSync) { window.GDriveSync.init(); wireSyncSpinner(); }
       hideBootSplash();   // boot complete — drop the static splash from index.html
     } catch (e) {
       document.getElementById("app-loading").style.display = "";   // may have been hidden before the failure
