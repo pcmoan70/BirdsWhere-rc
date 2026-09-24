@@ -21,7 +21,7 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1883";
+var VERSION = "v1884";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
@@ -29,6 +29,7 @@ var VERSION = "v1883";
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
   "\u2022 Viewing All (the binoculars) now fetches every species type. The app already forced the type you are VIEWING to be fetched \u2014 otherwise selecting it shows an empty map \u2014 but that rule skipped All, so with only birds ticked in Settings the All view quietly showed birds alone. The Settings ticks show all six as fixed while All is on screen, so what is promised and what is fetched agree.",
+  "\u2022 The Help text now explains this, in every language: the species-group bullet says what All does, and the fetch-types setting spells out the trade-off \u2014 one page budget per source shared across the types you ask for.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
