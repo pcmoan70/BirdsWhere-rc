@@ -17059,6 +17059,14 @@
   // ---- Points dropdown panel ----
   function refreshMpPanel() {
     var panel = document.getElementById("mp-panel"); if (!panel) return;
+    // The whole panel is rebuilt from innerHTML below, which resets its scroll — so
+    // ticking a list halfway down jumped the view back to the top. Remember where the
+    // panel (and its two inner scrollers) were and put them back after the rebuild.
+    var keepTop = panel.scrollTop;
+    var innerTop = {};
+    [".mp-coll-list", ".mp-list"].forEach(function (sel) {
+      var el = panel.querySelector(sel); if (el) innerTop[sel] = el.scrollTop;
+    });
     var allTags = mpAllTags();
     var hasUntagged = mpState.mapPoints().some(function (p) { return !p.tags || !p.tags.length; });
     var center = mpState.mpDistOrigin() || (map && map.getCenter());   // measure from the last selected point, else map centre
@@ -17295,6 +17303,12 @@
     var shareDet = panel.querySelector("#mp-share-det");
     if (shareDet) shareDet.addEventListener("click", function (e) { e.stopPropagation(); shareCurrentDetections(); });
     try { updateBackupNudge(); } catch (e) {}   // the "last backed up" line lives in this panel
+    // Put the scroll back where it was (see the top of this function). Clamped by the
+    // browser if the panel got shorter — ticking a list changes how many rows it holds.
+    if (keepTop) panel.scrollTop = keepTop;
+    Object.keys(innerTop).forEach(function (sel) {
+      var el = panel.querySelector(sel); if (el) el.scrollTop = innerTop[sel];
+    });
   }
 
   // ---- Sticky fan-out for overlapping detection markers ---------------------

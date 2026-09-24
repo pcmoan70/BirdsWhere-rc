@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1876";
+var VERSION = "v1877";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The Sync button now says what it is doing \u2014 Signing in, Reading Drive, Merging, Uploading, Writing files \u2014 with the \u27f3 turning while it works, instead of only greying out.",
-  "\u2022 Each sync gets its own dated folder in BirdsWhere, named for when it ran (\u201c2026-09-24 1830\u201d), holding that sync's data file together with its .kmz and .csv copies. The ten most recent runs are kept; older folders are removed. Earlier backups are still listed and can still be restored.",
+  "\u2022 Ticking a point list no longer throws the list back to the top. The Points panel is rebuilt whenever something changes, which reset its scroll \u2014 so selecting a list far down the list meant scrolling all the way back each time. It now stays exactly where you left it.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
