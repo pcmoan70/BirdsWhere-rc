@@ -1087,7 +1087,7 @@
   "link.spInCountry": "Specie nel paese",
   "ctrl.countryres": "Risoluzione campionamento paese",
   "ctrl.fetchGroups": "Tipi di specie da recuperare",
-  "ctrl.fetchGroupsHint": "Ogni fonte ha un budget di pagine per recupero, diviso fra i tipi richiesti — chiederne meno restituisce quindi più record di ciascuno in un luogo affollato. Il tipo che stai guardando viene sempre recuperato.",
+  "ctrl.fetchGroupsHint": "Ogni fonte ha un budget di pagine per recupero, diviso tra i tipi richiesti: meno tipi, più risultati per ciascuno. Il tipo che stai visualizzando viene sempre recuperato e la vista Tutti (il binocolo) recupera ogni tipo.",
   "ctrl.recentradius": "Raggio osservazioni",
   "sources.colTimeout": "Timeout recupero (s)",
   "sources.timeoutHint": "Una fonte ancora in download dopo questi secondi viene fermata; le osservazioni già caricate vengono mantenute e la sua etichetta diventa rossa. 0 = nessun timeout.",

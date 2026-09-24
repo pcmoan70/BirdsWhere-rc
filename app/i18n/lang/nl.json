@@ -1087,7 +1087,7 @@
   "link.spInCountry": "Soorten in het land",
   "ctrl.countryres": "Land-bemonstering resolutie",
   "ctrl.fetchGroups": "Op te halen soortgroepen",
-  "ctrl.fetchGroupsHint": "Elke bron heeft één paginabudget per ophaalactie, verdeeld over de gevraagde groepen — minder groepen leveren op een drukke plek dus meer van elke. De groep die je bekijkt wordt altijd opgehaald.",
+  "ctrl.fetchGroupsHint": "Elke bron heeft één paginabudget per ophaalactie, verdeeld over de types die je vraagt – minder types levert meer van elk. Het type dat je bekijkt wordt altijd opgehaald, en bij Alles (de verrekijker) worden alle types opgehaald.",
   "ctrl.recentradius": "Waarnemingsradius",
   "sources.colTimeout": "Ophaal-time-out (s)",
   "sources.timeoutHint": "Een bron die na zoveel seconden nog ophaalt, wordt gestopt; de al geladen waarnemingen blijven behouden en het label wordt rood. 0 = geen time-out.",

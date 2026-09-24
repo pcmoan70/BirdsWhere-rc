@@ -1087,7 +1087,7 @@
   "link.spInCountry": "Druhy v zemi",
   "ctrl.countryres": "Rozlišení vzorkování země",
   "ctrl.fetchGroups": "Stahované skupiny druhů",
-  "ctrl.fetchGroupsHint": "Každý zdroj má na jedno stažení jeden stránkový rozpočet, sdílený mezi vyžádanými skupinami — méně skupin proto na rušném místě přinese více záznamů z každé. Právě zobrazená skupina se stahuje vždy.",
+  "ctrl.fetchGroupsHint": "Každý zdroj má jeden stránkový rozpočet na stažení, dělený mezi vyžádané typy – méně typů znamená více z každého. Zobrazený typ se stahuje vždy a zobrazení Vše (dalekohled) stáhne všechny typy.",
   "ctrl.recentradius": "Poloměr nálezů",
   "sources.colTimeout": "Časový limit načítání (s)",
   "sources.timeoutHint": "Zdroj, který po tolika sekundách stále načítá, se zastaví; již načtená pozorování zůstanou a jeho štítek zčervená. 0 = bez limitu.",

@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1882";
+var VERSION = "v1883";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 \u201cSync now\u201d reads the newest dated folder in BirdsWhere, chosen by the run's own date rather than by file timestamps \u2014 so an older backup that Drive happened to touch later can no longer be picked instead. Restoring a specific earlier backup still goes through \u201cEarlier backups\u2026\u201d.",
+  "\u2022 Viewing All (the binoculars) now fetches every species type. The app already forced the type you are VIEWING to be fetched \u2014 otherwise selecting it shows an empty map \u2014 but that rule skipped All, so with only birds ticked in Settings the All view quietly showed birds alone. The Settings ticks show all six as fixed while All is on screen, so what is promised and what is fetched agree.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

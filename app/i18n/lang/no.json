@@ -1087,7 +1087,7 @@
   "link.spInCountry": "Arter i landet",
   "ctrl.countryres": "Lands­samplings­oppløsning",
   "ctrl.fetchGroups": "Artstyper som hentes",
-  "ctrl.fetchGroupsHint": "Hver kilde har ett sidebudsjett per henting, delt på typene du ber om — færre typer gir altså flere treff av hver på et travelt sted. Typen du ser på hentes alltid.",
+  "ctrl.fetchGroupsHint": "Hver kilde har ett sidebudsjett per henting, delt på typene du ber om – henter du færre typer, får du mer av hver på et travelt sted. Typen du ser på hentes alltid, og velger du Alle (kikkerten) hentes alle typer.",
   "ctrl.recentradius": "Funnradius",
   "sources.colTimeout": "Tidsavbrudd for henting (s)",
   "sources.timeoutHint": "En kilde som fortsatt henter etter så mange sekunder, stoppes; observasjonene den allerede har lastet, beholdes og etiketten blir rød. 0 = ingen tidsavbrudd.",

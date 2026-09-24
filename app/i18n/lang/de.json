@@ -1087,7 +1087,7 @@
   "link.spInCountry": "Arten im Land",
   "ctrl.countryres": "Land-Abtastauflösung",
   "ctrl.fetchGroups": "Abzurufende Artengruppen",
-  "ctrl.fetchGroupsHint": "Jede Quelle hat pro Abruf ein Seitenbudget, das sich die angeforderten Gruppen teilen — weniger Gruppen liefern an einem belebten Ort also mehr von jeder. Die gerade angezeigte Gruppe wird immer abgerufen.",
+  "ctrl.fetchGroupsHint": "Jede Quelle hat ein Seitenbudget pro Abruf, geteilt durch die angeforderten Typen – weniger Typen liefern mehr von jedem. Der angezeigte Typ wird immer abgerufen, und mit Alle (das Fernglas) werden alle Typen abgerufen.",
   "ctrl.recentradius": "Fundradius",
   "sources.colTimeout": "Abruf-Timeout (s)",
   "sources.timeoutHint": "Eine Quelle, die nach so vielen Sekunden noch lädt, wird gestoppt; die bereits geladenen Beobachtungen bleiben erhalten und ihr Label wird rot. 0 = kein Timeout.",

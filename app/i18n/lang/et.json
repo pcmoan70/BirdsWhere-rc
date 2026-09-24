@@ -1087,7 +1087,7 @@
   "link.spInCountry": "Liigid riigis",
   "ctrl.countryres": "Riigi näidistihedus",
   "ctrl.fetchGroups": "Päritavad liigirühmad",
-  "ctrl.fetchGroupsHint": "Igal allikal on päringu kohta üks lehebudjett, mis jaguneb soovitud rühmade vahel — vähem rühmi annab seega tihedas kohas igaüht rohkem. Vaadatav rühm päritakse alati.",
+  "ctrl.fetchGroupsHint": "Igal allikal on üks lehekülgede eelarve toomise kohta, jagatud küsitud tüüpide vahel – vähem tüüpe annab igaühest rohkem. Vaadatav tüüp tuuakse alati ja vaade Kõik (binokkel) toob kõik tüübid.",
   "ctrl.recentradius": "Vaatluste raadius",
   "sources.colTimeout": "Päringu ajalõpp (s)",
   "sources.timeoutHint": "Allikas, mis pärast nii mitut sekundit veel laeb, peatatakse; juba laaditud vaatlused säilivad ja selle silt muutub punaseks. 0 = ajalõputa.",

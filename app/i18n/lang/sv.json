@@ -850,7 +850,7 @@
   "link.spInCountry": "Arter i landet",
   "ctrl.countryres": "Lands­samplingsupplösning",
   "ctrl.fetchGroups": "Arttyper som hämtas",
-  "ctrl.fetchGroupsHint": "Varje källa har en sidbudget per hämtning, delad på de typer du ber om — färre typer ger alltså fler träffar av varje på en livlig plats. Typen du tittar på hämtas alltid.",
+  "ctrl.fetchGroupsHint": "Varje källa har en sidbudget per hämtning, delad mellan de typer du ber om – färre typer ger mer av varje på en livlig plats. Typen du tittar på hämtas alltid, och väljer du Alla (kikaren) hämtas alla typer.",
   "ctrl.recentradius": "Fyndradie",
   "ctrl.radiusSet": "Fyndradie: {r}",
   "sources.colTimeout": "Hämtnings-timeout (s)",

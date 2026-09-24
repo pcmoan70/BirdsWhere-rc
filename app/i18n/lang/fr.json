@@ -1087,7 +1087,7 @@
   "link.spInCountry": "Espèces du pays",
   "ctrl.countryres": "Résolution d’échantillonnage du pays",
   "ctrl.fetchGroups": "Types d’espèces à récupérer",
-  "ctrl.fetchGroupsHint": "Chaque source dispose d’un budget de pages par récupération, partagé entre les types demandés — moins de types rapporte donc davantage de chacun dans un endroit fréquenté. Le type affiché est toujours récupéré.",
+  "ctrl.fetchGroupsHint": "Chaque source dispose d’un budget de pages par récupération, partagé entre les types demandés — moins de types, plus de chacun. Le type affiché est toujours récupéré, et l’affichage Tous (les jumelles) récupère tous les types.",
   "ctrl.recentradius": "Rayon des observations",
   "sources.colTimeout": "Délai de récupération (s)",
   "sources.timeoutHint": "Une source qui télécharge encore après ce nombre de secondes est arrêtée ; les observations déjà chargées sont conservées et son libellé devient rouge. 0 = aucun délai.",
