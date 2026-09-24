@@ -94,9 +94,9 @@ where WebGL is unavailable.
 
 **Species-group filter** (Settings → *Species group*): **All 🔭 · Birds · Mammals · Amphibians ·
 Insects · Plants · Fungi**. It restricts every view — model layers, the species list, the
-map dots and the observation fetch. Choosing **All** (the binoculars) shows every group *and*
-makes the next fetch ask for every type, whatever the "Species types to fetch" ticks say — the
-same rule that always fetches the single group you are viewing. The model covers
+map dots and the observation fetch. Choosing **All** (the binoculars) shows every group you have
+fetched at once; it is a *display* choice, so what a fetch asks for is still decided by the
+"Species types to fetch" ticks. The model covers
 birds/mammals/amphibians/insects; **Plants 🌿 and Fungi 🍄 are observation-only**
 (Range/Richness/Migration are hidden for them).
 
@@ -1082,15 +1082,15 @@ the one thing left out by default — they are much the largest thing the app ho
   source has one page budget per fetch shared across the requested types, so fewer ticks return
   more of each in a dense place. The type currently being viewed is always fetched (shown ticked
   and disabled), and changing the set starts a fresh fetch — the persisted cache is keyed by it.
-  Since **v1883** that override also covers **All**: with the binoculars selected every type is
-  fetched and all six ticks show as fixed, so the ticks can never promise less than the fetch
-  delivers. Before that the rule skipped `"all"`, so a user with only *Birds* ticked saw the All
-  view return birds alone.
+  The override applies to a **single** group only: **All** (the binoculars) is a display choice
+  and deliberately leaves the ticks alone, so selecting it never widens a fetch. A user with only
+  *Birds* ticked therefore sees birds under All too — the ticks are what keep a fetch fast, and
+  All shows everything they have already brought back.
 - **The species group is a display filter** (since v1809) — switching group re-filters the dots,
   legend and lists instantly (`detPassesGroup`) instead of leaving an empty map, so a location
   behaves the same whatever group you are in. What a fetch *asks for* is a separate choice (the
   ticks above): until v1811 it was always the superset; since then it is the ticked set, widened
-  to include whatever is on screen — one group, or all six under the binoculars. Whether the model
+  only to include a single group you select. Whether the model
   covers a group never affects the fetch. Cost of the wide case: each source's paging budget is
   shared across six taxa, so a very dense spot truncates sooner than a birds-only fetch would.
 - **Species names outside birds** — the name packs were built for birds (measured 2026-09-18:

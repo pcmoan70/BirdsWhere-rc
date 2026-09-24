@@ -225,14 +225,13 @@
     var saved = window.GeoState.get("fetchGroups", null);
     var out = {};
     FETCH_GROUP_IDS.forEach(function (g) { out[g] = saved && typeof saved === "object" ? saved[g] !== false : true; });
-    // What is ON SCREEN is always fetched, whatever the ticks say — otherwise selecting
-    // it would show an empty map with no way to see why. With the binoculars (All) on
-    // screen that means EVERY group: "All" promising all six and then fetching only the
-    // ticked ones is the same trap, one level up.
-    if (speciesGroup === "all") FETCH_GROUP_IDS.forEach(function (g) { out[g] = true; });
-    else if (out[speciesGroup] === false) out[speciesGroup] = true;
-    // Never fetch nothing: a single group unticked everywhere still falls back to birds.
-    if (!FETCH_GROUP_IDS.some(function (g) { return out[g]; })) out.aves = true;
+    // Never fetch nothing: an empty selection falls back to the group on screen (or birds).
+    if (!FETCH_GROUP_IDS.some(function (g) { return out[g]; })) out[speciesGroup === "all" ? "aves" : speciesGroup] = true;
+    // The single group being VIEWED is always fetched, whatever the ticks say — otherwise
+    // selecting it would show an empty map with no way to see why. "All" is NOT such a
+    // group: it is a display choice that shows every type already fetched, so it leaves
+    // the ticks alone — they are what keeps a fetch fast.
+    if (speciesGroup !== "all" && out[speciesGroup] === false) out[speciesGroup] = true;
     return out;
   }
   function fetchGroupList() { var on = fetchGroupsOn(); return FETCH_GROUP_IDS.filter(function (g) { return on[g]; }); }
@@ -19005,9 +19004,7 @@
         box.innerHTML = FETCH_GROUP_IDS.map(function (g) {
           // A type forced on because it is the one being viewed is shown ticked and
           // disabled, so the rule explains itself rather than looking like a bug.
-          // Forced = fetched whatever the tick says. That is the viewed group — and with
-          // the binoculars (All) on screen it is every group, so the ticks must show it.
-          var forced = speciesGroup === g || speciesGroup === "all";
+          var forced = speciesGroup === g;
           return '<label class="ctrl-check fg-item"><input type="checkbox" data-fg="' + g + '"' +
             ((saved && typeof saved === "object" ? saved[g] !== false : true) || forced ? " checked" : "") +
             (forced ? " disabled" : "") + "> " + settingsIconHtml(g) +
