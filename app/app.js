@@ -19231,10 +19231,24 @@
         var phTxt = "";
         if (st.busy && st.phaseName) phTxt = t("sync.phWriteFile", { name: st.phaseName });
         else if (st.busy && PH[st.phase]) phTxt = t(PH[st.phase]);
+        // A count while the files go up ("3/12"), so a long sync visibly advances.
+        if (st.busy && st.total > 1) phTxt = st.done + "/" + st.total + " " + phTxt;
         var lbl = gdSync.querySelector(".ico-label");
         if (lbl) lbl.textContent = phTxt || t("gdrive.syncNow");
         gdSync.classList.toggle("gd-busy", !!st.busy);
         gdSync.title = phTxt;
+        // …and a bar under the status line: a determinate fill while files are counted,
+        // an indeterminate sweep for the steps that have no count (sign-in, read, merge).
+        var bar = document.getElementById("gd-progress");
+        if (bar) {
+          bar.style.display = st.busy ? "" : "none";
+          var fill = bar.firstChild;
+          if (fill) {
+            var pct = st.total > 0 ? Math.round((st.done / st.total) * 100) : 0;
+            bar.classList.toggle("gd-indet", !st.total);
+            fill.style.width = st.total > 0 ? pct + "%" : "";
+          }
+        }
         var msg = "";
         var failed = st.status === "reconnect" || st.status === "error" || st.status === "storagefull";
         if (st.status === "syncing") msg = "⟳ " + t("gdrive.syncing");
@@ -19257,6 +19271,12 @@
         gdStatus.classList.toggle("gd-syncing", st.status === "syncing");
         gdStatus.classList.toggle("gd-error", failed);
       };
+      if (gdStatus && !document.getElementById("gd-progress")) {
+        var pb = document.createElement("div");
+        pb.id = "gd-progress"; pb.className = "gd-progress"; pb.style.display = "none";
+        pb.appendChild(document.createElement("span"));
+        gdStatus.parentNode.insertBefore(pb, gdStatus.nextSibling);
+      }
       window.GDriveSync.onStatus(function (st) { renderGd(st); try { updateBackupNudge(); } catch (e) {} });
 
       // The sync dialog: pick which categories + one global direction, then run.

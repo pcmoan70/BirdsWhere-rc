@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1890";
+var VERSION = "v1891";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Fixes a tap being swallowed after using the new full-screen gesture. Holding the green bar left the NEXT tap anywhere in that bar ignored \u2014 usually the settings gear, which then looked broken until you tapped again. A hold now only eats its own click, not one aimed at a button in the bar.",
+  "\u2022 A sync now shows its progress: a bar under the status line, a count while the files go up (\u201c3/12\u201d) and the name of the one being written. The bar sweeps for the steps that have no count \u2014 signing in, reading Drive, merging \u2014 so a slow sync never looks stuck.",
+  "\u2022 Syncing twice no longer leaves a duplicate. Two syncs in the same minute share a folder name, and Drive is happy to hold two folders called the same thing \u2014 so the second sync made a second copy of the run and of every file in it. The second sync now reuses the folder and replaces the files.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

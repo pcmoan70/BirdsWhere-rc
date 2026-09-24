@@ -112,12 +112,18 @@ window.GDriveSync = (function () {
   var lastPhaseName = "";            // …and, while files are being written, WHICH file
   var lastPull = null;               // what the last pull found on Drive, for the status line
   var LS_LAST_PULL = "gdrive-last-pull";
-  function phase(p, name) { lastPhase = p || ""; lastPhaseName = name || ""; emit(lastStatus); }
+  // `done`/`total` drive the progress bar; they are 0 for the steps that have no count.
+  var lastDone = 0, lastTotal = 0;
+  function phase(p, name, done, total) {
+    lastPhase = p || ""; lastPhaseName = name || "";
+    lastDone = done || 0; lastTotal = total || 0;
+    emit(lastStatus);
+  }
   function pullSummary() {
     if (lastPull) return lastPull;
     try { var raw = sessionStorage.getItem(LS_LAST_PULL); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
   }
-  function snapshot() { return { connected: connected, hasClientId: !!clientId(), status: lastStatus, busy: syncing, lastSyncAt: lastSyncAt, error: lastError, phase: lastPhase, phaseName: lastPhaseName, pull: pullSummary() }; }
+  function snapshot() { return { connected: connected, hasClientId: !!clientId(), status: lastStatus, busy: syncing, lastSyncAt: lastSyncAt, error: lastError, phase: lastPhase, phaseName: lastPhaseName, done: lastDone, total: lastTotal, pull: pullSummary() }; }
   function emit(s) { lastStatus = s; for (var i = 0; i < statusListeners.length; i++) { try { statusListeners[i](snapshot()); } catch (e) {} } }
   // Record a failure's detail so the UI can show WHY a sync failed, then emit.
   function fail(status, e) { lastError = (e && e.message) ? String(e.message) : (typeof e === "string" ? e : "sync failed"); emit(status); }
@@ -258,9 +264,20 @@ window.GDriveSync = (function () {
   }
   async function createRunFolder() {
     var parent = await ensureFolder();
+    var name = runFolderName(Date.now());
+    // Two syncs inside the same minute share a name, and Drive is happy to hold two
+    // folders called the same thing — which left a duplicate run beside the real one,
+    // each with its own copy of every file. Reuse the folder if it is already there.
+    var q = encodeURIComponent("trashed=false and mimeType='application/vnd.google-apps.folder' and name='" +
+                               name + "' and '" + parent + "' in parents");
+    var found = await driveFetch("https://www.googleapis.com/drive/v3/files?fields=files(id)&pageSize=1&q=" + q, {});
+    if (found.ok) {
+      var fj = await found.json();
+      if (fj.files && fj.files.length) return fj.files[0].id;
+    }
     var r = await driveFetch("https://www.googleapis.com/drive/v3/files?fields=id", {
       method: "POST", headers: { "Content-Type": "application/json; charset=UTF-8" },
-      body: JSON.stringify({ name: runFolderName(Date.now()), parents: [parent],
+      body: JSON.stringify({ name: name, parents: [parent],
                              mimeType: "application/vnd.google-apps.folder" })
     });
     if (!r.ok) throw new Error("Drive run folder failed (" + r.status + ")");
@@ -366,10 +383,20 @@ window.GDriveSync = (function () {
     return await put.json();
   }
 
+  // Write the payload into a run folder: replace the one already there (a second sync
+  // inside the same minute reuses the folder) rather than leaving two files of the same
+  // name side by side, which is what Drive would otherwise happily do.
   async function createFile(payloadStr, parentId) {
+    var parent = parentId || await ensureFolder();
+    var existing = await payloadIn(parent);
+    if (existing && existing.id) {
+      return resumableUpload("PATCH",
+        "https://www.googleapis.com/upload/drive/v3/files/" + existing.id + "?uploadType=resumable&fields=id",
+        {}, payloadStr);
+    }
     return resumableUpload("POST",
       "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id",
-      { name: FILE_NAME, parents: [parentId || await ensureFolder()] }, payloadStr);
+      { name: FILE_NAME, parents: [parent] }, payloadStr);
   }
 
 
@@ -402,7 +429,7 @@ window.GDriveSync = (function () {
     try { files = await window.AppData.driveExtraFiles(); } catch (e) { return; }
     for (var i = 0; i < files.length; i++) {
       var f = files[i];
-      phase("files", f.name);
+      phase("files", f.name, i + 1, files.length);
       try { await putNamedFile(f.name, f.mime, f.bytes ? new Blob([f.bytes], { type: f.mime }) : f.text, parentId); }
       catch (e) { /* one bad file must not cost the others, or the sync */ }
     }
@@ -418,7 +445,7 @@ window.GDriveSync = (function () {
     // Fetched observation dots are excluded unless asked for: re-fetchable, bulky, and
     // not something the user made. Anything already on Drive is left as it is.
     var inc = (options && options.cats) || { settings: 1, lists: 1, trips: 1, checklists: 1, fetched: 0 };
-    syncing = true; lastPhase = "signin"; lastPhaseName = ""; emit("syncing");
+    syncing = true; lastPhase = "signin"; lastPhaseName = ""; lastDone = lastTotal = 0; emit("syncing");
     try {
       phase("read");
       var meta = await findFile();                 // newest payload: latest dated run folder, else legacy
@@ -485,7 +512,7 @@ window.GDriveSync = (function () {
         if (dir !== "download" && needPush) window.AppData.markBackedUp();
         else window.GeoState.save({ gdriveLastSync: lastSyncAt });
       } catch (e) {}
-      lastPhase = ""; lastPhaseName = "";
+      lastPhase = ""; lastPhaseName = ""; lastDone = lastTotal = 0;
       emit("idle");
 
       // A pull that overwrote scalar settings the UI already rendered needs a
@@ -509,7 +536,7 @@ window.GDriveSync = (function () {
       fail(/storage/i.test(msg) ? "storagefull" : "reconnect", e);
     } finally {
       syncing = false;
-      lastPhase = ""; lastPhaseName = "";   // a failed run must not leave the button mid-sentence
+      lastPhase = ""; lastPhaseName = ""; lastDone = lastTotal = 0;   // a failed run must not leave the button mid-sentence
     }
   }
 
