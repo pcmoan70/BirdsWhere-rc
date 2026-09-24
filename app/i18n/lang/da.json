@@ -654,8 +654,6 @@
   "sync.catTrips": "Ture",
   "sync.catChecklists": "Tjeklister",
   "sync.catFetched": "Hentede punkter",
-  "sync.lastBackup": "Sidst sikkerhedskopieret til Drive {t}.",
-  "sync.neverBackedUp": "Aldrig sikkerhedskopieret til Drive — en synkronisering gemmer en kopi uden for denne enhed.",
   "sync.backupDue": "Nye punkter siden sidste sikkerhedskopi — synkronisér for at gemme en kopi uden for enheden.",
   "sync.backups": "Tidligere sikkerhedskopier…",
   "sync.backupsNone": "Ingen tidligere sikkerhedskopier endnu — der tages en, hver gang du synkroniserer.",

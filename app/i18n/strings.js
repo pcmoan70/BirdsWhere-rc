@@ -135,8 +135,6 @@ window.GeoI18N = (function () {
         "sync.catTrips": "Trips",
         "sync.catChecklists": "Checklists",
         "sync.catFetched": "Fetched points",
-        "sync.lastBackup": "Last backed up to Drive {t}.",
-        "sync.neverBackedUp": "Never backed up to Drive — a sync keeps a copy off this device.",
         "sync.backupDue": "New points since the last backup — sync to keep a copy off this device.",
         "sync.backups": "Earlier backups…",
         "sync.phSignin": "Signing in…",

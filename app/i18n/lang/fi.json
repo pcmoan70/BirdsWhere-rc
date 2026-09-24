@@ -654,8 +654,6 @@
   "sync.catTrips": "Retket",
   "sync.catChecklists": "Tarkistuslistat",
   "sync.catFetched": "Haetut pisteet",
-  "sync.lastBackup": "Viimeksi varmuuskopioitu Driveen {t}.",
-  "sync.neverBackedUp": "Ei koskaan varmuuskopioitu Driveen — synkronointi säilyttää kopion tämän laitteen ulkopuolella.",
   "sync.backupDue": "Uusia pisteitä viime varmuuskopion jälkeen — synkronoi, niin kopio säilyy laitteen ulkopuolella.",
   "sync.backups": "Aiemmat varmuuskopiot…",
   "sync.backupsNone": "Ei vielä aiempia varmuuskopioita — yksi otetaan aina kun synkronoit.",

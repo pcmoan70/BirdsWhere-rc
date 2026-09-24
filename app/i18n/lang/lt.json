@@ -654,8 +654,6 @@
   "sync.catTrips": "Išvykos",
   "sync.catChecklists": "Kontroliniai sąrašai",
   "sync.catFetched": "Gauti taškai",
-  "sync.lastBackup": "Paskutinė kopija „Drive“ {t}.",
-  "sync.neverBackedUp": "Niekada neįrašyta į „Drive“ — sinchronizavimas išsaugo kopiją ne šiame įrenginyje.",
   "sync.backupDue": "Nuo paskutinės kopijos yra naujų taškų — sinchronizuokite, kad kopija būtų ne šiame įrenginyje.",
   "sync.backups": "Ankstesnės kopijos…",
   "sync.backupsNone": "Ankstesnių atsarginių kopijų dar nėra — viena išsaugoma kiekvieną kartą sinchronizuojant.",

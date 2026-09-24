@@ -654,8 +654,6 @@
   "sync.catTrips": "Turer",
   "sync.catChecklists": "Sjekklister",
   "sync.catFetched": "Hentede punkter",
-  "sync.lastBackup": "Sist sikkerhetskopiert til Drive {t}.",
-  "sync.neverBackedUp": "Aldri sikkerhetskopiert til Drive — en synkronisering tar vare på en kopi utenfor denne enheten.",
   "sync.backupDue": "Nye punkter siden sist sikkerhetskopi — synkroniser for å ta vare på en kopi utenfor enheten.",
   "sync.backups": "Tidligere sikkerhetskopier…",
   "sync.backupsNone": "Ingen tidligere sikkerhetskopier ennå — én tas hver gang du synkroniserer.",

@@ -5836,11 +5836,6 @@
     var due = now > 0 && now > was && Date.now() - from > BACKUP_DUE_MS;
     return { at: at, pts: now, was: was, due: due, from: from };
   }
-  function backupLineText(st) {
-    if (!st.at) return t("sync.neverBackedUp");
-    var d = new Date(st.at);
-    return t("sync.lastBackup", { t: d.toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) });
-  }
   function updateBackupNudge() {
     var st = backupState();
     var gear = document.getElementById("settings-toggle");
@@ -5852,7 +5847,10 @@
     if (sb) { sb.classList.toggle("backup-due", st.due); sb.title = st.due ? t("sync.backupDue") : ""; }
     var line = document.getElementById("mp-backup-line");
     if (line) {
-      line.textContent = backupLineText(st) + (st.due ? " · " + t("sync.backupDue") : "");
+      // The "last backed up to Drive …" sentence was removed (2026-09-24): it sat in the
+      // Points panel on every open saying nothing the user could act on. The overdue
+      // nudge stays — that one asks for something.
+      line.textContent = st.due ? t("sync.backupDue") : "";
       line.classList.toggle("backup-due", st.due);
     }
   }

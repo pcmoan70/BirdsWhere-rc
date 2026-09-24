@@ -654,8 +654,6 @@
   "sync.catTrips": "Uscite",
   "sync.catChecklists": "Liste di controllo",
   "sync.catFetched": "Punti recuperati",
-  "sync.lastBackup": "Ultimo backup su Drive {t}.",
-  "sync.neverBackedUp": "Mai salvato su Drive: una sincronizzazione conserva una copia fuori da questo dispositivo.",
   "sync.backupDue": "Nuovi punti dall'ultimo backup: sincronizza per conservare una copia fuori dal dispositivo.",
   "sync.backups": "Backup precedenti…",
   "sync.backupsNone": "Nessun backup precedente — ne viene conservato uno a ogni sincronizzazione.",

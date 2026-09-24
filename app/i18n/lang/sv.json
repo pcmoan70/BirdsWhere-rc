@@ -229,8 +229,6 @@
   "sync.catTrips": "Turer",
   "sync.catChecklists": "Checklistor",
   "sync.catFetched": "Hämtade punkter",
-  "sync.lastBackup": "Senast säkerhetskopierad till Drive {t}.",
-  "sync.neverBackedUp": "Aldrig säkerhetskopierad till Drive — en synkronisering sparar en kopia utanför den här enheten.",
   "sync.backupDue": "Nya punkter sedan senaste säkerhetskopian — synkronisera för att spara en kopia utanför enheten.",
   "sync.backups": "Tidigare säkerhetskopior…",
   "sync.backupsNone": "Inga tidigare säkerhetskopior än — en sparas varje gång du synkroniserar.",

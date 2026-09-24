@@ -654,8 +654,6 @@
   "sync.catTrips": "Excursies",
   "sync.catChecklists": "Checklists",
   "sync.catFetched": "Opgehaalde punten",
-  "sync.lastBackup": "Laatste back-up naar Drive {t}.",
-  "sync.neverBackedUp": "Nog nooit een back-up naar Drive — een synchronisatie bewaart een kopie buiten dit apparaat.",
   "sync.backupDue": "Nieuwe punten sinds de laatste back-up — synchroniseer om een kopie buiten dit apparaat te bewaren.",
   "sync.backups": "Eerdere back-ups…",
   "sync.backupsNone": "Nog geen eerdere back-ups — er wordt er één bewaard bij elke synchronisatie.",

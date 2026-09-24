@@ -654,8 +654,6 @@
   "sync.catTrips": "Retked",
   "sync.catChecklists": "Kontroll-loendid",
   "sync.catFetched": "Laaditud punktid",
-  "sync.lastBackup": "Viimati Drive'i varundatud {t}.",
-  "sync.neverBackedUp": "Pole kunagi Drive'i varundatud — sünkroonimine hoiab koopiat väljaspool seda seadet.",
   "sync.backupDue": "Uusi punkte pärast viimast varundust — sünkrooni, et koopia oleks väljaspool seadet.",
   "sync.backups": "Varasemad varukoopiad…",
   "sync.backupsNone": "Varasemaid varukoopiaid veel pole — üks salvestatakse iga sünkroonimise ajal.",

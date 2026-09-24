@@ -654,8 +654,6 @@
   "sync.catTrips": "Touren",
   "sync.catChecklists": "Checklisten",
   "sync.catFetched": "Abgerufene Punkte",
-  "sync.lastBackup": "Zuletzt auf Drive gesichert {t}.",
-  "sync.neverBackedUp": "Noch nie auf Drive gesichert — eine Synchronisierung hält eine Kopie außerhalb dieses Geräts.",
   "sync.backupDue": "Neue Punkte seit der letzten Sicherung — synchronisieren Sie, damit eine Kopie außerhalb des Geräts liegt.",
   "sync.backups": "Frühere Sicherungen…",
   "sync.backupsNone": "Noch keine früheren Sicherungen — bei jeder Synchronisierung wird eine angelegt.",
