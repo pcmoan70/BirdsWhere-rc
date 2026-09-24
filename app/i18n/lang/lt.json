@@ -1459,5 +1459,10 @@
   "points.downloadAs": "Atsisiųsti „{name}“ formatu",
   "points.downloaded": "Atsisiųsta {n} taškų iš „{name}“.",
   "points.stackN": "{n} taškai čia – naujausi viršuje",
-  "points.cardMore": "Bakstelėkite veiksmams – šaltinis, navigacija, įtraukti į sąrašą"
+  "points.cardMore": "Bakstelėkite veiksmams – šaltinis, navigacija, įtraukti į sąrašą",
+  "sync.phSignin": "Prisijungiama …",
+  "sync.phRead": "Skaitomas „Drive“ …",
+  "sync.phMerge": "Sujungiama …",
+  "sync.phWrite": "Įkeliama …",
+  "sync.phFiles": "Rašomi failai …"
 }

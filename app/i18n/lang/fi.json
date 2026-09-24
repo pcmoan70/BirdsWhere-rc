@@ -1459,5 +1459,10 @@
   "points.downloadAs": "Lataa ”{name}” muodossa",
   "points.downloaded": "Ladattiin {n} pistettä listasta ”{name}”.",
   "points.stackN": "{n} pistettä tässä – uusin ylinnä",
-  "points.cardMore": "Napauta toimintoja varten – lähde, navigoi, lisää listaan"
+  "points.cardMore": "Napauta toimintoja varten – lähde, navigoi, lisää listaan",
+  "sync.phSignin": "Kirjaudutaan …",
+  "sync.phRead": "Luetaan Drivea …",
+  "sync.phMerge": "Yhdistetään …",
+  "sync.phWrite": "Lähetetään …",
+  "sync.phFiles": "Kirjoitetaan tiedostoja …"
 }

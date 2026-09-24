@@ -1459,5 +1459,10 @@
   "points.downloadAs": "Last ned «{name}» som",
   "points.downloaded": "Lastet ned {n} punkter fra «{name}».",
   "points.stackN": "{n} punkter her – nyeste øverst",
-  "points.cardMore": "Trykk for handlinger – kilde, naviger, legg i liste"
+  "points.cardMore": "Trykk for handlinger – kilde, naviger, legg i liste",
+  "sync.phSignin": "Logger inn …",
+  "sync.phRead": "Leser Disk …",
+  "sync.phMerge": "Slår sammen …",
+  "sync.phWrite": "Laster opp …",
+  "sync.phFiles": "Skriver filer …"
 }

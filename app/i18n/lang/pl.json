@@ -1459,5 +1459,10 @@
   "points.downloadAs": "Pobierz „{name}” jako",
   "points.downloaded": "Pobrano {n} punktów z „{name}”.",
   "points.stackN": "{n} punktów tutaj – najnowsze na górze",
-  "points.cardMore": "Dotknij, by wyświetlić działania – źródło, nawigacja, dodaj do listy"
+  "points.cardMore": "Dotknij, by wyświetlić działania – źródło, nawigacja, dodaj do listy",
+  "sync.phSignin": "Logowanie …",
+  "sync.phRead": "Odczyt Dysku …",
+  "sync.phMerge": "Scalanie …",
+  "sync.phWrite": "Wysyłanie …",
+  "sync.phFiles": "Zapis plików …"
 }

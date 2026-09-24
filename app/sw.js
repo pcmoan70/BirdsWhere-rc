@@ -21,17 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1875";
+var VERSION = "v1876";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Google Drive backups are now in a folder you can open. They used to go to Drive's hidden application-data area, which Drive itself cannot show you; they now go to a folder called \u201cBirdsWhere\u201d in your Drive. Backups made before this are still read, and move across on your next sync.",
-  "\u2022 Beside the sync file the folder holds readable copies: a .kmz for every point list and saved trip, and CSV for your species lists and checklists \u2014 openable in Google Earth, a spreadsheet, or anything else.",
-  "\u2022 More of your data now travels with the sync: the species names harvested from iNaturalist, the extra vernacular names, and your own Drive client ID. They lived only on the device before, so each new device started collecting them again.",
-  "\u2022 Tick \u201cFetched points\u201d in the sync window and the downloaded observations come along too \u2014 off by default, since it is much the largest thing the app holds.",
+  "\u2022 The Sync button now says what it is doing \u2014 Signing in, Reading Drive, Merging, Uploading, Writing files \u2014 with the \u27f3 turning while it works, instead of only greying out.",
+  "\u2022 Each sync gets its own dated folder in BirdsWhere, named for when it ran (\u201c2026-09-24 1830\u201d), holding that sync's data file together with its .kmz and .csv copies. The ten most recent runs are kept; older folders are removed. Earlier backups are still listed and can still be restored.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

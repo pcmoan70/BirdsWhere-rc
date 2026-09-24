@@ -4664,3 +4664,9 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
    cue because tapping it opens the point's action menu. */
 .mp-stack-it.one { border-bottom: 0; padding: 2px; }
 .lists-coll-dl { color: var(--brand-deep); }
+/* The Sync button reports its own state: the ⟳ turns while a sync runs and the
+   label is replaced by the current step (signing in / reading / merging / …). */
+.btn.gd-busy { opacity: 1; }
+.btn.gd-busy .btn-ico { animation: gd-spin 1.1s linear infinite; transform-origin: 50% 50%; }
+@keyframes gd-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .btn.gd-busy .btn-ico { animation: none; } }

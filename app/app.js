@@ -19199,6 +19199,14 @@
         gdSync.style.display = needId ? "none" : "";
         gdDisconnect.style.display = "none";
         gdSync.disabled = !!st.busy;
+        // The button says what it is doing, not just that it is disabled: its label
+        // becomes the current step and the ⟳ spins while a sync is running.
+        var PH = { signin: "sync.phSignin", read: "sync.phRead", merge: "sync.phMerge",
+                   write: "sync.phWrite", files: "sync.phFiles" };
+        var lbl = gdSync.querySelector(".ico-label");
+        if (lbl) lbl.textContent = st.busy && PH[st.phase] ? t(PH[st.phase]) : t("gdrive.syncNow");
+        gdSync.classList.toggle("gd-busy", !!st.busy);
+        gdSync.title = st.busy && PH[st.phase] ? t(PH[st.phase]) : "";
         var msg = "";
         var failed = st.status === "reconnect" || st.status === "error" || st.status === "storagefull";
         if (st.status === "syncing") msg = "⟳ " + t("gdrive.syncing");

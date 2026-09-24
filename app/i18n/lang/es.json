@@ -1459,5 +1459,10 @@
   "points.downloadAs": "Descargar «{name}» como",
   "points.downloaded": "Se descargaron {n} puntos de «{name}».",
   "points.stackN": "{n} puntos aquí: los más recientes primero",
-  "points.cardMore": "Toca para acciones: fuente, navegar, añadir a una lista"
+  "points.cardMore": "Toca para acciones: fuente, navegar, añadir a una lista",
+  "sync.phSignin": "Iniciando sesión …",
+  "sync.phRead": "Leyendo Drive …",
+  "sync.phMerge": "Combinando …",
+  "sync.phWrite": "Subiendo …",
+  "sync.phFiles": "Escribiendo archivos …"
 }
