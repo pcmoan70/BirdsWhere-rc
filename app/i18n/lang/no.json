@@ -1462,5 +1462,6 @@
   "sync.phFiles": "Skriver filer …",
   "sync.phWriteFile": "Skriver {name}",
   "sync.driveHas": "Disk hadde {lists} lister",
-  "sync.listsSkipped": "«Punktlister» er ikke haket av, så de ble ikke hentet"
+  "sync.listsSkipped": "«Punktlister» er ikke haket av, så de ble ikke hentet",
+  "sync.noCopyBig": "For stor til en .kmz-kopi: {names} – selve lista synkroniseres"
 }

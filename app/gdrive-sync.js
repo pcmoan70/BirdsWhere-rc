@@ -100,17 +100,35 @@ window.GDriveSync = (function () {
     try { return localStorage.getItem(LS_CLIENT_ID) || ""; } catch (e) { return ""; }
   }
   function localStateStr() { try { return localStorage.getItem(window.GeoState.storageKey) || "{}"; } catch (e) { return "{}"; } }
-  // Stringify a state object with `updatedAt` excluded, so a push decision
-  // ignores a timestamp-only difference (every local write bumps updatedAt).
-  function stateStrNoStamp(state) {
-    if (!state || typeof state !== "object") return JSON.stringify(state);
-    var copy = {}, k;
-    for (k in state) { if (Object.prototype.hasOwnProperty.call(state, k) && k !== "updatedAt") copy[k] = state[k]; }
-    return JSON.stringify(copy);
+  // "Has anything changed?" without stringifying the whole state twice. A big imported
+  // list puts tens of megabytes in `mapPointSets`, and serialising both copies of that to
+  // answer a yes/no question is most of what made a sync feel like a hang. Compare key by
+  // key, smallest first, and stop at the first difference.
+  var BULK_KEYS = { mapPointSets: 1, mapDetections: 1, mapDetectionSets: 1, sightingsCache: 1, nameHarvest: 1, extraVernac: 1 };
+  function stateDiffers(a, b) {
+    if (!a || !b || typeof a !== "object" || typeof b !== "object") return true;
+    var keys = {}, k;
+    for (k in a) if (Object.prototype.hasOwnProperty.call(a, k) && k !== "updatedAt") keys[k] = 1;
+    for (k in b) if (Object.prototype.hasOwnProperty.call(b, k) && k !== "updatedAt") keys[k] = 1;
+    var all = Object.keys(keys);
+    var small = all.filter(function (x) { return !BULK_KEYS[x]; });
+    var big = all.filter(function (x) { return BULK_KEYS[x]; });
+    var order = small.concat(big);
+    for (var i = 0; i < order.length; i++) {
+      var key = order[i];
+      var av = a[key], bv = b[key];
+      if (av === bv) continue;
+      // A cheap shape test before serialising a megabyte-sized value.
+      if (Array.isArray(av) && Array.isArray(bv) && av.length !== bv.length) return true;
+      if ((av == null) !== (bv == null)) return true;
+      if (JSON.stringify(av) !== JSON.stringify(bv)) return true;
+    }
+    return false;
   }
   var lastPhase = "";                // which step of a sync is running, for the button
   var lastPhaseName = "";            // …and, while files are being written, WHICH file
   var lastPull = null;               // what the last pull found on Drive, for the status line
+  var lastSkippedCopies = null;      // lists too big for a .kmz copy (the payload still carries them)
   var LS_LAST_PULL = "gdrive-last-pull";
   // `done`/`total` drive the progress bar; they are 0 for the steps that have no count.
   var lastDone = 0, lastTotal = 0;
@@ -123,7 +141,7 @@ window.GDriveSync = (function () {
     if (lastPull) return lastPull;
     try { var raw = sessionStorage.getItem(LS_LAST_PULL); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
   }
-  function snapshot() { return { connected: connected, hasClientId: !!clientId(), status: lastStatus, busy: syncing, lastSyncAt: lastSyncAt, error: lastError, phase: lastPhase, phaseName: lastPhaseName, done: lastDone, total: lastTotal, pull: pullSummary() }; }
+  function snapshot() { return { connected: connected, hasClientId: !!clientId(), status: lastStatus, busy: syncing, lastSyncAt: lastSyncAt, error: lastError, phase: lastPhase, phaseName: lastPhaseName, done: lastDone, total: lastTotal, pull: pullSummary(), skippedCopies: lastSkippedCopies }; }
   function emit(s) { lastStatus = s; for (var i = 0; i < statusListeners.length; i++) { try { statusListeners[i](snapshot()); } catch (e) {} } }
   // Record a failure's detail so the UI can show WHY a sync failed, then emit.
   function fail(status, e) { lastError = (e && e.message) ? String(e.message) : (typeof e === "string" ? e : "sync failed"); emit(status); }
@@ -427,6 +445,7 @@ window.GDriveSync = (function () {
     if (!window.AppData || !window.AppData.driveExtraFiles) return;
     var files = [];
     try { files = await window.AppData.driveExtraFiles(); } catch (e) { return; }
+    lastSkippedCopies = (files && files._skipped) || null;
     for (var i = 0; i < files.length; i++) {
       var f = files[i];
       phase("files", f.name, i + 1, files.length);
@@ -488,7 +507,7 @@ window.GDriveSync = (function () {
       var merged = window.AppData.buildPayload();
       window.AppData.overlayExcludedForPush(merged, remote, inc, localState);
       var needPush = dir !== "download" && (!remote ||
-        stateStrNoStamp(merged.state) !== stateStrNoStamp(remote.state) ||
+        stateDiffers(merged.state, remote.state) ||
         (merged.ebirdKey && merged.ebirdKey !== (remote.ebirdKey || "")));
       if (needPush) {
         var str = JSON.stringify(merged);

@@ -1462,5 +1462,6 @@
   "sync.phFiles": "Skriver filer …",
   "sync.phWriteFile": "Skriver {name}",
   "sync.driveHas": "Drive hade {lists} listor",
-  "sync.listsSkipped": "”Punktlistor” är inte ikryssad, så de hämtades inte"
+  "sync.listsSkipped": "”Punktlistor” är inte ikryssad, så de hämtades inte",
+  "sync.noCopyBig": "För stor för en .kmz-kopia: {names} – själva listan synkas"
 }

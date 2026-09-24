@@ -1462,5 +1462,6 @@
   "sync.phFiles": "Dateien werden geschrieben …",
   "sync.phWriteFile": "{name} wird geschrieben",
   "sync.driveHas": "Drive hatte {lists} Listen",
-  "sync.listsSkipped": "„Punktlisten“ ist nicht angehakt, sie wurden nicht übernommen"
+  "sync.listsSkipped": "„Punktlisten“ ist nicht angehakt, sie wurden nicht übernommen",
+  "sync.noCopyBig": "Zu groß für eine .kmz-Kopie: {names} – die Liste selbst wird synchronisiert"
 }

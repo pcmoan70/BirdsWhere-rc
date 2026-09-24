@@ -1462,5 +1462,6 @@
   "sync.phFiles": "Zapis plików …",
   "sync.phWriteFile": "Zapis {name}",
   "sync.driveHas": "Dysk miał {lists} list",
-  "sync.listsSkipped": "„Listy punktów” nie jest zaznaczone, więc ich nie pobrano"
+  "sync.listsSkipped": "„Listy punktów” nie jest zaznaczone, więc ich nie pobrano",
+  "sync.noCopyBig": "Za duża na kopię .kmz: {names} – sama lista jest synchronizowana"
 }

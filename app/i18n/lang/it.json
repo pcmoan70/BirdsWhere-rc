@@ -1462,5 +1462,6 @@
   "sync.phFiles": "Scrittura dei file …",
   "sync.phWriteFile": "Scrittura di {name}",
   "sync.driveHas": "Drive aveva {lists} liste",
-  "sync.listsSkipped": "«Liste di punti» non è selezionata, quindi non sono state prese"
+  "sync.listsSkipped": "«Liste di punti» non è selezionata, quindi non sono state prese",
+  "sync.noCopyBig": "Troppo grande per una copia .kmz: {names} — la lista stessa è sincronizzata"
 }

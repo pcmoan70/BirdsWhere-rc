@@ -1462,5 +1462,6 @@
   "sync.phFiles": "Écriture des fichiers …",
   "sync.phWriteFile": "Écriture de {name}",
   "sync.driveHas": "Drive contenait {lists} listes",
-  "sync.listsSkipped": "« Listes de points » est décoché : elles n’ont pas été récupérées"
+  "sync.listsSkipped": "« Listes de points » est décoché : elles n’ont pas été récupérées",
+  "sync.noCopyBig": "Trop volumineuse pour une copie .kmz : {names} — la liste elle-même est synchronisée"
 }

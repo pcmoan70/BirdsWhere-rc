@@ -1462,5 +1462,6 @@
   "sync.phFiles": "Skriver filer …",
   "sync.phWriteFile": "Skriver {name}",
   "sync.driveHas": "Drev havde {lists} lister",
-  "sync.listsSkipped": "“Punktlister” er ikke markeret, så de blev ikke hentet"
+  "sync.listsSkipped": "“Punktlister” er ikke markeret, så de blev ikke hentet",
+  "sync.noCopyBig": "For stor til en .kmz-kopi: {names} – selve listen synkroniseres"
 }

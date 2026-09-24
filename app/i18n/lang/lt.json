@@ -1462,5 +1462,6 @@
   "sync.phFiles": "Rašomi failai …",
   "sync.phWriteFile": "Rašoma {name}",
   "sync.driveHas": "„Drive“ turėjo {lists} sąrašų",
-  "sync.listsSkipped": "„Taškų sąrašai“ nepažymėta, todėl jie nebuvo paimti"
+  "sync.listsSkipped": "„Taškų sąrašai“ nepažymėta, todėl jie nebuvo paimti",
+  "sync.noCopyBig": "Per didelis .kmz kopijai: {names} – pats sąrašas sinchronizuojamas"
 }

@@ -1462,5 +1462,6 @@
   "sync.phFiles": "Escribiendo archivos …",
   "sync.phWriteFile": "Escribiendo {name}",
   "sync.driveHas": "Drive tenía {lists} listas",
-  "sync.listsSkipped": "«Listas de puntos» está desmarcada, así que no se trajeron"
+  "sync.listsSkipped": "«Listas de puntos» está desmarcada, así que no se trajeron",
+  "sync.noCopyBig": "Demasiado grande para una copia .kmz: {names}: la lista sí se sincroniza"
 }

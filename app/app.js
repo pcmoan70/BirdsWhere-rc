@@ -6411,10 +6411,16 @@
   }
   // Name a file the way a person would, without letting a list name break the path.
   function safeFileName(x) { return String(x || "").replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, " ").trim().slice(0, 60) || "unnamed"; }
+  // A readable copy is a convenience; the sync payload is the data. Building one for a
+  // very large list is not worth what it costs — a 73 000-point list makes ~115 MB of KML
+  // string before it is even deflated, which on a phone is the sync "hanging". Lists past
+  // this go to Drive in the payload as always, just without a .kmz beside them.
+  var COPY_MAX_POINTS = 20000;
   function driveExtraFiles() {
-    var out = [], jobs = [];
+    var out = [], jobs = [], skipped = [];
     function kmz(name, points) {
       if (!points || !points.length) return;
+      if (points.length > COPY_MAX_POINTS) { skipped.push(name + " (" + points.length + ")"); return; }
       var coll = [{ name: name, points: points }];
       jobs.push(mpState.buildKmz(mpState.buildPointsKml(coll, [])).then(function (bytes) {
         out.push({ name: safeFileName(name) + ".kmz", mime: "application/vnd.google-earth.kmz", bytes: bytes });
@@ -6443,7 +6449,10 @@
       var fc = window.AppField && window.AppField.fieldChecklistCsv && window.AppField.fieldChecklistCsv();
       if (fc) out.push({ name: "Checklists.csv", mime: "text/csv;charset=utf-8", text: fc });
     } catch (e) {}
-    return Promise.all(jobs).then(function () { return out; });
+    return Promise.all(jobs).then(function () {
+      if (skipped.length) out._skipped = skipped;   // reported by the sync, not silently dropped
+      return out;
+    });
   }
   // Surface the data layer for the Google Drive sync module (gdrive-sync.js),
   // which lives outside this IIFE. It builds the payload and merges remote
@@ -19306,6 +19315,7 @@
             msg += " · " + t("sync.driveHas", { lists: st.pull.lists });
             if (st.pull.skippedLists) msg += " · " + t("sync.listsSkipped");
           }
+          if (st.skippedCopies && st.skippedCopies.length) msg += " · " + t("sync.noCopyBig", { names: st.skippedCopies.join(", ") });
         }
         // Surface the actual failure reason so a sync error isn't silent.
         if (failed && st.error) msg += " · " + st.error;

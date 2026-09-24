@@ -144,6 +144,7 @@ window.GeoI18N = (function () {
         "sync.phFiles": "Writing files…",
         "sync.phWriteFile": "Writing {name}",
         "sync.driveHas": "Drive had {lists} lists",
+        "sync.noCopyBig": "Too large for a .kmz copy: {names} \u2014 the list itself is synced",
         "sync.listsSkipped": "\u201cPoint lists\u201d is unticked, so they were not taken",
         "sync.backupsNone": "No earlier backups yet — one is kept every time you sync.",
         "sync.restore": "Restore",

@@ -1462,5 +1462,6 @@
   "sync.phFiles": "Zápis souborů …",
   "sync.phWriteFile": "Zápis {name}",
   "sync.driveHas": "Na Disku bylo {lists} seznamů",
-  "sync.listsSkipped": "„Seznamy bodů“ není zaškrtnuto, takže se nestáhly"
+  "sync.listsSkipped": "„Seznamy bodů“ není zaškrtnuto, takže se nestáhly",
+  "sync.noCopyBig": "Příliš velké na kopii .kmz: {names} – samotný seznam se synchronizuje"
 }

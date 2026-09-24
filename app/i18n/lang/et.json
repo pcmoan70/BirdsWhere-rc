@@ -1462,5 +1462,6 @@
   "sync.phFiles": "Failide kirjutamine …",
   "sync.phWriteFile": "Kirjutan {name}",
   "sync.driveHas": "Drive’is oli {lists} loendit",
-  "sync.listsSkipped": "„Punktiloendid“ pole märgitud, seega neid ei toodud"
+  "sync.listsSkipped": "„Punktiloendid“ pole märgitud, seega neid ei toodud",
+  "sync.noCopyBig": "Liiga suur .kmz-koopia jaoks: {names} – loend ise sünkroonitakse"
 }
