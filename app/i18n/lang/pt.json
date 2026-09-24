@@ -1458,5 +1458,6 @@
   "points.download": "Transferir para um ficheiro",
   "points.downloadAs": "Transferir “{name}” como",
   "points.downloaded": "Transferidos {n} pontos de “{name}”.",
-  "points.stackN": "{n} pontos aqui – mais recentes primeiro"
+  "points.stackN": "{n} pontos aqui – mais recentes primeiro",
+  "points.cardMore": "Toque para ações – fonte, navegar, adicionar a uma lista"
 }

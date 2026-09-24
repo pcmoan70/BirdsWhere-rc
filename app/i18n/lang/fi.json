@@ -1458,5 +1458,6 @@
   "points.download": "Lataa tiedostoon",
   "points.downloadAs": "Lataa ”{name}” muodossa",
   "points.downloaded": "Ladattiin {n} pistettä listasta ”{name}”.",
-  "points.stackN": "{n} pistettä tässä – uusin ylinnä"
+  "points.stackN": "{n} pistettä tässä – uusin ylinnä",
+  "points.cardMore": "Napauta toimintoja varten – lähde, navigoi, lisää listaan"
 }

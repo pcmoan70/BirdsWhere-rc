@@ -21,17 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1872";
+var VERSION = "v1873";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Several reports on the same spot are now listed. Clicking a point that shares its coordinates with others opens one scrollable popup with every report, newest first and a rule between each \u2014 before, they fanned out into identical dots and you could only read one. Pins that are genuinely a few metres apart still fan out, which is where that helps.",
-  "\u2022 Every saved list and trip has a download arrow beside its \u00d7 in the Points menu \u2014 pick KML, KMZ or GeoJSON and the list is written to a file.",
-  "\u2022 \"Load from file\" in the Points menu reads KML, KMZ and GeoJSON, exactly like the Import button in Settings. It only understood share links before, so choosing a map file there did nothing.",
-  "\u2022 Both file pickers now offer .kmz / .kml / .geojson instead of every file on the device.",
+  "\u2022 Clicking a point on the map now opens its record as a proper popup \u2014 it stays put, has an \u00d7 in the top right, and closes when you press that or interact elsewhere. The details used to sit in a hover card, which a phone never shows. Tapping the card opens the point\u2019s actions (source, navigate, add to list) as before.",
+  "\u2022 Several reports on one spot are listed together in that popup, newest first with a rule between each.",
+  "\u2022 The lists window \u2014 press and hold, or right-click, the Points button \u2014 now has a download arrow on every list, the same one the Points menu has: KML, KMZ or GeoJSON.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

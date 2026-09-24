@@ -1458,5 +1458,6 @@
   "points.download": "In eine Datei herunterladen",
   "points.downloadAs": "„{name}“ herunterladen als",
   "points.downloaded": "{n} Punkte aus „{name}“ heruntergeladen.",
-  "points.stackN": "{n} Punkte hier – neueste zuerst"
+  "points.stackN": "{n} Punkte hier – neueste zuerst",
+  "points.cardMore": "Tippen für Aktionen – Quelle, Navigation, zur Liste hinzufügen"
 }

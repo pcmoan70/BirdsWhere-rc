@@ -1458,5 +1458,6 @@
   "points.download": "Stáhnout do souboru",
   "points.downloadAs": "Stáhnout „{name}“ jako",
   "points.downloaded": "Staženo {n} bodů ze seznamu „{name}“.",
-  "points.stackN": "{n} bodů zde – nejnovější nahoře"
+  "points.stackN": "{n} bodů zde – nejnovější nahoře",
+  "points.cardMore": "Klepnutím zobrazíte akce – zdroj, navigace, přidat do seznamu"
 }

@@ -1458,5 +1458,6 @@
   "points.download": "Downloaden naar bestand",
   "points.downloadAs": "‘{name}’ downloaden als",
   "points.downloaded": "{n} punten uit ‘{name}’ gedownload.",
-  "points.stackN": "{n} punten hier – nieuwste eerst"
+  "points.stackN": "{n} punten hier – nieuwste eerst",
+  "points.cardMore": "Tik voor acties – bron, navigeren, aan lijst toevoegen"
 }

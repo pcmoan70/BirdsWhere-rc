@@ -4486,12 +4486,19 @@
           '<span class="dset-count lists-count-points">' + escapeHtml(t("lists.countPoints", { n: n })) + "</span></button></td>" +
         '<td class="dset-actions">' +
           '<button type="button" class="mp-coll-edit ico-btn lists-coll-edit" data-name="' + escapeHtml(c.name) + '" title="' + escapeHtml(t("points.editList")) + '" aria-label="' + escapeHtml(t("points.editList")) + '">' + ico("edit") + "</button>" +
+          (n ? '<button type="button" class="mp-coll-dl ico-btn lists-coll-dl" data-type="p" data-name="' + escapeHtml(c.name) + '" title="' + escapeHtml(t("points.download")) + '" aria-label="' + escapeHtml(t("points.download")) + '">' + ico("download") + "</button>" : "") +
           '<label class="lists-protect' + (prot ? " on" : "") + '" title="' + escapeHtml(t("lists.protect")) + '"><input type="checkbox" class="lists-protect-cb" data-name="' + escapeHtml(c.name) + '"' + (prot ? " checked" : "") + " />" + ico(prot ? "lock" : "lockopen") + "</label>" +
           '<button type="button" class="src-del lists-del-coll" data-name="' + escapeHtml(c.name) + '"' + (prot ? " disabled" : "") + ' aria-label="' + escapeHtml(t("offline.delete")) + '">×</button>' +
         "</td></tr>");
       if (open) rows.push('<tr class="lists-body-row"><td colspan="2">' + listPointRows(c.name) + "</td></tr>");
     });
     el.innerHTML = '<table class="src-tbl"><tbody>' + rows.join("") + "</tbody></table>";
+    el.querySelectorAll(".lists-coll-dl").forEach(function (b) {
+      b.addEventListener("click", function (e) {
+        e.preventDefault(); e.stopPropagation();
+        openPointsDownloadMenu(this, "p", this.getAttribute("data-name"));
+      });
+    });
     el.querySelectorAll(".lists-protect-cb").forEach(function (cb) {
       cb.addEventListener("change", function () { setCollProtected(this.getAttribute("data-name"), this.checked); renderMpAdmin(); });
     });
@@ -16475,6 +16482,45 @@
       var gl = renderDetSetOverlay(set); gl.addTo(map); mpState.detSetOverlays()[name] = gl;
     });
   }
+  // Download a saved list (or a detection set) to a file. Shared by the Points panel
+  // and the lists-admin table, so a list downloads the same way wherever it is listed.
+  // A detection set is converted through the same detPointFromRow the "add this record
+  // to a list" path uses, so a downloaded trip keeps species, date, count and source.
+  function pointsForRow(type, name) {
+    if (type === "p") {
+      var c = mpState.mpCollections().filter(function (x) { return x.name === name; })[0];
+      return c ? (c.points || []).slice() : [];
+    }
+    var set = detSets().filter(function (x) { return x.name === name; })[0];
+    if (!set) return [];
+    var out = [];
+    Object.keys(set.detections || {}).forEach(function (k) {
+      var e = set.detections[k] || {};
+      (e.rows || []).forEach(function (r) {
+        if (r.lat == null || r.lon == null) return;
+        out.push(detPointFromRow({ lat: r.lat, lon: r.lon, key: e.key || k, color: e.color || "",
+          name: detName({ key: e.key || k, cls: e.cls || "", name: e.name }) || e.name || k,
+          date: r.date, count: r.count, url: r.url, src: r.src, act: r.act }));
+      });
+    });
+    return out;
+  }
+  function openPointsDownloadMenu(anchor, type, name) {
+    var el = openAnchoredMenu("detrow-menu mp-dl-menu", anchor);
+    el.innerHTML = '<div class="dd-head">' + escapeHtml(t("points.downloadAs", { name: name })) + "</div>" +
+      ["kml", "kmz", "geojson"].map(function (f) {
+        return '<button type="button" class="dd-item" data-fmt="' + f + '">' + (f === "geojson" ? "GeoJSON" : f.toUpperCase()) + "</button>";
+      }).join("");
+    el.querySelectorAll(".dd-item").forEach(function (fb) {
+      fb.addEventListener("click", function () {
+        var pts = pointsForRow(type, name), fmt = this.getAttribute("data-fmt");
+        closeAnchoredMenu();
+        if (!pts.length) { setStatus(t("points.exportEmpty")); return; }
+        exportPointsAs(fmt, name, [{ name: name, points: pts }], []);
+        setStatus(t("points.downloaded", { n: pts.length, name: name }));
+      });
+    });
+  }
   function mpTipHtml(p) {
     var name = escapeHtml(p.name || "(point)");
     // A pin saved from a detection hovers exactly like the live plotted dot: the
@@ -17084,47 +17130,10 @@
       b.addEventListener("click", function (e) { e.preventDefault(); openCollEditModal(this.getAttribute("data-name")); });
     });
     // Per-row × deletes that saved list / detection set (after confirming).
-    // Download a list (or a detection set) to a file. One small menu with the three
-    // formats; a detection set is converted through the same detPointFromRow the
-    // "add this record to a list" path uses, so a downloaded trip keeps its species,
-    // date, count and source link.
-    function rowPoints(type, name) {
-      if (type === "p") {
-        var c = mpState.mpCollections().filter(function (x) { return x.name === name; })[0];
-        return c ? (c.points || []).slice() : [];
-      }
-      var set = detSets().filter(function (x) { return x.name === name; })[0];
-      if (!set) return [];
-      var out = [];
-      Object.keys(set.detections || {}).forEach(function (k) {
-        var e = set.detections[k] || {};
-        (e.rows || []).forEach(function (r) {
-          if (r.lat == null || r.lon == null) return;
-          out.push(detPointFromRow({ lat: r.lat, lon: r.lon, key: e.key || k, color: e.color || "",
-            name: detName({ key: e.key || k, cls: e.cls || "", name: e.name }) || e.name || k,
-            date: r.date, count: r.count, url: r.url, src: r.src, act: r.act }));
-        });
-      });
-      return out;
-    }
     panel.querySelectorAll(".mp-coll-dl").forEach(function (b) {
       b.addEventListener("click", function (e) {
         e.preventDefault(); e.stopPropagation();
-        var type = this.getAttribute("data-type"), name = this.getAttribute("data-name");
-        var el = openAnchoredMenu("detrow-menu mp-dl-menu", this);
-        el.innerHTML = '<div class="dd-head">' + escapeHtml(t("points.downloadAs", { name: name })) + "</div>" +
-          ["kml", "kmz", "geojson"].map(function (f) {
-            return '<button type="button" class="dd-item" data-fmt="' + f + '">' + (f === "geojson" ? "GeoJSON" : f.toUpperCase()) + "</button>";
-          }).join("");
-        el.querySelectorAll(".dd-item").forEach(function (fb) {
-          fb.addEventListener("click", function () {
-            var pts = rowPoints(type, name);
-            closeAnchoredMenu();
-            if (!pts.length) { setStatus(t("points.exportEmpty")); return; }
-            exportPointsAs(this.getAttribute("data-fmt"), name, [{ name: name, points: pts }], []);
-            setStatus(t("points.downloaded", { n: pts.length, name: name }));
-          });
-        });
+        openPointsDownloadMenu(this, this.getAttribute("data-type"), this.getAttribute("data-name"));
       });
     });
     panel.querySelectorAll(".mp-coll-del").forEach(function (b) {

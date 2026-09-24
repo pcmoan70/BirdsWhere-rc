@@ -252,6 +252,7 @@ window.GeoI18N = (function () {
         "kml.reading": "Reading {name}…",
         "points.download": "Download to a file",
         "points.stackN": "{n} points here — newest first",
+        "points.cardMore": "Tap for actions \u2014 source, navigate, add to list",
         "points.downloadAs": "Download “{name}” as",
         "points.downloaded": "Downloaded {n} points from “{name}”.",
         "nav.title": "Navigate in Google Maps",

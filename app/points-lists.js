@@ -1030,7 +1030,15 @@ window.AppPoints = (function () {
   function onMpPinClick(rec) {
     clearSpider();
     var group = mpOverlaps(rec, 16);
-    if (group.length <= 1) { mpPinAction(rec); return; }
+    if (group.length <= 1) {
+      // A read-only pin shows its record FIRST, as a popup that stays put and carries an
+      // × — the details used to live in a hover tooltip, which a touch device never gets.
+      // The action menu (source, navigate, add to list …) is one tap further in, on the
+      // card itself. An editable working pin still opens its editor straight away.
+      if (rec.editable) { mpPinAction(rec); return; }
+      openMpStackPopup(L.latLng(rec.p.lat, rec.p.lon), [rec]);
+      return;
+    }
     // Points that share a coordinate cannot be told apart by fanning them out — the
     // spokes only repeat "several here", which is what the dot already said. Those get
     // listed. A fan still earns its place when the points are genuinely a few metres
@@ -1055,9 +1063,9 @@ window.AppPoints = (function () {
   }
   function openMpStackPopup(center, group) {
     var items = group.slice().sort(function (a, b) { return mpPointWhen(b.p) - mpPointWhen(a.p); });
-    var html = '<div class="mp-stack-hd">' + escapeHtml(t("points.stackN", { n: items.length })) + "</div>" +
+    var html = (items.length > 1 ? '<div class="mp-stack-hd">' + escapeHtml(t("points.stackN", { n: items.length })) + "</div>" : "") +
       items.map(function (o, i) {
-        return '<div class="mp-stack-it" role="button" tabindex="0" data-i="' + i + '">' + mpTipHtml(o.p) + "</div>";
+        return '<div class="mp-stack-it' + (items.length > 1 ? "" : " one") + '" role="button" tabindex="0" data-i="' + i + '" title="' + escapeHtml(t("points.cardMore")) + '">' + mpTipHtml(o.p) + "</div>";
       }).join("");
     // Leaflet's own maxHeight gives the popup its scrollbar (.leaflet-popup-scrolled).
     var pop = L.popup({ className: "area-tip mp-stack-pop", maxWidth: 320, maxHeight: 300, autoPan: true })

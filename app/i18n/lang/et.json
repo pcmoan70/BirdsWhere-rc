@@ -1458,5 +1458,6 @@
   "points.download": "Laadi faili",
   "points.downloadAs": "Laadi „{name}“ alla vormingus",
   "points.downloaded": "Laaditi alla {n} punkti loendist „{name}“.",
-  "points.stackN": "{n} punkti siin – uusimad ees"
+  "points.stackN": "{n} punkti siin – uusimad ees",
+  "points.cardMore": "Puuduta toiminguteks – allikas, navigeeri, lisa loendisse"
 }

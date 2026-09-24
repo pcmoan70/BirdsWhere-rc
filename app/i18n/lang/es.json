@@ -1458,5 +1458,6 @@
   "points.download": "Descargar a un archivo",
   "points.downloadAs": "Descargar «{name}» como",
   "points.downloaded": "Se descargaron {n} puntos de «{name}».",
-  "points.stackN": "{n} puntos aquí: los más recientes primero"
+  "points.stackN": "{n} puntos aquí: los más recientes primero",
+  "points.cardMore": "Toca para acciones: fuente, navegar, añadir a una lista"
 }

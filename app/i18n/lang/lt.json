@@ -1458,5 +1458,6 @@
   "points.download": "Atsisiųsti į failą",
   "points.downloadAs": "Atsisiųsti „{name}“ formatu",
   "points.downloaded": "Atsisiųsta {n} taškų iš „{name}“.",
-  "points.stackN": "{n} taškai čia – naujausi viršuje"
+  "points.stackN": "{n} taškai čia – naujausi viršuje",
+  "points.cardMore": "Bakstelėkite veiksmams – šaltinis, navigacija, įtraukti į sąrašą"
 }

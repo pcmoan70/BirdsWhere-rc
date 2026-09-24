@@ -1458,5 +1458,6 @@
   "points.download": "Last ned til fil",
   "points.downloadAs": "Last ned «{name}» som",
   "points.downloaded": "Lastet ned {n} punkter fra «{name}».",
-  "points.stackN": "{n} punkter her – nyeste øverst"
+  "points.stackN": "{n} punkter her – nyeste øverst",
+  "points.cardMore": "Trykk for handlinger – kilde, naviger, legg i liste"
 }

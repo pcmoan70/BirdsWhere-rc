@@ -4660,3 +4660,7 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .mp-stack-it { padding: 7px 2px; border-bottom: 1px solid var(--border, #e3ebe8); cursor: pointer; }
 .mp-stack-it:last-child { border-bottom: 0; }
 .mp-stack-it:hover { background: var(--hover, #f2f7f5); }
+/* A lone point's card fills the popup — no rule under it, and it keeps the pointer
+   cue because tapping it opens the point's action menu. */
+.mp-stack-it.one { border-bottom: 0; padding: 2px; }
+.lists-coll-dl { color: var(--brand-deep); }
