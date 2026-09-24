@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1889";
+var VERSION = "v1890";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Species group and Sightings radius are gone from the long Settings panel. Both are in the gear's quick panel \u2014 one tap \u2014 which is enough, and having them in two places meant two things to keep in step.",
+  "\u2022 Fixes a tap being swallowed after using the new full-screen gesture. Holding the green bar left the NEXT tap anywhere in that bar ignored \u2014 usually the settings gear, which then looked broken until you tapped again. A hold now only eats its own click, not one aimed at a button in the bar.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

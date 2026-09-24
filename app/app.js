@@ -10182,6 +10182,11 @@
     // Capture phase: swallow the hold's own click AND its emulated twin before the
     // button's ordinary tap handler (or anything else) sees them.
     btn.addEventListener("click", function (e) {
+      // A press that could never have started a hold here must not have its click eaten
+      // either. On a CONTAINER (the header) the swallow would otherwise apply to every
+      // control inside it: hold the bar for full screen, and the next tap on the gear or
+      // the Points button vanished.
+      if (canStart && !canStart(e)) return;
       if (!lpFired && Date.now() - holdAt >= HOLD_GUARD_MS) return;
       lpFired = false; e.stopImmediatePropagation(); e.preventDefault();
     }, true);
