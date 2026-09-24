@@ -250,28 +250,35 @@ window.AppPoints = (function () {
     for (var i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
     return str.length + ":" + h;
   }
+  // Returns a promise that settles when every write has COMMITTED. A sync that reloads
+  // the page (or a user closing the app) straight after merging used to abort the writes
+  // in flight, so freshly synced lists were never stored — they were on screen and gone
+  // on the next open. Callers that are about to navigate await this.
   function persistMpSets(list) {
-    if (!mpIdbReady || !window.AppIDB) return;
-    var keep = Object.create(null), gone = false;
+    if (!mpIdbReady || !window.AppIDB) return Promise.resolve();
+    var keep = Object.create(null), gone = false, writes = [];
     (list || []).forEach(function (c) {
       if (!c || !c.name) return;
       keep[c.name] = 1;
       var sig;
       try { sig = mpSig(JSON.stringify(c)); } catch (e) { sig = null; }
       if (sig && mpSetSig[c.name] === sig) return;   // unchanged since the last write
-      window.AppIDB.put("pts:" + c.name, c).then(function () { if (sig) mpSetSig[c.name] = sig; },
-        function () { setStatus(t("err.storageFull")); });
+      writes.push(window.AppIDB.put("pts:" + c.name, c).then(function () { if (sig) mpSetSig[c.name] = sig; },
+        function () { setStatus(t("err.storageFull")); }));
     });
     Object.keys(mpSetSig).forEach(function (n) { if (!keep[n]) { gone = true; delete mpSetSig[n]; } });
-    if (!gone) return;   // nothing was deleted → no need to scan the store for orphans
+    if (!gone) return Promise.all(writes);   // nothing was deleted → no need to scan the store for orphans
     // Never let an EMPTY list wipe the store. A user deleting their last list is one
     // thing; a transient empty mirror (a failed hydrate, a code path that resets it
     // before a save) must not take every saved list with it. Deleting the last list
     // still works — it just leaves its record for the next real save to retire.
-    if (!Object.keys(keep).length) return;
-    window.AppIDB.getAll().then(function (all) {
-      Object.keys(all).forEach(function (k) { if (k.indexOf("pts:") === 0 && !keep[k.slice(4)]) window.AppIDB.del(k).catch(function () {}); });
-    }).catch(function () {});
+    if (!Object.keys(keep).length) return Promise.all(writes);
+    writes.push(window.AppIDB.getAll().then(function (all) {
+      var dels = [];
+      Object.keys(all).forEach(function (k) { if (k.indexOf("pts:") === 0 && !keep[k.slice(4)]) dels.push(window.AppIDB.del(k).catch(function () {})); });
+      return Promise.all(dels);
+    }).catch(function () {}));
+    return Promise.all(writes);
   }
   function loadMapPoints() {
     mapPoints = (window.GeoState.get("mapPoints", []) || []).filter(function (p) { return p && isFinite(p.lat) && isFinite(p.lon); });

@@ -502,6 +502,10 @@ window.GDriveSync = (function () {
         await pruneRunFolders(SNAP_KEEP);   // keep the newest few runs (never fails the sync)
       }
 
+      // The merge wrote to IndexedDB asynchronously. Wait for those writes to commit
+      // before the sync reports success — and certainly before the reload below, which
+      // would otherwise abort them and leave the synced lists on screen but unstored.
+      try { if (window.AppData && window.AppData.flushWrites) await window.AppData.flushWrites(); } catch (e) {}
       localDirty = false;
       lastSyncAt = Date.now();
       lastError = "";        // clear any previous failure on success
@@ -599,6 +603,7 @@ window.GDriveSync = (function () {
         var data = await downloadFile(id);
         if (!data) throw new Error("backup could not be read");
         window.AppData.applyRemote(data, { incomingWins: true, interactive: false });
+        try { if (window.AppData.flushWrites) await window.AppData.flushWrites(); } catch (e) {}   // durable before we call it restored
         lastSyncAt = Date.now(); lastError = "";
         try { window.AppData.markBackedUp(); } catch (e) {}   // restored → in step with Drive
         emit("idle");

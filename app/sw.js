@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1892";
+var VERSION = "v1893";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Fixes point lists appearing to vanish after an update. Your lists live in the browser's database, and that database can refuse to open for a moment \u2014 classically when the app is open in a SECOND TAB while the new version installs. The app gave up for the rest of the session and showed no lists at all. It now retries and redraws as soon as the database answers.",
-  "\u2022 Nothing was lost in that state: the lists were unreachable, not deleted. The app also no longer records \u201cno lists\u201d while the database is unreachable, so an empty screen can never be saved over the real thing.",
+  "\u2022 Fixes freshly synced point lists vanishing when the app is closed or reloaded. A sync put the merged lists on screen immediately but stored them in the background, and finished without waiting \u2014 so closing the app, or the reload a sync does by itself, cut the storing short and the lists were gone on the next open. A sync, a backup restore and a file import now all wait for the data to be written before they report success.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

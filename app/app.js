@@ -6046,6 +6046,14 @@
     });
     return out;
   }
+  // Durable-write register. applyRemote's IndexedDB writes are async; anything that
+  // navigates straight afterwards must wait for them, or the merge is only ever in memory.
+  var pendingIdbWrites = [];
+  function flushWrites() {
+    var w = pendingIdbWrites; pendingIdbWrites = [];
+    if (!w.length) return Promise.resolve();
+    return Promise.all(w.map(function (p) { return Promise.resolve(p).catch(function () {}); }));
+  }
   function applyRemote(data, opts) {
     opts = opts || {};
     if (!data || data.app !== "migration_calendar") throw new Error(t("sync.notBackup"));
@@ -6167,7 +6175,10 @@
     // union of two devices' lists is exactly the write that used to break the sync.
     if (mpState.mpIdbReady && mpState.mpIdbReady()) {
       mpState.setMpCollections(mergedSets);
-      try { window.AppPoints.persistMpSets(mergedSets); } catch (e) {}
+      // Collected, not fired and forgotten: a caller about to reload (or a user about to
+      // close the app) waits on these through AppData.flushWrites(), or the synced lists
+      // are lost with the transaction.
+      try { pendingIdbWrites.push(window.AppPoints.persistMpSets(mergedSets)); } catch (e) {}
       delete newState.mapPointSets;
     } else newState.mapPointSets = mergedSets;
     newState.mapDetections = mergedDet;
@@ -6198,8 +6209,8 @@
       // (matches persistDetSet): a failed write leaves the trip in the in-memory
       // mirror but not durable, so flag it instead of swallowing the rejection.
       var onIdbErr = function () { setStatus(t("err.storageFull")); };
-      mergedSetsList.forEach(function (s) { if (s && s.name) window.AppIDB.put("set:" + s.name, s).then(null, onIdbErr); });
-      Object.keys(setTomb).forEach(function (n) { window.AppIDB.del("set:" + n).then(null, onIdbErr); });
+      mergedSetsList.forEach(function (s) { if (s && s.name) pendingIdbWrites.push(window.AppIDB.put("set:" + s.name, s).then(null, onIdbErr)); });
+      Object.keys(setTomb).forEach(function (n) { pendingIdbWrites.push(window.AppIDB.del("set:" + n).then(null, onIdbErr)); });
       delete newState.mapDetectionSets;   // trips live in IDB; keep them out of the blob (the scalar copy may have set this)
     } else {
       newState.mapDetectionSets = mergedSetsList;
@@ -6410,6 +6421,7 @@
   // copies through the exact same code path as the file Export/Import.
   window.AppData = {
     buildPayload: buildPayload,
+    flushWrites: flushWrites,
     driveExtraFiles: driveExtraFiles,
     markBackedUp: markBackedUp,
     applyRemote: applyRemote,
@@ -19195,7 +19207,9 @@
         try {
           var s = importAppData(rd.result);
           setStatus(t("sync.imported", { n: s.checklistsIncoming, total: s.checklistsTotal }));
-          setTimeout(function () { location.reload(); }, 1000);
+          // Reload only once the imported lists have actually reached IndexedDB — a
+          // reload mid-write aborts the transaction and the import is lost.
+          flushWrites().then(function () { setTimeout(function () { location.reload(); }, 800); });
         } catch (err) { setStatus(t("sync.importFailed", { msg: err.message || "" })); }
         e.target.value = "";
       };
