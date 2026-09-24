@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1877";
+var VERSION = "v1878";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Ticking a point list no longer throws the list back to the top. The Points panel is rebuilt whenever something changes, which reset its scroll \u2014 so selecting a list far down the list meant scrolling all the way back each time. It now stays exactly where you left it.",
+  "\u2022 While a sync writes to Drive the button now names the file it is on \u2014 \u201cWriting Points - Leks.kmz\u201d, \u201cWriting Species lists.csv\u201d \u2014 instead of a flat \u201cWriting files\u201d. A sync writes one file per list plus the two CSVs, so the name is what tells you it is moving rather than stuck.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

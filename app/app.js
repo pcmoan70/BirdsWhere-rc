@@ -19217,10 +19217,16 @@
         // becomes the current step and the ⟳ spins while a sync is running.
         var PH = { signin: "sync.phSignin", read: "sync.phRead", merge: "sync.phMerge",
                    write: "sync.phWrite", files: "sync.phFiles" };
+        // While files go up the button names the one being written, rather than a
+        // generic "writing files" — a sync writes a .kmz per list and two CSVs, and
+        // seeing which is in flight is the difference between "stuck" and "working".
+        var phTxt = "";
+        if (st.busy && st.phaseName) phTxt = t("sync.phWriteFile", { name: st.phaseName });
+        else if (st.busy && PH[st.phase]) phTxt = t(PH[st.phase]);
         var lbl = gdSync.querySelector(".ico-label");
-        if (lbl) lbl.textContent = st.busy && PH[st.phase] ? t(PH[st.phase]) : t("gdrive.syncNow");
+        if (lbl) lbl.textContent = phTxt || t("gdrive.syncNow");
         gdSync.classList.toggle("gd-busy", !!st.busy);
-        gdSync.title = st.busy && PH[st.phase] ? t(PH[st.phase]) : "";
+        gdSync.title = phTxt;
         var msg = "";
         var failed = st.status === "reconnect" || st.status === "error" || st.status === "storagefull";
         if (st.status === "syncing") msg = "⟳ " + t("gdrive.syncing");

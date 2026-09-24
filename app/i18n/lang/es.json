@@ -1464,5 +1464,6 @@
   "sync.phRead": "Leyendo Drive …",
   "sync.phMerge": "Combinando …",
   "sync.phWrite": "Subiendo …",
-  "sync.phFiles": "Escribiendo archivos …"
+  "sync.phFiles": "Escribiendo archivos …",
+  "sync.phWriteFile": "Escribiendo {name}"
 }

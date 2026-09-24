@@ -1464,5 +1464,6 @@
   "sync.phRead": "Odczyt Dysku …",
   "sync.phMerge": "Scalanie …",
   "sync.phWrite": "Wysyłanie …",
-  "sync.phFiles": "Zapis plików …"
+  "sync.phFiles": "Zapis plików …",
+  "sync.phWriteFile": "Zapis {name}"
 }

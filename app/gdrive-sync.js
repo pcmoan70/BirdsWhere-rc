@@ -109,8 +109,9 @@ window.GDriveSync = (function () {
     return JSON.stringify(copy);
   }
   var lastPhase = "";                // which step of a sync is running, for the button
-  function phase(p) { lastPhase = p || ""; emit(lastStatus); }
-  function snapshot() { return { connected: connected, hasClientId: !!clientId(), status: lastStatus, busy: syncing, lastSyncAt: lastSyncAt, error: lastError, phase: lastPhase }; }
+  var lastPhaseName = "";            // …and, while files are being written, WHICH file
+  function phase(p, name) { lastPhase = p || ""; lastPhaseName = name || ""; emit(lastStatus); }
+  function snapshot() { return { connected: connected, hasClientId: !!clientId(), status: lastStatus, busy: syncing, lastSyncAt: lastSyncAt, error: lastError, phase: lastPhase, phaseName: lastPhaseName }; }
   function emit(s) { lastStatus = s; for (var i = 0; i < statusListeners.length; i++) { try { statusListeners[i](snapshot()); } catch (e) {} } }
   // Record a failure's detail so the UI can show WHY a sync failed, then emit.
   function fail(status, e) { lastError = (e && e.message) ? String(e.message) : (typeof e === "string" ? e : "sync failed"); emit(status); }
@@ -345,6 +346,7 @@ window.GDriveSync = (function () {
     try { files = await window.AppData.driveExtraFiles(); } catch (e) { return; }
     for (var i = 0; i < files.length; i++) {
       var f = files[i];
+      phase("files", f.name);
       try { await putNamedFile(f.name, f.mime, f.bytes ? new Blob([f.bytes], { type: f.mime }) : f.text, parentId); }
       catch (e) { /* one bad file must not cost the others, or the sync */ }
     }
@@ -360,7 +362,7 @@ window.GDriveSync = (function () {
     // Fetched observation dots are excluded unless asked for: re-fetchable, bulky, and
     // not something the user made. Anything already on Drive is left as it is.
     var inc = (options && options.cats) || { settings: 1, lists: 1, trips: 1, checklists: 1, fetched: 0 };
-    syncing = true; lastPhase = "signin"; emit("syncing");
+    syncing = true; lastPhase = "signin"; lastPhaseName = ""; emit("syncing");
     try {
       phase("read");
       var meta = await findFile();                 // newest payload: latest dated run folder, else legacy
@@ -398,11 +400,10 @@ window.GDriveSync = (function () {
         var str = JSON.stringify(merged);
         // Each sync gets its own dated folder holding that run's payload AND its readable
         // copies, instead of overwriting one file and leaving loose dated JSONs beside it.
-        phase("write");
+        phase("write", FILE_NAME);
         var runId = await createRunFolder();
         var created = await createFile(str, runId);
         fileId = created.id; try { localStorage.setItem(LS_FILE_ID, fileId); } catch (e) {}
-        phase("files");
         await writeReadableCopies(runId);   // .kmz / .csv in the same folder, for a human to open
         await pruneRunFolders(SNAP_KEEP);   // keep the newest few runs (never fails the sync)
       }
@@ -417,7 +418,7 @@ window.GDriveSync = (function () {
         if (dir !== "download" && needPush) window.AppData.markBackedUp();
         else window.GeoState.save({ gdriveLastSync: lastSyncAt });
       } catch (e) {}
-      lastPhase = "";
+      lastPhase = ""; lastPhaseName = "";
       emit("idle");
 
       // A pull that overwrote scalar settings the UI already rendered needs a
@@ -441,7 +442,7 @@ window.GDriveSync = (function () {
       fail(/storage/i.test(msg) ? "storagefull" : "reconnect", e);
     } finally {
       syncing = false;
-      lastPhase = "";       // a failed run must not leave the button reading "Uploading…"
+      lastPhase = ""; lastPhaseName = "";   // a failed run must not leave the button mid-sentence
     }
   }
 

@@ -1464,5 +1464,6 @@
   "sync.phRead": "Čtení Disku …",
   "sync.phMerge": "Slučování …",
   "sync.phWrite": "Nahrávání …",
-  "sync.phFiles": "Zápis souborů …"
+  "sync.phFiles": "Zápis souborů …",
+  "sync.phWriteFile": "Zápis {name}"
 }

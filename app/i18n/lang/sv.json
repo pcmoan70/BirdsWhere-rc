@@ -1464,5 +1464,6 @@
   "sync.phRead": "Läser Drive …",
   "sync.phMerge": "Slår ihop …",
   "sync.phWrite": "Laddar upp …",
-  "sync.phFiles": "Skriver filer …"
+  "sync.phFiles": "Skriver filer …",
+  "sync.phWriteFile": "Skriver {name}"
 }

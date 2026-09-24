@@ -144,6 +144,7 @@ window.GeoI18N = (function () {
         "sync.phMerge": "Merging…",
         "sync.phWrite": "Uploading…",
         "sync.phFiles": "Writing files…",
+        "sync.phWriteFile": "Writing {name}",
         "sync.backupsNone": "No earlier backups yet — one is kept every time you sync.",
         "sync.restore": "Restore",
         "sync.restoreConfirm": "Restore the backup from {t}? Its settings win, and lists from both sides are merged — nothing on this device is deleted.",

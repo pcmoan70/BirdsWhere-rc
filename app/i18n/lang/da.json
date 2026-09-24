@@ -1464,5 +1464,6 @@
   "sync.phRead": "Læser Drev …",
   "sync.phMerge": "Fletter …",
   "sync.phWrite": "Uploader …",
-  "sync.phFiles": "Skriver filer …"
+  "sync.phFiles": "Skriver filer …",
+  "sync.phWriteFile": "Skriver {name}"
 }

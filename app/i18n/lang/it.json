@@ -1464,5 +1464,6 @@
   "sync.phRead": "Lettura di Drive …",
   "sync.phMerge": "Unione …",
   "sync.phWrite": "Caricamento …",
-  "sync.phFiles": "Scrittura dei file …"
+  "sync.phFiles": "Scrittura dei file …",
+  "sync.phWriteFile": "Scrittura di {name}"
 }

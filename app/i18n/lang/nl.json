@@ -1464,5 +1464,6 @@
   "sync.phRead": "Drive lezen …",
   "sync.phMerge": "Samenvoegen …",
   "sync.phWrite": "Uploaden …",
-  "sync.phFiles": "Bestanden schrijven …"
+  "sync.phFiles": "Bestanden schrijven …",
+  "sync.phWriteFile": "{name} schrijven"
 }

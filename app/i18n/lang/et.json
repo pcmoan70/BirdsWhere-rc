@@ -1464,5 +1464,6 @@
   "sync.phRead": "Drive’i lugemine …",
   "sync.phMerge": "Ühendamine …",
   "sync.phWrite": "Üleslaadimine …",
-  "sync.phFiles": "Failide kirjutamine …"
+  "sync.phFiles": "Failide kirjutamine …",
+  "sync.phWriteFile": "Kirjutan {name}"
 }

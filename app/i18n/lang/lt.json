@@ -1464,5 +1464,6 @@
   "sync.phRead": "Skaitomas „Drive“ …",
   "sync.phMerge": "Sujungiama …",
   "sync.phWrite": "Įkeliama …",
-  "sync.phFiles": "Rašomi failai …"
+  "sync.phFiles": "Rašomi failai …",
+  "sync.phWriteFile": "Rašoma {name}"
 }
