@@ -2749,7 +2749,8 @@
     if (active && agg) Object.keys(agg).forEach(function (k) { (agg[k].rows || []).forEach(function (r) { if (!detDatePasses(r.date)) hidden++; }); });
     if (!active || !hidden) {
       // Nothing to say about the date window — but an empty spot explains itself here.
-      if (spMissingAuto) { el.textContent = t("sp.modelOnly"); el.style.display = ""; return; }
+      // Belt and braces: never claim "no observations here" while the list is showing some.
+      if (spMissingAuto && !aggHasRows(agg)) { el.textContent = t("sp.modelOnly"); el.style.display = ""; return; }
       el.style.display = "none"; return;
     }
     var win = rg ? ((rg.from ? fmtDate(rg.from) : "…") + " – " + (rg.to ? fmtDate(rg.to) : "…"))
@@ -5506,20 +5507,20 @@
     (rarRows || []).forEach(function (d) { if (d.key.indexOf("x:") === 0) add(d.key.slice(2), d.name, d.key.slice(2), "Aves", [d]); });
     return out;
   }
+  // Does the species list actually hold any observation? (Any species with at least one
+  // row in the merged aggregate.)
+  function aggHasRows(agg) {
+    if (!agg) return false;
+    var keys = Object.keys(agg);
+    for (var i = 0; i < keys.length; i++) { var e = agg[keys[i]]; if (e && e.rows && e.rows.length) return true; }
+    return false;
+  }
   function applySightings(tbody, token, result, isFinal) {
     if (!tbody || tbody.dataset.sightingsToken !== token) return;
     if (isFinal) showSourceCounts(result.bySrc, result.dedupTotal, result.timedOut, result.failed, result.truncInfo);
     // Nothing found at this spot: rather than an empty page, show what the model expects
     // here, commonest first (the filtering pass below already honours spMissingAuto).
     var missingFlip = false;
-    if (isFinal && !spShowMissing) {
-      var nothingHere = !(result && result.dedupTotal > 0);
-      if (nothingHere !== spMissingAuto) {
-        spMissingAuto = nothingHere;
-        missingFlip = true;
-        if (nothingHere) { speciesListSort = { col: "prob", dir: "desc" }; try { updateSortIndicators(); } catch (e) {} }
-      }
-    }
     // Union across ALL plotted point-fetches, so the list mirrors the accumulated
     // map dots — not just this one fetch's data.
     // Rarity records within the list's own neighbourhood (the same radius the
@@ -5532,6 +5533,18 @@
     try { var rcz = (typeof rarityCfg === "function") ? rarityCfg() : null; if (rcz && rcz.enabled !== false && rcz.showMap !== false) rarRows = rarityNearRows(null) || []; } catch (e) {}
     var extras = mergedExtras(result.extras, rarRows), agg = mergedSightingsAgg(result.agg, rarRows);
     tbody._sightingsAgg = agg;
+    // "Nothing here → show what the model expects instead" is decided on the UNION that
+    // this list actually displays, not on THIS fetch's dedupTotal. The list merges every
+    // plotted fetch plus the rarity rows, so a point that returned nothing of its own can
+    // still be listing plenty — and the note then contradicted the rows right beneath it.
+    if (isFinal && !spShowMissing) {
+      var nothingHere = !aggHasRows(agg);
+      if (nothingHere !== spMissingAuto) {
+        spMissingAuto = nothingHere;
+        missingFlip = true;
+        if (nothingHere) { speciesListSort = { col: "prob", dir: "desc" }; try { updateSortIndicators(); } catch (e) {} }
+      }
+    }
     tbody._fetchAgg = (result && result.agg) || {};   // THIS point's fetch only (no detPlot union / rarity) — the PDF/CSV "Seen" column reads this
     if (currentSpView) currentSpView._result = result;   // latest data for plotAllSightings (partial or final)
     updateSpMapBtn();

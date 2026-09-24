@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1887";
+var VERSION = "v1888";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The full-screen button is gone from the top bar. Press and hold the green bar itself instead \u2014 the app fills the screen; hold it again to come back. A hold that starts on one of the bar's own buttons still belongs to that button, so the Points button keeps opening the lists window.",
-  "\u2022 The \u201cLast backed up to Drive \u2026\u201d line is gone from the Points menu; the reminder that you have points not yet backed up stays.",
+  "\u2022 \u201cNo observations here \u2014 this is what the model expects\u2026\u201d no longer appears above a list that is showing observations. The decision was made from the LATEST fetch alone, while the list shows every plotted fetch merged together \u2014 so a point that found nothing of its own put that line over a full list. It is now decided from what the list actually holds.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
