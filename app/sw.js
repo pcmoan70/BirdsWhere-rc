@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1881";
+var VERSION = "v1882";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 After a sync the status now says what Drive actually held \u2014 \u201cDrive had 3 lists\u201d \u2014 and warns when a category you unticked is the reason nothing arrived. A sync that brought nothing used to look exactly like one that worked, so there was no way to tell an empty backup from a skipped category.",
+  "\u2022 \u201cSync now\u201d reads the newest dated folder in BirdsWhere, chosen by the run's own date rather than by file timestamps \u2014 so an older backup that Drive happened to touch later can no longer be picked instead. Restoring a specific earlier backup still goes through \u201cEarlier backups\u2026\u201d.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

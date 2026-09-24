@@ -317,7 +317,27 @@ window.GDriveSync = (function () {
   }
   // What a DOWNLOAD reads: the most recent of everything we hold — normally the last
   // dated copy, or the current file when another build wrote it more recently.
+  // The payload inside one dated run folder, if it has one.
+  async function payloadIn(folderId) {
+    var q = encodeURIComponent("trashed=false and name='" + FILE_NAME + "' and '" + folderId + "' in parents");
+    var r = await driveFetch("https://www.googleapis.com/drive/v3/files?fields=files(id,name,modifiedTime,size)&pageSize=1&q=" + q, {});
+    if (!r.ok) return null;
+    var f = ((await r.json()).files || [])[0];
+    return f || null;
+  }
+  // What "Sync now" reads: the LATEST dated run, chosen by the run's own date rather than
+  // by file timestamps — a legacy backup that Drive touched later must not outrank today's
+  // sync. Only when no dated run holds a payload does it fall back to the folder root and
+  // then to the old hidden app-data space. Restoring a specific backup goes through
+  // restoreBackup(id) instead and is the only way to read an older run.
   async function findFile() {
+    try {
+      var runs = await listRunFolders();          // newest first, by createdTime
+      for (var i = 0; i < runs.length; i++) {
+        var f = await payloadIn(runs[i].id);
+        if (f) return f;
+      }
+    } catch (e) { /* fall through to the older layouts */ }
     var files = byNewest(await listOurFiles());
     return files.length ? files[0] : null;
   }
