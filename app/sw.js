@@ -21,17 +21,17 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1871";
+var VERSION = "v1872";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Every saved list and trip now has a download arrow beside its \u00d7 in the Points menu \u2014 pick KML, KMZ or GeoJSON and the list is written to a file.",
+  "\u2022 Several reports on the same spot are now listed. Clicking a point that shares its coordinates with others opens one scrollable popup with every report, newest first and a rule between each \u2014 before, they fanned out into identical dots and you could only read one. Pins that are genuinely a few metres apart still fan out, which is where that helps.",
+  "\u2022 Every saved list and trip has a download arrow beside its \u00d7 in the Points menu \u2014 pick KML, KMZ or GeoJSON and the list is written to a file.",
   "\u2022 \"Load from file\" in the Points menu reads KML, KMZ and GeoJSON, exactly like the Import button in Settings. It only understood share links before, so choosing a map file there did nothing.",
   "\u2022 Both file pickers now offer .kmz / .kml / .geojson instead of every file on the device.",
-  "\u2022 Where many points sit on the same spot, a click lists them in one scrollable popup \u2014 newest first, one block each \u2014 instead of fanning out into an unreadable tangle.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

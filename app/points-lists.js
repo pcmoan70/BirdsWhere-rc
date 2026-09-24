@@ -1031,13 +1031,19 @@ window.AppPoints = (function () {
     clearSpider();
     var group = mpOverlaps(rec, 16);
     if (group.length <= 1) { mpPinAction(rec); return; }
-    // A fan can separate a handful of dots; past that the spokes overlap each other
-    // and nothing is readable — so a crowded spot lists its points in one scrollable
-    // popup instead, newest first.
-    if (group.length > MP_FAN_MAX) { openMpStackPopup(L.latLng(rec.p.lat, rec.p.lon), group); return; }
+    // Points that share a coordinate cannot be told apart by fanning them out — the
+    // spokes only repeat "several here", which is what the dot already said. Those get
+    // listed. A fan still earns its place when the points are genuinely a few metres
+    // apart (it shows you WHERE each one is), until there are too many to read.
+    var same = 0;
+    group.forEach(function (o) { if (mpSamePlace(o.p, rec.p)) same++; });
+    if (same > 1 || group.length > MP_FAN_MAX) { openMpStackPopup(L.latLng(rec.p.lat, rec.p.lon), group); return; }
     spiderOutMp(L.latLng(rec.p.lat, rec.p.lon), group);
   }
   var MP_FAN_MAX = 6;
+  // ~1e-5 degrees is about a metre — closer than any two genuinely different
+  // records, and what repeated reports from one site come in as.
+  function mpSamePlace(a, b) { return Math.abs(a.lat - b.lat) < 1e-5 && Math.abs(a.lon - b.lon) < 1e-5; }
   // When a point carries no explicit date (an imported placemark, say) fall back to
   // the first ISO date in its note — KML descriptions from the point builders put the
   // record's date there — and only then to when the pin was created.
