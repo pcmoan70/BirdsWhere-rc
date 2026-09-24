@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1869";
+var VERSION = "v1870";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 A KML or GeoJSON you import keeps the colours it was drawn with. Until now every imported point took ONE colour worked out from the name of the list you put it in \u2014 so a file with a colour per species arrived as a single wash of purple, or yellow, depending only on what you called the list. The file\u2019s own styling is now read and each point keeps its own colour.",
+  "\u2022 The app stops asking iNaturalist for names it already has. The bundled name packs arrive a moment after the list does, and until one had, every name looked missing \u2014 so a language change alone sent off a burst of lookups for names sitting in the pack that was still downloading. Lookups now wait for the packs, and anything a pack can answer is dropped from the queue rather than requested. Measured on a switch to Swedish: a third of the requests were needless before, one in a hundred now.",
+  "\u2022 Nothing is lost: when a pack lands the list re-reads it, and only the names genuinely missing are looked up.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

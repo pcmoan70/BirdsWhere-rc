@@ -134,7 +134,7 @@
     if (nm && nm.charCodeAt(0) === 91 && lang !== "en" && label && label.sci) {
       var h = harvestedName(label.sci);
       if (h) return speciesCase(lang, h);
-      queueNameHarvest(label.sci);
+      if (taxNamesReady() && extraNamesReady()) queueNameHarvest(label.sci);   // not while a pack is still loading
       // Still nothing in this language → the scientific name rather than a bracketed
       // English one, for the groups whose common names are patchy.
       if (sciFallbackFor((taxByCode[label.key] || {}).class_name)) return sciCase(label.sci);
@@ -10209,8 +10209,9 @@
   function extraDisplayName(sci, recName, cls) {
     var h = harvestedName(sci);                       // bundled pack, then the device's harvest
     if (h) return speciesCase(lang, h);
-    if (lang !== "en") queueNameHarvest(sci);         // don't hold one yet → ask once
-    var v = extraVernacName(sci);                     // the older single-language cache
+    var ready = extraNamesReady();
+    if (lang !== "en" && ready) queueNameHarvest(sci);   // ask once — but only once the pack is in
+    var v = ready ? extraVernacName(sci) : "";        // the older single-language cache (also networked)
     if (v) return speciesCase(lang, v);
     // Nothing in this language: the record's own name is whatever its source sent (GBIF
     // answers in English), so for these groups show the scientific name instead.
@@ -10275,6 +10276,14 @@
   // repeats for insects and amphibians, about half for mammals, and carry no plants or
   // fungi — so turning it off means those groups stay in Latin.
   function nameLookupOn() { return window.GeoState.get("nameLookup", true) !== false; }
+  // The bundled packs answer most names — but they arrive asynchronously, and until one
+  // has, EVERY name looks missing. Asking iNaturalist in that window means asking for names
+  // the app already ships: measured at 167 requests from a single language switch, three of
+  // every four of them already present in the pack that was still downloading. So a lookup
+  // waits until the relevant pack is in; the list re-renders when it lands, and anything
+  // genuinely absent is asked for then.
+  function taxNamesReady() { return lang === "en" || loadedTaxCols[langTaxCol] === true; }
+  function extraNamesReady() { return lang === "en" || !!extraNameDict[lang]; }
   function queueNameHarvest(sci) {
     if (!nameLookupOn()) return;
     if (lang === "en") return;                       // English is the base, nothing to fill
@@ -10289,7 +10298,13 @@
     if (nhTimer) return;
     nhTimer = setTimeout(function () {
       nhTimer = null;
+      // Hold the queue while a pack is still downloading. Entries queued under the previous
+      // language keep draining across a switch, and asking before the new pack is in is
+      // asking for names it very likely contains.
+      if (!extraNamesReady() || !taxNamesReady()) { scheduleNameHarvest(); return; }
+      // Then drop anything the packs can now answer — a dictionary lookup instead of a request.
       var k = Object.keys(nhPending)[0];
+      while (k && harvestedName(nhPending[k])) { delete nhPending[k]; k = Object.keys(nhPending)[0]; }
       if (!k) { saveNameHarvest(); return; }
       var sci = nhPending[k]; delete nhPending[k];
       nhAsked++;
@@ -10421,6 +10436,12 @@
     if (vernacTimer) return;
     vernacTimer = setTimeout(function () {
       vernacTimer = null;
+      // Same rule as the harvest: never ask while a bundled pack is still downloading, and
+      // drop anything the packs can now answer (this queue also survives a language change).
+      if (!extraNamesReady()) { scheduleVernacFetch(); return; }
+      Object.keys(vernacPending).forEach(function (vk) {
+        if (harvestedName(vernacPending[vk])) delete vernacPending[vk];
+      });
       var keys = Object.keys(vernacPending).slice(0, 6);   // small batches, sequential — kind to the API
       if (!keys.length) return;
       var chain = Promise.resolve(), changed = false;
