@@ -1000,7 +1000,6 @@ window.AppPoints = (function () {
       // add it FIRST, so within that one <svg> the DOM order guarantees the disc
       // sits behind the marker pattern/colour (different renderers wouldn't).
       var halo = L.circleMarker([p.lat, p.lon], { radius: 10, color: listCol, weight: 1.5, opacity: 0.95, fillColor: listCol, fillOpacity: 0.5, renderer: detRenderer() });
-      halo.bindTooltip(mpTipHtml(p), { direction: "top", className: "det-hover-tip" });
       var hrec = { m: halo, p: p, editable: false };
       mpPins.push(hrec);
       halo.on("click", function (e) { if (e && e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent); onMpPinClick(hrec); });
@@ -1018,7 +1017,6 @@ window.AppPoints = (function () {
     var m = p.shared
       ? L.marker([p.lat, p.lon], { icon: mpTriangleIcon(fill), keyboard: false })
       : L.circleMarker([p.lat, p.lon], { radius: 7, color: "#111", weight: 1, opacity: 0.9, fillColor: fill, fillOpacity: editable ? 0.9 : 0.65 });
-    m.bindTooltip(mpTipHtml(p), { direction: "top", className: p.spColor ? "det-hover-tip" : "area-tip" });
     var rec = { m: m, p: p, editable: editable };
     mpPins.push(rec);
     // Stop propagation so a marker click doesn't open the species-list popup
@@ -1129,7 +1127,6 @@ window.AppPoints = (function () {
       var ll = getMap().layerPointToLatLng(L.point(cpt.x + R * Math.cos(a), cpt.y + R * Math.sin(a)));
       layer.addLayer(L.polyline([center, ll], { color: "#888", weight: 1, opacity: 0.6, interactive: false }));
       var fm = L.circleMarker(ll, { radius: 7, color: "#111", weight: 1, fillColor: mpColorFor(o.p), fillOpacity: 0.95 });
-      fm.bindTooltip(mpTipHtml(o.p), { direction: "top", className: o.p && o.p.spColor ? "det-hover-tip" : "area-tip" });
       fm.on("click", function (e) { if (e && e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent); clearSpider(); mpPinAction(o); });
       layer.addLayer(fm);
     });

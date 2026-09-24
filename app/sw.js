@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1895";
+var VERSION = "v1896";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Syncing is quicker with very large point lists. A sync that changes nothing no longer serialises your whole data set twice just to decide there is nothing to send \u2014 it compares field by field, smallest first, and stops at the first difference. A list of tens of thousands of points also stops getting a .kmz copy rebuilt in the Drive folder on every sync; the list itself still syncs, and the status line says which lists that applies to.",
+  "\u2022 One card per map point, not two. Every pin also carried a hover card, which a tap raised on top of the scrollable list \u2014 covering the dots around it and repeating what the list already said. The hover card is gone; a tap opens the scrollable list of everything reported at that spot, newest first, whether that is one record or thirty.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
