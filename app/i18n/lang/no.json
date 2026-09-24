@@ -37,7 +37,7 @@
   "ctrl.customurlsSettingsHint": "Administrer de nasjonale og regionale fuglesidelenkene som vises i et klikket punkts popup — legg til, rediger, skjul eller slett per land, eller tilbakestill standardene.",
   "rarity.soundHint": "Spiller en kort tone når et nytt eBird-sjeldenhetsvarsel kommer mens appen er åpen.",
   "rarity.sysNotifHint": "Viser også et systemvarsel for hvert nye sjeldenhetsvarsel — krever nettleserens varseltillatelse.",
-  "ctrl.exportPointsHint": "Eksporter kartpunktene du har plassert som en KML- eller GeoJSON-fil, eller importer punkter fra en.",
+  "ctrl.exportPointsHint": "Eksporter kartpunktene du har satt som KML-, KMZ- eller GeoJSON-fil, eller importer punkter fra en. Enkeltlister lastes ned med ↓ ved siden av hver liste i punktmenyen.",
   "lists.titleHint": "Åpne behandlerne for dine lagrede artslister og observatørlister — gi nytt navn, rediger medlemmer eller slett.",
   "blocked.titleHint": "Arter du har skjult fra listene — gå gjennom dem her og opphev blokkeringen av dem du vil ha tilbake.",
   "ctrl.secondlangHint": "Vis en andre kolonne med vanlige navn i listene, på et annet språk, ved siden av det primære navnet.",
@@ -1453,5 +1453,10 @@
   "det.sortAz": "Sortert A–Å — trykk for å endre",
   "det.sortDate": "Sortert etter dato (nyeste øverst) — trykk for å endre",
   "det.sortCount": "Sortert etter antall observasjoner (flest øverst) — trykk for å endre",
-  "det.sortDist": "Sortert etter avstand (nærmeste øverst) — trykk for å endre"
+  "det.sortDist": "Sortert etter avstand (nærmeste øverst) — trykk for å endre",
+  "kml.reading": "Leser {name} …",
+  "points.download": "Last ned til fil",
+  "points.downloadAs": "Last ned «{name}» som",
+  "points.downloaded": "Lastet ned {n} punkter fra «{name}».",
+  "points.stackN": "{n} punkter her – nyeste øverst"
 }

@@ -37,7 +37,7 @@
   "ctrl.customurlsSettingsHint": "Beheer de nationale en regionale vogelsite-links die in de popup van een aangeklikt punt worden getoond — toevoegen, bewerken, verbergen of verwijderen per land, of standaardwaarden herstellen.",
   "rarity.soundHint": "Speelt een korte toon af wanneer er een nieuwe eBird-zeldzaamheidsmelding binnenkomt terwijl de app open is.",
   "rarity.sysNotifHint": "Toont ook een systeemmelding voor elke nieuwe zeldzaamheidsmelding — vereist de meldingstoestemming van de browser.",
-  "ctrl.exportPointsHint": "Exporteer de kaartpunten die je hebt geplaatst als KML- of GeoJSON-bestand, of importeer punten uit zo'n bestand.",
+  "ctrl.exportPointsHint": "Exporteer je kaartpunten als KML-, KMZ- of GeoJSON-bestand, of importeer punten uit zo'n bestand. Losse lijsten download je met de ↓ naast elke lijst in het puntenmenu.",
   "lists.titleHint": "Open de beheerders voor je opgeslagen soortenlijsten en waarnemerslijsten — hernoemen, leden bewerken of verwijderen.",
   "blocked.titleHint": "Soorten die je uit de lijsten hebt verborgen — bekijk ze hier en deblokkeer degene die je terug wilt.",
   "ctrl.secondlangHint": "Toon in de lijsten een tweede kolom met gangbare namen, in een andere taal, naast de primaire naam.",
@@ -1453,5 +1453,10 @@
   "det.sortAz": "Gesorteerd A–Z — tik om te wijzigen",
   "det.sortDate": "Gesorteerd op datum (recentste bovenaan) — tik om te wijzigen",
   "det.sortCount": "Gesorteerd op aantal waarnemingen (meeste bovenaan) — tik om te wijzigen",
-  "det.sortDist": "Gesorteerd op afstand (dichtstbijzijnde bovenaan) — tik om te wijzigen"
+  "det.sortDist": "Gesorteerd op afstand (dichtstbijzijnde bovenaan) — tik om te wijzigen",
+  "kml.reading": "{name} wordt gelezen …",
+  "points.download": "Downloaden naar bestand",
+  "points.downloadAs": "‘{name}’ downloaden als",
+  "points.downloaded": "{n} punten uit ‘{name}’ gedownload.",
+  "points.stackN": "{n} punten hier – nieuwste eerst"
 }

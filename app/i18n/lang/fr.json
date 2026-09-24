@@ -37,7 +37,7 @@
   "ctrl.customurlsSettingsHint": "Gérez les liens nationaux et régionaux vers des sites d'oiseaux affichés dans la popup d'un point cliqué — ajoutez, modifiez, masquez ou supprimez par pays, ou réinitialisez les valeurs par défaut.",
   "rarity.soundHint": "Joue un bref carillon lorsqu'une nouvelle alerte de rareté eBird arrive pendant que l'appli est ouverte.",
   "rarity.sysNotifHint": "Affiche aussi une notification système pour chaque nouvelle alerte de rareté — nécessite l'autorisation de notification du navigateur.",
-  "ctrl.exportPointsHint": "Exportez les points de carte que vous avez placés en fichier KML ou GeoJSON, ou importez des points depuis un tel fichier.",
+  "ctrl.exportPointsHint": "Exportez vos points de carte au format KML, KMZ ou GeoJSON, ou importez des points depuis un fichier. Chaque liste se télécharge via la ↓ à côté d’elle dans le menu Points.",
   "lists.titleHint": "Ouvrez les gestionnaires de vos listes d'espèces et listes d'observateurs enregistrées — renommer, modifier les membres ou supprimer.",
   "blocked.titleHint": "Espèces que vous avez masquées des listes — passez-les en revue ici et débloquez celles que vous voulez récupérer.",
   "ctrl.secondlangHint": "Affiche dans les listes une deuxième colonne de noms communs, dans une autre langue, à côté du nom principal.",
@@ -1453,5 +1453,10 @@
   "det.sortAz": "Trié de A à Z — touchez pour changer",
   "det.sortDate": "Trié par date (plus récentes en haut) — touchez pour changer",
   "det.sortCount": "Trié par nombre d’observations (plus en haut) — touchez pour changer",
-  "det.sortDist": "Trié par distance (le plus proche en haut) — appuyez pour changer"
+  "det.sortDist": "Trié par distance (le plus proche en haut) — appuyez pour changer",
+  "kml.reading": "Lecture de {name} …",
+  "points.download": "Télécharger dans un fichier",
+  "points.downloadAs": "Télécharger « {name} » au format",
+  "points.downloaded": "{n} points téléchargés depuis « {name} ».",
+  "points.stackN": "{n} points ici – les plus récents en premier"
 }

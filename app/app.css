@@ -2060,9 +2060,9 @@ button.dd-name:hover { text-decoration: underline; }
    across rows — a locked list's icon no longer sits wider than an × on others. */
 .mp-coll-del, .mp-coll-lock { flex: 0 0 auto; box-sizing: border-box; width: 28px; height: 26px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
 /* Per-list icon buttons: navigate, share, edit. */
-.mp-coll-nav, .mp-coll-share, .mp-coll-edit { flex: 0 0 auto; box-sizing: border-box; width: 28px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border, #ccc); border-radius: var(--radius-xs, 4px); background: var(--surface, #fff); cursor: pointer; padding: 0; color: var(--brand-deep); }
-.mp-coll-nav:hover, .mp-coll-share:hover, .mp-coll-edit:hover { color: var(--brand); border-color: var(--brand); }
-.mp-coll-nav .btn-ico, .mp-coll-share .btn-ico, .mp-coll-edit .btn-ico { width: var(--ico-m); height: var(--ico-m); }
+.mp-coll-nav, .mp-coll-share, .mp-coll-edit, .mp-coll-dl { flex: 0 0 auto; box-sizing: border-box; width: 28px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border, #ccc); border-radius: var(--radius-xs, 4px); background: var(--surface, #fff); cursor: pointer; padding: 0; color: var(--brand-deep); }
+.mp-coll-nav:hover, .mp-coll-share:hover, .mp-coll-edit:hover, .mp-coll-dl:hover { color: var(--brand); border-color: var(--brand); }
+.mp-coll-nav .btn-ico, .mp-coll-share .btn-ico, .mp-coll-edit .btn-ico, .mp-coll-dl .btn-ico { width: var(--ico-m); height: var(--ico-m); }
 .detlist-save-btn .btn-ico { width: var(--ico-m); height: var(--ico-m); }
 /* Route basket pill — floats bottom-centre while stops are picked. */
 #route-chip { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 1200;
@@ -4647,3 +4647,16 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 /* The probability sort toggle beside [?] — one button, ↓ commonest / ↑ rarest. */
 #sp-probsort-btn .ps-gly { font-size: var(--fs-b); line-height: 1; font-weight: 700; }
 #sp-probsort-btn.on { color: var(--brand-deep, #0b3a3a); border-color: var(--brand, #2e8b74); }
+
+/* Per-list download: the format picker under the ↓ in a point-list row. */
+.mp-dl-menu { min-width: 9.5em; padding: 4px; }
+.mp-dl-menu .dd-head { font-size: var(--fs-s); color: var(--muted, #777); padding: 2px 6px 5px; }
+.mp-dl-menu .dd-item { display: block; width: 100%; text-align: left; }
+
+/* Many points at one spot: a scrollable list instead of an unreadable fan.
+   Leaflet adds .leaflet-popup-scrolled on the content when maxHeight is set. */
+.mp-stack-pop .leaflet-popup-content { margin: 8px 10px; }
+.mp-stack-hd { font-size: var(--fs-s); color: var(--muted, #777); padding-bottom: 5px; border-bottom: 1px solid var(--border, #ddd); margin-bottom: 2px; }
+.mp-stack-it { padding: 7px 2px; border-bottom: 1px solid var(--border, #e3ebe8); cursor: pointer; }
+.mp-stack-it:last-child { border-bottom: 0; }
+.mp-stack-it:hover { background: var(--hover, #f2f7f5); }

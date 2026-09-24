@@ -21,15 +21,17 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1870";
+var VERSION = "v1871";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The app stops asking iNaturalist for names it already has. The bundled name packs arrive a moment after the list does, and until one had, every name looked missing \u2014 so a language change alone sent off a burst of lookups for names sitting in the pack that was still downloading. Lookups now wait for the packs, and anything a pack can answer is dropped from the queue rather than requested. Measured on a switch to Swedish: a third of the requests were needless before, one in a hundred now.",
-  "\u2022 Nothing is lost: when a pack lands the list re-reads it, and only the names genuinely missing are looked up.",
+  "\u2022 Every saved list and trip now has a download arrow beside its \u00d7 in the Points menu \u2014 pick KML, KMZ or GeoJSON and the list is written to a file.",
+  "\u2022 \"Load from file\" in the Points menu reads KML, KMZ and GeoJSON, exactly like the Import button in Settings. It only understood share links before, so choosing a map file there did nothing.",
+  "\u2022 Both file pickers now offer .kmz / .kml / .geojson instead of every file on the device.",
+  "\u2022 Where many points sit on the same spot, a click lists them in one scrollable popup \u2014 newest first, one block each \u2014 instead of fanning out into an unreadable tangle.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

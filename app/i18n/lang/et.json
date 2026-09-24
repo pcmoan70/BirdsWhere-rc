@@ -37,7 +37,7 @@
   "ctrl.customurlsSettingsHint": "Halda klõpsatud punkti hüpikaknas kuvatavaid riiklikke ja piirkondlikke linnusaitide linke — lisa, muuda, peida või kustuta riigi kaupa või lähtesta vaikeväärtused.",
   "rarity.soundHint": "Mängib lühikese helina, kui rakendus on avatud ja saabub uus eBirdi haruldusteade.",
   "rarity.sysNotifHint": "Kuvab iga uue haruldusteate kohta ka süsteemiteate — vajab brauseri teavitusluba.",
-  "ctrl.exportPointsHint": "Ekspordi asetatud kaardipunktid KML- või GeoJSON-failina või impordi punktid sellisest failist.",
+  "ctrl.exportPointsHint": "Ekspordi kaardile pandud punktid KML-, KMZ- või GeoJSON-failina või impordi punktid failist. Üksikud loendid laadid alla iga loendi kõrval oleva ↓ abil punktide menüüs.",
   "lists.titleHint": "Ava oma salvestatud liiginimekirjade ja vaatlejate nimekirjade haldurid — nimeta ümber, muuda liikmeid või kustuta.",
   "blocked.titleHint": "Liigid, mille oled loenditest peitnud — vaata need siin üle ja vabasta need, mida soovid tagasi.",
   "ctrl.secondlangHint": "Kuva loendites teine tavanimede veerg teises keeles esmase nime kõrval.",
@@ -1453,5 +1453,10 @@
   "det.sortAz": "Sorteeritud A–Z — muutmiseks puuduta",
   "det.sortDate": "Sorteeritud kuupäeva järgi (uuemad üleval) — muutmiseks puuduta",
   "det.sortCount": "Sorteeritud vaatluste arvu järgi (enim üleval) — muutmiseks puuduta",
-  "det.sortDist": "Sorditud kauguse järgi (lähim üleval) — muutmiseks koputa"
+  "det.sortDist": "Sorditud kauguse järgi (lähim üleval) — muutmiseks koputa",
+  "kml.reading": "Loen {name} …",
+  "points.download": "Laadi faili",
+  "points.downloadAs": "Laadi „{name}“ alla vormingus",
+  "points.downloaded": "Laaditi alla {n} punkti loendist „{name}“.",
+  "points.stackN": "{n} punkti siin – uusimad ees"
 }

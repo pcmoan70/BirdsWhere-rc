@@ -37,7 +37,7 @@
   "ctrl.customurlsSettingsHint": "Faça a gestão das ligações nacionais e regionais de sites de aves mostradas no popup de um ponto clicado — adicione, edite, oculte ou elimine por país, ou reponha as predefinições.",
   "rarity.soundHint": "Reproduz um breve som quando chega um novo alerta de raridade do eBird com a aplicação aberta.",
   "rarity.sysNotifHint": "Mostra também uma notificação do sistema para cada novo alerta de raridade — requer a permissão de notificações do navegador.",
-  "ctrl.exportPointsHint": "Exporte os pontos de mapa que colocou como ficheiro KML ou GeoJSON, ou importe pontos de um.",
+  "ctrl.exportPointsHint": "Exporte os pontos do mapa que colocou como ficheiro KML, KMZ ou GeoJSON, ou importe pontos de um. Cada lista transfere-se com a ↓ ao lado dela no menu de pontos.",
   "lists.titleHint": "Abra os gestores das suas listas de espécies e listas de observadores guardadas — renomeie, edite membros ou elimine.",
   "blocked.titleHint": "Espécies que ocultou das listas — reveja-as aqui e desbloqueie as que quiser recuperar.",
   "ctrl.secondlangHint": "Mostre nas listas uma segunda coluna de nomes comuns, noutro idioma, ao lado do nome principal.",
@@ -1453,5 +1453,10 @@
   "det.sortAz": "Ordenado A–Z — toque para alterar",
   "det.sortDate": "Ordenado por data (mais recentes no topo) — toque para alterar",
   "det.sortCount": "Ordenado por número de observações (mais no topo) — toque para alterar",
-  "det.sortDist": "Ordenado por distância (mais próximo no topo) — toca para alterar"
+  "det.sortDist": "Ordenado por distância (mais próximo no topo) — toca para alterar",
+  "kml.reading": "A ler {name} …",
+  "points.download": "Transferir para um ficheiro",
+  "points.downloadAs": "Transferir “{name}” como",
+  "points.downloaded": "Transferidos {n} pontos de “{name}”.",
+  "points.stackN": "{n} pontos aqui – mais recentes primeiro"
 }

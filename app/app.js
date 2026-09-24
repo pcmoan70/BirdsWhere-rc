@@ -7156,7 +7156,7 @@
                   icoBtn("points-kml-import", "upload", "btn.import", "Import") +
                   '<button type="button" id="points-fmt-toggle" class="btn btn-light kml-fmt-toggle" data-i18n-title="btn.fmtToggle" title="Export format">KML</button>' +
                 "</div>" +
-                '<input type="file" id="points-kml-file" style="display:none" />' +
+                '<input type="file" id="points-kml-file" accept=".kmz,.kml,.geojson,.json" style="display:none" />' +
                 '<p class="cu-hint" data-i18n="ctrl.exportPointsHint">Export the map points you’ve placed as a KML or GeoJSON file, or import points from one.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
@@ -16314,6 +16314,7 @@
       mpReadColor = mpState.mpReadColor, mpHex6 = mpState.mpHex6,
       wireMpColorRow = mpState.wireMpColorRow, exportPointsKml = mpState.exportPointsKml,
       exportPointsKmz = mpState.exportPointsKmz, exportPointsGeoJson = mpState.exportPointsGeoJson,
+      exportPointsAs = mpState.exportPointsAs,
       extractKmlFromKmz = mpState.extractKmlFromKmz, startKmlImport = mpState.startKmlImport,
       startGeoJsonImport = mpState.startGeoJsonImport, sendPointsToGoogle = mpState.sendPointsToGoogle,
       loadRoute = mpState.loadRoute, addToRoute = mpState.addToRoute,
@@ -16402,6 +16403,29 @@
   }
   // Detection sets shown as overlays — one map layer-group per ticked set, kept
   // in sync with shownDetSets. Each set's stored dots are drawn in their colour.
+  // One reader behind every "load points from a file" button. Branch on the bytes,
+  // not on the button: ZIP magic → KMZ, a leading { or [ → GeoJSON, < → KML, and
+  // anything else → a share link (the points panel's original job).
+  function importPointsFile(f, allowShare) {
+    if (!f) return;
+    setStatus(t("kml.reading", { name: f.name }));
+    var rd = new FileReader();
+    rd.onerror = function () { setStatus(t("kml.parseErr")); };
+    rd.onload = function () {
+      var buf = rd.result;
+      var h = new Uint8Array(buf, 0, Math.min(4, buf.byteLength || 0));
+      var isZip = h.length >= 4 && h[0] === 0x50 && h[1] === 0x4B && h[2] === 0x03 && h[3] === 0x04;
+      var doneKml = function (kml) { try { startKmlImport(kml); } catch (err) { setStatus(t("kml.parseErr")); } };
+      if (isZip) { extractKmlFromKmz(buf).then(doneKml).catch(function () { setStatus(t("kml.parseErr")); }); return; }
+      var txt = new TextDecoder().decode(new Uint8Array(buf)).replace(/^\uFEFF/, "").trim();
+      var c0 = txt.charAt(0);
+      if (c0 === "{" || c0 === "[") startGeoJsonImport(txt);
+      else if (c0 === "<") doneKml(txt);
+      else if (allowShare) importShared(txt);
+      else doneKml(txt);
+    };
+    rd.readAsArrayBuffer(f);
+  }
   function renderDetSetOverlay(set) {
     var g = L.layerGroup();
     Object.keys(set.detections || {}).forEach(function (k) {
@@ -16924,10 +16948,13 @@
       var editBtn = type === "p"
         ? '<button type="button" class="mp-coll-edit ico-btn" data-name="' + escapeHtml(name) + '" title="' + escapeHtml(t("points.editList")) + '" aria-label="' + escapeHtml(t("points.editList")) + '">' + ico("edit") + "</button>"
         : "";
+      // Download the list itself to a file — the format (KML / KMZ / GeoJSON) is picked
+      // in a small menu on click. Sits behind the ×, and works for detection sets too.
+      var dlBtn = count ? '<button type="button" class="mp-coll-dl ico-btn" data-type="' + type + '" data-name="' + escapeHtml(name) + '" title="' + escapeHtml(t("points.download")) + '" aria-label="' + escapeHtml(t("points.download")) + '">' + ico("download") + "</button>" : "";
       return '<div class="mp-coll-row' + (isRoute ? " is-route" : "") + '">' +
         '<label class="mp-coll-lbl"><input type="checkbox" class="mp-coll-cb" data-type="' + type + '" data-name="' + escapeHtml(name) + '"' + (checked ? " checked" : "") + ">" +
           swIcon + '<span class="mp-coll-name">' + escapeHtml(name) + ' <span class="mp-coll-n">(' + count + ")</span></span></label>" +
-        navBtn + shareBtn + editBtn + del +
+        navBtn + shareBtn + editBtn + del + dlBtn +
         "</div>";
     }
     var collItems = mpState.mpCollections().slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (c) {
@@ -16948,7 +16975,7 @@
           '<button type="button" id="mp-save-det" class="btn" data-i18n="points.save">' + escapeHtml(t("points.save")) + "</button>"
           : "") +
         '<button type="button" id="mp-import-share" class="btn btn-light" title="' + escapeHtml(tLabel("share.importFile")) + '" data-i18n="points.loadFile">' + escapeHtml(t("points.loadFile")) + "</button>" +
-        '<input type="file" id="share-file-input" accept=".share,.mcshare,.txt,text/plain" style="display:none" />' +
+        '<input type="file" id="share-file-input" accept=".kmz,.kml,.geojson,.json,.share,.mcshare,.txt" style="display:none" />' +
       "</div>" +
       '<div id="mp-backup-line" class="mp-backup-line"></div>' +
       collSection +
@@ -16965,11 +16992,8 @@
     if (importShareBtn && shareFileInput) {
       importShareBtn.addEventListener("click", function (e) { e.stopPropagation(); shareFileInput.click(); });
       shareFileInput.addEventListener("change", function (e) {
-        var f = e.target.files && e.target.files[0]; if (!f) return;
-        var rd = new FileReader();
-        rd.onload = function () { importShared(String(rd.result || "").trim()); };
-        rd.onerror = function () { setStatus(t("share.badLink")); };
-        rd.readAsText(f); e.target.value = "";
+        importPointsFile(e.target.files && e.target.files[0], true);
+        e.target.value = "";
       });
     }
     var saveAsBtn = panel.querySelector("#mp-saveas");
@@ -17060,6 +17084,49 @@
       b.addEventListener("click", function (e) { e.preventDefault(); openCollEditModal(this.getAttribute("data-name")); });
     });
     // Per-row × deletes that saved list / detection set (after confirming).
+    // Download a list (or a detection set) to a file. One small menu with the three
+    // formats; a detection set is converted through the same detPointFromRow the
+    // "add this record to a list" path uses, so a downloaded trip keeps its species,
+    // date, count and source link.
+    function rowPoints(type, name) {
+      if (type === "p") {
+        var c = mpState.mpCollections().filter(function (x) { return x.name === name; })[0];
+        return c ? (c.points || []).slice() : [];
+      }
+      var set = detSets().filter(function (x) { return x.name === name; })[0];
+      if (!set) return [];
+      var out = [];
+      Object.keys(set.detections || {}).forEach(function (k) {
+        var e = set.detections[k] || {};
+        (e.rows || []).forEach(function (r) {
+          if (r.lat == null || r.lon == null) return;
+          out.push(detPointFromRow({ lat: r.lat, lon: r.lon, key: e.key || k, color: e.color || "",
+            name: detName({ key: e.key || k, cls: e.cls || "", name: e.name }) || e.name || k,
+            date: r.date, count: r.count, url: r.url, src: r.src, act: r.act }));
+        });
+      });
+      return out;
+    }
+    panel.querySelectorAll(".mp-coll-dl").forEach(function (b) {
+      b.addEventListener("click", function (e) {
+        e.preventDefault(); e.stopPropagation();
+        var type = this.getAttribute("data-type"), name = this.getAttribute("data-name");
+        var el = openAnchoredMenu("detrow-menu mp-dl-menu", this);
+        el.innerHTML = '<div class="dd-head">' + escapeHtml(t("points.downloadAs", { name: name })) + "</div>" +
+          ["kml", "kmz", "geojson"].map(function (f) {
+            return '<button type="button" class="dd-item" data-fmt="' + f + '">' + (f === "geojson" ? "GeoJSON" : f.toUpperCase()) + "</button>";
+          }).join("");
+        el.querySelectorAll(".dd-item").forEach(function (fb) {
+          fb.addEventListener("click", function () {
+            var pts = rowPoints(type, name);
+            closeAnchoredMenu();
+            if (!pts.length) { setStatus(t("points.exportEmpty")); return; }
+            exportPointsAs(this.getAttribute("data-fmt"), name, [{ name: name, points: pts }], []);
+            setStatus(t("points.downloaded", { n: pts.length, name: name }));
+          });
+        });
+      });
+    });
     panel.querySelectorAll(".mp-coll-del").forEach(function (b) {
       b.addEventListener("click", function (e) {
         e.preventDefault();
@@ -18959,22 +19026,8 @@
     var kmlFile = document.getElementById("points-kml-file");
     document.getElementById("points-kml-import").addEventListener("click", function () { kmlFile.click(); });
     kmlFile.addEventListener("change", function (e) {
-      var f = e.target.files && e.target.files[0]; if (!f) { return; }
-      var rd = new FileReader();
-      rd.onload = function () {
-        var buf = rd.result;
-        var h = new Uint8Array(buf, 0, Math.min(4, buf.byteLength || 0));
-        var isZip = h.length >= 4 && h[0] === 0x50 && h[1] === 0x4B && h[2] === 0x03 && h[3] === 0x04;   // "PK\x03\x04" → KMZ
-        var doneKml = function (kml) { try { startKmlImport(kml); } catch (err) { setStatus(t("kml.parseErr")); } };
-        if (isZip) extractKmlFromKmz(buf).then(doneKml).catch(function () { setStatus(t("kml.parseErr")); });
-        else {
-          var txt = new TextDecoder().decode(new Uint8Array(buf)).replace(/^﻿/, "").trim();
-          if (txt.charAt(0) === "{" || txt.charAt(0) === "[") startGeoJsonImport(txt);   // GeoJSON
-          else doneKml(txt);                                                              // KML
-        }
-        e.target.value = "";
-      };
-      rd.readAsArrayBuffer(f);   // read binary; branch on the ZIP magic (KMZ) then JSON vs KML text
+      importPointsFile(e.target.files && e.target.files[0], false);
+      e.target.value = "";
     });
     renderOfflineAreas();
     var syncFile = document.getElementById("sync-file");

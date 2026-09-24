@@ -37,7 +37,7 @@
   "ctrl.customurlsSettingsHint": "Tvarkykite spustelėto taško iškylančiajame lange rodomas nacionalines ir regionines paukščių svetainių nuorodas — pridėkite, redaguokite, slėpkite ar ištrinkite pagal šalį arba atkurkite numatytąsias.",
   "rarity.soundHint": "Paleidžia trumpą garsą, kai programai esant atidarytai gaunamas naujas eBird retenybės įspėjimas.",
   "rarity.sysNotifHint": "Taip pat parodo sistemos pranešimą apie kiekvieną naują retenybės įspėjimą — reikia naršyklės pranešimų leidimo.",
-  "ctrl.exportPointsHint": "Eksportuokite savo padėtus žemėlapio taškus kaip KML arba GeoJSON failą arba importuokite taškus iš tokio failo.",
+  "ctrl.exportPointsHint": "Eksportuokite žemėlapio taškus kaip KML, KMZ ar GeoJSON failą arba importuokite taškus iš failo. Atskirus sąrašus atsisiųsite rodykle ↓ šalia kiekvieno sąrašo taškų meniu.",
   "lists.titleHint": "Atidarykite savo išsaugotų rūšių sąrašų ir stebėtojų sąrašų tvarkykles — pervadinkite, redaguokite narius arba ištrinkite.",
   "blocked.titleHint": "Rūšys, kurias paslėpėte iš sąrašų — peržiūrėkite jas čia ir atblokuokite tas, kurias norite susigrąžinti.",
   "ctrl.secondlangHint": "Sąrašuose rodyti antrą įprastinių pavadinimų stulpelį kita kalba šalia pagrindinio pavadinimo.",
@@ -1453,5 +1453,10 @@
   "det.sortAz": "Rūšiuota A–Z — bakstelėkite pakeisti",
   "det.sortDate": "Rūšiuota pagal datą (naujausios viršuje) — bakstelėkite pakeisti",
   "det.sortCount": "Rūšiuota pagal stebėjimų skaičių (daugiausia viršuje) — bakstelėkite pakeisti",
-  "det.sortDist": "Rikiuota pagal atstumą (artimiausi viršuje) — bakstelėkite norėdami pakeisti"
+  "det.sortDist": "Rikiuota pagal atstumą (artimiausi viršuje) — bakstelėkite norėdami pakeisti",
+  "kml.reading": "Skaitoma {name} …",
+  "points.download": "Atsisiųsti į failą",
+  "points.downloadAs": "Atsisiųsti „{name}“ formatu",
+  "points.downloaded": "Atsisiųsta {n} taškų iš „{name}“.",
+  "points.stackN": "{n} taškai čia – naujausi viršuje"
 }

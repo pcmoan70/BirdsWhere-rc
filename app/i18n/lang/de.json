@@ -37,7 +37,7 @@
   "ctrl.customurlsSettingsHint": "Verwalte die nationalen und regionalen Vogel-Website-Links im Popup eines angeklickten Punkts — pro Land hinzufügen, bearbeiten, ausblenden oder löschen, oder die Standardwerte zurücksetzen.",
   "rarity.soundHint": "Spielt einen kurzen Ton, wenn eine neue eBird-Seltenheitsmeldung eintrifft, während die App geöffnet ist.",
   "rarity.sysNotifHint": "Zeigt zusätzlich eine Systembenachrichtigung für jede neue Seltenheitsmeldung — erfordert die Benachrichtigungserlaubnis des Browsers.",
-  "ctrl.exportPointsHint": "Exportiere die platzierten Kartenpunkte als KML- oder GeoJSON-Datei oder importiere Punkte aus einer solchen.",
+  "ctrl.exportPointsHint": "Exportieren Sie Ihre Kartenpunkte als KML-, KMZ- oder GeoJSON-Datei oder importieren Sie Punkte aus einer. Einzelne Listen laden Sie über das ↓ neben der jeweiligen Liste im Punkte-Menü herunter.",
   "lists.titleHint": "Öffne die Verwaltung deiner gespeicherten Artenlisten und Beobachterlisten — umbenennen, Mitglieder bearbeiten oder löschen.",
   "blocked.titleHint": "Arten, die du aus den Listen ausgeblendet hast — hier prüfen und alle wieder freigeben, die du zurückhaben möchtest.",
   "ctrl.secondlangHint": "Zeigt in den Listen eine zweite Spalte mit gebräuchlichen Namen in einer anderen Sprache neben dem Hauptnamen.",
@@ -1453,5 +1453,10 @@
   "det.sortAz": "Alphabetisch sortiert (A–Z) — zum Ändern tippen",
   "det.sortDate": "Nach Datum sortiert (neueste oben) — zum Ändern tippen",
   "det.sortCount": "Nach Anzahl der Beobachtungen sortiert (meiste oben) — zum Ändern tippen",
-  "det.sortDist": "Nach Entfernung sortiert (nächste oben) — zum Ändern tippen"
+  "det.sortDist": "Nach Entfernung sortiert (nächste oben) — zum Ändern tippen",
+  "kml.reading": "{name} wird gelesen …",
+  "points.download": "In eine Datei herunterladen",
+  "points.downloadAs": "„{name}“ herunterladen als",
+  "points.downloaded": "{n} Punkte aus „{name}“ heruntergeladen.",
+  "points.stackN": "{n} Punkte hier – neueste zuerst"
 }

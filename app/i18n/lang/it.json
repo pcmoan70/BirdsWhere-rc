@@ -37,7 +37,7 @@
   "ctrl.customurlsSettingsHint": "Gestisci i link nazionali e regionali ai siti sugli uccelli mostrati nel popup di un punto cliccato — aggiungi, modifica, nascondi o elimina per paese, o ripristina i valori predefiniti.",
   "rarity.soundHint": "Riproduce un breve suono quando arriva un nuovo avviso di rarità eBird mentre l'app è aperta.",
   "rarity.sysNotifHint": "Mostra anche una notifica di sistema per ogni nuovo avviso di rarità — richiede l'autorizzazione alle notifiche del browser.",
-  "ctrl.exportPointsHint": "Esporta i punti mappa che hai posizionato come file KML o GeoJSON, o importa punti da uno.",
+  "ctrl.exportPointsHint": "Esporta i punti mappa che hai inserito come file KML, KMZ o GeoJSON, oppure importa punti da un file. Le singole liste si scaricano con la ↓ accanto a ciascuna nel menu Punti.",
   "lists.titleHint": "Apri i gestori dei tuoi elenchi specie e elenchi osservatori salvati — rinomina, modifica i membri o elimina.",
   "blocked.titleHint": "Specie che hai nascosto dagli elenchi — esaminale qui e sblocca quelle che vuoi riavere.",
   "ctrl.secondlangHint": "Mostra negli elenchi una seconda colonna di nomi comuni, in un'altra lingua, accanto al nome principale.",
@@ -1453,5 +1453,10 @@
   "det.sortAz": "Ordinato A–Z — tocca per cambiare",
   "det.sortDate": "Ordinato per data (più recenti in alto) — tocca per cambiare",
   "det.sortCount": "Ordinato per numero di osservazioni (più in alto) — tocca per cambiare",
-  "det.sortDist": "Ordinato per distanza (più vicino in alto) — tocca per cambiare"
+  "det.sortDist": "Ordinato per distanza (più vicino in alto) — tocca per cambiare",
+  "kml.reading": "Lettura di {name} …",
+  "points.download": "Scarica in un file",
+  "points.downloadAs": "Scarica «{name}» come",
+  "points.downloaded": "Scaricati {n} punti da «{name}».",
+  "points.stackN": "{n} punti qui – i più recenti in cima"
 }

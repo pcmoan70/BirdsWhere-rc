@@ -618,7 +618,10 @@ view**.
   right-click** that button for the **Edit & protect lists** admin: rename a list, set its
   colour/tags for every point, **protect** it from deletion (🔒), delete it, or expand it to
   edit/remove individual points.
-- **Import / export** — points import and export as **KML and KMZ** (Settings → *Map points*).
+- **Import / export** — points import and export as **KML, KMZ and GeoJSON**. Export everything from
+  Settings → *Map points*; download a **single list or trip** from the ↓ beside its × in the Points
+  menu, choosing the format there. Import from either the Settings *Import* button or *Load from
+  file* in the Points menu — both read all three formats (and share links).
   Import reports the placemarks found and lets you map each placemark field (name / description /
   folder / ExtendedData) to the point's name, tags and note, with a *Note contains HTML* option.
 - **Observer lists & nicknames** — build named sets of observers, filter the map/list to them

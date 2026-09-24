@@ -37,7 +37,7 @@
   "ctrl.customurlsSettingsHint": "Hallitse napautetun pisteen ponnahdusikkunassa näkyviä kansallisia ja alueellisia lintusivustolinkkejä — lisää, muokkaa, piilota tai poista maittain, tai palauta oletukset.",
   "rarity.soundHint": "Toistaa lyhyen äänen, kun uusi eBirdin harvinaisuushälytys saapuu sovelluksen ollessa auki.",
   "rarity.sysNotifHint": "Näyttää lisäksi järjestelmäilmoituksen jokaisesta uudesta harvinaisuushälytyksestä — vaatii selaimen ilmoitusluvan.",
-  "ctrl.exportPointsHint": "Vie asettamasi karttapisteet KML- tai GeoJSON-tiedostona tai tuo pisteitä sellaisesta.",
+  "ctrl.exportPointsHint": "Vie asettamasi karttapisteet KML-, KMZ- tai GeoJSON-tiedostona tai tuo pisteitä tiedostosta. Yksittäiset listat ladataan ↓-painikkeella listan vierestä pistevalikossa.",
   "lists.titleHint": "Avaa tallennettujen lajiluetteloidesi ja havainnoijaluetteloidesi hallinnat — nimeä uudelleen, muokkaa jäseniä tai poista.",
   "blocked.titleHint": "Lajit, jotka olet piilottanut luetteloista — tarkista ne täällä ja poista esto niiltä, jotka haluat takaisin.",
   "ctrl.secondlangHint": "Näytä luetteloissa toinen yleisnimisarake toisella kielellä ensisijaisen nimen vieressä.",
@@ -1453,5 +1453,10 @@
   "det.sortAz": "Järjestetty A–Ö — vaihda napauttamalla",
   "det.sortDate": "Järjestetty päivämäärän mukaan (uusimmat ylhäällä) — vaihda napauttamalla",
   "det.sortCount": "Järjestetty havaintojen määrän mukaan (eniten ylhäällä) — vaihda napauttamalla",
-  "det.sortDist": "Järjestetty etäisyyden mukaan (lähin ylhäällä) — vaihda napauttamalla"
+  "det.sortDist": "Järjestetty etäisyyden mukaan (lähin ylhäällä) — vaihda napauttamalla",
+  "kml.reading": "Luetaan {name} …",
+  "points.download": "Lataa tiedostoon",
+  "points.downloadAs": "Lataa ”{name}” muodossa",
+  "points.downloaded": "Ladattiin {n} pistettä listasta ”{name}”.",
+  "points.stackN": "{n} pistettä tässä – uusin ylinnä"
 }
