@@ -128,6 +128,7 @@ window.GDriveSync = (function () {
     });
   }
 
+  var consentAsked = false;          // the missing-scope prompt is asked at most once per load
   function initTokenClient() {
     if (tokenClient || !clientId()) return;
     tokenClient = google.accounts.oauth2.initTokenClient({
@@ -135,6 +136,15 @@ window.GDriveSync = (function () {
       scope: SCOPE,
       callback: function (resp) {
         if (resp && resp.access_token) {
+          // Anyone who connected before v1875 granted drive.appdata ALONE. A silent
+          // request hands that old grant straight back, and every call to the visible
+          // folder then fails with 403 insufficient scope — the sync sees none of the
+          // new structure. Ask once, with a real consent prompt, for what is missing.
+          var granted = String(resp.scope || "");
+          if (granted && granted.indexOf("drive.file") < 0 && !consentAsked) {
+            consentAsked = true;
+            try { tokenClient.requestAccessToken({ prompt: "consent" }); return; } catch (e) {}
+          }
           accessToken = resp.access_token;   // in memory only — never persisted
           tokenExpiry = Date.now() + ((+resp.expires_in || 3600) * 1000) - 60000;
           if (tokenResolve) { tokenResolve(accessToken); }
@@ -178,6 +188,23 @@ window.GDriveSync = (function () {
       token = await ensureToken();
       opts.headers["Authorization"] = "Bearer " + token;
       r = await fetch(url, opts);
+    }
+    // 403 from Drive is usually "you hold a token, but not for this scope" — which is
+    // exactly what an account connected before the visible folder existed will get.
+    // Re-ask with a consent prompt once, then retry the call.
+    if (r.status === 403 && !consentAsked) {
+      var body = ""; try { body = await r.clone().text(); } catch (e) {}
+      if (/insufficient|scope|ACCESS_TOKEN_SCOPE/i.test(body)) {
+        consentAsked = true; accessToken = null; tokenExpiry = 0;
+        try {
+          token = await new Promise(function (resolve, reject) {
+            tokenResolve = resolve; tokenReject = reject;
+            tokenClient.requestAccessToken({ prompt: "consent" });
+          });
+          opts.headers["Authorization"] = "Bearer " + token;
+          r = await fetch(url, opts);
+        } catch (e) { /* fall through with the 403 */ }
+      }
     }
     return r;
   }
@@ -271,12 +298,15 @@ window.GDriveSync = (function () {
       }
     }
     urls.push("https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=" + encodeURIComponent(base) + fields);   // legacy
+    var okAny = false, lastCode = 0;   // NOT lastStatus — that is the module's sync state
     for (var i = 0; i < urls.length; i++) {
       var r = await driveFetch(urls[i], {});
-      if (!r.ok) { if (i === 0) throw new Error("Drive list failed (" + r.status + ")"); continue; }
+      if (!r.ok) { lastCode = r.status; continue; }   // one space failing must not hide the other
+      okAny = true;
       var j = await r.json();
       (j.files || []).forEach(function (f) { if (f && !seen[f.id]) { seen[f.id] = 1; out.push(f); } });
     }
+    if (!okAny) throw new Error("Drive list failed (" + lastCode + ")");
     return out;
   }
   // What a DOWNLOAD reads: the most recent of everything we hold — normally the last

@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1878";
+var VERSION = "v1879";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 While a sync writes to Drive the button now names the file it is on \u2014 \u201cWriting Points - Leks.kmz\u201d, \u201cWriting Species lists.csv\u201d \u2014 instead of a flat \u201cWriting files\u201d. A sync writes one file per list plus the two CSVs, so the name is what tells you it is moving rather than stuck.",
+  "\u2022 Fixes downloading from Google Drive after the move to a visible folder. If you connected Drive before that change, your sign-in still covered only the old hidden area \u2014 so the app could not see the BirdsWhere folder at all and a download found nothing. It now notices the missing permission and asks for it once; approve the Google prompt and the sync works again.",
+  "\u2022 A sync also no longer gives up when one place is unreadable: whatever it CAN reach is used, so an older backup is still found and restored.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
