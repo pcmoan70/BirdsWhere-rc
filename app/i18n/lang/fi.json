@@ -1237,7 +1237,7 @@
   "rank.both": "Molemmat",
   "ctrl.locate": "Siirry sijaintiini",
   "ctrl.placeSearch": "Hae paikkaa",
-  "ctrl.fullscreen": "Koko näyttö",
+  "ctrl.fullscreen": "Paina ylintä palkkia pitkään täyttääksesi näytön, paina uudelleen palataksesi",
   "status.locateError": "Sijaintiasi ei saatu selville.",
   "status.offline": "Offline — käytetään välimuistissa olevia tietoja",
   "ctrl.basemap": "Taustakartta",

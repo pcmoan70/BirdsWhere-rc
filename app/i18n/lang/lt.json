@@ -1237,7 +1237,7 @@
   "rank.both": "Abu",
   "ctrl.locate": "Eiti į mano vietą",
   "ctrl.placeSearch": "Ieškoti vietos",
-  "ctrl.fullscreen": "Visas ekranas",
+  "ctrl.fullscreen": "Palaikykite viršutinę juostą, kad užpildytumėte ekraną; palaikykite dar kartą, kad grįžtumėte",
   "status.locateError": "Nepavyko nustatyti jūsų vietos.",
   "status.offline": "Neprisijungus — naudojami talpykloje saugomi duomenys",
   "ctrl.basemap": "Bazinis žemėlapis",

@@ -1237,7 +1237,7 @@
   "rank.both": "Begge",
   "ctrl.locate": "Gå til min posisjon",
   "ctrl.placeSearch": "Søk et sted",
-  "ctrl.fullscreen": "Fullskjerm",
+  "ctrl.fullscreen": "Trykk og hold på den øverste linjen for å fylle skjermen, hold igjen for å gå tilbake",
   "status.locateError": "Kunne ikke hente posisjonen din.",
   "status.offline": "Frakoblet – bruker bufrede data",
   "ctrl.basemap": "Bakgrunnskart",

@@ -1446,7 +1446,6 @@ body.fs-apple #site-header { padding-left: calc(64px + env(safe-area-inset-left)
 #site-header #settings-wrap { flex: 0 0 auto; }
 
 /* Full-screen toggle pinned to the far right of the header. */
-#site-header #fs-wrap { flex: 0 0 auto; margin: 0; margin-left: auto; }
 
 #settings-toggle.settings-icon-btn,
 .hdr-icon-btn {
@@ -2683,7 +2682,7 @@ button.dd-name:hover { text-decoration: underline; }
 .map-help-pop .map-help-body { white-space: pre-wrap; }
 /* Header List ⇄ Map switch (single icon button in the green top bar, far right,
    showing the icon of the view you'd switch TO). */
-#site-header #viewtoggle-wrap { flex: 0 0 auto; margin-left: 6px; }   /* far right, just after #fs-wrap (which holds margin-left:auto) */
+#site-header #viewtoggle-wrap { flex: 0 0 auto; margin-left: auto; }   /* pushes itself and the settings gear to the far right (was #fs-wrap's job) */
 #site-header #viewtoggle-btn:disabled { opacity: 0.4; cursor: default; }
 
 #sp-menu {
@@ -3953,7 +3952,7 @@ path.rc-pulse-dot { animation: rc-pulse-fade 1.1s ease-in-out infinite alternate
 .leaflet-bar a.nearby-btn,
 .leaflet-bar a.area-update-btn,
 .leaflet-bar a.country-btn { display: flex; align-items: center; justify-content: center; }
-.geo-locate-btn svg, .fs-toggle-btn svg, .place-search-btn svg, .anim-btn svg, .h3-detail-btn svg, .nearby-btn svg, .area-update-btn svg, .country-btn svg { display: block; }
+.geo-locate-btn svg, .place-search-btn svg, .anim-btn svg, .h3-detail-btn svg, .nearby-btn svg, .area-update-btn svg, .country-btn svg { display: block; }
 /* Red × (clear all plotted observations), right of the map, shown only when there are points. */
 .leaflet-bar a.clearpts-btn { display: flex; align-items: center; justify-content: center; color: var(--danger, #c0392b); }
 .leaflet-bar a.clearpts-btn:hover { color: #fff; background: var(--danger, #c0392b); }

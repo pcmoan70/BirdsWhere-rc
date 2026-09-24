@@ -1237,7 +1237,7 @@
   "rank.both": "Begge",
   "ctrl.locate": "Gå til min placering",
   "ctrl.placeSearch": "Søg et sted",
-  "ctrl.fullscreen": "Fuld skærm",
+  "ctrl.fullscreen": "Tryk og hold på den øverste linje for at fylde skærmen, hold igen for at gå tilbage",
   "status.locateError": "Kunne ikke hente din placering.",
   "status.offline": "Offline — bruger cachelagrede data",
   "ctrl.basemap": "Baggrundskort",

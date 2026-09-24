@@ -1237,7 +1237,7 @@
   "rank.both": "Obojí",
   "ctrl.locate": "Přejít na mou polohu",
   "ctrl.placeSearch": "Hledat místo",
-  "ctrl.fullscreen": "Celá obrazovka",
+  "ctrl.fullscreen": "Podržte horní lištu, aby aplikace vyplnila obrazovku; podržením znovu se vrátíte",
   "status.locateError": "Nepodařilo se získat vaši polohu.",
   "status.offline": "Offline — používají se data z mezipaměti",
   "ctrl.basemap": "Podkladová mapa",

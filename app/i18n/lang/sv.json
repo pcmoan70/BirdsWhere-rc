@@ -1186,7 +1186,7 @@
   "loc.fetching": "Hämtar {name} ({i}/{n})…",
   "loc.fetchedAll": "Hämtade observationer från {n} plats(er).",
   "ctrl.placeSearch": "Sök en plats (håll in för sparade platser)",
-  "ctrl.fullscreen": "Helskärm",
+  "ctrl.fullscreen": "Tryck och håll på översta raden för att fylla skärmen, håll igen för att gå tillbaka",
   "status.locateError": "Kunde inte hämta din plats.",
   "status.offline": "Offline – använder cachelagrad data",
   "ctrl.basemap": "Bakgrundskarta",

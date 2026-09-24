@@ -1289,7 +1289,7 @@ window.GeoI18N = (function () {
         "loc.fetching": "Fetching {name} ({i}/{n})…",
         "loc.fetchedAll": "Fetched observations from {n} location(s).",
         "ctrl.placeSearch": "Search a place (hold for stored locations)",
-        "ctrl.fullscreen": "Toggle full screen",
+        "ctrl.fullscreen": "Press and hold the top bar to fill the screen, hold again to go back",
         "status.locateError": "Could not get your location.",
         "status.gpsWait": "Waiting for a GPS fix (±{m} m)…",
         "moved.text": "BirdsWhere has a new address: thebirding.site. This old address will not get updates any more. Tap the button below to switch — your lists, settings and points are copied over automatically.",

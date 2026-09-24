@@ -1237,7 +1237,7 @@
   "rank.both": "Mõlemad",
   "ctrl.locate": "Mine minu asukohta",
   "ctrl.placeSearch": "Otsi kohta",
-  "ctrl.fullscreen": "Täisekraan",
+  "ctrl.fullscreen": "Hoia ülemist riba all, et ekraan täita; hoia uuesti, et tagasi minna",
   "status.locateError": "Sinu asukohta ei õnnestunud hankida.",
   "status.offline": "Võrguühenduseta — kasutatakse vahemällu salvestatud andmeid",
   "ctrl.basemap": "Aluskaart",

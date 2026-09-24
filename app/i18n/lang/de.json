@@ -1237,7 +1237,7 @@
   "rank.both": "Beide",
   "ctrl.locate": "Zu meinem Standort",
   "ctrl.placeSearch": "Ort suchen",
-  "ctrl.fullscreen": "Vollbild umschalten",
+  "ctrl.fullscreen": "Die obere Leiste gedrückt halten, um den Bildschirm zu füllen; erneut halten, um zurückzukehren",
   "status.locateError": "Standort konnte nicht ermittelt werden.",
   "status.offline": "Offline – zwischengespeicherte Daten werden verwendet",
   "ctrl.basemap": "Hintergrundkarte",

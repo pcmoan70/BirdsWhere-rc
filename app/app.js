@@ -562,12 +562,6 @@
       : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg>';
   }
   function isFullscreen() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
-  function fsIconSvg() {
-    // Outward arrows when normal (→ expand), inward when already full-screen.
-    return isFullscreen()
-      ? '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>'
-      : '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
-  }
   function toggleFullscreen() {
     var d = document, el = d.documentElement;
     if (!isFullscreen()) { var req = el.requestFullscreen || el.webkitRequestFullscreen; if (req) req.call(el); }
@@ -7090,9 +7084,6 @@
           '<div class="ctrl-group" id="viewtoggle-wrap" style="display:none">' +
             '<button type="button" id="viewtoggle-btn" class="hdr-icon-btn" title="" aria-label=""></button>' +
           '</div>' +
-          '<div class="ctrl-group" id="fs-wrap" style="display:none">' +
-            '<button type="button" id="hdr-fs-toggle" class="hdr-icon-btn fs-toggle-btn" aria-label="Fullscreen" title="Fullscreen"></button>' +
-          '</div>' +
           '<div class="ctrl-group" id="settings-wrap">' +
             '<button type="button" id="settings-toggle" class="settings-icon-btn" aria-haspopup="true" aria-label="Settings" data-i18n-title="ctrl.settingsHold" title="Settings"></button>' +
             '<div id="settings-panel" class="dd-panel settings-panel" style="display:none">' +
@@ -7829,8 +7820,6 @@
       if (hdr && chkWrap) hdr.appendChild(chkWrap);
       var mpWrap = document.getElementById("mp-wrap");
       if (hdr && mpWrap) hdr.appendChild(mpWrap);
-      var fsWrap = document.getElementById("fs-wrap");
-      if (hdr && fsWrap) hdr.appendChild(fsWrap);   // fullscreen toggle next to the Points button
       var vtWrap = document.getElementById("viewtoggle-wrap");
       if (hdr && vtWrap) hdr.appendChild(vtWrap);   // List⇄Map switch, far right of the top bar
       syncHeaderHeight();
@@ -9025,19 +9014,23 @@
     // button, same size as the other header icons. Only shown where the
     // Fullscreen API is available.
     if (document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen) {
-      var fsBtn = document.getElementById("hdr-fs-toggle"), fsWrap = document.getElementById("fs-wrap");
-      if (fsBtn && fsWrap) {
-        fsWrap.style.display = "";
-        fsBtn.title = t("ctrl.fullscreen"); fsBtn.setAttribute("aria-label", t("ctrl.fullscreen"));
-        fsBtn.innerHTML = fsIconSvg();
-        fsBtn.addEventListener("click", function (e) { e.preventDefault(); toggleFullscreen(); });
+      // No button any more: press and hold the green top bar itself to fill the screen,
+      // hold again to come back. The hold must start on the BAR — a hold that begins on
+      // one of its controls belongs to that control (the Points button opens the lists
+      // window that way), so presses landing on a control are ignored here.
+      var hdrBar = document.getElementById("site-header");
+      if (hdrBar) {
+        hdrBar.title = t("ctrl.fullscreen");
+        wireHoldButton(hdrBar, toggleFullscreen, function (e) {
+          var el = e && e.target;
+          return !(el && el.closest && el.closest("button, a, input, select, textarea, label, .dd-panel"));
+        });
       }
       // iPad/iPhone Safari draws its own large ✕ (exit full-screen) over the top-left
       // corner, right where the settings (bird) button sits — while full-screen on an
       // Apple touch device the header is pushed right so every control stays reachable.
       var appleTouch = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
       function onFsChange() {
-        var b = document.querySelector(".fs-toggle-btn"); if (b) b.innerHTML = fsIconSvg();
         document.body.classList.toggle("fs-apple", appleTouch && isFullscreen());
         fitMapHeight();
       }
@@ -10160,7 +10153,9 @@
   // `holdAt` guards a short window after the RELEASE (the emulated burst follows
   // touchend, so a long hold must not let the window lapse), touchend preventDefaults
   // where the browser honours it, and `firedAt` makes one hold call `onHold` once.
-  function wireHoldButton(btn, onHold) {
+  // `canStart(e)` (optional) vetoes a press before it can become a hold — used where the
+  // element being held is a CONTAINER whose own children have their own hold behaviour.
+  function wireHoldButton(btn, onHold, canStart) {
     if (!btn) return;
     var lpT = null, lpFired = false, lpX = 0, lpY = 0, holdAt = 0, firedAt = 0;
     var HOLD_GUARD_MS = 800;
@@ -10182,13 +10177,13 @@
       if (!lpFired && Date.now() - holdAt >= HOLD_GUARD_MS) return;
       lpFired = false; e.stopImmediatePropagation(); e.preventDefault();
     }, true);
-    btn.addEventListener("touchstart", function (e) { var tt = e.touches && e.touches[0]; start(tt ? tt.clientX : 0, tt ? tt.clientY : 0); }, { passive: true });
+    btn.addEventListener("touchstart", function (e) { if (canStart && !canStart(e)) return; var tt = e.touches && e.touches[0]; start(tt ? tt.clientX : 0, tt ? tt.clientY : 0); }, { passive: true });
     btn.addEventListener("touchmove", function (e) { var tt = e.touches && e.touches[0]; if (tt && (Math.abs(tt.clientX - lpX) > 12 || Math.abs(tt.clientY - lpY) > 12)) clearTimeout(lpT); }, { passive: true });
     btn.addEventListener("touchend", function (e) { clearTimeout(lpT); if (lpFired) { holdAt = Date.now(); if (e.cancelable) e.preventDefault(); } });
-    btn.addEventListener("mousedown", function (e) { if (e.button === 0) start(e.clientX, e.clientY); });
+    btn.addEventListener("mousedown", function (e) { if (canStart && !canStart(e)) return; if (e.button === 0) start(e.clientX, e.clientY); });
     btn.addEventListener("mouseup", function () { clearTimeout(lpT); if (lpFired) holdAt = Date.now(); });
     btn.addEventListener("mouseleave", function () { clearTimeout(lpT); });
-    btn.addEventListener("contextmenu", function (e) { e.preventDefault(); e.stopPropagation(); fire(); });
+    btn.addEventListener("contextmenu", function (e) { if (canStart && !canStart(e)) return; e.preventDefault(); e.stopPropagation(); fire(); });
   }
   function detSelectionActive() { return Object.keys(detSelected).some(function (k) { return detPlot[k] && detPassesStatus(k) && detPassesGroup(k); }); }
   function detExclusionActive() { return Object.keys(detExcluded).some(function (k) { return detPlot[k]; }); }

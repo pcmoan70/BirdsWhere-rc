@@ -1237,7 +1237,7 @@
   "rank.both": "Beide",
   "ctrl.locate": "Naar mijn locatie",
   "ctrl.placeSearch": "Een plaats zoeken",
-  "ctrl.fullscreen": "Volledig scherm",
+  "ctrl.fullscreen": "Houd de bovenste balk ingedrukt om het scherm te vullen, nogmaals om terug te gaan",
   "status.locateError": "Kon je locatie niet bepalen.",
   "status.offline": "Offline – gebruikt gecachte gegevens",
   "ctrl.basemap": "Achtergrondkaart",

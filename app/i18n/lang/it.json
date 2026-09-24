@@ -1237,7 +1237,7 @@
   "rank.both": "Entrambi",
   "ctrl.locate": "Vai alla mia posizione",
   "ctrl.placeSearch": "Cerca un luogo",
-  "ctrl.fullscreen": "Schermo intero",
+  "ctrl.fullscreen": "Tieni premuta la barra in alto per riempire lo schermo, ripeti per tornare indietro",
   "status.locateError": "Impossibile ottenere la tua posizione.",
   "status.offline": "Offline – uso dei dati nella cache",
   "ctrl.basemap": "Mappa di base",

@@ -1237,7 +1237,7 @@
   "rank.both": "Ambos",
   "ctrl.locate": "Ir a mi ubicación",
   "ctrl.placeSearch": "Buscar un lugar",
-  "ctrl.fullscreen": "Pantalla completa",
+  "ctrl.fullscreen": "Mantén pulsada la barra superior para ocupar toda la pantalla; repítelo para volver",
   "status.locateError": "No se pudo obtener tu ubicación.",
   "status.offline": "Sin conexión: usando datos en caché",
   "ctrl.basemap": "Mapa base",

@@ -1237,7 +1237,7 @@
   "rank.both": "Oba",
   "ctrl.locate": "Przejdź do mojej lokalizacji",
   "ctrl.placeSearch": "Szukaj miejsca",
-  "ctrl.fullscreen": "Pełny ekran",
+  "ctrl.fullscreen": "Naciśnij i przytrzymaj górny pasek, aby wypełnić ekran; przytrzymaj ponownie, by wrócić",
   "status.locateError": "Nie udało się ustalić Twojej lokalizacji.",
   "status.offline": "Offline — używane dane z pamięci podręcznej",
   "ctrl.basemap": "Mapa podkładowa",
