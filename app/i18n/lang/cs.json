@@ -1465,5 +1465,7 @@
   "sync.phMerge": "Slučování …",
   "sync.phWrite": "Nahrávání …",
   "sync.phFiles": "Zápis souborů …",
-  "sync.phWriteFile": "Zápis {name}"
+  "sync.phWriteFile": "Zápis {name}",
+  "sync.driveHas": "Na Disku bylo {lists} seznamů",
+  "sync.listsSkipped": "„Seznamy bodů“ není zaškrtnuto, takže se nestáhly"
 }

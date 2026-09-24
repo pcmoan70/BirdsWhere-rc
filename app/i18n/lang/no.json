@@ -1465,5 +1465,7 @@
   "sync.phMerge": "Slår sammen …",
   "sync.phWrite": "Laster opp …",
   "sync.phFiles": "Skriver filer …",
-  "sync.phWriteFile": "Skriver {name}"
+  "sync.phWriteFile": "Skriver {name}",
+  "sync.driveHas": "Disk hadde {lists} lister",
+  "sync.listsSkipped": "«Punktlister» er ikke haket av, så de ble ikke hentet"
 }

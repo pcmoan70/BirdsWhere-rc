@@ -1465,5 +1465,7 @@
   "sync.phMerge": "Fusion …",
   "sync.phWrite": "Envoi …",
   "sync.phFiles": "Écriture des fichiers …",
-  "sync.phWriteFile": "Écriture de {name}"
+  "sync.phWriteFile": "Écriture de {name}",
+  "sync.driveHas": "Drive contenait {lists} listes",
+  "sync.listsSkipped": "« Listes de points » est décoché : elles n’ont pas été récupérées"
 }

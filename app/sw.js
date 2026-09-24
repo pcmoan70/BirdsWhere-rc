@@ -21,19 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1880";
+var VERSION = "v1881";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Map points, end to end. Every saved list and trip downloads from the \u2193 beside its \u00d7 \u2014 KML, KMZ or GeoJSON \u2014 in the Points menu and in the lists window. \"Load from file\" reads all three formats (it understood only share links before, so picking a map file appeared to do nothing), and the file pickers offer .kmz / .kml / .geojson instead of every file on the device. An imported file's own colours are now obeyed.",
-  "\u2022 Clicking a point opens its record as a popup that stays put, with an \u00d7 \u2014 the details used to sit in a hover card a phone never showed. Where several reports share a spot they are listed together, newest first. Ticking a list no longer throws the panel back to the top.",
-  "\u2022 Google Drive sync moved into a folder you can open. Backups went to Drive's hidden app area before; they now go to a \u201cBirdsWhere\u201d folder, one dated subfolder per sync, each holding that sync's data file plus readable copies \u2014 a .kmz per point list and trip, CSV for your species lists and checklists. More of your data travels with it, the Sync button names the file it is writing, and ticking \u201cFetched points\u201d brings the downloaded observations too. The first sync asks Google for one new permission; approve it.",
-  "\u2022 Pictures for the groups that had none: GBIF and iNaturalist photographs for insects and plants, your own observations' photographs as a last source, and a link to Kew or iNaturalist where nothing illustrates a species. Family and confusion cards load as you scroll.",
-  "\u2022 Rarity-alert emails arrive formatted instead of as visible HTML. Species names beyond birds are looked up only when the bundled packs genuinely lack them \u2014 a language switch used to fire off a burst of needless lookups \u2014 and the harvested names can be exported as CSV.",
-  "\u2022 Also: the Yr-peak column follows the \u201cCompare to\u201d setting everywhere, a record with several observers lets you pick which one, plants no longer appear twice under two spellings, and every popup closes the same way \u2014 its \u00d7, or a click outside.",
+  "\u2022 After a sync the status now says what Drive actually held \u2014 \u201cDrive had 3 lists\u201d \u2014 and warns when a category you unticked is the reason nothing arrived. A sync that brought nothing used to look exactly like one that worked, so there was no way to tell an empty backup from a skipped category.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

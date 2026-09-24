@@ -1465,5 +1465,7 @@
   "sync.phMerge": "Fletter …",
   "sync.phWrite": "Uploader …",
   "sync.phFiles": "Skriver filer …",
-  "sync.phWriteFile": "Skriver {name}"
+  "sync.phWriteFile": "Skriver {name}",
+  "sync.driveHas": "Drev havde {lists} lister",
+  "sync.listsSkipped": "“Punktlister” er ikke markeret, så de blev ikke hentet"
 }

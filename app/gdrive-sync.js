@@ -110,8 +110,14 @@ window.GDriveSync = (function () {
   }
   var lastPhase = "";                // which step of a sync is running, for the button
   var lastPhaseName = "";            // …and, while files are being written, WHICH file
+  var lastPull = null;               // what the last pull found on Drive, for the status line
+  var LS_LAST_PULL = "gdrive-last-pull";
   function phase(p, name) { lastPhase = p || ""; lastPhaseName = name || ""; emit(lastStatus); }
-  function snapshot() { return { connected: connected, hasClientId: !!clientId(), status: lastStatus, busy: syncing, lastSyncAt: lastSyncAt, error: lastError, phase: lastPhase, phaseName: lastPhaseName }; }
+  function pullSummary() {
+    if (lastPull) return lastPull;
+    try { var raw = sessionStorage.getItem(LS_LAST_PULL); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+  }
+  function snapshot() { return { connected: connected, hasClientId: !!clientId(), status: lastStatus, busy: syncing, lastSyncAt: lastSyncAt, error: lastError, phase: lastPhase, phaseName: lastPhaseName, pull: pullSummary() }; }
   function emit(s) { lastStatus = s; for (var i = 0; i < statusListeners.length; i++) { try { statusListeners[i](snapshot()); } catch (e) {} } }
   // Record a failure's detail so the UI can show WHY a sync failed, then emit.
   function fail(status, e) { lastError = (e && e.message) ? String(e.message) : (typeof e === "string" ? e : "sync failed"); emit(status); }
@@ -410,6 +416,17 @@ window.GDriveSync = (function () {
       else if (dir === "upload") incomingWins = false;
       else incomingWins = !!remote && remoteStamp > window.GeoState.bootUpdatedAt() && !localDirty;
 
+      // What Drive actually holds, counted BEFORE the category filter — so "no lists
+      // arrived" can be told apart from "Drive has none" and from "you unticked them".
+      var rSt = (remote && remote.state) || {};
+      lastPull = {
+        lists: Array.isArray(rSt.mapPointSets) ? rSt.mapPointSets.length : 0,
+        trips: Array.isArray(rSt.mapDetectionSets) ? rSt.mapDetectionSets.length : 0,
+        skippedLists: !inc.lists && Array.isArray(rSt.mapPointSets) && rSt.mapPointSets.length > 0
+      };
+      // A pull that wins on settings reloads the page, which would take this with it —
+      // and the one moment the user needs to read it is right after that reload.
+      try { sessionStorage.setItem(LS_LAST_PULL, JSON.stringify(lastPull)); } catch (e) {}
       var localState = {}; try { localState = JSON.parse(localStateStr()); } catch (e) {}
       var toApply = remote ? window.AppData.filterIncomingForSync(remote, inc, localState) : null;
       var before = localStateStr();

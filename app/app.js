@@ -19233,7 +19233,15 @@
         else if (st.status === "storagefull") msg = "⚠ " + t("gdrive.storageFull");
         else if (st.status === "reconnect") msg = "⚠ " + t("gdrive.reconnect");
         else if (st.status === "error") msg = "⚠ " + t("gdrive.error");
-        else if (st.lastSyncAt) msg = "✓ " + t("gdrive.synced") + " · " + fmtClock(st.lastSyncAt);
+        else if (st.lastSyncAt) {
+          msg = "✓ " + t("gdrive.synced") + " · " + fmtClock(st.lastSyncAt);
+          // Say what Drive actually held. "No lists arrived" used to look exactly like a
+          // clean sync, so there was no way to tell an empty backup from a skipped category.
+          if (st.pull) {
+            msg += " · " + t("sync.driveHas", { lists: st.pull.lists });
+            if (st.pull.skippedLists) msg += " · " + t("sync.listsSkipped");
+          }
+        }
         // Surface the actual failure reason so a sync error isn't silent.
         if (failed && st.error) msg += " · " + st.error;
         gdStatus.textContent = msg;

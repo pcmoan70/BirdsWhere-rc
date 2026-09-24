@@ -1465,5 +1465,7 @@
   "sync.phMerge": "Sujungiama …",
   "sync.phWrite": "Įkeliama …",
   "sync.phFiles": "Rašomi failai …",
-  "sync.phWriteFile": "Rašoma {name}"
+  "sync.phWriteFile": "Rašoma {name}",
+  "sync.driveHas": "„Drive“ turėjo {lists} sąrašų",
+  "sync.listsSkipped": "„Taškų sąrašai“ nepažymėta, todėl jie nebuvo paimti"
 }

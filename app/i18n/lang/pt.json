@@ -1465,5 +1465,7 @@
   "sync.phMerge": "A juntar …",
   "sync.phWrite": "A enviar …",
   "sync.phFiles": "A escrever ficheiros …",
-  "sync.phWriteFile": "A escrever {name}"
+  "sync.phWriteFile": "A escrever {name}",
+  "sync.driveHas": "O Drive tinha {lists} listas",
+  "sync.listsSkipped": "“Listas de pontos” está desmarcada, por isso não foram trazidas"
 }

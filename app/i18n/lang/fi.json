@@ -1465,5 +1465,7 @@
   "sync.phMerge": "Yhdistetään …",
   "sync.phWrite": "Lähetetään …",
   "sync.phFiles": "Kirjoitetaan tiedostoja …",
-  "sync.phWriteFile": "Kirjoitetaan {name}"
+  "sync.phWriteFile": "Kirjoitetaan {name}",
+  "sync.driveHas": "Drivessä oli {lists} listaa",
+  "sync.listsSkipped": "”Pistelistat” ei ole valittuna, joten niitä ei haettu"
 }

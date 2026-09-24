@@ -1465,5 +1465,7 @@
   "sync.phMerge": "Zusammenführen …",
   "sync.phWrite": "Hochladen …",
   "sync.phFiles": "Dateien werden geschrieben …",
-  "sync.phWriteFile": "{name} wird geschrieben"
+  "sync.phWriteFile": "{name} wird geschrieben",
+  "sync.driveHas": "Drive hatte {lists} Listen",
+  "sync.listsSkipped": "„Punktlisten“ ist nicht angehakt, sie wurden nicht übernommen"
 }

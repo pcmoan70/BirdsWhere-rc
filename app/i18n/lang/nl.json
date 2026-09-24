@@ -1465,5 +1465,7 @@
   "sync.phMerge": "Samenvoegen …",
   "sync.phWrite": "Uploaden …",
   "sync.phFiles": "Bestanden schrijven …",
-  "sync.phWriteFile": "{name} schrijven"
+  "sync.phWriteFile": "{name} schrijven",
+  "sync.driveHas": "Drive had {lists} lijsten",
+  "sync.listsSkipped": "‘Puntenlijsten’ staat uit, dus ze zijn niet opgehaald"
 }

@@ -1465,5 +1465,7 @@
   "sync.phMerge": "Unione …",
   "sync.phWrite": "Caricamento …",
   "sync.phFiles": "Scrittura dei file …",
-  "sync.phWriteFile": "Scrittura di {name}"
+  "sync.phWriteFile": "Scrittura di {name}",
+  "sync.driveHas": "Drive aveva {lists} liste",
+  "sync.listsSkipped": "«Liste di punti» non è selezionata, quindi non sono state prese"
 }

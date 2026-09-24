@@ -1465,5 +1465,7 @@
   "sync.phMerge": "Slår ihop …",
   "sync.phWrite": "Laddar upp …",
   "sync.phFiles": "Skriver filer …",
-  "sync.phWriteFile": "Skriver {name}"
+  "sync.phWriteFile": "Skriver {name}",
+  "sync.driveHas": "Drive hade {lists} listor",
+  "sync.listsSkipped": "”Punktlistor” är inte ikryssad, så de hämtades inte"
 }

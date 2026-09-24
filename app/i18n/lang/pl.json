@@ -1465,5 +1465,7 @@
   "sync.phMerge": "Scalanie …",
   "sync.phWrite": "Wysyłanie …",
   "sync.phFiles": "Zapis plików …",
-  "sync.phWriteFile": "Zapis {name}"
+  "sync.phWriteFile": "Zapis {name}",
+  "sync.driveHas": "Dysk miał {lists} list",
+  "sync.listsSkipped": "„Listy punktów” nie jest zaznaczone, więc ich nie pobrano"
 }
