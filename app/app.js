@@ -5748,6 +5748,13 @@
   // The full transportable snapshot of the user's data — shared by the file
   // Export and the Google Drive sync. `state.updatedAt` (stamped by GeoState on
   // every write) rides along as the local "version" used to order sync writes.
+  // Which categories the sync dialog is set to include. Defaults match the dialog's own
+  // defaults, so a payload built before the dialog is ever opened behaves the same.
+  function syncCatOn(cat) {
+    var saved = window.GeoState.get("syncOpts", null) || {};
+    var cats = saved.cats || { settings: 1, lists: 1, trips: 1, checklists: 1, fetched: 0 };
+    return !!cats[cat];
+  }
   function buildPayload() {
     // Flush the live map first so EVERY push includes the dots/stars and pins
     // currently on screen — even on the first sync (no remote file yet), where
@@ -5767,13 +5774,29 @@
     // Named point lists moved to IndexedDB too — re-attach them so the Drive payload
     // shape (and every existing backup) is unchanged.
     try { if (mpState.mpIdbReady && mpState.mpIdbReady()) state.mapPointSets = mpState.mpCollections().filter(function (c) { return c && c.name; }); } catch (e) {}
+    // Names the user's own use has accumulated — harvested from iNaturalist, and the
+    // extra vernaculars — live in IndexedDB and were never in the payload, so every
+    // new device started collecting them again from scratch.
+    try { var nh = nameHarvest(); if (nh && Object.keys(nh).length) state.nameHarvest = nh; } catch (e) {}
+    try { var vc = vernacCache(); if (vc && Object.keys(vc).length) state.extraVernac = vc; } catch (e) {}
+    // The fetched observations are the biggest thing the app holds, so they ride along
+    // ONLY when the "Fetched points" box is ticked (see SYNC_CAT_KEYS.fetched).
+    try {
+      if (syncCatOn("fetched") && typeof persistedSightings !== "undefined" && persistedSightings) {
+        state.sightingsCache = persistedSightings;
+      }
+    } catch (e) {}
     return {
       app: "migration_calendar",
       version: 1,
       exportedAt: new Date().toISOString(),
       state: state,
       ebirdKey: localStorage.getItem(EBIRD_KEY_LS) || "",
-      artdbKey: localStorage.getItem(ART_KEY_LS) || ""
+      artdbKey: localStorage.getItem(ART_KEY_LS) || "",
+      // The user's own OAuth client id, typed by hand — worth carrying to a new device.
+      // "gdrive-file-id" and "gdrive-folder-id" are deliberately NOT here: they name
+      // objects in one account's Drive and must stay device-local.
+      gdriveClientId: localStorage.getItem("gdrive-client-id") || ""
     };
   }
   // ---- "your lists have grown since the last backup" -------------------------
@@ -5950,7 +5973,7 @@
   // Keys that are pure CACHES: dropping one costs a re-fetch and nothing else.
   // Same set the Settings → Storage "clear cached data" buttons offer, minus the
   // ones that live in IndexedDB or the Cache API.
-  var REBUILDABLE_KEYS = ["spImages", "extraVernac", "ebirdHotspots", "errorLog", "gbifLearnedScopes"];
+  var REBUILDABLE_KEYS = ["spImages", "extraVernac", "ebirdHotspots", "errorLog", "gbifLearnedScopes", "nameHarvest", "sightingsCache"];
   function dropRebuildable(o) {
     var n = 0;
     REBUILDABLE_KEYS.forEach(function (k) { if (o[k] != null) { delete o[k]; n++; } });
@@ -6194,12 +6217,41 @@
       newState.mapPoints = mergedLoose;
       newState.mapPointSetActive = "";
     }
+    // These three ride in the payload but belong in IndexedDB, not in the localStorage
+    // blob — they are restored above. Leaving them here would push a multi-megabyte
+    // cache into a ~5 MB store and cost the user everything else in it.
+    delete newState.nameHarvest; delete newState.extraVernac; delete newState.sightingsCache;
     // Resilient write: keeps lists / year-life lists / checklists / points and
     // trims only the oldest detections if the store would exceed the quota.
     try { writeStateCapped(newState); } catch (e) { throw new Error("storage write failed: " + e.message); }
     // eBird key: adopt incoming only when it should win, or when we have none.
     if (data.ebirdKey && (opts.incomingWins || !ebirdKey())) setEbirdKey(data.ebirdKey);
     if (data.artdbKey && (opts.incomingWins || !artKey())) setArtKey(data.artdbKey);
+    try { if (data.gdriveClientId && !localStorage.getItem("gdrive-client-id")) localStorage.setItem("gdrive-client-id", data.gdriveClientId); } catch (e) {}
+    // Harvested names and extra vernaculars UNION in — a name this device already has is
+    // never dropped because the other device had not met that species yet.
+    try {
+      if (incoming.nameHarvest) {
+        var nh = nameHarvest(), added = 0;
+        Object.keys(incoming.nameHarvest).forEach(function (k) { if (!nh[k]) { nh[k] = incoming.nameHarvest[k]; added++; } });
+        if (added) { nhDirty = true; saveNameHarvest(); }   // the saver is a no-op unless the dirty flag is set
+      }
+    } catch (e) {}
+    try {
+      if (incoming.extraVernac) {
+        var vc = vernacCache(), vAdded = 0;
+        Object.keys(incoming.extraVernac).forEach(function (k) { if (!vc[k]) { vc[k] = incoming.extraVernac[k]; vAdded++; } });
+        if (vAdded) saveVernacCache();
+      }
+    } catch (e) {}
+    // The fetched-observation cache only arrives when the sender had "Fetched points"
+    // ticked; write it straight back to IndexedDB and into the live map.
+    try {
+      if (incoming.sightingsCache && window.AppIDB && AppIDB.available()) {
+        persistedSightings = incoming.sightingsCache;
+        AppIDB.put("sightingsCache", persistedSightings).catch(function () {});
+      }
+    } catch (e) {}
     // Reflect the merged pins (dots/stars) on the map + legend immediately.
     try { reloadPlottedFromStore(); } catch (e) {}
     // If the sync brought in detections from the other device, fit the map to
@@ -6241,7 +6293,7 @@
     lists: ["mapPointSets", "mapPoints", "mapPointSetActive", "mapPointsShownColls"],
     trips: ["mapDetectionSets", "mapDetectionSetsDel", "mapDetSetsShown"],
     checklists: ["fieldChecklists"],
-    fetched: ["mapDetections"]
+    fetched: ["mapDetections", "sightingsCache"]
   };
   // Small, union-safe lists that always sync regardless of the toggles.
   var SYNC_ALWAYS_KEYS = { interesting: 1, lifeList: 1, yearLists: 1, customLists: 1, detFamilies: 1, updatedAt: 1 };
@@ -6284,11 +6336,76 @@
     return payload;
   }
 
+  // ---- readable copies for the Drive folder ---------------------------------
+  // The sync itself round-trips one JSON payload, which is what a merge needs — but a
+  // folder full of "migration_calendar-2026-09-24-1830.json" is no use to a person. So
+  // every push also writes the same data in the formats these things normally travel in:
+  // a .kmz per point list and per saved trip, and CSV for the species and checklists.
+  // One-way: nothing reads these back, so their shape is free to be plain.
+  function csvCell(v) {
+    var x = String(v == null ? "" : v);
+    return /[",\n;]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x;
+  }
+  function csvOf(header, rows) {
+    return header.join(",") + "\n" + rows.map(function (r) { return r.map(csvCell).join(","); }).join("\n") + "\n";
+  }
+  function speciesListsCsv() {
+    var rows = [];
+    function add(listName, keys) {
+      (keys || []).forEach(function (k) {
+        rows.push([listName, sciShow(k), detName({ key: k, cls: "" }) || "", (taxByCode[k] && taxByCode[k].cls) || ""]);
+      });
+    }
+    // Read the hydrated in-memory maps, not GeoState: on disk these are ARRAYS of keys
+    // ("lifeList": ["Strix aluco", …]), so Object.keys would hand back 0,1,2.
+    try { add("life", Object.keys(lifeList || {})); } catch (e) {}
+    try { Object.keys(yearLists || {}).forEach(function (y) { add("year " + y, Object.keys(yearLists[y] || {})); }); } catch (e) {}
+    try { Object.keys(customLists || {}).forEach(function (nm) { add(nm, Object.keys(customLists[nm] || {})); }); } catch (e) {}
+    try { add("starred", Object.keys(interestingSpecies || {})); } catch (e) {}
+    return rows.length ? csvOf(["list", "scientific_name", "common_name", "group"], rows) : "";
+  }
+  // Name a file the way a person would, without letting a list name break the path.
+  function safeFileName(x) { return String(x || "").replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, " ").trim().slice(0, 60) || "unnamed"; }
+  function driveExtraFiles() {
+    var out = [], jobs = [];
+    function kmz(name, points) {
+      if (!points || !points.length) return;
+      var coll = [{ name: name, points: points }];
+      jobs.push(mpState.buildKmz(mpState.buildPointsKml(coll, [])).then(function (bytes) {
+        out.push({ name: safeFileName(name) + ".kmz", mime: "application/vnd.google-earth.kmz", bytes: bytes });
+      }).catch(function () {}));
+    }
+    try { (mpState.mpCollections() || []).forEach(function (c) { kmz("Points - " + c.name, c.points || []); }); } catch (e) {}
+    try {
+      (detSets() || []).forEach(function (set) {
+        var pts = [];
+        Object.keys(set.detections || {}).forEach(function (k) {
+          var e = set.detections[k] || {};
+          (e.rows || []).forEach(function (r) {
+            if (r.lat == null || r.lon == null) return;
+            pts.push(detPointFromRow({ lat: r.lat, lon: r.lon, key: e.key || k, color: e.color || "",
+              name: detName({ key: e.key || k, cls: e.cls || "", name: e.name }) || e.name || k,
+              date: r.date, count: r.count, url: r.url, src: r.src, act: r.act }));
+          });
+        });
+        kmz("Trip - " + set.name, pts);
+      });
+    } catch (e) {}
+    var sp = "";
+    try { sp = speciesListsCsv(); } catch (e) {}
+    if (sp) out.push({ name: "Species lists.csv", mime: "text/csv;charset=utf-8", text: sp });
+    try {
+      var fc = window.AppField && window.AppField.fieldChecklistCsv && window.AppField.fieldChecklistCsv();
+      if (fc) out.push({ name: "Checklists.csv", mime: "text/csv;charset=utf-8", text: fc });
+    } catch (e) {}
+    return Promise.all(jobs).then(function () { return out; });
+  }
   // Surface the data layer for the Google Drive sync module (gdrive-sync.js),
   // which lives outside this IIFE. It builds the payload and merges remote
   // copies through the exact same code path as the file Export/Import.
   window.AppData = {
     buildPayload: buildPayload,
+    driveExtraFiles: driveExtraFiles,
     markBackedUp: markBackedUp,
     applyRemote: applyRemote,
     ebirdKey: ebirdKey,

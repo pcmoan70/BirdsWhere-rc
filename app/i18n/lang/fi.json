@@ -559,7 +559,7 @@
   "gdrive.disconnect": "Katkaise yhteys",
   "gdrive.error": "Google Driveen ei saatu yhteyttä.",
   "gdrive.storageFull": "Tämän laitteen tallennustila on täynnä, joten yhdistettyjä tietoja ei voitu tallentaa — mitään ei menetetty, mutta synkronointi jäi kesken. Vapauta tilaa kohdassa Asetukset → Tallennustila (Tyhjennä välimuisti) ja synkronoi uudelleen.",
-  "gdrive.hint": "Synkronoi asetuksesi, tarkistuslistasi ja pisteesi yksityiseen kansioon Google Drivessä (ja hae muiden laitteiden muutokset) napauttamalla ”Synkronoi nyt”. Vain manuaalisesti — synkronointi ja kirjautuminen tapahtuvat vain kun napautat, ei koskaan taustalla.",
+  "gdrive.hint": "Napauta ”Synkronoi nyt” synkronoidaksesi asetukset, tarkistuslistat ja pisteet Google Driven ”BirdsWhere”-kansioon (ja hakeaksesi muiden laitteiden muutokset). Synkronointitiedoston vierellä on luettavia kopioita, jotka voi avata missä tahansa: .kmz kutakin pistelistaa ja retkeä kohden sekä CSV lajilistoille ja tarkistuslistoille. Vain käsin – synkronoi ja kirjautuu vain napautettaessa, ei koskaan taustalla.",
   "gdrive.reconnect": "Napauta ”Synkronoi nyt” yhdistääksesi Google Driven uudelleen.",
   "gdrive.syncNow": "⟳ Synkronoi nyt",
   "gdrive.synced": "Synkronoitu Google Driven kanssa.",

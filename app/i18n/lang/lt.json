@@ -559,7 +559,7 @@
   "gdrive.disconnect": "Atjungti",
   "gdrive.error": "Nepavyko pasiekti Google Drive.",
   "gdrive.storageFull": "Šio įrenginio atmintis pilna, todėl sujungtų duomenų nepavyko įrašyti — niekas neprarasta, bet sinchronizavimas nebaigtas. Atlaisvinkite vietos Nustatymai → Atmintis (Išvalyti podėlio duomenis) ir sinchronizuokite dar kartą.",
-  "gdrive.hint": "Bakstelėkite „Sinchronizuoti dabar“, kad sinchronizuotumėte savo nustatymus, kontrolinius sąrašus ir taškus su privačiu aplanku jūsų Google Drive (ir gautumėte kitų įrenginių pakeitimus). Tik rankiniu būdu — sinchronizuoja ir prisijungia tik kai bakstelite, niekada fone.",
+  "gdrive.hint": "Bakstelėkite „Sinchronizuoti“, kad nustatymai, sąrašai ir taškai būtų nusiųsti į aplanką „BirdsWhere“ jūsų „Google Drive“ (ir būtų parsiųsti kitų įrenginių pakeitimai). Šalia sinchronizavimo failo lieka skaitomos kopijos, kurias atidarysite bet kur: po .kmz kiekvienam taškų sąrašui ir išvykai bei CSV rūšių ir lauko sąrašams. Tik rankiniu būdu – sinchronizuoja ir prisijungia tik bakstelėjus, niekada fone.",
   "gdrive.reconnect": "Bakstelėkite „Sinchronizuoti dabar“, kad iš naujo prijungtumėte Google Drive.",
   "gdrive.syncNow": "⟳ Sinchronizuoti dabar",
   "gdrive.synced": "Sinchronizuota su Google Drive.",

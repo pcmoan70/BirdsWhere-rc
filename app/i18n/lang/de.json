@@ -559,7 +559,7 @@
   "gdrive.disconnect": "Trennen",
   "gdrive.error": "Google Drive konnte nicht erreicht werden.",
   "gdrive.storageFull": "Der Speicher dieses Geräts ist voll, daher konnten die zusammengeführten Daten nicht gespeichert werden — es ging nichts verloren, aber die Synchronisierung wurde nicht abgeschlossen. Schaffen Sie Platz unter Einstellungen → Speicher (Zwischengespeicherte Daten löschen) und synchronisieren Sie erneut.",
-  "gdrive.hint": "Tippe auf „Jetzt synchronisieren“, um deine Einstellungen, Checklisten und Punkte in einen privaten Ordner in deinem Google Drive zu synchronisieren (und Änderungen anderer Geräte abzurufen). Nur manuell — es synchronisiert und meldet sich nur an, wenn du tippst, nie im Hintergrund.",
+  "gdrive.hint": "Tippen Sie auf „Jetzt synchronisieren“, um Einstellungen, Checklisten und Punkte in einen Ordner namens „BirdsWhere“ in Ihrem Google Drive zu synchronisieren (und Änderungen anderer Geräte zu holen). Neben der Sync-Datei liegen lesbare Kopien, die sich überall öffnen lassen: eine .kmz je Punktliste und Tour sowie CSV für Artenlisten und Checklisten. Nur manuell – es synchronisiert und meldet sich nur beim Tippen an, nie im Hintergrund.",
   "gdrive.reconnect": "Tippe auf „Jetzt synchronisieren“, um Google Drive erneut zu verbinden.",
   "gdrive.syncNow": "⟳ Jetzt synchronisieren",
   "gdrive.synced": "Mit Google Drive synchronisiert.",

@@ -559,7 +559,7 @@
   "gdrive.disconnect": "Afbryd",
   "gdrive.error": "Kunne ikke nå Google Drive.",
   "gdrive.storageFull": "Lagerpladsen på denne enhed er fuld, så de flettede data kunne ikke gemmes — intet gik tabt, men synkroniseringen blev ikke fuldført. Frigør plads under Indstillinger → Lagring (Ryd cachelagrede data), og synkronisér igen.",
-  "gdrive.hint": "Tryk på „Synk nu“ for at synkronisere dine indstillinger, tjeklister og punkter til en privat mappe i din Google Drive (og hente andre enheders ændringer). Kun manuelt — den synkroniserer og logger kun ind, når du trykker, aldrig i baggrunden.",
+  "gdrive.hint": "Tryk på “Synkronisér nu” for at synkronisere indstillinger, krydslister og punkter til en mappe ved navn “BirdsWhere” i Google Drev (og hente ændringer fra andre enheder). Ved siden af synkfilen ligger læsbare kopier, du kan åbne overalt: en .kmz pr. punktliste og tur, og CSV til artslister og krydslister. Kun manuelt – den synkroniserer og logger ind, kun når du trykker, aldrig i baggrunden.",
   "gdrive.reconnect": "Tryk på „Synk nu“ for at genoprette forbindelse til Google Drive.",
   "gdrive.syncNow": "⟳ Synk nu",
   "gdrive.synced": "Synkroniseret med Google Drive.",

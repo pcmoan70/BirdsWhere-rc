@@ -559,7 +559,7 @@
   "gdrive.disconnect": "Odpojit",
   "gdrive.error": "Nepodařilo se spojit s Google Drive.",
   "gdrive.storageFull": "Úložiště tohoto zařízení je plné, takže sloučená data nešlo uložit — nic se neztratilo, ale synchronizace neproběhla celá. Uvolněte místo v Nastavení → Úložiště (Vymazat data v mezipaměti) a synchronizujte znovu.",
-  "gdrive.hint": "Klepnutím na „Synchronizovat nyní“ synchronizujete svá nastavení, kontrolní seznamy a body do soukromé složky na svém Google Drive (a načtete změny z jiných zařízení). Pouze ručně — synchronizuje a přihlašuje se jen, když klepnete, nikdy na pozadí.",
+  "gdrive.hint": "Klepnutím na „Synchronizovat“ odešlete nastavení, seznamy a body do složky „BirdsWhere“ na svém Disku Google (a stáhnete změny z jiných zařízení). Vedle synchronizačního souboru zůstávají čitelné kopie, které otevřete kdekoli: .kmz pro každý seznam bodů a výpravu a CSV pro druhové a terénní seznamy. Pouze ručně – synchronizuje a přihlašuje se jen při klepnutí, nikdy na pozadí.",
   "gdrive.reconnect": "Klepnutím na „Synchronizovat nyní“ znovu připojíte Google Drive.",
   "gdrive.syncNow": "⟳ Synchronizovat nyní",
   "gdrive.synced": "Synchronizováno s Google Drive.",

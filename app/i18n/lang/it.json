@@ -559,7 +559,7 @@
   "gdrive.disconnect": "Disconnetti",
   "gdrive.error": "Impossibile raggiungere Google Drive.",
   "gdrive.storageFull": "La memoria di questo dispositivo è piena, quindi i dati uniti non sono stati salvati — non è andato perso nulla, ma la sincronizzazione non si è conclusa. Libera spazio in Impostazioni → Memoria (Cancella i dati nella cache) e sincronizza di nuovo.",
-  "gdrive.hint": "Tocca «Sincronizza ora» per sincronizzare impostazioni, checklist e punti in una cartella privata del tuo Google Drive (e importare le modifiche degli altri dispositivi). Solo manuale — sincronizza e accede solo quando tocchi, mai in background.",
+  "gdrive.hint": "Tocca «Sincronizza ora» per sincronizzare impostazioni, liste e punti in una cartella «BirdsWhere» del tuo Google Drive (e recuperare le modifiche degli altri dispositivi). Accanto al file di sincronizzazione restano copie leggibili apribili ovunque: un .kmz per ogni lista di punti e uscita, e CSV per le liste di specie e di campo. Solo manuale: sincronizza e accede soltanto quando lo tocchi, mai in background.",
   "gdrive.reconnect": "Tocca «Sincronizza ora» per riconnettere Google Drive.",
   "gdrive.syncNow": "⟳ Sincronizza ora",
   "gdrive.synced": "Sincronizzato con Google Drive.",

@@ -153,7 +153,7 @@ window.GeoI18N = (function () {
         "gdrive.syncNow": "⟳ Sync now",
         "gdrive.disconnect": "Disconnect",
         "gdrive.clientIdPh": "Google OAuth client ID",
-        "gdrive.hint": "Tap “Sync now” to sync your settings, checklists and points to a private folder in your Google Drive (and pull in other devices’ changes). Manual only — it syncs and signs in just when you tap, never in the background.",
+        "gdrive.hint": "Tap “Sync now” to sync your settings, checklists and points to a folder called “BirdsWhere” in your Google Drive (and pull in other devices’ changes). Beside the sync file it keeps readable copies you can open anywhere: a .kmz per point list and trip, and CSV for your species lists and checklists. Manual only — it syncs and signs in just when you tap, never in the background.",
         "gdrive.syncing": "Syncing…",
         "gdrive.synced": "Synced with Google Drive.",
         "gdrive.reconnect": "Tap “Sync now” to reconnect Google Drive.",

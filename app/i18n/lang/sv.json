@@ -247,7 +247,7 @@
   "gdrive.syncNow": "⟳ Synka nu",
   "gdrive.disconnect": "Koppla från",
   "gdrive.clientIdPh": "Google OAuth-klient-ID",
-  "gdrive.hint": "Tryck på ”Synka nu” för att synka dina inställningar, checklistor och punkter till en privat mapp i din Google Drive (och hämta in andra enheters ändringar). Endast manuellt — den synkar och loggar in bara när du trycker, aldrig i bakgrunden.",
+  "gdrive.hint": "Tryck på ”Synkronisera nu” för att synka inställningar, checklistor och punkter till en mapp som heter ”BirdsWhere” i Google Drive (och hämta ändringar från andra enheter). Bredvid synkfilen finns läsbara kopior du kan öppna var som helst: en .kmz per punktlista och tur, och CSV för artlistor och checklistor. Endast manuellt – den synkar och loggar in bara när du trycker, aldrig i bakgrunden.",
   "gdrive.syncing": "Synkar…",
   "gdrive.synced": "Synkad med Google Drive.",
   "gdrive.reconnect": "Tryck på ”Synka nu” för att återansluta Google Drive.",

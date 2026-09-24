@@ -1148,6 +1148,7 @@ window.AppPoints = (function () {
     mpReadColor: mpReadColor, mpHex6: mpHex6, wireMpColorRow: wireMpColorRow,
     // ---- import / export / share ----
     exportPointsKml: exportPointsKml, exportPointsKmz: exportPointsKmz, exportPointsAs: exportPointsAs,
+    buildPointsKml: buildPointsKml, buildPointsGeoJson: buildPointsGeoJson, buildKmz: buildKmz,
     exportPointsGeoJson: exportPointsGeoJson, extractKmlFromKmz: extractKmlFromKmz,
     startKmlImport: startKmlImport, startGeoJsonImport: startGeoJsonImport,
     sendPointsToGoogle: sendPointsToGoogle,

@@ -1047,9 +1047,23 @@ app can draw.
 **Google Drive sync** — an optional **manual, one-shot** sync: tapping *Synchronize* opens a small
 dialog to pick **which categories** travel (Settings · Point lists · Trips · Checklists · Fetched
 points) and **one direction** (two-way merge — the default — upload-only, or download-only), then
-signs in with a `drive.appdata`-only scope, does one pull → merge → push to a hidden per-user Drive
-file, and disconnects (token kept in memory only; no background sync). Collections always merge, so
-no direction can delete data on the other device.
+signs in (`drive.file` + `drive.appdata` — per-file access to what the app itself creates, and
+nothing else in your Drive), does one pull → merge → push, and disconnects (token kept in memory
+only; no background sync). Collections always merge, so no direction can delete data on the other
+device.
+
+Everything lands in a folder called **BirdsWhere** in your Drive, which you can open like any
+other. Alongside the sync file (`migration_calendar.json`, plus the ten most recent dated copies)
+each push writes **readable exports** of the same data: a `.kmz` for every point list and every
+saved trip, `Species lists.csv` (life, year, custom and starred lists) and `Checklists.csv`. Those
+are one-way — nothing reads them back, they are there so the data is usable in Google Earth, a
+spreadsheet or anywhere else. Backups written before v1875 live in Drive's hidden app-data area
+and are still read; the next push brings them into the folder.
+
+The sync carries your settings, lists, trips, checklists, starred/life/year lists, the species
+names harvested from iNaturalist and your own Drive client ID. The **fetched observations** are
+the one thing left out by default — they are much the largest thing the app holds — so tick
+*Fetched points* in the sync dialog to include them.
 
 ---
 
@@ -1134,7 +1148,7 @@ Your data leaves the device only when **you** act:
 
 - a **🔗 share link** or **Share map** — packs the points / detections you pick into a URL you hand out;
 - an **export** — CSV, KML/KMZ, GeoJSON or PDF, or the full backup file;
-- the optional one-tap **Google Drive backup**, into your *own* Drive's private app folder.
+- the optional one-tap **Google Drive backup**, into a **BirdsWhere** folder in your *own* Drive.
 
 Separately, simply using the app sends the **map coordinates you are viewing** to the third-party
 observation databases (GBIF, eBird, iNaturalist…) and the map / place-name provider, so they can

@@ -559,7 +559,7 @@
   "gdrive.disconnect": "Rozłącz",
   "gdrive.error": "Nie można połączyć się z Google Drive.",
   "gdrive.storageFull": "Pamięć tego urządzenia jest pełna, więc scalonych danych nie udało się zapisać — nic nie przepadło, ale synchronizacja się nie zakończyła. Zwolnij miejsce w Ustawienia → Pamięć (Wyczyść dane w pamięci podręcznej) i zsynchronizuj ponownie.",
-  "gdrive.hint": "Naciśnij „Synchronizuj teraz”, aby zsynchronizować ustawienia, listy kontrolne i punkty z prywatnym folderem w Twoim Google Drive (oraz pobrać zmiany z innych urządzeń). Tylko ręcznie — synchronizuje i loguje się jedynie po naciśnięciu, nigdy w tle.",
+  "gdrive.hint": "Dotknij „Synchronizuj teraz”, aby zsynchronizować ustawienia, listy i punkty z folderem „BirdsWhere” na Twoim Dysku Google (i pobrać zmiany z innych urządzeń). Obok pliku synchronizacji leżą czytelne kopie, które otworzysz wszędzie: .kmz dla każdej listy punktów i wyprawy oraz CSV dla list gatunków i list terenowych. Tylko ręcznie – synchronizuje i loguje się wyłącznie po dotknięciu, nigdy w tle.",
   "gdrive.reconnect": "Naciśnij „Synchronizuj teraz”, aby ponownie połączyć Google Drive.",
   "gdrive.syncNow": "⟳ Synchronizuj teraz",
   "gdrive.synced": "Zsynchronizowano z Google Drive.",
