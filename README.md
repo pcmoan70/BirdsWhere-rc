@@ -627,7 +627,8 @@ view**.
   Settings → *Map points*; download a **single list or trip** from the ↓ beside its × — in the Points
   menu and in the lists window (press-and-hold or right-click the Points button) — choosing the format
   there. Import from either the Settings *Import* button or *Load from file* in the Points menu — both
-  read all three formats (and share links).
+  read all three formats (and share links), and both take **several files at once**: each file becomes
+  its own list, named after the file, and the field mapping is asked once and applied to all of them.
 - **Clicking a point** opens its record in a popup that stays open until you press its × or interact
   elsewhere; where several records share a coordinate they are listed together, newest first. Clicking
   a card opens that point's actions (source, navigate, add to route or list).

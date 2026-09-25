@@ -663,6 +663,62 @@ window.AppPoints = (function () {
     setStatus("");
     openKmlImportDialog();
   }
+  // ---- Several files in one go ----
+  // Each file becomes its own list, named after the file, and the field mapping is asked
+  // ONCE and applied to all of them: the files come from one builder run, so per-file
+  // questions would be the same answer typed N times. The single-file path is untouched
+  // (it still offers the list picker and the share-link fallback).
+  function readFileBuf(f) {
+    return new Promise(function (res, rej) {
+      var rd = new FileReader();
+      rd.onerror = function () { rej(new Error("read")); };
+      rd.onload = function () { res(rd.result); };
+      rd.readAsArrayBuffer(f);
+    });
+  }
+  // Branch on the bytes, not the extension: ZIP magic → KMZ, a leading { or [ → GeoJSON,
+  // anything else → KML. Same test the single-file reader uses, minus the share link
+  // (a share link is one pasted list, never one of a batch).
+  async function parsePointsBuf(buf) {
+    var h = new Uint8Array(buf, 0, Math.min(4, buf.byteLength || 0));
+    if (h.length >= 4 && h[0] === 0x50 && h[1] === 0x4B && h[2] === 0x03 && h[3] === 0x04)
+      return await parseKmlText(await extractKmlFromKmz(buf));
+    var txt = new TextDecoder().decode(new Uint8Array(buf)).replace(/^\uFEFF/, "").trim();
+    var c0 = txt.charAt(0);
+    if (c0 === "{" || c0 === "[") return parseGeoJsonText(txt);
+    return await parseKmlText(txt);
+  }
+  // "grouse_lek_points_2026-09-25.kmz" → "grouse_lek_points_2026-09-25". The list can be
+  // renamed afterwards like any other, so keep the file's own name rather than guessing.
+  function listNameFromFile(name) {
+    return String(name || "").replace(/\.[^.]+$/, "").replace(/[\\/:*?"<>|]+/g, "_").trim().slice(0, 60);
+  }
+  async function startMultiImport(files) {
+    var items = [], failed = [];
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      setStatus(t("kml.readingN", { i: i + 1, n: files.length, name: f.name }));
+      try {
+        var parsed = await parsePointsBuf(await readFileBuf(f));
+        if (parsed.marks.length) items.push({ name: listNameFromFile(f.name) || f.name, parsed: parsed });
+        else failed.push(f.name);
+      } catch (e) { failed.push(f.name); }
+    }
+    if (!items.length) { setStatus(t("kml.none")); return; }
+    // One staged import holding every file: the union of fields/folders drives the
+    // pickers (so a field present in only one file is still offerable), and the union
+    // of marks drives the count and the "note looks like HTML" default.
+    var fieldSet = {}, folderSet = {}, marks = [], batch = [];
+    items.forEach(function (it) {
+      it.parsed.fields.forEach(function (f) { fieldSet[f] = 1; });
+      it.parsed.folders.forEach(function (f) { folderSet[f] = 1; });
+      marks = marks.concat(it.parsed.marks);
+      batch.push({ name: it.name, marks: it.parsed.marks });
+    });
+    kmlImport = { marks: marks, fields: Object.keys(fieldSet), folders: Object.keys(folderSet), files: batch };
+    setStatus(failed.length ? t("kml.someFailed", { n: failed.length }) : "");
+    openKmlImportDialog();
+  }
   // A small modal: choose the target list and which placemark field maps to the
   // point's name / tag / note, then import. Built on demand and removed on close.
   function openKmlImportDialog() {
@@ -684,6 +740,15 @@ window.AppPoints = (function () {
     }
     var listItems = [{ v: "__new__", l: t("detmenu.newList") }].concat(
       mpCollections.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (c) { return { v: c.name, l: c.name }; }));
+    // A batch has no target picker: the list names are the file names, shown so the user
+    // can see what they are about to get (and what each file contributed) before importing.
+    var multi = !!(p.files && p.files.length > 1);
+    var targetRow = multi
+      ? '<div class="kml-row kml-multi">' + escapeHtml(t("kml.perFile", { n: p.files.length })) + "</div>" +
+        '<div class="kml-multi-list">' + p.files.map(function (b) {
+          return escapeHtml(b.name) + ' <span class="dh-meta">' + b.marks.length + "</span>";
+        }).join("<br>") + "</div>"
+      : '<label class="kml-row">' + escapeHtml(t("kml.target")) + sel("kml-target", listItems, "__new__") + "</label>";
     // Sensible defaults: name←Name, tag←folder (if any) else none, note←description.
     var defName = "name", defTag = p.folders.length ? "folder" : "", defNote = "desc";
     // Pre-tick "note is HTML" when the descriptions look like markup (common for
@@ -694,7 +759,7 @@ window.AppPoints = (function () {
       '<button type="button" id="kml-close" class="kml-close" aria-label="Close">×</button>' +
       "<h3>" + escapeHtml(t("kml.title")) + "</h3>" +
       '<p class="cu-hint">' + escapeHtml(t("kml.found", { n: p.marks.length })) + "</p>" +
-      '<label class="kml-row">' + escapeHtml(t("kml.target")) + sel("kml-target", listItems, "__new__") + "</label>" +
+      targetRow +
       '<label class="kml-row">' + escapeHtml(t("kml.nameFrom")) + sel("kml-name", opts([]), defName) + "</label>" +
       '<label class="kml-row">' + escapeHtml(t("kml.tagFrom")) + sel("kml-tag", opts([{ v: "", l: t("kml.fNone") }]), defTag) + "</label>" +
       '<label class="kml-row">' + escapeHtml(t("kml.noteFrom")) + sel("kml-note", opts([{ v: "", l: t("kml.fNone") }]), defNote) + "</label>" +
@@ -744,14 +809,15 @@ window.AppPoints = (function () {
   }
   function doKmlImport() {
     var p = kmlImport; if (!p) return;
-    var target = document.getElementById("kml-target").value;
+    var targetEl = document.getElementById("kml-target");
+    var target = targetEl ? targetEl.value : "";
     var nameTok = document.getElementById("kml-name").value;
     var tagTok = document.getElementById("kml-tag").value;
     var noteTok = document.getElementById("kml-note").value;
     var noteHtmlBox = document.getElementById("kml-note-html");
     var noteIsHtml = !!(noteHtmlBox && noteHtmlBox.checked);
-    function finish(listName) {
-      var pts = p.marks.map(function (pm) {
+    function finish(listName, marks) {
+      var pts = (marks || p.marks).map(function (pm) {
         var tag = kmlFieldValue(pm, tagTok).trim();
         var note = kmlFieldValue(pm, noteTok).trim();
         var pt = { id: mpUid(), lat: pm.lat, lon: pm.lon,
@@ -772,14 +838,27 @@ window.AppPoints = (function () {
       var c = mpCollections.filter(function (x) { return x.name === listName; })[0];
       if (!c) { c = { name: listName, points: [] }; mpCollections.push(c); }
       c.points = c.points.concat(pts);
-      shownColls[listName] = true; saveShownState();
-      saveMapPoints(); renderMapPoints();
-      closeKmlImportDialog(); kmlImport = null;
-      setStatus(t("kml.imported", { n: pts.length, name: listName }));
+      shownColls[listName] = true;
+      return pts.length;
     }
+    // Commit once for the whole batch: one saveMapPoints / renderMapPoints for N lists
+    // instead of N of each (a ten-file import re-rendered the map ten times otherwise).
+    function commit() {
+      saveShownState(); saveMapPoints(); renderMapPoints();
+      closeKmlImportDialog(); kmlImport = null;
+    }
+    if (p.files && p.files.length) {
+      var total = 0;
+      p.files.forEach(function (b) { total += finish(b.name, b.marks); });
+      commit();
+      setStatus(p.files.length > 1 ? t("kml.importedN", { n: total, lists: p.files.length })
+                                   : t("kml.imported", { n: total, name: p.files[0].name }));
+      return;
+    }
+    var one = function (nm) { var n = finish(nm); commit(); setStatus(t("kml.imported", { n: n, name: nm })); };
     if (target === "__new__") {
-      modalPrompt(t("detmenu.newListPrompt"), "").then(function (n) { n = (n || "").trim(); if (n) finish(n); });
-    } else finish(target);
+      modalPrompt(t("detmenu.newListPrompt"), "").then(function (n) { n = (n || "").trim(); if (n) one(n); });
+    } else one(target);
   }
   // Open Google Maps with a navigable route through the given points (the start
   // is the user's own location). A single point → directions straight to it;
@@ -1526,7 +1605,7 @@ window.AppPoints = (function () {
     exportPointsKml: exportPointsKml, exportPointsKmz: exportPointsKmz, exportPointsAs: exportPointsAs,
     buildPointsKml: buildPointsKml, buildPointsGeoJson: buildPointsGeoJson, buildKmz: buildKmz,
     exportPointsGeoJson: exportPointsGeoJson, extractKmlFromKmz: extractKmlFromKmz,
-    startKmlImport: startKmlImport, startGeoJsonImport: startGeoJsonImport,
+    startKmlImport: startKmlImport, startGeoJsonImport: startGeoJsonImport, startMultiImport: startMultiImport,
     sendPointsToGoogle: sendPointsToGoogle,
     // ---- route ----
     loadRoute: loadRoute, addToRoute: addToRoute, renderRoutePoints: renderRoutePoints,

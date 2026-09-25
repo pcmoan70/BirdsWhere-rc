@@ -21,16 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1905";
+var VERSION = "v1906";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Each point list can now be filtered on its own: a funnel on the list\u2019s row opens a date range and the observers that list actually names, each with a count. The funnel turns amber while that list is filtered, and the filter is remembered.",
-  "\u2022 Observer matching is forgiving: \u201cnordmann\u201d, \u201cK Nordmann\u201d and \u201ckare odegard\u201d all find the right records \u2014 accents and punctuation are folded away and each word need only start the name.",
-  "\u2022 Fixes filters not reaching list pins at all. The drawing code passed over ticked lists without consulting any filter, so the date, observer, species and tag filters were doing nothing to them on the map. They apply now.",
+  "\u2022 Load from file now takes SEVERAL files at once. Each file becomes its own list, named after the file, and the field mapping is asked once and used for all of them \u2014 so a folder of point files is one import, not ten.",
+  "\u2022 Imported GeoJSON now carries its tags. The .kmz of a file filtered correctly while the .geojson of the same data came in untagged, and so unfilterable.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

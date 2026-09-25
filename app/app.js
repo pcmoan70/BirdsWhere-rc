@@ -7331,7 +7331,7 @@
                   icoBtn("points-kml-import", "upload", "btn.import", "Import") +
                   '<button type="button" id="points-fmt-toggle" class="btn btn-light kml-fmt-toggle" data-i18n-title="btn.fmtToggle" title="Export format">KML</button>' +
                 "</div>" +
-                '<input type="file" id="points-kml-file" accept=".kmz,.kml,.geojson,.json" style="display:none" />' +
+                '<input type="file" id="points-kml-file" accept=".kmz,.kml,.geojson,.json" multiple style="display:none" />' +
                 '<p class="cu-hint" data-i18n="ctrl.exportPointsHint">Export the map points you’ve placed as a KML or GeoJSON file, or import points from one.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
@@ -16505,7 +16505,8 @@
       exportPointsKmz = mpState.exportPointsKmz, exportPointsGeoJson = mpState.exportPointsGeoJson,
       exportPointsAs = mpState.exportPointsAs,
       extractKmlFromKmz = mpState.extractKmlFromKmz, startKmlImport = mpState.startKmlImport,
-      startGeoJsonImport = mpState.startGeoJsonImport, sendPointsToGoogle = mpState.sendPointsToGoogle,
+      startGeoJsonImport = mpState.startGeoJsonImport, startMultiImport = mpState.startMultiImport,
+      sendPointsToGoogle = mpState.sendPointsToGoogle,
       loadRoute = mpState.loadRoute, addToRoute = mpState.addToRoute,
       renderRoutePoints = mpState.renderRoutePoints, updateRouteChip = mpState.updateRouteChip,
       navigatePoints = mpState.navigatePoints, navigateStops = mpState.navigateStops,
@@ -16749,8 +16750,17 @@
   // not on the button: ZIP magic → KMZ, a leading { or [ → GeoJSON, < → KML, and
   // anything else → a share link (the points panel's original job).
   var importBusy = false;
-  function importPointsFile(f, allowShare) {
+  function importPointsFile(files, allowShare) {
+    var f = (files && files.length != null) ? files[0] : files;
     if (!f) return;
+    if (files && files.length > 1) {
+      if (importBusy) { setStatus(t("kml.busy")); return; }
+      importBusy = true;
+      Promise.resolve(startMultiImport(Array.prototype.slice.call(files)))
+        .then(function () { importBusy = false; },
+              function () { importBusy = false; setStatus(t("kml.parseErr")); });
+      return;
+    }
     // One import at a time. A big file freezes the main thread for seconds, so the app
     // looks dead and the natural reaction is to pick the file again — which used to start
     // a SECOND parse of 120 MB behind the first. Say what is happening instead.
@@ -17395,7 +17405,7 @@
         (mpSaveableAny() ? '<button type="button" id="mp-save-pts" class="btn' +
           (mpHasUnsaved() ? " mp-save-unsaved" : "") + '">' + escapeHtml(t("points.save")) + "</button>" : "") +
         '<button type="button" id="mp-import-share" class="btn btn-light" title="' + escapeHtml(tLabel("share.importFile")) + '" data-i18n="points.loadFile">' + escapeHtml(t("points.loadFile")) + "</button>" +
-        '<input type="file" id="share-file-input" accept=".kmz,.kml,.geojson,.json,.share,.mcshare,.txt" style="display:none" />' +
+        '<input type="file" id="share-file-input" accept=".kmz,.kml,.geojson,.json,.share,.mcshare,.txt" multiple style="display:none" />' +
       "</div>" +
       '<div id="mp-backup-line" class="mp-backup-line"></div>' +
       collSection +
@@ -17410,7 +17420,7 @@
     if (importShareBtn && shareFileInput) {
       importShareBtn.addEventListener("click", function (e) { e.stopPropagation(); shareFileInput.click(); });
       shareFileInput.addEventListener("change", function (e) {
-        importPointsFile(e.target.files && e.target.files[0], true);
+        importPointsFile(e.target.files, true);
         e.target.value = "";
       });
     }
@@ -19480,7 +19490,7 @@
     var kmlFile = document.getElementById("points-kml-file");
     document.getElementById("points-kml-import").addEventListener("click", function () { kmlFile.click(); });
     kmlFile.addEventListener("change", function (e) {
-      importPointsFile(e.target.files && e.target.files[0], false);
+      importPointsFile(e.target.files, false);
       e.target.value = "";
     });
     renderOfflineAreas();
