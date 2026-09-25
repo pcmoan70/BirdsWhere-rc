@@ -1499,5 +1499,7 @@
   "points.downloadDesc": "Įrašyti į failą KML, KMZ arba GeoJSON formatu",
   "points.deleteDesc": "Pašalinti sąrašą ir jo taškus iš šio įrenginio",
   "points.protectedDesc": "Apsaugotas nuo ištrynimo — atrakinkite sąrašų lange",
-  "kml.nFields": "{n} laukai"
+  "kml.nFields": "{n} laukai",
+  "points.capped": "Rodoma {n} iš {total} sąrašo taškų — priartinkite, kad pamatytumėte likusius.",
+  "points.listTrimmed": "Artimiausi {n} iš {total} taškų pažymėtuose sąrašuose."
 }

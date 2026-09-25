@@ -1499,5 +1499,7 @@
   "points.downloadDesc": "Uložit do souboru jako KML, KMZ nebo GeoJSON",
   "points.deleteDesc": "Odebrat seznam i jeho body z tohoto zařízení",
   "points.protectedDesc": "Chráněno proti smazání — odemkněte v okně seznamů",
-  "kml.nFields": "{n} polí"
+  "kml.nFields": "{n} polí",
+  "points.capped": "Zobrazeno {n} z {total} bodů seznamu — přibližte pro zbytek.",
+  "points.listTrimmed": "Nejbližších {n} z {total} bodů v zaškrtnutých seznamech."
 }

@@ -1499,5 +1499,7 @@
   "points.downloadDesc": "Tallenna tiedostoon KML-, KMZ- tai GeoJSON-muodossa",
   "points.deleteDesc": "Poista lista ja sen pisteet tästä laitteesta",
   "points.protectedDesc": "Suojattu poistolta — avaa lukitus listaikkunassa",
-  "kml.nFields": "{n} kenttää"
+  "kml.nFields": "{n} kenttää",
+  "points.capped": "Näytetään {n}/{total} listapistettä täällä — loput näkyvät lähentämällä.",
+  "points.listTrimmed": "Lähimmät {n}/{total} pistettä valituissa listoissa."
 }

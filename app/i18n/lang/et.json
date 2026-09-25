@@ -1499,5 +1499,7 @@
   "points.downloadDesc": "Salvesta faili KML-, KMZ- või GeoJSON-vormingus",
   "points.deleteDesc": "Eemalda loend ja selle punktid sellest seadmest",
   "points.protectedDesc": "Kustutamise eest kaitstud — ava lukk loendite aknas",
-  "kml.nFields": "{n} välja"
+  "kml.nFields": "{n} välja",
+  "points.capped": "Kuvatakse {n}/{total} loendi punkti — ülejäänute nägemiseks suumi sisse.",
+  "points.listTrimmed": "Lähimad {n}/{total} punkti märgitud loendites."
 }

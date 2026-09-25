@@ -1499,5 +1499,7 @@
   "points.downloadDesc": "Enregistrer dans un fichier KML, KMZ ou GeoJSON",
   "points.deleteDesc": "Supprimer la liste et ses points de cet appareil",
   "points.protectedDesc": "Protégée contre la suppression — déverrouillez-la dans la fenêtre des listes",
-  "kml.nFields": "{n} champs"
+  "kml.nFields": "{n} champs",
+  "points.capped": "Affiche {n} des {total} points de liste ici — zoomez pour le reste.",
+  "points.listTrimmed": "Les {n} plus proches sur {total} points des listes cochées."
 }

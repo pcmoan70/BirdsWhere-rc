@@ -1499,5 +1499,7 @@
   "points.downloadDesc": "Spara till fil som KML, KMZ eller GeoJSON",
   "points.deleteDesc": "Ta bort listan och dess punkter från den här enheten",
   "points.protectedDesc": "Skyddad mot borttagning — lås upp i listfönstret",
-  "kml.nFields": "{n} fält"
+  "kml.nFields": "{n} fält",
+  "points.capped": "Visar {n} av {total} listpunkter här — zooma in för resten.",
+  "points.listTrimmed": "Närmaste {n} av {total} punkter i de markerade listorna."
 }

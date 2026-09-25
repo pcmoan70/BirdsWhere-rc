@@ -17300,6 +17300,7 @@
     pop.update();
   }
   // ---- Points dropdown panel ----
+  var MP_LIST_MAX = 300;   // rows drawn in the Points panel's merged point list
   function refreshMpPanel() {
     var panel = document.getElementById("mp-panel"); if (!panel) return;
     // The whole panel is rebuilt from innerHTML below, which resets its scroll — so
@@ -17324,9 +17325,20 @@
       var col = collColor(c);
       (c.points || []).forEach(function (p) { if (p && isFinite(p.lat) && isFinite(p.lon)) unionPts.push({ p: p, color: col, list: c.name, editable: false }); });
     });
+    // Distance ONCE per point, not twice per comparison: the comparator used to call
+    // haversineKm on both sides, so sorting an imported 64,542-point list ran ~2.1 M
+    // haversines and blocked the main thread for ~1.4 s — on every tick, filter change
+    // and save, because renderMapPoints ends by rebuilding this panel.
+    if (center) for (var ui = 0; ui < unionPts.length; ui++) {
+      unionPts[ui].d = haversineKm(center.lat, center.lng, unionPts[ui].p.lat, unionPts[ui].p.lon);
+    }
     unionPts.sort(mpState.mpSort() === "name"
       ? function (a, b) { return (a.p.name || "").localeCompare(b.p.name || ""); }
-      : function (a, b) { if (!center) return 0; return haversineKm(center.lat, center.lng, a.p.lat, a.p.lon) - haversineKm(center.lat, center.lng, b.p.lat, b.p.lon); });
+      : function (a, b) { return center ? (a.d - b.d) : 0; });
+    // And the panel is a list a person reads: 64,542 rows of HTML is both useless and the
+    // other half of the cost. Show the nearest MP_LIST_MAX and say how many there are.
+    var unionTotal = unionPts.length;
+    if (unionTotal > MP_LIST_MAX) unionPts = unionPts.slice(0, MP_LIST_MAX);
     var chipsHtml = allTags.map(function (tag) {
       var active = mpState.mpFilter().indexOf(tag) >= 0;
       return '<button type="button" class="mp-chip' + (active ? " is-active" : "") + '" data-tag="' + escapeHtml(tag) + '" style="--mp-c:' + mpHashColor(tag) + '">' + escapeHtml(tag) + "</button>";
@@ -17422,7 +17434,10 @@
         '<div class="mp-sort"><span class="mp-sort-lbl">⇅</span>' +
           '<button type="button" class="mp-sort-btn active" title="' + escapeHtml(t("points.sortToggle")) + '">' + escapeHtml(t(mpState.mpSort() === "name" ? "points.byName" : "points.byDist")) + "</button>" +
         "</div>" : "") +
-      '<div class="mp-list">' + listHtml + "</div>";
+      '<div class="mp-list">' + listHtml +
+        (unionTotal > unionPts.length
+          ? '<p class="dd-empty">' + escapeHtml(t("points.listTrimmed", { n: unionPts.length, total: unionTotal })) + "</p>"
+          : "") + "</div>";
     // Wire interactions
     var importShareBtn = panel.querySelector("#mp-import-share"), shareFileInput = panel.querySelector("#share-file-input");
     if (importShareBtn && shareFileInput) {

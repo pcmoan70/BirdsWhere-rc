@@ -1629,8 +1629,40 @@ window.AppPoints = (function () {
     layer.addTo(getMap());
     setSpiderLayer(layer);
   }
+  // Above a few thousand pins Leaflet is the wrong tool: renderMapPoints makes ONE marker
+  // per point and runs on every tick, filter change and save. Measured against the
+  // generated lek file (64,542 points): 500 pts = 25 ms, 10k = 302 ms, 40k = 1,212 ms,
+  // 64.5k = 2,154 ms -- linear, and 2 s of blocked main thread per redraw.
+  //
+  // So a big list is drawn for the CURRENT VIEW only, with a hard pin budget as a
+  // backstop (zoomed out over a whole country, 64k pins are a blob: drawing 4,000 of them
+  // looks the same and costs 2 % of the time). The user's own "Max points on map" lowers
+  // it further. Small lists are untouched -- no cull, no move-redraw.
+  var MP_CULL_MIN = 2000;        // total shown list points below this -> draw everything
+  var MP_DRAW_MAX = 4000;        // pins actually drawn per render when culling is on
+  var mpMoveT = null, mpCulling = false;
+  function mpPinBudget() {
+    var n = +window.GeoState.get("maxMapPoints", 50000);
+    return Math.min(MP_DRAW_MAX, (n > 0 ? n : MP_DRAW_MAX));
+  }
+  function mpViewBounds() {
+    var m = getMap(); if (!m) return null;
+    try { return m.getBounds().pad(0.3); } catch (e) { return null; }
+  }
+  // Re-draw after a pan/zoom, but only while a list is actually being culled, and only
+  // once the map has been still -- the same shape the legend's redraw uses.
+  function mpWatchMoves() {
+    var m = getMap(); if (!m || mpWatchMoves.on) return;
+    mpWatchMoves.on = true;
+    m.on("moveend zoomend", function () {
+      if (!mpCulling) return;
+      clearTimeout(mpMoveT);
+      mpMoveT = setTimeout(function () { if (mpCulling) renderMapPoints(); }, 320);
+    });
+  }
   function renderMapPoints() {
     if (!getMap()) return;
+    mpWatchMoves();
     clearSpider();            // any open fan-out refers to markers about to be replaced
     ensureMpLayer().clearLayers();
     mpPins = [];
@@ -1641,6 +1673,21 @@ window.AppPoints = (function () {
     // so they obey the same legend filters and open the same popups as fetched
     // data. Manually-tagged points (no species key) keep their own pin + editor.
     var routeShows = routePoints.length === 0;   // reloaded saved routes own the numbered-pin display only when the basket is empty
+    // How many list points are in play at all? Only that decides whether to cull, so a
+    // handful of hand-made lists keep behaving exactly as before.
+    var shownTotal = 0;
+    mpCollections.forEach(function (c) {
+      if (!shownColls[c.name]) return;
+      if (routeShows && isRouteColl(c)) return;
+      shownTotal += (c.points || []).length;
+    });
+    mpCulling = shownTotal > MP_CULL_MIN;
+    // Plain numbers, not L.LatLngBounds.contains([lat, lon]) — that allocates a LatLng per
+    // point, and this runs 64k times on the generated lek file.
+    var vb = mpCulling ? mpViewBounds() : null, bb = null;
+    if (vb) { var sw = vb.getSouthWest(), ne = vb.getNorthEast(); bb = [sw.lat, sw.lng, ne.lat, ne.lng]; }
+    var budget = mpCulling ? mpPinBudget() : Infinity;
+    var drawn = 0, passed = 0;
     mpCollections.forEach(function (c) {
       if (!shownColls[c.name]) return;
       if (routeShows && isRouteColl(c)) return;   // drawn as numbered route stops (renderRoutePoints), not plain pins
@@ -1649,14 +1696,22 @@ window.AppPoints = (function () {
       (c.points || []).forEach(function (p) {
         if (!p || !isFinite(p.lat) || !isFinite(p.lon)) return;
         if (p.spKey) return;   // detection point → detPlot pipeline (handled below)
+        // The view test goes FIRST because it is the cheapest by far: four number
+        // comparisons against the filters' string folding and date arithmetic.
+        if (bb && (p.lat < bb[0] || p.lat > bb[2] || p.lon < bb[1] || p.lon > bb[3])) return;
         // Until now this loop drew every point in a ticked list unconditionally, so the
         // pane's filters AND the tag chips were no-ops for list pins. Both apply here now,
         // together with the list's own observer / date-range filter.
         if (!mpVisible(p)) return;
         if (!listOwnFilterPasses(p, lf)) return;
+        passed++;
+        if (drawn >= budget) return;
+        drawn++;
         renderMpPin(p, false, col);
       });
     });
+    // Say what is missing rather than quietly drawing a subset.
+    if (mpCulling && drawn < passed) setStatus(t("points.capped", { n: drawn, total: passed }));
     syncListDetections();     // merge shown lists' detection points into detPlot
     renderRoutePoints();      // numbered stops for the basket, or a reloaded saved route
     updateRouteChip();        // and its bottom nav bar

@@ -1499,5 +1499,7 @@
   "points.downloadDesc": "Opslaan als KML-, KMZ- of GeoJSON-bestand",
   "points.deleteDesc": "De lijst en haar punten van dit apparaat verwijderen",
   "points.protectedDesc": "Beveiligd tegen verwijderen — ontgrendel in het lijstvenster",
-  "kml.nFields": "{n} velden"
+  "kml.nFields": "{n} velden",
+  "points.capped": "Toont {n} van {total} lijstpunten hier — zoom in voor de rest.",
+  "points.listTrimmed": "Dichtstbijzijnde {n} van {total} punten in de aangevinkte lijsten."
 }
