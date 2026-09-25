@@ -4708,3 +4708,12 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .mp-tagpick-new { display: flex; gap: 4px; margin-top: 5px; }
 .mp-tagpick-in { flex: 1 1 auto; min-width: 0; font-size: var(--fs-xs); padding: 2px 5px; }
 .mp-tagpick-ok { flex: 0 0 auto; border: 1px solid var(--brand, #2f6f4f); background: var(--brand, #2f6f4f); color: #fff; border-radius: 4px; padding: 1px 8px; cursor: pointer; }
+
+/* "Save N unsaved": loose pins belong to no list and are the easiest thing to lose, so the
+   offer sits in the action row in orange rather than in a banner that reads as a notice. */
+.btn.mp-save-unsaved { background: #f0a020; border-color: #d98c10; color: #3a2600; }
+.btn.mp-save-unsaved:hover { background: #ffb437; border-color: #c97f08; }
+.mp-saveinto-menu { min-width: 12em; max-height: 60vh; overflow: auto; }
+.mp-saveinto-menu .dd-head { font-size: var(--fs-s); color: var(--muted, #777); padding: 2px 6px 5px; }
+.mp-saveinto-menu .dd-item { display: block; width: 100%; text-align: left; }
+.mp-saveinto-menu .mp-saveinto-new { border-top: 1px solid var(--border, #e3ebe8); margin-top: 3px; color: var(--brand-deep, #1d5b43); }

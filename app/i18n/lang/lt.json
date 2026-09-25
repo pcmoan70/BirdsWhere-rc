@@ -148,7 +148,6 @@
   "offline.redownload": "Atsisiųsti iš naujo",
   "offline.purged": "Naršyklė išvalė plyteles – atsisiųskite iš naujo",
   "place.recent": "Naujausios paieškos",
-  "points.saveAsList": "Išsaugoti kaip sąrašą…",
   "link.fagelkartan": "Fågelkartan",
   "link.oiseaux": "Oiseaux.net",
   "ctrl.radiusSet": "Stebėjimų spindulys: {r}",
@@ -1036,7 +1035,6 @@
   "points.sortToggle": "Rikiavimas – bakstelėkite, kad pakeistumėte",
   "points.notag": "(be žymos)",
   "points.clear": "Išvalyti",
-  "points.unsaved": "{n} neišsaugotų taškų — naudokite „Išsaugoti kaip sąrašą…“, kad juos išsaugotumėte.",
   "points.discardUnsavedPrompt": "Turite neišsaugotų taškų, kurių nėra jokiame sąraše. Įkėlus sąrašą jie bus pašalinti. Tęsti?",
   "points.clearUnsavedPrompt": "Turite neišsaugotų taškų, kurių nėra jokiame sąraše. Vis tiek išvalyti?",
   "points.collection": "— Išsaugoti sąrašai —",
@@ -1471,5 +1469,8 @@
   "kml.unpacking": "Išpakuojama {name} …",
   "kml.parsing": "Skaitomas failas …",
   "kml.reading2": "Skaitomi įrašai… {n} iš {total}",
-  "kml.busy": "Vis dar skaitomas ankstesnis failas – akimirką"
+  "kml.busy": "Vis dar skaitomas ankstesnis failas – akimirką",
+  "points.saveUnsaved": "Išsaugoti {n} neišsaugotų",
+  "points.saveUnsavedInto": "Įtraukti {n} laisvų taškų į",
+  "points.savedInto": "Išsaugota {n} taškų sąraše „{name}“."
 }

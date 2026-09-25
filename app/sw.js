@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1900";
+var VERSION = "v1901";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 A list filter blinks while it works. Ticking a list, or clicking a tag, blinks that row or chip until the map has caught up \u2014 with a large list the redraw takes long enough that the click used to look ignored.",
-  "\u2022 An imported list's tags now appear as filter chips. The chip row only ever listed tags on loose working pins, so a list that arrived already tagged \u2014 \u201clek / display ground\u201d, \u201cgathering (>3 birds)\u201d \u2014 had nothing to click.",
+  "\u2022 Pins that belong to no list now have an orange \u201cSave 2 unsaved\u201d button beside \u201cLoad from file\u201d in the Points menu. Pressing it offers your existing lists \u2014 each with its point count \u2014 or a new one. It replaces the notice further down the panel, which said the same thing where it read as a remark rather than something to press.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

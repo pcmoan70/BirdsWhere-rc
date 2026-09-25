@@ -792,14 +792,12 @@
   "points.sortToggle": "Sortering – tryck för att växla",
   "points.notag": "(ingen etikett)",
   "points.clear": "Rensa",
-  "points.unsaved": "{n} osparade punkter — använd ”Spara som lista…” för att behålla dem.",
   "points.discardUnsavedPrompt": "Du har osparade punkter som inte finns i någon lista. Att läsa in en lista tar bort dem. Fortsätta?",
   "points.clearUnsavedPrompt": "Du har osparade punkter som inte finns i någon lista. Rensa dem ändå?",
   "points.collection": "— Sparade listor —",
   "points.saveAs": "Spara som lista…",
   "points.deleteColl": "Ta bort listan",
   "points.saveAsPrompt": "Namnge denna lista med punkter:",
-  "points.saveAsList": "Spara som lista…",
   "points.saveToList": "Spara i lista",
   "points.listNone": "(osparad)",
   "points.listNew": "+ Ny lista…",
@@ -1471,5 +1469,8 @@
   "kml.unpacking": "Packar upp {name} …",
   "kml.parsing": "Läser filen …",
   "kml.reading2": "Läser poster … {n} av {total}",
-  "kml.busy": "Läser fortfarande förra filen – ett ögonblick"
+  "kml.busy": "Läser fortfarande förra filen – ett ögonblick",
+  "points.saveUnsaved": "Spara {n} osparade",
+  "points.saveUnsavedInto": "Lägg {n} lösa punkter i",
+  "points.savedInto": "Sparade {n} punkter i ”{name}”."
 }

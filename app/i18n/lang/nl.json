@@ -148,7 +148,6 @@
   "offline.redownload": "Opnieuw downloaden",
   "offline.purged": "Tegels door de browser gewist — opnieuw downloaden",
   "place.recent": "Recente zoekopdrachten",
-  "points.saveAsList": "Opslaan als lijst…",
   "link.fagelkartan": "Fågelkartan",
   "link.oiseaux": "Oiseaux.net",
   "ctrl.radiusSet": "Waarnemingsstraal: {r}",
@@ -1036,7 +1035,6 @@
   "points.sortToggle": "Sortering – tik om te wisselen",
   "points.notag": "(zonder tag)",
   "points.clear": "Wissen",
-  "points.unsaved": "{n} niet-opgeslagen punt(en) — gebruik “Opslaan als lijst…” om ze te bewaren.",
   "points.discardUnsavedPrompt": "Je hebt niet-opgeslagen punten die in geen enkele lijst staan. Een lijst laden verwijdert ze. Doorgaan?",
   "points.clearUnsavedPrompt": "Je hebt niet-opgeslagen punten die in geen enkele lijst staan. Toch wissen?",
   "points.collection": "— Opgeslagen lijsten —",
@@ -1471,5 +1469,8 @@
   "kml.unpacking": "{name} uitpakken …",
   "kml.parsing": "Bestand lezen …",
   "kml.reading2": "Records lezen … {n} van {total}",
-  "kml.busy": "Nog bezig met het vorige bestand – een moment"
+  "kml.busy": "Nog bezig met het vorige bestand – een moment",
+  "points.saveUnsaved": "{n} niet-opgeslagen bewaren",
+  "points.saveUnsavedInto": "{n} losse punten opnemen in",
+  "points.savedInto": "{n} punten opgeslagen in ‘{name}’."
 }

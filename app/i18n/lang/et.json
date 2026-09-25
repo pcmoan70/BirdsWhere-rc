@@ -148,7 +148,6 @@
   "offline.redownload": "Laadi uuesti alla",
   "offline.purged": "Brauser tühjendas paanid — laadi uuesti alla",
   "place.recent": "Hiljutised otsingud",
-  "points.saveAsList": "Salvesta nimekirjana…",
   "link.fagelkartan": "Fågelkartan",
   "link.oiseaux": "Oiseaux.net",
   "ctrl.radiusSet": "Vaatluste raadius: {r}",
@@ -1036,7 +1035,6 @@
   "points.sortToggle": "Järjestus – puuduta vahetamiseks",
   "points.notag": "(sildita)",
   "points.clear": "Tühjenda",
-  "points.unsaved": "{n} salvestamata punkti — kasuta „Salvesta loendina…“, et need säilitada.",
   "points.discardUnsavedPrompt": "Sul on salvestamata punkte, mida pole üheski loendis. Loendi laadimine kustutab need. Kas jätkata?",
   "points.clearUnsavedPrompt": "Sul on salvestamata punkte, mida pole üheski loendis. Kas tühjendada ikkagi?",
   "points.collection": "— Salvestatud loendid —",
@@ -1471,5 +1469,8 @@
   "kml.unpacking": "{name} lahtipakkimine …",
   "kml.parsing": "Faili lugemine …",
   "kml.reading2": "Kirjete lugemine … {n}/{total}",
-  "kml.busy": "Eelmist faili loetakse veel – hetk"
+  "kml.busy": "Eelmist faili loetakse veel – hetk",
+  "points.saveUnsaved": "Salvesta {n} salvestamata",
+  "points.saveUnsavedInto": "Paiguta {n} vaba punkti loendisse",
+  "points.savedInto": "Salvestati {n} punkti loendisse „{name}“."
 }

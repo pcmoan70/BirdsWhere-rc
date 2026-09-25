@@ -148,7 +148,6 @@
   "offline.redownload": "Erneut herunterladen",
   "offline.purged": "Kacheln vom Browser gelöscht – erneut herunterladen",
   "place.recent": "Letzte Suchen",
-  "points.saveAsList": "Als Liste speichern…",
   "link.fagelkartan": "Fågelkartan",
   "link.oiseaux": "Oiseaux.net",
   "ctrl.radiusSet": "Sichtungsradius: {r}",
@@ -1036,7 +1035,6 @@
   "points.sortToggle": "Sortierung – antippen zum Wechseln",
   "points.notag": "(ohne Tag)",
   "points.clear": "Leeren",
-  "points.unsaved": "{n} nicht gespeicherte Punkte – mit „Als Liste speichern…“ sichern.",
   "points.discardUnsavedPrompt": "Es gibt nicht gespeicherte Punkte, die in keiner Liste sind. Beim Laden einer Liste gehen sie verloren. Fortfahren?",
   "points.clearUnsavedPrompt": "Es gibt nicht gespeicherte Punkte, die in keiner Liste sind. Trotzdem leeren?",
   "points.collection": "— Gespeicherte Listen —",
@@ -1471,5 +1469,8 @@
   "kml.unpacking": "{name} wird entpackt …",
   "kml.parsing": "Datei wird gelesen …",
   "kml.reading2": "Datensätze werden gelesen … {n} von {total}",
-  "kml.busy": "Die vorige Datei wird noch gelesen – einen Moment"
+  "kml.busy": "Die vorige Datei wird noch gelesen – einen Moment",
+  "points.saveUnsaved": "{n} ungespeicherte sichern",
+  "points.saveUnsavedInto": "{n} freie Punkte ablegen in",
+  "points.savedInto": "{n} Punkte in „{name}“ gespeichert."
 }

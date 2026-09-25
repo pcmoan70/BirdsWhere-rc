@@ -148,7 +148,6 @@
   "offline.redownload": "Stáhnout znovu",
   "offline.purged": "Dlaždice vymazány prohlížečem — stáhnout znovu",
   "place.recent": "Nedávná hledání",
-  "points.saveAsList": "Uložit jako seznam…",
   "link.fagelkartan": "Fågelkartan",
   "link.oiseaux": "Oiseaux.net",
   "ctrl.radiusSet": "Poloměr pozorování: {r}",
@@ -1036,7 +1035,6 @@
   "points.sortToggle": "Řazení – klepnutím přepnete",
   "points.notag": "(bez štítku)",
   "points.clear": "Vymazat",
-  "points.unsaved": "{n} neuložených bodů — použijte „Uložit jako seznam…“ k jejich zachování.",
   "points.discardUnsavedPrompt": "Máte neuložené body, které nejsou v žádném seznamu. Načtení seznamu je odstraní. Pokračovat?",
   "points.clearUnsavedPrompt": "Máte neuložené body, které nejsou v žádném seznamu. Přesto vymazat?",
   "points.collection": "— Uložené seznamy —",
@@ -1471,5 +1469,8 @@
   "kml.unpacking": "Rozbalování {name} …",
   "kml.parsing": "Čtení souboru …",
   "kml.reading2": "Čtení záznamů… {n} z {total}",
-  "kml.busy": "Předchozí soubor se ještě čte – okamžik"
+  "kml.busy": "Předchozí soubor se ještě čte – okamžik",
+  "points.saveUnsaved": "Uložit {n} neuložených",
+  "points.saveUnsavedInto": "Zařadit {n} volných bodů do",
+  "points.savedInto": "Uloženo {n} bodů do „{name}“."
 }

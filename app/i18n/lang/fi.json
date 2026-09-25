@@ -148,7 +148,6 @@
   "offline.redownload": "Lataa uudelleen",
   "offline.purged": "Selain tyhjensi ruudut — lataa uudelleen",
   "place.recent": "Viimeisimmät haut",
-  "points.saveAsList": "Tallenna listana…",
   "link.fagelkartan": "Fågelkartan",
   "link.oiseaux": "Oiseaux.net",
   "ctrl.radiusSet": "Havaintosäde: {r}",
@@ -1036,7 +1035,6 @@
   "points.sortToggle": "Järjestys – vaihda napauttamalla",
   "points.notag": "(ei tunnistetta)",
   "points.clear": "Tyhjennä",
-  "points.unsaved": "{n} tallentamatonta pistettä — säilytä ne valitsemalla ”Tallenna listana…”.",
   "points.discardUnsavedPrompt": "Sinulla on tallentamattomia pisteitä, jotka eivät ole missään listassa. Listan lataaminen poistaa ne. Jatketaanko?",
   "points.clearUnsavedPrompt": "Sinulla on tallentamattomia pisteitä, jotka eivät ole missään listassa. Tyhjennetäänkö silti?",
   "points.collection": "— Tallennetut listat —",
@@ -1471,5 +1469,8 @@
   "kml.unpacking": "Puretaan {name} …",
   "kml.parsing": "Luetaan tiedostoa …",
   "kml.reading2": "Luetaan tietueita … {n}/{total}",
-  "kml.busy": "Luetaan vielä edellistä tiedostoa – hetki"
+  "kml.busy": "Luetaan vielä edellistä tiedostoa – hetki",
+  "points.saveUnsaved": "Tallenna {n} tallentamatonta",
+  "points.saveUnsavedInto": "Sijoita {n} irrallista pistettä",
+  "points.savedInto": "Tallennettiin {n} pistettä listaan ”{name}”."
 }

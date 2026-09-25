@@ -148,7 +148,6 @@
   "offline.redownload": "Download igen",
   "offline.purged": "Fliser ryddet af browseren — download igen",
   "place.recent": "Seneste søgninger",
-  "points.saveAsList": "Gem som liste…",
   "link.fagelkartan": "Fågelkartan",
   "link.oiseaux": "Oiseaux.net",
   "ctrl.radiusSet": "Observationsradius: {r}",
@@ -1036,7 +1035,6 @@
   "points.sortToggle": "Sortering – tryk for at skifte",
   "points.notag": "(uden tag)",
   "points.clear": "Ryd",
-  "points.unsaved": "{n} ikke-gemte punkter — brug “Gem som liste…” for at beholde dem.",
   "points.discardUnsavedPrompt": "Du har ikke-gemte punkter, der ikke er i nogen liste. Indlæsning af en liste fjerner dem. Fortsæt?",
   "points.clearUnsavedPrompt": "Du har ikke-gemte punkter, der ikke er i nogen liste. Ryd dem alligevel?",
   "points.collection": "— Gemte lister —",
@@ -1471,5 +1469,8 @@
   "kml.unpacking": "Udpakker {name} …",
   "kml.parsing": "Læser filen …",
   "kml.reading2": "Læser poster … {n} af {total}",
-  "kml.busy": "Læser stadig den forrige fil – et øjeblik"
+  "kml.busy": "Læser stadig den forrige fil – et øjeblik",
+  "points.saveUnsaved": "Gem {n} ugemte",
+  "points.saveUnsavedInto": "Læg {n} løse punkter i",
+  "points.savedInto": "Gemte {n} punkter i “{name}”."
 }

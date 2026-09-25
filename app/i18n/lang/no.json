@@ -148,7 +148,6 @@
   "offline.redownload": "Last ned på nytt",
   "offline.purged": "Fliser slettet av nettleseren – last ned på nytt",
   "place.recent": "Nylige søk",
-  "points.saveAsList": "Lagre som liste …",
   "link.fagelkartan": "Fågelkartan",
   "link.oiseaux": "Oiseaux.net",
   "ctrl.radiusSet": "Observasjonsradius: {r}",
@@ -1036,7 +1035,6 @@
   "points.sortToggle": "Sortering – trykk for å bytte",
   "points.notag": "(uten tagg)",
   "points.clear": "Tøm",
-  "points.unsaved": "{n} ulagrede punkter — bruk «Lagre som liste…» for å beholde dem.",
   "points.discardUnsavedPrompt": "Du har ulagrede punkter som ikke er i noen liste. Å laste en liste forkaster dem. Fortsette?",
   "points.clearUnsavedPrompt": "Du har ulagrede punkter som ikke er i noen liste. Tømme likevel?",
   "points.collection": "— Lagrede lister —",
@@ -1471,5 +1469,8 @@
   "kml.unpacking": "Pakker ut {name} …",
   "kml.parsing": "Leser fila …",
   "kml.reading2": "Leser poster … {n} av {total}",
-  "kml.busy": "Leser fortsatt forrige fil – et øyeblikk"
+  "kml.busy": "Leser fortsatt forrige fil – et øyeblikk",
+  "points.saveUnsaved": "Lagre {n} ulagrede",
+  "points.saveUnsavedInto": "Legg {n} løse punkter i",
+  "points.savedInto": "Lagret {n} punkter i «{name}»."
 }

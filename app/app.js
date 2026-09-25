@@ -17270,12 +17270,15 @@
           '<button type="button" id="mp-save-det" class="btn" data-i18n="points.save">' + escapeHtml(t("points.save")) + "</button>"
           : "") +
         '<button type="button" id="mp-import-share" class="btn btn-light" title="' + escapeHtml(tLabel("share.importFile")) + '" data-i18n="points.loadFile">' + escapeHtml(t("points.loadFile")) + "</button>" +
+        // Loose pins that belong to no list are the data most easily lost, so the offer to
+        // file them sits in the action row with the other verbs, in orange, carrying its own
+        // count — rather than in a banner further down that read as a notice, not a button.
+        (mpHasUnsaved() ? '<button type="button" id="mp-save-unsaved" class="btn mp-save-unsaved">' +
+          escapeHtml(t("points.saveUnsaved", { n: mpState.mapPoints().length })) + "</button>" : "") +
         '<input type="file" id="share-file-input" accept=".kmz,.kml,.geojson,.json,.share,.mcshare,.txt" style="display:none" />' +
       "</div>" +
       '<div id="mp-backup-line" class="mp-backup-line"></div>' +
       collSection +
-      (mpHasUnsaved() ? '<div class="mp-unsaved">' + escapeHtml(t("points.unsaved", { n: mpState.mapPoints().length })) +
-        ' <button type="button" id="mp-saveas" class="mp-saveas-btn">' + escapeHtml(t("points.saveAsList")) + "</button></div>" : "") +
       (chipsHtml ? '<div class="mp-chips">' + chipsHtml + "</div>" : "") +
       (unionPts.length > 1 ?
         '<div class="mp-sort"><span class="mp-sort-lbl">⇅</span>' +
@@ -17291,16 +17294,39 @@
         e.target.value = "";
       });
     }
-    var saveAsBtn = panel.querySelector("#mp-saveas");
-    if (saveAsBtn) saveAsBtn.addEventListener("click", function () {
-      modalPrompt(t("points.saveAsPrompt"), "").then(function (n) {
-        n = (n || "").trim(); if (!n) return;
-        var c = mpState.mpCollections().filter(function (x) { return x.name === n; })[0];
-        if (!c) { c = { name: n, points: [] }; mpState.mpCollections().push(c); }
-        mpState.mapPoints().forEach(function (p) { c.points.push(Object.assign({}, p)); });   // file all loose pins into the list
-        mpState.setMapPoints([]); mpState.setMpActiveName(""); mpState.shownColls()[n] = true;
-        saveMapPoints(); saveShownState(); renderMapPoints(); refreshMpPanel();
+    // File every loose pin into `name`, creating the list if it is new. One path for both
+    // "add to an existing list" and "make a new one".
+    function fileLoosePoints(name) {
+      name = String(name || "").trim(); if (!name) return;
+      var c = mpState.mpCollections().filter(function (x) { return x.name === name; })[0];
+      if (!c) { c = { name: name, points: [] }; mpState.mpCollections().push(c); }
+      var n = mpState.mapPoints().length;
+      mpState.mapPoints().forEach(function (p) { c.points.push(Object.assign({}, p)); });
+      mpState.setMapPoints([]); mpState.setMpActiveName(""); mpState.shownColls()[name] = true;
+      saveMapPoints(); saveShownState(); renderMapPoints(); refreshMpPanel();
+      setStatus(t("points.savedInto", { n: n, name: name }));
+    }
+    var saveUnsavedBtn = panel.querySelector("#mp-save-unsaved");
+    if (saveUnsavedBtn) saveUnsavedBtn.addEventListener("click", function (e) {
+      e.preventDefault(); e.stopPropagation();
+      var anchor = this, br = anchor.getBoundingClientRect();
+      var lists = mpState.mpCollections().slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
+      var el = openAnchoredMenu("detrow-menu mp-saveinto-menu", anchor);
+      el.innerHTML = '<div class="dd-head">' + escapeHtml(t("points.saveUnsavedInto", { n: mpState.mapPoints().length })) + "</div>" +
+        lists.map(function (c) {
+          return '<button type="button" class="dd-item" data-name="' + escapeHtml(c.name) + '">' +
+            escapeHtml(c.name) + ' <span class="mp-coll-n">(' + ((c.points && c.points.length) || 0) + ")</span></button>";
+        }).join("") +
+        '<button type="button" class="dd-item mp-saveinto-new">' + escapeHtml(t("detmenu.newList")) + "</button>";
+      el.querySelectorAll(".dd-item[data-name]").forEach(function (b) {
+        b.addEventListener("click", function () { var nm = this.getAttribute("data-name"); closeAnchoredMenu(); fileLoosePoints(nm); });
       });
+      var nb = el.querySelector(".mp-saveinto-new");
+      if (nb) nb.addEventListener("click", function () {
+        closeAnchoredMenu();
+        modalPrompt(t("points.saveAsPrompt"), "").then(function (nm) { fileLoosePoints(nm); });
+      });
+      positionAnchoredMenu(el, br.left, br.bottom + 4);
     });
     panel.querySelectorAll(".mp-sort-btn").forEach(function (b) {
       b.addEventListener("click", function () {

@@ -148,7 +148,6 @@
   "offline.redownload": "Retélécharger",
   "offline.purged": "Tuiles effacées par le navigateur — retélécharger",
   "place.recent": "Recherches récentes",
-  "points.saveAsList": "Enregistrer comme liste…",
   "link.fagelkartan": "Fågelkartan",
   "link.oiseaux": "Oiseaux.net",
   "ctrl.radiusSet": "Rayon d'observation : {r}",
@@ -1036,7 +1035,6 @@
   "points.sortToggle": "Ordre de tri – touchez pour changer",
   "points.notag": "(sans étiquette)",
   "points.clear": "Effacer",
-  "points.unsaved": "{n} point(s) non enregistré(s) — utilisez « Enregistrer comme liste… » pour les conserver.",
   "points.discardUnsavedPrompt": "Vous avez des points non enregistrés qui ne figurent dans aucune liste. Charger une liste les supprimera. Continuer ?",
   "points.clearUnsavedPrompt": "Vous avez des points non enregistrés qui ne figurent dans aucune liste. Les effacer quand même ?",
   "points.collection": "— Listes enregistrées —",
@@ -1471,5 +1469,8 @@
   "kml.unpacking": "Décompression de {name} …",
   "kml.parsing": "Lecture du fichier …",
   "kml.reading2": "Lecture des enregistrements … {n} sur {total}",
-  "kml.busy": "Le fichier précédent est encore en lecture — un instant"
+  "kml.busy": "Le fichier précédent est encore en lecture — un instant",
+  "points.saveUnsaved": "Enregistrer {n} non enregistrés",
+  "points.saveUnsavedInto": "Classer {n} points libres dans",
+  "points.savedInto": "{n} points enregistrés dans « {name} »."
 }

@@ -148,7 +148,6 @@
   "offline.redownload": "Descarregar novamente",
   "offline.purged": "Blocos limpos pelo navegador — descarregar novamente",
   "place.recent": "Pesquisas recentes",
-  "points.saveAsList": "Guardar como lista…",
   "link.fagelkartan": "Fågelkartan",
   "link.oiseaux": "Oiseaux.net",
   "ctrl.radiusSet": "Raio de observações: {r}",
@@ -1036,7 +1035,6 @@
   "points.sortToggle": "Ordenação – toque para alternar",
   "points.notag": "(sem etiqueta)",
   "points.clear": "Limpar",
-  "points.unsaved": "{n} ponto(s) por guardar — use “Guardar como lista…” para os manter.",
   "points.discardUnsavedPrompt": "Tem pontos por guardar que não estão em nenhuma lista. Carregar uma lista vai descartá-los. Continuar?",
   "points.clearUnsavedPrompt": "Tem pontos por guardar que não estão em nenhuma lista. Limpar mesmo assim?",
   "points.collection": "— Listas guardadas —",
@@ -1471,5 +1469,8 @@
   "kml.unpacking": "A descompactar {name} …",
   "kml.parsing": "A ler o ficheiro …",
   "kml.reading2": "A ler registos… {n} de {total}",
-  "kml.busy": "Ainda a ler o ficheiro anterior — um momento"
+  "kml.busy": "Ainda a ler o ficheiro anterior — um momento",
+  "points.saveUnsaved": "Guardar {n} não guardados",
+  "points.saveUnsavedInto": "Arquivar {n} pontos soltos em",
+  "points.savedInto": "Guardados {n} pontos em “{name}”."
 }
