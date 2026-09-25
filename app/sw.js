@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1907";
+var VERSION = "v1908";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The Help page now describes the Location filter in every language. That section existed only in English, so 14 of the 15 languages documented a filter the app has had since v1589 nowhere at all.",
+  "\u2022 Each saved list is now one clean row \u2014 tick, name, funnel, \u22EF. Navigate, share, edit, download and delete moved into the \u22EF menu, where each one is a row that says what it does; six unlabelled icons used to crowd the name off the row on a phone.",
+  "\u2022 \u201CLoad from file\u201D closes the Points panel as it opens the file picker \u2014 the import reports its progress in the line above the map, which that panel was covering.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

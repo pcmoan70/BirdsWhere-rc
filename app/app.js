@@ -17377,10 +17377,16 @@
       var filtBtn = (type === "p" && count)
         ? '<button type="button" class="mp-coll-filt ico-btn' + (fOn ? " is-on" : "") + '" data-name="' + escapeHtml(name) + '" title="' + escapeHtml(t("points.listFilter")) + '" aria-label="' + escapeHtml(t("points.listFilter")) + '">' + ico("funnel") + "</button>"
         : "";
+      // Six icons on one row left no room for the name on a phone, and none of them said
+      // what it did. The row now carries the tick, the name and the funnel; the rest go
+      // behind "...", which opens a menu where every action is a labelled row.
+      var moreBtn = '<button type="button" class="mp-coll-more ico-btn" data-type="' + type + '" data-name="' + escapeHtml(name) +
+        '" data-count="' + count + '" data-prot="' + (isProt ? "1" : "") + '" data-route="' + (isRoute ? "1" : "") +
+        '" title="' + escapeHtml(t("points.more")) + '" aria-label="' + escapeHtml(t("points.more")) + '">\u22EF</button>';
       return '<div class="mp-coll-row' + (isRoute ? " is-route" : "") + '">' +
         '<label class="mp-coll-lbl"><input type="checkbox" class="mp-coll-cb" data-type="' + type + '" data-name="' + escapeHtml(name) + '"' + (checked ? " checked" : "") + ">" +
           swIcon + '<span class="mp-coll-name">' + escapeHtml(name) + ' <span class="mp-coll-n">(' + count + ")</span></span></label>" +
-        navBtn + shareBtn + editBtn + del + dlBtn + filtBtn +
+        filtBtn + moreBtn +
         "</div>";
     }
     var collItems = mpState.mpCollections().slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (c) {
@@ -17418,7 +17424,11 @@
     // Wire interactions
     var importShareBtn = panel.querySelector("#mp-import-share"), shareFileInput = panel.querySelector("#share-file-input");
     if (importShareBtn && shareFileInput) {
-      importShareBtn.addEventListener("click", function (e) { e.stopPropagation(); shareFileInput.click(); });
+      importShareBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        shareFileInput.click();
+        closeDropdowns();   // the import's progress goes to the status line this panel covers
+      });
       shareFileInput.addEventListener("change", function (e) {
         importPointsFile(e.target.files, true);
         e.target.value = "";
@@ -17543,7 +17553,11 @@
     });
     // Per-row 🧭: export this list's / set's points as a pin overlay for Google
     // My Maps (no route — routes are a per-observation action).
-    panel.querySelectorAll(".mp-coll-nav").forEach(function (b) {
+    // The row shows checkbox / name / funnel / "..." — navigate, share, edit, download and
+    // delete live in the "..." menu, each as a row that says what it does. One wiring
+    // function serves the row's funnel and the menu's rows alike.
+    function wireCollActions(root) {
+      root.querySelectorAll(".mp-coll-nav").forEach(function (b) {
       b.addEventListener("click", function (e) {
         e.preventDefault();
         var type = this.getAttribute("data-type"), name = this.getAttribute("data-name"), pts = [];
@@ -17565,7 +17579,7 @@
       });
     });
     // Per-row 🔗: share this list / detection set as a self-contained URL (no keys needed).
-    panel.querySelectorAll(".mp-coll-share").forEach(function (b) {
+      root.querySelectorAll(".mp-coll-share").forEach(function (b) {
       b.addEventListener("click", function (e) {
         e.preventDefault();
         var type = this.getAttribute("data-type"), name = this.getAttribute("data-name");
@@ -17573,23 +17587,23 @@
       });
     });
     // Per-row ✎ opens the whole-list editor (colour + tags + rename).
-    panel.querySelectorAll(".mp-coll-edit").forEach(function (b) {
+      root.querySelectorAll(".mp-coll-edit").forEach(function (b) {
       b.addEventListener("click", function (e) { e.preventDefault(); openCollEditModal(this.getAttribute("data-name")); });
     });
     // Per-row × deletes that saved list / detection set (after confirming).
-    panel.querySelectorAll(".mp-coll-filt").forEach(function (b) {
+      root.querySelectorAll(".mp-coll-filt").forEach(function (b) {
       b.addEventListener("click", function (e) {
         e.preventDefault(); e.stopPropagation();
         openListFilterMenu(this, this.getAttribute("data-name"));
       });
     });
-    panel.querySelectorAll(".mp-coll-dl").forEach(function (b) {
+      root.querySelectorAll(".mp-coll-dl").forEach(function (b) {
       b.addEventListener("click", function (e) {
         e.preventDefault(); e.stopPropagation();
         openPointsDownloadMenu(this, this.getAttribute("data-type"), this.getAttribute("data-name"));
       });
     });
-    panel.querySelectorAll(".mp-coll-del").forEach(function (b) {
+      root.querySelectorAll(".mp-coll-del").forEach(function (b) {
       b.addEventListener("click", function (e) {
         e.preventDefault();
         var type = this.getAttribute("data-type"), name = this.getAttribute("data-name");
@@ -17602,6 +17616,49 @@
         });
       });
     });
+      root.querySelectorAll(".mp-coll-more").forEach(function (b) {
+        b.addEventListener("click", function (e) {
+          e.preventDefault(); e.stopPropagation();
+          openCollMoreMenu(this);
+        });
+      });
+    }
+    // One row per action, each with a line saying what it does — the icons alone were a
+    // guessing game. The buttons carry the SAME classes and data attributes they had on
+    // the row, so wireCollActions handles them unchanged.
+    function openCollMoreMenu(anchor) {
+      var type = anchor.getAttribute("data-type"), name = anchor.getAttribute("data-name");
+      var count = +anchor.getAttribute("data-count") || 0;
+      var isProt = !!anchor.getAttribute("data-prot"), isRoute = !!anchor.getAttribute("data-route");
+      var d = 'data-type="' + type + '" data-name="' + escapeHtml(name) + '"';
+      // Measure the "..." BEFORE opening: openAnchoredMenu closes the dropdowns, and the
+      // Points panel is one — once hidden the anchor's rect is all zeros and the menu is
+      // clamped into the top-left corner.
+      var br = anchor.getBoundingClientRect();
+      function row(cls, icon, label, desc, extra) {
+        return '<button type="button" class="dd-item mp-more-item ' + cls + '" ' + (extra || d) + '>' +
+          '<span class="mp-more-ico">' + icon + "</span>" +
+          '<span class="mp-more-txt"><b>' + escapeHtml(label) + "</b>" +
+            (desc ? '<span class="mp-more-desc">' + escapeHtml(desc) + "</span>" : "") + "</span></button>";
+      }
+      var html = '<div class="dd-head">' + escapeHtml(name) + "</div>";
+      html += row("mp-coll-nav", ico("nav"), isRoute ? t("nav.title") : t("nav.send"),
+                  t(isRoute ? "points.navDescRoute" : "points.navDesc"));
+      html += row("mp-coll-share", ico("share"), t("share.link"), t("points.shareDesc"));
+      if (type === "p") html += row("mp-coll-edit", ico("edit"), t("points.editList"), t("points.editDesc"),
+                                    'data-name="' + escapeHtml(name) + '"');
+      if (count) html += row("mp-coll-dl", ico("download"), t("points.download"), t("points.downloadDesc"));
+      html += isProt
+        ? row("mp-more-locked", ico("lock"), t("lists.protect"), t("points.protectedDesc"), 'disabled')
+        : row("mp-coll-del", "\u00D7", t(type === "d" ? "dset.delete" : "points.deleteColl"), t("points.deleteDesc"));
+      var el = openAnchoredMenu("detrow-menu mp-more-menu", anchor);
+      el.innerHTML = html;
+      wireCollActions(el);
+      // After the content, so the viewport clamp measures the real size — and because
+      // positionAnchoredMenu is what gives the popup its × and key navigation.
+      positionAnchoredMenu(el, br.right - el.offsetWidth, br.bottom + 4);
+    }
+    wireCollActions(panel);
     // "Save" captures the current work into a named list/set shown via its tick:
     //   - loose working pins        → a point-list
     //   - otherwise plotted species → a detection set

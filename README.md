@@ -619,7 +619,10 @@ view**.
   the **point editor**: name, tags, a per-point colour (or automatic), a note (optionally
   rendered as HTML), a copyable-coordinates pill, and a *Save to list* picker. The **Points**
   header button (badge = number of lists) opens a panel of tick-to-show lists, per-tag filter
-  chips, a one-button Distance ⇄ Name sort toggle, and the merged points sorted by distance. **Press-and-hold or
+  chips, a one-button Distance ⇄ Name sort toggle, and the merged points sorted by distance. Each saved
+  list is one row — **tick · name · funnel · ⋯** — and the **⋯** opens a menu where every action is a
+  labelled row that says what it does: navigate, share link, edit list, download, delete (a protected
+  list shows the lock there instead of delete). **Press-and-hold or
   right-click** that button for the **Edit & protect lists** admin: rename a list, set its
   colour/tags for every point, **protect** it from deletion (🔒), delete it, or expand it to
   edit/remove individual points.

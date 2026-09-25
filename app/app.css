@@ -2373,6 +2373,18 @@ button.dd-name:hover { text-decoration: underline; }
 .kml-row-col textarea { width: 100%; margin-top: 4px; padding: 6px 7px; border-radius: 7px; border: 1px solid var(--border, #ccc); background: var(--surface, #fff); color: inherit; font: inherit; resize: vertical; }
 /* "Note is HTML" toggle row: checkbox first, label after, snug and left-aligned. */
 /* Batch import: the per-file list names, shown instead of the target-list picker. */
+/* Per-list "..." menu: one row per action, with a line saying what it does. */
+.mp-coll-more { font-size: 15px; line-height: 1; letter-spacing: 1px; }
+.mp-more-menu { min-width: 232px; max-width: 320px; }
+.mp-more-item { display: grid; grid-template-columns: 18px 1fr; align-items: start;
+  column-gap: 9px; text-align: left; width: 100%; padding: 8px 10px; height: auto; }
+.mp-more-ico { display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+.mp-more-ico svg { width: 15px; height: 15px; }
+.mp-more-txt { display: block; min-width: 0; }
+.mp-more-txt b { display: block; }
+.mp-more-desc { display: block; margin-top: 2px; font-size: 11px; opacity: .72; line-height: 1.35; white-space: normal; }
+.mp-more-item.mp-coll-del b { color: var(--danger, #c0392b); }
+.mp-more-item.mp-more-locked { opacity: .6; cursor: default; }
 .kml-multi { font-weight: 600; }
 .kml-multi-list { max-height: 30vh; overflow-y: auto; margin: 2px 0 8px; padding: 6px 8px;
   border: 1px solid var(--border, #ccc); border-radius: 6px; font-size: 12px; line-height: 1.5;
