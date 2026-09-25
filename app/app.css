@@ -4713,7 +4713,7 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
    offer sits in the action row in orange rather than in a banner that reads as a notice. */
 .btn.mp-save-unsaved { background: #f0a020; border-color: #d98c10; color: #3a2600; }
 .btn.mp-save-unsaved:hover { background: #ffb437; border-color: #c97f08; }
+/* Nothing bespoke: the menu now uses .detrow-menu + .detrow-menu-hdr + .detrow-menu-item,
+   the same as "add this observation to a list". Only the scroll cap is its own, since a
+   user can have many more point lists than the observation menu ever shows. */
 .mp-saveinto-menu { min-width: 12em; max-height: 60vh; overflow: auto; }
-.mp-saveinto-menu .dd-head { font-size: var(--fs-s); color: var(--muted, #777); padding: 2px 6px 5px; }
-.mp-saveinto-menu .dd-item { display: block; width: 100%; text-align: left; }
-.mp-saveinto-menu .mp-saveinto-new { border-top: 1px solid var(--border, #e3ebe8); margin-top: 3px; color: var(--brand-deep, #1d5b43); }

@@ -17311,21 +17311,22 @@
       e.preventDefault(); e.stopPropagation();
       var anchor = this, br = anchor.getBoundingClientRect();
       var lists = mpState.mpCollections().slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
+      // Built exactly like the "add this observation to a list" menu (drmRenderLists):
+      // the same .detrow-menu-hdr heading and the same drmBtn rows with the pin icon, so
+      // filing points and filing an observation look and read the same.
       var el = openAnchoredMenu("detrow-menu mp-saveinto-menu", anchor);
-      el.innerHTML = '<div class="dd-head">' + escapeHtml(t("points.saveUnsavedInto", { n: mpState.mapPoints().length })) + "</div>" +
-        lists.map(function (c) {
-          return '<button type="button" class="dd-item" data-name="' + escapeHtml(c.name) + '">' +
-            escapeHtml(c.name) + ' <span class="mp-coll-n">(' + ((c.points && c.points.length) || 0) + ")</span></button>";
-        }).join("") +
-        '<button type="button" class="dd-item mp-saveinto-new">' + escapeHtml(t("detmenu.newList")) + "</button>";
-      el.querySelectorAll(".dd-item[data-name]").forEach(function (b) {
-        b.addEventListener("click", function () { var nm = this.getAttribute("data-name"); closeAnchoredMenu(); fileLoosePoints(nm); });
+      var hdr = document.createElement("div");
+      hdr.className = "detrow-menu-hdr";
+      hdr.textContent = t("points.saveUnsavedInto", { n: mpState.mapPoints().length });
+      el.appendChild(hdr);
+      lists.forEach(function (c) {
+        var n = (c.points && c.points.length) || 0;
+        el.appendChild(drmBtn(c.name + " (" + n + ")", function () { closeAnchoredMenu(); fileLoosePoints(c.name); }, "pin"));
       });
-      var nb = el.querySelector(".mp-saveinto-new");
-      if (nb) nb.addEventListener("click", function () {
+      el.appendChild(drmBtn(t("detmenu.newList"), function () {
         closeAnchoredMenu();
         modalPrompt(t("points.saveAsPrompt"), "").then(function (nm) { fileLoosePoints(nm); });
-      });
+      }));
       positionAnchoredMenu(el, br.left, br.bottom + 4);
     });
     panel.querySelectorAll(".mp-sort-btn").forEach(function (b) {
