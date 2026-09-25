@@ -1467,5 +1467,9 @@
   "points.tagAdd": "Label toevoegen",
   "points.tagRemove": "Label verwijderen",
   "points.tagNew": "Nieuw label …",
-  "points.tagNone": "Nog geen labels in deze lijst"
+  "points.tagNone": "Nog geen labels in deze lijst",
+  "kml.unpacking": "{name} uitpakken …",
+  "kml.parsing": "Bestand lezen …",
+  "kml.reading2": "Records lezen … {n} van {total}",
+  "kml.busy": "Nog bezig met het vorige bestand – een moment"
 }

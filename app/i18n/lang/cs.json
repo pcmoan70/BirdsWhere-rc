@@ -1467,5 +1467,9 @@
   "points.tagAdd": "Přidat značku",
   "points.tagRemove": "Odebrat značku",
   "points.tagNew": "Nová značka …",
-  "points.tagNone": "V tomto seznamu ještě nejsou značky"
+  "points.tagNone": "V tomto seznamu ještě nejsou značky",
+  "kml.unpacking": "Rozbalování {name} …",
+  "kml.parsing": "Čtení souboru …",
+  "kml.reading2": "Čtení záznamů… {n} z {total}",
+  "kml.busy": "Předchozí soubor se ještě čte – okamžik"
 }

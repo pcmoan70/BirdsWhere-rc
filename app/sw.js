@@ -21,16 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1898";
+var VERSION = "v1899";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Imported lists can be searched by species name, in your own language. Type \u201ckattugle\u201d and the pins whose file only ever said \u201cStrix aluco\u201d are the ones that stay \u2014 the same search box that filters the species list now filters the map pins too, matching the local name, your second language and the scientific name.",
-  "\u2022 Tag individual points. A point's card carries its tags as chips; + offers the tags already used in that list, or type a new one. Tap a chip to remove it. Tags save straight away and the Points menu\u2019s tag filter picks them up.",
-  "\u2022 The published point files have been regenerated so a record arrives already tagged with its evidence \u2014 \u201clek / display ground\u201d, \u201cgathering (>3 birds)\u201d, \u201cnest box\u201d \u2014 and the folder name no longer carries a record count into the tag. Files you imported earlier keep working exactly as they are.",
+  "\u2022 Loading a big point file now tells you where it has got to. The grouse lek file is 6.5 MB packed and 120 MB of KML with 73 891 records; the app read it silently, froze while doing so, and looked as though nothing had happened \u2014 so the natural move was to pick the file again, starting a second read behind the first. It now reports Unpacking \u2192 Reading records \u2026 n of N as it goes, and a second attempt while one is still running is told to wait instead of doubling the work.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

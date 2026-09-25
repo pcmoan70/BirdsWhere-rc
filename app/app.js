@@ -16633,22 +16633,35 @@
   // One reader behind every "load points from a file" button. Branch on the bytes,
   // not on the button: ZIP magic → KMZ, a leading { or [ → GeoJSON, < → KML, and
   // anything else → a share link (the points panel's original job).
+  var importBusy = false;
   function importPointsFile(f, allowShare) {
     if (!f) return;
+    // One import at a time. A big file freezes the main thread for seconds, so the app
+    // looks dead and the natural reaction is to pick the file again — which used to start
+    // a SECOND parse of 120 MB behind the first. Say what is happening instead.
+    if (importBusy) { setStatus(t("kml.busy")); return; }
+    importBusy = true;
+    var done = function () { importBusy = false; };
     setStatus(t("kml.reading", { name: f.name }));
     var rd = new FileReader();
-    rd.onerror = function () { setStatus(t("kml.parseErr")); };
+    rd.onerror = function () { done(); setStatus(t("kml.parseErr")); };
     rd.onload = function () {
       var buf = rd.result;
       var h = new Uint8Array(buf, 0, Math.min(4, buf.byteLength || 0));
       var isZip = h.length >= 4 && h[0] === 0x50 && h[1] === 0x4B && h[2] === 0x03 && h[3] === 0x04;
-      var doneKml = function (kml) { try { startKmlImport(kml); } catch (err) { setStatus(t("kml.parseErr")); } };
-      if (isZip) { extractKmlFromKmz(buf).then(doneKml).catch(function () { setStatus(t("kml.parseErr")); }); return; }
+      var doneKml = function (kml) {
+        Promise.resolve(startKmlImport(kml)).then(done, function () { done(); setStatus(t("kml.parseErr")); });
+      };
+      if (isZip) {
+        setStatus(t("kml.unpacking", { name: f.name }));
+        extractKmlFromKmz(buf).then(doneKml).catch(function () { done(); setStatus(t("kml.parseErr")); });
+        return;
+      }
       var txt = new TextDecoder().decode(new Uint8Array(buf)).replace(/^\uFEFF/, "").trim();
       var c0 = txt.charAt(0);
-      if (c0 === "{" || c0 === "[") startGeoJsonImport(txt);
+      if (c0 === "{" || c0 === "[") { startGeoJsonImport(txt); done(); }
       else if (c0 === "<") doneKml(txt);
-      else if (allowShare) importShared(txt);
+      else if (allowShare) { importShared(txt); done(); }
       else doneKml(txt);
     };
     rd.readAsArrayBuffer(f);

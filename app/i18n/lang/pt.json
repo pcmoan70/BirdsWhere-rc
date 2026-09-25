@@ -1467,5 +1467,9 @@
   "points.tagAdd": "Adicionar etiqueta",
   "points.tagRemove": "Remover a etiqueta",
   "points.tagNew": "Nova etiqueta …",
-  "points.tagNone": "Ainda sem etiquetas nesta lista"
+  "points.tagNone": "Ainda sem etiquetas nesta lista",
+  "kml.unpacking": "A descompactar {name} …",
+  "kml.parsing": "A ler o ficheiro …",
+  "kml.reading2": "A ler registos… {n} de {total}",
+  "kml.busy": "Ainda a ler o ficheiro anterior — um momento"
 }

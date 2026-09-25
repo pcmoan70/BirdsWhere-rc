@@ -1467,5 +1467,9 @@
   "points.tagAdd": "Ajouter une étiquette",
   "points.tagRemove": "Retirer l’étiquette",
   "points.tagNew": "Nouvelle étiquette …",
-  "points.tagNone": "Aucune étiquette dans cette liste"
+  "points.tagNone": "Aucune étiquette dans cette liste",
+  "kml.unpacking": "Décompression de {name} …",
+  "kml.parsing": "Lecture du fichier …",
+  "kml.reading2": "Lecture des enregistrements … {n} sur {total}",
+  "kml.busy": "Le fichier précédent est encore en lecture — un instant"
 }

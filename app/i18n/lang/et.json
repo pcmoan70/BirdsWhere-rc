@@ -1467,5 +1467,9 @@
   "points.tagAdd": "Lisa silt",
   "points.tagRemove": "Eemalda silt",
   "points.tagNew": "Uus silt …",
-  "points.tagNone": "Selles loendis pole veel silte"
+  "points.tagNone": "Selles loendis pole veel silte",
+  "kml.unpacking": "{name} lahtipakkimine …",
+  "kml.parsing": "Faili lugemine …",
+  "kml.reading2": "Kirjete lugemine … {n}/{total}",
+  "kml.busy": "Eelmist faili loetakse veel – hetk"
 }

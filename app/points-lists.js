@@ -585,7 +585,16 @@ window.AppPoints = (function () {
     }
     return out;
   }
-  function parseKmlText(text) {
+  // Async, and it yields: a 6.5 MB KMZ is 120 MB of KML and 73 891 placemarks, which used
+  // to block the main thread long enough that the app looked dead — "Reading …" on screen
+  // and nothing else for the better part of a minute on a phone. The DOMParser call itself
+  // cannot be split (one native call, ~7 s for that file on a desktop), so the status is
+  // painted BEFORE it, and the placemark walk then reports its way through in chunks.
+  var PARSE_CHUNK = 4000;
+  function yieldToUi() { return new Promise(function (r) { setTimeout(r, 0); }); }
+  async function parseKmlText(text) {
+    setStatus(t("kml.parsing"));
+    await yieldToUi();                       // let that message paint before the long call
     var doc = new DOMParser().parseFromString(text, "application/xml");
     if (doc.getElementsByTagName("parsererror").length) throw new Error(t("kml.parseErr"));
     var marks = [], fieldSet = {}, folderSet = {};
@@ -593,6 +602,10 @@ window.AppPoints = (function () {
     var pms = doc.getElementsByTagName("Placemark");
     function txt(el, tag) { var n = el.getElementsByTagName(tag)[0]; return n ? (n.textContent || "").trim() : ""; }
     for (var i = 0; i < pms.length; i++) {
+      if (i && i % PARSE_CHUNK === 0) {
+        setStatus(t("kml.reading2", { n: i, total: pms.length }));
+        await yieldToUi();
+      }
       var pm = pms[i];
       // First coordinates found under this placemark (Point, else first vertex).
       var co = pm.getElementsByTagName("coordinates")[0];
@@ -638,11 +651,12 @@ window.AppPoints = (function () {
     return "";
   }
   var kmlImport = null;   // { marks, fields, folders } currently staged for import
-  function startKmlImport(text) {
+  async function startKmlImport(text) {
     var parsed;
-    try { parsed = parseKmlText(text); } catch (e) { setStatus(t("kml.parseErr")); return; }
+    try { parsed = await parseKmlText(text); } catch (e) { setStatus(t("kml.parseErr")); return; }
     if (!parsed.marks.length) { setStatus(t("kml.none")); return; }
     kmlImport = parsed;
+    setStatus("");
     openKmlImportDialog();
   }
   // A small modal: choose the target list and which placemark field maps to the

@@ -1467,5 +1467,9 @@
   "points.tagAdd": "Pridėti žymą",
   "points.tagRemove": "Pašalinti žymą",
   "points.tagNew": "Nauja žyma …",
-  "points.tagNone": "Šiame sąraše dar nėra žymų"
+  "points.tagNone": "Šiame sąraše dar nėra žymų",
+  "kml.unpacking": "Išpakuojama {name} …",
+  "kml.parsing": "Skaitomas failas …",
+  "kml.reading2": "Skaitomi įrašai… {n} iš {total}",
+  "kml.busy": "Vis dar skaitomas ankstesnis failas – akimirką"
 }

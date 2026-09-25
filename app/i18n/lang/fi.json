@@ -1467,5 +1467,9 @@
   "points.tagAdd": "Lisää tunniste",
   "points.tagRemove": "Poista tunniste",
   "points.tagNew": "Uusi tunniste …",
-  "points.tagNone": "Listassa ei vielä tunnisteita"
+  "points.tagNone": "Listassa ei vielä tunnisteita",
+  "kml.unpacking": "Puretaan {name} …",
+  "kml.parsing": "Luetaan tiedostoa …",
+  "kml.reading2": "Luetaan tietueita … {n}/{total}",
+  "kml.busy": "Luetaan vielä edellistä tiedostoa – hetki"
 }

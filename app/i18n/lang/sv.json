@@ -1467,5 +1467,9 @@
   "points.tagAdd": "Lägg till etikett",
   "points.tagRemove": "Ta bort etiketten",
   "points.tagNew": "Ny etikett …",
-  "points.tagNone": "Inga etiketter i listan än"
+  "points.tagNone": "Inga etiketter i listan än",
+  "kml.unpacking": "Packar upp {name} …",
+  "kml.parsing": "Läser filen …",
+  "kml.reading2": "Läser poster … {n} av {total}",
+  "kml.busy": "Läser fortfarande förra filen – ett ögonblick"
 }

@@ -1467,5 +1467,9 @@
   "points.tagAdd": "Tilføj mærkat",
   "points.tagRemove": "Fjern mærkatet",
   "points.tagNew": "Ny mærkat …",
-  "points.tagNone": "Ingen mærkater i listen endnu"
+  "points.tagNone": "Ingen mærkater i listen endnu",
+  "kml.unpacking": "Udpakker {name} …",
+  "kml.parsing": "Læser filen …",
+  "kml.reading2": "Læser poster … {n} af {total}",
+  "kml.busy": "Læser stadig den forrige fil – et øjeblik"
 }

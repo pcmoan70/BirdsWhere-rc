@@ -1467,5 +1467,9 @@
   "points.tagAdd": "Legg til merkelapp",
   "points.tagRemove": "Fjern merkelappen",
   "points.tagNew": "Ny merkelapp …",
-  "points.tagNone": "Ingen merkelapper i lista ennå"
+  "points.tagNone": "Ingen merkelapper i lista ennå",
+  "kml.unpacking": "Pakker ut {name} …",
+  "kml.parsing": "Leser fila …",
+  "kml.reading2": "Leser poster … {n} av {total}",
+  "kml.busy": "Leser fortsatt forrige fil – et øyeblikk"
 }

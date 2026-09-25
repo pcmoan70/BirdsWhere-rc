@@ -1467,5 +1467,9 @@
   "points.tagAdd": "Dodaj etykietę",
   "points.tagRemove": "Usuń etykietę",
   "points.tagNew": "Nowa etykieta …",
-  "points.tagNone": "Brak etykiet na tej liście"
+  "points.tagNone": "Brak etykiet na tej liście",
+  "kml.unpacking": "Rozpakowywanie {name} …",
+  "kml.parsing": "Odczyt pliku …",
+  "kml.reading2": "Odczyt rekordów… {n} z {total}",
+  "kml.busy": "Wciąż trwa odczyt poprzedniego pliku – chwila"
 }

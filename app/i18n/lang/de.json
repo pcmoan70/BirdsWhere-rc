@@ -1467,5 +1467,9 @@
   "points.tagAdd": "Schlagwort hinzufügen",
   "points.tagRemove": "Schlagwort entfernen",
   "points.tagNew": "Neues Schlagwort …",
-  "points.tagNone": "Noch keine Schlagwörter in dieser Liste"
+  "points.tagNone": "Noch keine Schlagwörter in dieser Liste",
+  "kml.unpacking": "{name} wird entpackt …",
+  "kml.parsing": "Datei wird gelesen …",
+  "kml.reading2": "Datensätze werden gelesen … {n} von {total}",
+  "kml.busy": "Die vorige Datei wird noch gelesen – einen Moment"
 }
