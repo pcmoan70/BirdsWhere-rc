@@ -1474,5 +1474,10 @@
   "points.saveWhat": "Ką norite išsaugoti?",
   "points.saveFetched": "Parsiųsti taškai ({n})",
   "points.saveCreated": "{n} savų taškų",
-  "points.saveNothing": "Pažymėkite bent vieną iš dviejų."
+  "points.saveNothing": "Pažymėkite bent vieną iš dviejų.",
+  "points.copyTo": "Kopijuoti į sąrašą",
+  "points.copiedTo": "Nukopijuota į „{name}“.",
+  "points.deleteOne": "Ištrinti šį tašką",
+  "points.deletePrompt": "Ištrinti „{name}“ iš sąrašo?",
+  "points.deleted": "Ištrinta iš „{name}“."
 }

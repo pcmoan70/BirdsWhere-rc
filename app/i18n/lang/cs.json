@@ -1474,5 +1474,10 @@
   "points.saveWhat": "Co chcete zachovat?",
   "points.saveFetched": "Stažené body ({n})",
   "points.saveCreated": "{n} vlastních bodů",
-  "points.saveNothing": "Zaškrtněte alespoň jednu z možností."
+  "points.saveNothing": "Zaškrtněte alespoň jednu z možností.",
+  "points.copyTo": "Kopírovat do seznamu",
+  "points.copiedTo": "Zkopírováno do „{name}“.",
+  "points.deleteOne": "Smazat tento bod",
+  "points.deletePrompt": "Smazat „{name}“ ze seznamu?",
+  "points.deleted": "Smazáno ze „{name}“."
 }

@@ -1474,5 +1474,10 @@
   "points.saveWhat": "¿Qué quieres conservar?",
   "points.saveFetched": "Puntos descargados ({n})",
   "points.saveCreated": "{n} puntos propios",
-  "points.saveNothing": "Marca al menos una de las dos."
+  "points.saveNothing": "Marca al menos una de las dos.",
+  "points.copyTo": "Copiar a una lista",
+  "points.copiedTo": "Copiado a «{name}».",
+  "points.deleteOne": "Eliminar este punto",
+  "points.deletePrompt": "¿Eliminar «{name}» de su lista?",
+  "points.deleted": "Eliminado de «{name}»."
 }

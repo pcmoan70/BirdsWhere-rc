@@ -1474,5 +1474,10 @@
   "points.saveWhat": "Wat wil je bewaren?",
   "points.saveFetched": "Opgehaalde punten ({n})",
   "points.saveCreated": "{n} eigen punten",
-  "points.saveNothing": "Vink minstens één van de twee aan."
+  "points.saveNothing": "Vink minstens één van de twee aan.",
+  "points.copyTo": "Naar een lijst kopiëren",
+  "points.copiedTo": "Gekopieerd naar ‘{name}’.",
+  "points.deleteOne": "Dit punt verwijderen",
+  "points.deletePrompt": "‘{name}’ uit de lijst verwijderen?",
+  "points.deleted": "Verwijderd uit ‘{name}’."
 }

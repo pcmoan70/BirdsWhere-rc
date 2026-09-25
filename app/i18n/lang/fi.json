@@ -1474,5 +1474,10 @@
   "points.saveWhat": "Mitä haluat säilyttää?",
   "points.saveFetched": "Haetut pisteet ({n})",
   "points.saveCreated": "{n} omaa pistettä",
-  "points.saveNothing": "Valitse vähintään toinen."
+  "points.saveNothing": "Valitse vähintään toinen.",
+  "points.copyTo": "Kopioi listaan",
+  "points.copiedTo": "Kopioitu listaan ”{name}”.",
+  "points.deleteOne": "Poista tämä piste",
+  "points.deletePrompt": "Poistetaanko ”{name}” listalta?",
+  "points.deleted": "Poistettu listalta ”{name}”."
 }

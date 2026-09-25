@@ -22,7 +22,7 @@ window.AppPoints = (function () {
   // ---- injected by app.js (init) -----------------------------------------
   // Plain function aliases (stable references) …
   var clearSpider, detRenderer, detStarMarker, downloadCsv, escapeHtml, haversineKm, ico,
-      listPointPasses, looksLikeHtml, makePopupBtn, modalPrompt, mpTipHtml, openExternal, openPointEditor,
+      copyPointToList, deleteListPoint, listPointPasses, looksLikeHtml, makePopupBtn, modalPrompt, mpTipHtml, openExternal, openPointEditor,
       refreshMpPanel, renderMpAdmin, setStatus, showDetRowMenu, syncListDetections,
       updateDetSetOverlays, updateMpBadge, updateSpDistances, t;
   // … and accessors for app state that is replaced at runtime (the map and the
@@ -33,6 +33,7 @@ window.AppPoints = (function () {
     clearSpider = ctx.clearSpider; detRenderer = ctx.detRenderer; detStarMarker = ctx.detStarMarker;
     downloadCsv = ctx.downloadCsv; escapeHtml = ctx.escapeHtml; haversineKm = ctx.haversineKm;
     ico = ctx.ico; looksLikeHtml = ctx.looksLikeHtml; makePopupBtn = ctx.makePopupBtn;
+    copyPointToList = ctx.copyPointToList; deleteListPoint = ctx.deleteListPoint;
     listPointPasses = ctx.listPointPasses; modalPrompt = ctx.modalPrompt; mpTipHtml = ctx.mpTipHtml; openExternal = ctx.openExternal;
     openPointEditor = ctx.openPointEditor; refreshMpPanel = ctx.refreshMpPanel;
     renderMpAdmin = ctx.renderMpAdmin; setStatus = ctx.setStatus; showDetRowMenu = ctx.showDetRowMenu;
@@ -1247,7 +1248,12 @@ window.AppPoints = (function () {
           escapeHtml(t("points.tagRemove")) + '">' + escapeHtml(tg) + " \u00d7</button>";
       }).join("") +
       '<button type="button" class="mp-tag-add" title="' + escapeHtml(t("points.tagAdd")) + '">+</button>' +
-      "</div>";
+      // Copy this one record into another list, and delete it. Both act on the point the
+      // card belongs to, so they sit on the card rather than behind the action menu.
+      '<span class="mp-card-acts">' +
+        '<button type="button" class="mp-card-copy ico-btn" title="' + escapeHtml(t("points.copyTo")) + '" aria-label="' + escapeHtml(t("points.copyTo")) + '">' + ico("copy") + "</button>" +
+        '<button type="button" class="mp-card-del" title="' + escapeHtml(t("points.deleteOne")) + '" aria-label="' + escapeHtml(t("points.deleteOne")) + '">\u00d7</button>' +
+      "</span></div>";
   }
   // The picker, opened inside the card itself — no second popup to stack, dismiss or
   // position, and it cannot cover the record it belongs to.
@@ -1294,6 +1300,22 @@ window.AppPoints = (function () {
           e.stopPropagation();
           var o = items[+this.closest(".mp-stack-it").getAttribute("data-i")];
           if (o) { togglePointTag(o.p, this.getAttribute("data-tag")); redraw(); }
+        });
+      });
+      el.querySelectorAll(".mp-card-copy").forEach(function (b) {
+        b.addEventListener("click", function (e) {
+          e.stopPropagation();
+          var o = items[+this.closest(".mp-stack-it").getAttribute("data-i")];
+          if (o && copyPointToList) copyPointToList(this, o.p);
+        });
+      });
+      el.querySelectorAll(".mp-card-del").forEach(function (b) {
+        b.addEventListener("click", function (e) {
+          e.stopPropagation();
+          var o = items[+this.closest(".mp-stack-it").getAttribute("data-i")];
+          if (!o || !deleteListPoint) return;
+          try { getMap().closePopup(pop); } catch (x) {}   // the record is about to go
+          deleteListPoint(o.p);
         });
       });
       el.querySelectorAll(".mp-tag-add").forEach(function (b) {

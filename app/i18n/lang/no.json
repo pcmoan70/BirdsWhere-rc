@@ -1474,5 +1474,10 @@
   "points.saveWhat": "Hva vil du ta vare på?",
   "points.saveFetched": "Hentede punkter ({n})",
   "points.saveCreated": "{n} egne punkter",
-  "points.saveNothing": "Kryss av minst én av de to."
+  "points.saveNothing": "Kryss av minst én av de to.",
+  "points.copyTo": "Kopier til en liste",
+  "points.copiedTo": "Kopiert til «{name}».",
+  "points.deleteOne": "Slett dette punktet",
+  "points.deletePrompt": "Slette «{name}» fra lista?",
+  "points.deleted": "Slettet fra «{name}»."
 }

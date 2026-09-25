@@ -1474,5 +1474,10 @@
   "points.saveWhat": "Mida soovid alles hoida?",
   "points.saveFetched": "Toodud punktid ({n})",
   "points.saveCreated": "{n} enda punkti",
-  "points.saveNothing": "Märgi vähemalt üks kahest."
+  "points.saveNothing": "Märgi vähemalt üks kahest.",
+  "points.copyTo": "Kopeeri loendisse",
+  "points.copiedTo": "Kopeeritud loendisse „{name}“.",
+  "points.deleteOne": "Kustuta see punkt",
+  "points.deletePrompt": "Kustutada „{name}“ loendist?",
+  "points.deleted": "Kustutatud loendist „{name}“."
 }

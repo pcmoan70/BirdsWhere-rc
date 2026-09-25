@@ -1474,5 +1474,10 @@
   "points.saveWhat": "Was möchten Sie behalten?",
   "points.saveFetched": "Abgerufene Punkte ({n})",
   "points.saveCreated": "{n} eigene Punkte",
-  "points.saveNothing": "Mindestens eines der beiden ankreuzen."
+  "points.saveNothing": "Mindestens eines der beiden ankreuzen.",
+  "points.copyTo": "In eine Liste kopieren",
+  "points.copiedTo": "Nach „{name}“ kopiert.",
+  "points.deleteOne": "Diesen Punkt löschen",
+  "points.deletePrompt": "„{name}“ aus der Liste löschen?",
+  "points.deleted": "Aus „{name}“ gelöscht."
 }

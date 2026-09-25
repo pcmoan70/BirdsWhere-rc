@@ -16517,6 +16517,7 @@
     downloadCsv: downloadCsv, escapeHtml: escapeHtml, haversineKm: haversineKm, ico: ico,
     looksLikeHtml: looksLikeHtml, makePopupBtn: makePopupBtn, modalPrompt: modalPrompt,
     mpTipHtml: mpTipHtml, listPointPasses: listPointPasses, openExternal: openExternal, openPointEditor: openPointEditor,
+    copyPointToList: copyPointToList, deleteListPoint: deleteListPoint,
     refreshMpPanel: refreshMpPanel, renderMpAdmin: renderMpAdmin, setStatus: setStatus,
     showDetRowMenu: showDetRowMenu, syncListDetections: syncListDetections,
     updateDetSetOverlays: updateDetSetOverlays, updateMpBadge: updateMpBadge,
@@ -16566,6 +16567,62 @@
   // species/date/observer out of a file has none of them, and must never be filtered away by
   // a control it cannot answer to. That is the backward-compatibility rule for old lists.
   // Anything worth a Save button: fetched observations on the map, or loose pins.
+  // The list chooser, drawn exactly like "add this observation to a list" — used by Save,
+  // and by "copy this point to another list". `skip` hides one list (a point's own).
+  function chooseListThen(anchor, then, title, skip) {
+    var br = anchor.getBoundingClientRect();
+    var lists = mpState.mpCollections().slice()
+      .filter(function (c) { return c.name !== skip; })
+      .sort(function (a, b) { return a.name.localeCompare(b.name); });
+    var el = openAnchoredMenu("detrow-menu mp-saveinto-menu", anchor);
+    var hdr = document.createElement("div");
+    hdr.className = "detrow-menu-hdr";
+    hdr.textContent = title || t("detlist.saveTitle");
+    el.appendChild(hdr);
+    lists.forEach(function (c) {
+      var cn = (c.points && c.points.length) || 0;
+      el.appendChild(drmBtn(c.name + " (" + cn + ")", function () { closeAnchoredMenu(); then(c.name); }, "pin"));
+    });
+    el.appendChild(drmBtn(t("detmenu.newList"), function () {
+      closeAnchoredMenu();
+      modalPrompt(t("points.saveAsPrompt"), "").then(function (nm) { nm = (nm || "").trim(); if (nm) then(nm); });
+    }));
+    positionAnchoredMenu(el, br.left, br.bottom + 4);
+  }
+  // Which saved list holds this point (by object identity).
+  function ownerListOf(p) {
+    var found = "";
+    mpState.mpCollections().forEach(function (c) { if (!found && (c.points || []).indexOf(p) >= 0) found = c.name; });
+    return found;
+  }
+  // Copy — not move: the point stays where it is and a copy, with a fresh id, joins the
+  // chosen list. Filing one record under two headings is the normal case (a lek that is also
+  // a ringing site); a move is a copy followed by a delete, both of which are here.
+  function copyPointToList(anchor, p) {
+    if (!p) return;
+    chooseListThen(anchor, function (name) {
+      var c = mpState.mpCollections().filter(function (x) { return x.name === name; })[0];
+      if (!c) { c = { name: name, points: [] }; mpState.mpCollections().push(c); }
+      var copy = Object.assign({}, p);
+      copy.id = mpState.mpUid();
+      copy.tags = (p.tags || []).slice();
+      c.points.push(copy);
+      mpState.shownColls()[name] = true;
+      saveMapPoints(); saveShownState(); renderMapPoints(); refreshMpPanel();
+      setStatus(t("points.copiedTo", { name: name }));
+    }, t("points.copyTo"), ownerListOf(p));
+  }
+  // Delete one point from the list that holds it, after asking.
+  function deleteListPoint(p) {
+    if (!p) return;
+    var name = ownerListOf(p);
+    if (!name) { try { mpState.deleteMapPoint(p.id); } catch (e) {} return; }   // a loose working pin
+    modalConfirm(t("points.deletePrompt", { name: p.name || "" })).then(function (ok) {
+      if (!ok) return;
+      if (!p.id) { p.id = mpState.mpUid(); saveMapPoints(); }
+      if (removeListPoint(name, p.id)) { refreshMpPanel(); setStatus(t("points.deleted", { name: name })); }
+    });
+  }
   function mpSaveableAny() {
     try { if (Object.keys(detPlot).length) return true; } catch (e) {}
     try { if (mpHasUnsaved()) return true; } catch (e) {}

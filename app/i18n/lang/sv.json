@@ -1474,5 +1474,10 @@
   "points.saveWhat": "Vad vill du spara?",
   "points.saveFetched": "Hämtade punkter ({n})",
   "points.saveCreated": "{n} egna punkter",
-  "points.saveNothing": "Kryssa i minst en av de två."
+  "points.saveNothing": "Kryssa i minst en av de två.",
+  "points.copyTo": "Kopiera till en lista",
+  "points.copiedTo": "Kopierad till ”{name}”.",
+  "points.deleteOne": "Ta bort den här punkten",
+  "points.deletePrompt": "Ta bort ”{name}” från listan?",
+  "points.deleted": "Borttagen från ”{name}”."
 }
