@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1896";
+var VERSION = "v1897";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 One card per map point, not two. Every pin also carried a hover card, which a tap raised on top of the scrollable list \u2014 covering the dots around it and repeating what the list already said. The hover card is gone; a tap opens the scrollable list of everything reported at that spot, newest first, whether that is one record or thirty.",
+  "\u2022 Imported point lists answer to the filters. A KML or GeoJSON from the point builders carries a species, a date and an observer per record, and the app used to throw all three away at import \u2014 so an imported list was a flat layer you could only filter by tag. Those fields are now read in, and the date, month and observer filters you already use apply to list pins as well as to fetched observations.",
+  "\u2022 Nothing changes for lists you imported earlier: a pin with no date is never hidden by a date filter, HTML notes render as before, and pins keep the colours their file gave them.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -22,7 +22,7 @@ window.AppPoints = (function () {
   // ---- injected by app.js (init) -----------------------------------------
   // Plain function aliases (stable references) …
   var clearSpider, detRenderer, detStarMarker, downloadCsv, escapeHtml, haversineKm, ico,
-      looksLikeHtml, makePopupBtn, modalPrompt, mpTipHtml, openExternal, openPointEditor,
+      listPointPasses, looksLikeHtml, makePopupBtn, modalPrompt, mpTipHtml, openExternal, openPointEditor,
       refreshMpPanel, renderMpAdmin, setStatus, showDetRowMenu, syncListDetections,
       updateDetSetOverlays, updateMpBadge, updateSpDistances, t;
   // … and accessors for app state that is replaced at runtime (the map and the
@@ -33,7 +33,7 @@ window.AppPoints = (function () {
     clearSpider = ctx.clearSpider; detRenderer = ctx.detRenderer; detStarMarker = ctx.detStarMarker;
     downloadCsv = ctx.downloadCsv; escapeHtml = ctx.escapeHtml; haversineKm = ctx.haversineKm;
     ico = ctx.ico; looksLikeHtml = ctx.looksLikeHtml; makePopupBtn = ctx.makePopupBtn;
-    modalPrompt = ctx.modalPrompt; mpTipHtml = ctx.mpTipHtml; openExternal = ctx.openExternal;
+    listPointPasses = ctx.listPointPasses; modalPrompt = ctx.modalPrompt; mpTipHtml = ctx.mpTipHtml; openExternal = ctx.openExternal;
     openPointEditor = ctx.openPointEditor; refreshMpPanel = ctx.refreshMpPanel;
     renderMpAdmin = ctx.renderMpAdmin; setStatus = ctx.setStatus; showDetRowMenu = ctx.showDetRowMenu;
     syncListDetections = ctx.syncListDetections; updateDetSetOverlays = ctx.updateDetSetOverlays;
@@ -692,6 +692,38 @@ window.AppPoints = (function () {
     document.getElementById("kml-do").addEventListener("click", doKmlImport);
   }
   function closeKmlImportDialog() { var m = document.getElementById("kml-import-modal"); if (m && m.parentNode) m.parentNode.removeChild(m); }
+  // Field names the builders (and GBIF/Google Earth exports generally) use, mapped onto the
+  // point's own structured fields. First match wins; a value the user mapped by hand in the
+  // dialog is never overwritten.
+  var FIELD_ALIASES = {
+    sci: ["species", "scientificName", "scientific_name", "sciname", "taxon"],
+    date: ["date", "eventDate", "event_date", "observed", "obsDate"],
+    observer: ["observer", "recordedBy", "recorded_by", "recorder", "collector"],
+    count: ["count", "individualCount", "individual_count", "number"],
+    place: ["place", "locality", "location"]
+  };
+  function applyKmlFields(pt, data) {
+    if (!data) return;
+    Object.keys(FIELD_ALIASES).forEach(function (field) {
+      if (pt[field] != null && pt[field] !== "") return;   // the dialog's mapping wins
+      var names = FIELD_ALIASES[field];
+      for (var i = 0; i < names.length; i++) {
+        var v = data[names[i]];
+        if (v == null || String(v).trim() === "") continue;
+        v = String(v).trim();
+        if (field === "date") { var m = /\d{4}-\d{2}-\d{2}/.exec(v); v = m ? m[0] : v.slice(0, 10); }
+        pt[field] = v;
+        return;
+      }
+    });
+    // Tags may travel as a field too ("a; b" or "a, b"), alongside whatever the dialog mapped.
+    var tg = data.tags || data.tag;
+    if (tg) {
+      String(tg).split(/[;,|]/).forEach(function (x) {
+        x = x.trim(); if (x && (pt.tags || []).indexOf(x) < 0) (pt.tags = pt.tags || []).push(x);
+      });
+    }
+  }
   function doKmlImport() {
     var p = kmlImport; if (!p) return;
     var target = document.getElementById("kml-target").value;
@@ -707,6 +739,11 @@ window.AppPoints = (function () {
         var pt = { id: mpUid(), lat: pm.lat, lon: pm.lon,
           name: kmlFieldValue(pm, nameTok).trim() || pm.name || "",
           tags: tag ? [tag] : [], note: note, source: "kml", createdAt: new Date().toISOString() };
+        // Structured fields, taken from the placemark's own ExtendedData when it has them —
+        // the point builders already write species / date / observer / count, and throwing
+        // them away is what left an imported list unfilterable. Purely additive: a file
+        // without them yields exactly the point it did before.
+        applyKmlFields(pt, pm.data);
         // A file that says what colour a point should be is obeyed — without this every
         // imported set came out in ONE colour hashed from the list name, whatever the
         // file's own styling said.
@@ -971,11 +1008,29 @@ window.AppPoints = (function () {
   // OR-filter: when no tags active, show everything; otherwise show points
   // whose tag list intersects mpFilter. "(no tag)" is represented by "".
   function mpVisible(p) {
+    // The pane's own filters (date, observer, …) reach list pins too — see
+    // listPointPasses in app.js. A pin is judged only on the fields it HAS, so a list
+    // imported before those fields existed is never hidden by them.
+    if (listPointPasses && !listPointPasses(p)) return false;
     if (!mpFilter.length) return true;
     var tags = p.tags || [];
     if (!tags.length) return mpFilter.indexOf("") >= 0;
     for (var i = 0; i < tags.length; i++) if (mpFilter.indexOf(tags[i]) >= 0) return true;
     return false;
+  }
+  // Re-draw the pins after a filter change, at most once per frame: a filter click can
+  // touch several controls, and a list of tens of thousands of pins must not be rebuilt
+  // once per keystroke. Guarded against re-entry — renderMapPoints runs
+  // syncListDetections, which is itself what calls back in here.
+  var mpFilterT = null, mpRendering = false;
+  function mpFilterRefresh() {
+    if (mpRendering || mpFilterT) return;
+    mpFilterT = (window.requestAnimationFrame || setTimeout)(function () {
+      mpFilterT = null;
+      if (mpRendering) return;
+      mpRendering = true;
+      try { renderMapPoints(); } catch (e) {} finally { mpRendering = false; }
+    }, 16);
   }
 
   function ensureMpLayer() { if (!mpLayer) { mpLayer = L.layerGroup(); if (getMap()) mpLayer.addTo(getMap()); } return mpLayer; }
@@ -1164,7 +1219,7 @@ window.AppPoints = (function () {
 
   return {
     init: init,
-    initMpSetStore: initMpSetStore, persistMpSets: persistMpSets,
+    initMpSetStore: initMpSetStore, persistMpSets: persistMpSets, mpFilterRefresh: mpFilterRefresh,
     // ---- points, lists, collections ----
     loadMapPoints: loadMapPoints, saveMapPoints: saveMapPoints, saveChecked: saveChecked,
     saveShownState: saveShownState, addMapPoint: addMapPoint, updateMapPoint: updateMapPoint,

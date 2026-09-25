@@ -13567,6 +13567,9 @@
       e.group.addTo(map);
     });
     if (dotDC && dotDC.clusters.length) renderDotClusters(dotDC.clusters);
+    // A filter change reaches the list pins too (mpVisible → listPointPasses); coalesced to
+    // one redraw per frame inside mpFilterRefresh, and guarded against re-entry.
+    try { if (mpState && mpState.mpFilterRefresh) mpState.mpFilterRefresh(); } catch (e) {}
   }
   // While a legend hover isolates a species/observer, the spot overlays (eBird
   // hotspots, Best sites and birding spots all render in spotsPane) hide too —
@@ -16509,7 +16512,7 @@
     clearSpider: clearSpider, detRenderer: detRenderer, detStarMarker: detStarMarker,
     downloadCsv: downloadCsv, escapeHtml: escapeHtml, haversineKm: haversineKm, ico: ico,
     looksLikeHtml: looksLikeHtml, makePopupBtn: makePopupBtn, modalPrompt: modalPrompt,
-    mpTipHtml: mpTipHtml, openExternal: openExternal, openPointEditor: openPointEditor,
+    mpTipHtml: mpTipHtml, listPointPasses: listPointPasses, openExternal: openExternal, openPointEditor: openPointEditor,
     refreshMpPanel: refreshMpPanel, renderMpAdmin: renderMpAdmin, setStatus: setStatus,
     showDetRowMenu: showDetRowMenu, syncListDetections: syncListDetections,
     updateDetSetOverlays: updateDetSetOverlays, updateMpBadge: updateMpBadge,
@@ -16554,6 +16557,16 @@
   // the list's colour for the halo) so they can be re-derived each render and are
   // never persisted as fetched dots (see serializeDetPlot). Reuses mergeDetRows,
   // recolourDetections, rebuildDetLayers and updateDetLegend.
+  // The filter pane's predicates, applied to an imported LIST PIN rather than a fetched row.
+  // Each test runs only when the pin carries that field: a list imported before the app read
+  // species/date/observer out of a file has none of them, and must never be filtered away by
+  // a control it cannot answer to. That is the backward-compatibility rule for old lists.
+  function listPointPasses(p) {
+    if (!p) return true;
+    if (p.date && !detDatePasses(p.date)) return false;
+    if (p.observer && !detObsPasses({ observer: p.observer })) return false;
+    return true;
+  }
   function syncListDetections() {
     if (!map || typeof detPlot === "undefined") return;
     var changed = false;
