@@ -1479,5 +1479,12 @@
   "points.copiedTo": "Gekopieerd naar ‘{name}’.",
   "points.deleteOne": "Dit punt verwijderen",
   "points.deletePrompt": "‘{name}’ uit de lijst verwijderen?",
-  "points.deleted": "Verwijderd uit ‘{name}’."
+  "points.deleted": "Verwijderd uit ‘{name}’.",
+  "points.listFilter": "Deze lijst filteren",
+  "points.listFilterFor": "‘{name}’ filteren",
+  "points.listFilterObs": "Waarnemers ({n})",
+  "points.listFilterApply": "Toepassen",
+  "points.listFilterClear": "Filter van deze lijst wissen",
+  "filters.from": "Van",
+  "filters.to": "Tot"
 }

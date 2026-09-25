@@ -1479,5 +1479,12 @@
   "points.copiedTo": "Kopeeritud loendisse „{name}“.",
   "points.deleteOne": "Kustuta see punkt",
   "points.deletePrompt": "Kustutada „{name}“ loendist?",
-  "points.deleted": "Kustutatud loendist „{name}“."
+  "points.deleted": "Kustutatud loendist „{name}“.",
+  "points.listFilter": "Filtreeri seda loendit",
+  "points.listFilterFor": "Filtreeri „{name}“",
+  "points.listFilterObs": "Vaatlejad ({n})",
+  "points.listFilterApply": "Rakenda",
+  "points.listFilterClear": "Tühista selle loendi filter",
+  "filters.from": "Alates",
+  "filters.to": "Kuni"
 }

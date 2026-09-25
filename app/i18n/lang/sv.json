@@ -1479,5 +1479,12 @@
   "points.copiedTo": "Kopierad till ”{name}”.",
   "points.deleteOne": "Ta bort den här punkten",
   "points.deletePrompt": "Ta bort ”{name}” från listan?",
-  "points.deleted": "Borttagen från ”{name}”."
+  "points.deleted": "Borttagen från ”{name}”.",
+  "points.listFilter": "Filtrera den här listan",
+  "points.listFilterFor": "Filtrera ”{name}”",
+  "points.listFilterObs": "Observatörer ({n})",
+  "points.listFilterApply": "Använd",
+  "points.listFilterClear": "Rensa listans filter",
+  "filters.from": "Från",
+  "filters.to": "Till"
 }

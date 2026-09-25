@@ -1479,5 +1479,12 @@
   "points.copiedTo": "Nukopijuota į „{name}“.",
   "points.deleteOne": "Ištrinti šį tašką",
   "points.deletePrompt": "Ištrinti „{name}“ iš sąrašo?",
-  "points.deleted": "Ištrinta iš „{name}“."
+  "points.deleted": "Ištrinta iš „{name}“.",
+  "points.listFilter": "Filtruoti šį sąrašą",
+  "points.listFilterFor": "Filtruoti „{name}“",
+  "points.listFilterObs": "Stebėtojai ({n})",
+  "points.listFilterApply": "Taikyti",
+  "points.listFilterClear": "Išvalyti šio sąrašo filtrą",
+  "filters.from": "Nuo",
+  "filters.to": "Iki"
 }

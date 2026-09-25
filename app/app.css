@@ -4729,3 +4729,16 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .mp-card-copy:hover { color: var(--brand, #2f6f4f); border-color: var(--brand, #2f6f4f); }
 .mp-card-del { color: var(--muted, #999); font-size: var(--fs-h); }
 .mp-card-del:hover { color: #c0392b; border-color: #c0392b; }
+/* Per-list filter: the funnel on a list row, and its popup. */
+.mp-coll-filt { flex: 0 0 auto; box-sizing: border-box; width: 28px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border, #ccc); border-radius: var(--radius-xs, 4px); background: var(--surface, #fff); cursor: pointer; padding: 0; color: var(--brand-deep); }
+.mp-coll-filt:hover { color: var(--brand); border-color: var(--brand); }
+.mp-coll-filt.is-on { color: #b36b00; border-color: #e0a44a; background: #fff6e6; }
+.mp-coll-filt .btn-ico { width: var(--ico-m); height: var(--ico-m); }
+.mp-listfilt-menu { min-width: 15em; max-width: 22em; max-height: 70vh; overflow: auto; }
+.mp-listfilt-dates { display: flex; gap: 6px; padding: 5px 10px 2px; flex-wrap: wrap; }
+.mp-listfilt-dates label { display: flex; flex-direction: column; gap: 2px; font-size: var(--fs-xs); color: var(--muted, #777); }
+.mp-listfilt-dates input { font-size: var(--fs-xs); }
+.mp-listfilt-span { flex: 1 1 100%; font-size: var(--fs-xs); color: var(--muted, #999); }
+.mp-listfilt-obshdr { margin-top: 4px; }
+.mp-listfilt-obs { max-height: 34vh; overflow: auto; }
+.mp-listfilt-go { border-top: 1px solid var(--border, #e3ebe8); margin-top: 4px; font-weight: 600; }

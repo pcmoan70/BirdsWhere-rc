@@ -1479,5 +1479,12 @@
   "points.copiedTo": "Kopiert til «{name}».",
   "points.deleteOne": "Slett dette punktet",
   "points.deletePrompt": "Slette «{name}» fra lista?",
-  "points.deleted": "Slettet fra «{name}»."
+  "points.deleted": "Slettet fra «{name}».",
+  "points.listFilter": "Filtrer denne lista",
+  "points.listFilterFor": "Filtrer «{name}»",
+  "points.listFilterObs": "Observatører ({n})",
+  "points.listFilterApply": "Bruk",
+  "points.listFilterClear": "Fjern filteret for lista",
+  "filters.from": "Fra",
+  "filters.to": "Til"
 }

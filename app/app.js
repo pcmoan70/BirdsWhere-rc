@@ -16623,6 +16623,58 @@
       if (removeListPoint(name, p.id)) { refreshMpPanel(); setStatus(t("points.deleted", { name: name })); }
     });
   }
+  // One list's own filter: a date range and a set of observers, matched fuzzily. Drawn in the
+  // shared .detrow-menu shape, like every other menu here.
+  function openListFilterMenu(anchor, name) {
+    var br = anchor.getBoundingClientRect();
+    var f = mpState.listFilter(name) || { from: "", to: "", obs: [] };
+    var span = mpState.listDateSpan(name), obs = mpState.listObservers(name);
+    var el = openAnchoredMenu("detrow-menu mp-listfilt-menu", anchor);
+    var hdr = document.createElement("div");
+    hdr.className = "detrow-menu-hdr"; hdr.textContent = t("points.listFilterFor", { name: name });
+    el.appendChild(hdr);
+    var box = document.createElement("div");
+    box.className = "mp-listfilt-dates";
+    box.innerHTML = '<label>' + escapeHtml(t("filters.from")) + '<input type="date" class="lf-from" value="' + escapeHtml(f.from || "") +
+        '"' + (span.from ? ' min="' + escapeHtml(span.from) + '"' : "") + (span.to ? ' max="' + escapeHtml(span.to) + '"' : "") + "></label>" +
+      '<label>' + escapeHtml(t("filters.to")) + '<input type="date" class="lf-to" value="' + escapeHtml(f.to || "") +
+        '"' + (span.from ? ' min="' + escapeHtml(span.from) + '"' : "") + (span.to ? ' max="' + escapeHtml(span.to) + '"' : "") + "></label>" +
+      (span.from ? '<div class="mp-listfilt-span">' + escapeHtml(span.from + " … " + span.to) + "</div>" : "");
+    el.appendChild(box);
+    if (obs.length) {
+      var oh = document.createElement("div");
+      oh.className = "detrow-menu-hdr mp-listfilt-obshdr"; oh.textContent = t("points.listFilterObs", { n: obs.length });
+      el.appendChild(oh);
+      var wrap = document.createElement("div");
+      wrap.className = "mp-listfilt-obs";
+      obs.slice(0, 200).forEach(function (o) {
+        var lab = document.createElement("label");
+        lab.className = "detrow-menu-item mp-savepick";
+        var cb = document.createElement("input");
+        cb.type = "checkbox"; cb.className = "lf-obs"; cb.value = o.name;
+        cb.checked = (f.obs || []).indexOf(o.name) >= 0;
+        lab.appendChild(cb);
+        var sp = document.createElement("span"); sp.textContent = o.name + " (" + o.n + ")";
+        lab.appendChild(sp);
+        wrap.appendChild(lab);
+      });
+      el.appendChild(wrap);
+    }
+    el.appendChild(drmBtn(t("points.listFilterApply"), function () {
+      var from = (el.querySelector(".lf-from") || {}).value || "";
+      var to = (el.querySelector(".lf-to") || {}).value || "";
+      var picked = [];
+      el.querySelectorAll(".lf-obs").forEach(function (c) { if (c.checked) picked.push(c.value); });
+      closeAnchoredMenu();
+      mpState.setListFilter(name, { from: from, to: to, obs: picked });
+    }, "check", "mp-listfilt-go"));
+    if (mpState.listFilterActive(name)) {
+      el.appendChild(drmBtn(t("points.listFilterClear"), function () {
+        closeAnchoredMenu(); mpState.setListFilter(name, null);
+      }, "block", "mp-listfilt-clear"));
+    }
+    positionAnchoredMenu(el, br.left - 120, br.bottom + 4);
+  }
   function mpSaveableAny() {
     try { if (Object.keys(detPlot).length) return true; } catch (e) {}
     try { if (mpHasUnsaved()) return true; } catch (e) {}
@@ -17309,10 +17361,16 @@
       // Download the list itself to a file — the format (KML / KMZ / GeoJSON) is picked
       // in a small menu on click. Sits behind the ×, and works for detection sets too.
       var dlBtn = count ? '<button type="button" class="mp-coll-dl ico-btn" data-type="' + type + '" data-name="' + escapeHtml(name) + '" title="' + escapeHtml(t("points.download")) + '" aria-label="' + escapeHtml(t("points.download")) + '">' + ico("download") + "</button>" : "";
+      // Per-list filter: observers and a date range, for THIS list only. Point-lists only —
+      // a detection set is filtered by the pane like any fetched data.
+      var fOn = type === "p" && mpState.listFilterActive(name);
+      var filtBtn = (type === "p" && count)
+        ? '<button type="button" class="mp-coll-filt ico-btn' + (fOn ? " is-on" : "") + '" data-name="' + escapeHtml(name) + '" title="' + escapeHtml(t("points.listFilter")) + '" aria-label="' + escapeHtml(t("points.listFilter")) + '">' + ico("funnel") + "</button>"
+        : "";
       return '<div class="mp-coll-row' + (isRoute ? " is-route" : "") + '">' +
         '<label class="mp-coll-lbl"><input type="checkbox" class="mp-coll-cb" data-type="' + type + '" data-name="' + escapeHtml(name) + '"' + (checked ? " checked" : "") + ">" +
           swIcon + '<span class="mp-coll-name">' + escapeHtml(name) + ' <span class="mp-coll-n">(' + count + ")</span></span></label>" +
-        navBtn + shareBtn + editBtn + del + dlBtn +
+        navBtn + shareBtn + editBtn + del + dlBtn + filtBtn +
         "</div>";
     }
     var collItems = mpState.mpCollections().slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (c) {
@@ -17509,6 +17567,12 @@
       b.addEventListener("click", function (e) { e.preventDefault(); openCollEditModal(this.getAttribute("data-name")); });
     });
     // Per-row × deletes that saved list / detection set (after confirming).
+    panel.querySelectorAll(".mp-coll-filt").forEach(function (b) {
+      b.addEventListener("click", function (e) {
+        e.preventDefault(); e.stopPropagation();
+        openListFilterMenu(this, this.getAttribute("data-name"));
+      });
+    });
     panel.querySelectorAll(".mp-coll-dl").forEach(function (b) {
       b.addEventListener("click", function (e) {
         e.preventDefault(); e.stopPropagation();

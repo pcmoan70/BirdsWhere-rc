@@ -219,6 +219,8 @@ window.AppPoints = (function () {
       mpCollections = Object.keys(all).filter(function (k) { return k.indexOf("pts:") === 0; })
         .map(function (k) { return all[k]; }).filter(function (c) { return c && c.name; });
       mpCollections.forEach(function (c) { try { mpSetSig[c.name] = mpSig(JSON.stringify(c)); } catch (e) {} });
+      mpCollections.forEach(function (c) { (c.points || []).forEach(function (p) { delete p._dn; delete p._ot; }); });
+      loadListFilters();
       mpIdbReady = true;
     } catch (e) {
       mpIdbReady = false;
@@ -282,6 +284,7 @@ window.AppPoints = (function () {
     return Promise.all(writes);
   }
   function loadMapPoints() {
+    loadListFilters();   // also when IndexedDB never hydrated (initMpSetStore bailed)
     mapPoints = (window.GeoState.get("mapPoints", []) || []).filter(function (p) { return p && isFinite(p.lat) && isFinite(p.lon); });
     mpFilter = window.GeoState.get("mapPointsFilter", []) || [];
     // With IndexedDB as the store the lists are already hydrated (initMpSetStore) and
@@ -1026,6 +1029,100 @@ window.AppPoints = (function () {
   }
   // OR-filter: when no tags active, show everything; otherwise show points
   // whose tag list intersects mpFilter. "(no tag)" is represented by "".
+  // ---- per-point comparison keys, and per-LIST filters -----------------------
+  // Dates and observer names are compared on every redraw, for every point, so they are
+  // reduced ONCE per point and cached on it (leading "_" keys are working state, not saved
+  // data — they are rebuilt from `date`/`observer` whenever a list is hydrated).
+  //   _dn : the date as an integer, 2015-04-12 -> 20150412, 0 when there is no date.
+  //   _ot : the observer as normalised tokens — lowercased, diacritics folded, punctuation
+  //         dropped — which is what makes fuzzy matching cheap.
+  function pDateNum(p) {
+    if (p._dn !== undefined) return p._dn;
+    var d = String(p.date || "");
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d);
+    p._dn = m ? (+m[1] * 10000 + +m[2] * 100 + +m[3]) : 0;
+    return p._dn;
+  }
+  var DIA = { "å":"a","ä":"a","á":"a","à":"a","â":"a","ã":"a","ø":"o","ö":"o","ó":"o","ò":"o","ô":"o","õ":"o",
+              "æ":"ae","é":"e","è":"e","ê":"e","ë":"e","í":"i","ì":"i","î":"i","ï":"i","ú":"u","ù":"u","û":"u",
+              "ü":"u","ý":"y","ÿ":"y","ñ":"n","ç":"c","š":"s","ž":"z","ð":"d","þ":"th","ł":"l" };
+  function foldName(x) {
+    return String(x || "").toLowerCase().replace(/[^\u0000-\u007f]/g, function (ch) { return DIA[ch] || ch; });
+  }
+  function obsTokens(name) {
+    return foldName(name).split(/[^a-z0-9]+/).filter(function (x) { return x.length > 0; });
+  }
+  function pObsTokens(p) {
+    if (p._ot !== undefined) return p._ot;
+    p._ot = obsTokens(p.observer || "");
+    return p._ot;
+  }
+  // Fuzzy: every token of the QUERY must be a prefix of some token of the record, so
+  // "K Nordmann" finds "Kari Nordmann", "nordmann" finds it too, and "Kari Olsen" does not.
+  // Diacritics and punctuation are already folded away on both sides.
+  function obsFuzzyHit(recTokens, queryTokens) {
+    if (!queryTokens.length) return true;
+    for (var i = 0; i < queryTokens.length; i++) {
+      var q = queryTokens[i], hit = false;
+      for (var j = 0; j < recTokens.length; j++) { if (recTokens[j].indexOf(q) === 0) { hit = true; break; } }
+      if (!hit) return false;
+    }
+    return true;
+  }
+  // { "<list name>": { from: "YYYY-MM-DD", to: "…", obs: ["name", …] } }
+  var listFilters = {};
+  function loadListFilters() { listFilters = window.GeoState.get("mapListFilters", {}) || {}; }
+  function listFilter(name) { return listFilters[name] || null; }
+  function setListFilter(name, f) {
+    if (!name) return;
+    if (f && (f.from || f.to || (f.obs && f.obs.length))) listFilters[name] = f; else delete listFilters[name];
+    window.GeoState.save({ mapListFilters: listFilters });
+    renderMapPoints();
+    if (typeof refreshMpPanel === "function") refreshMpPanel();
+  }
+  function listFilterActive(name) { return !!listFilter(name); }
+  // Does this point pass its OWN list's filter? Cheap integer and token compares.
+  function listOwnFilterPasses(p, f) {
+    if (!f) return true;
+    if (f.from || f.to) {
+      var dn = pDateNum(p);
+      if (!dn) return false;                                   // a filtered range excludes undated points
+      if (f.from && dn < +f.from.replace(/-/g, "")) return false;
+      if (f.to && dn > +f.to.replace(/-/g, "")) return false;
+    }
+    if (f.obs && f.obs.length) {
+      var rec = pObsTokens(p);
+      if (!rec.length) return false;
+      for (var i = 0; i < f.obs.length; i++) if (obsFuzzyHit(rec, obsTokens(f.obs[i]))) return true;
+      return false;
+    }
+    return true;
+  }
+  // Every observer named in a list, with a count — what the filter popup offers.
+  function listObservers(name) {
+    var c = mpCollections.filter(function (x) { return x.name === name; })[0];
+    if (!c) return [];
+    var seen = {};
+    (c.points || []).forEach(function (p) {
+      var o = String(p.observer || "").trim();
+      if (!o) return;
+      seen[o] = (seen[o] || 0) + 1;
+    });
+    return Object.keys(seen).sort(function (a, b) { return seen[b] - seen[a] || a.localeCompare(b); })
+      .map(function (k) { return { name: k, n: seen[k] }; });
+  }
+  // The date span a list actually covers, for the popup's placeholders.
+  function listDateSpan(name) {
+    var c = mpCollections.filter(function (x) { return x.name === name; })[0];
+    var lo = "", hi = "";
+    ((c && c.points) || []).forEach(function (p) {
+      var d = String(p.date || "").slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+      if (!lo || d < lo) lo = d;
+      if (!hi || d > hi) hi = d;
+    });
+    return { from: lo, to: hi };
+  }
   function mpVisible(p) {
     // The pane's own filters (date, observer, …) reach list pins too — see
     // listPointPasses in app.js. A pin is judged only on the fields it HAS, so a list
@@ -1390,9 +1487,15 @@ window.AppPoints = (function () {
       if (!shownColls[c.name]) return;
       if (routeShows && isRouteColl(c)) return;   // drawn as numbered route stops (renderRoutePoints), not plain pins
       var col = collColor(c);
+      var lf = listFilter(c.name);
       (c.points || []).forEach(function (p) {
         if (!p || !isFinite(p.lat) || !isFinite(p.lon)) return;
         if (p.spKey) return;   // detection point → detPlot pipeline (handled below)
+        // Until now this loop drew every point in a ticked list unconditionally, so the
+        // pane's filters AND the tag chips were no-ops for list pins. Both apply here now,
+        // together with the list's own observer / date-range filter.
+        if (!mpVisible(p)) return;
+        if (!listOwnFilterPasses(p, lf)) return;
         renderMpPin(p, false, col);
       });
     });
@@ -1406,6 +1509,8 @@ window.AppPoints = (function () {
   return {
     init: init,
     initMpSetStore: initMpSetStore, persistMpSets: persistMpSets, mpFilterRefresh: mpFilterRefresh,
+    listFilter: listFilter, setListFilter: setListFilter, listFilterActive: listFilterActive,
+    listObservers: listObservers, listDateSpan: listDateSpan,
     // ---- points, lists, collections ----
     loadMapPoints: loadMapPoints, saveMapPoints: saveMapPoints, saveChecked: saveChecked,
     saveShownState: saveShownState, addMapPoint: addMapPoint, updateMapPoint: updateMapPoint,

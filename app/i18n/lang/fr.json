@@ -1479,5 +1479,12 @@
   "points.copiedTo": "Copié vers « {name} ».",
   "points.deleteOne": "Supprimer ce point",
   "points.deletePrompt": "Supprimer « {name} » de sa liste ?",
-  "points.deleted": "Supprimé de « {name} »."
+  "points.deleted": "Supprimé de « {name} ».",
+  "points.listFilter": "Filtrer cette liste",
+  "points.listFilterFor": "Filtrer « {name} »",
+  "points.listFilterObs": "Observateurs ({n})",
+  "points.listFilterApply": "Appliquer",
+  "points.listFilterClear": "Effacer le filtre de cette liste",
+  "filters.from": "Du",
+  "filters.to": "Au"
 }

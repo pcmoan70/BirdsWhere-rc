@@ -1479,5 +1479,12 @@
   "points.copiedTo": "Zkopírováno do „{name}“.",
   "points.deleteOne": "Smazat tento bod",
   "points.deletePrompt": "Smazat „{name}“ ze seznamu?",
-  "points.deleted": "Smazáno ze „{name}“."
+  "points.deleted": "Smazáno ze „{name}“.",
+  "points.listFilter": "Filtrovat tento seznam",
+  "points.listFilterFor": "Filtrovat „{name}“",
+  "points.listFilterObs": "Pozorovatelé ({n})",
+  "points.listFilterApply": "Použít",
+  "points.listFilterClear": "Zrušit filtr tohoto seznamu",
+  "filters.from": "Od",
+  "filters.to": "Do"
 }

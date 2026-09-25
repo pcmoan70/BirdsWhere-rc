@@ -1479,5 +1479,12 @@
   "points.copiedTo": "Kopioitu listaan ”{name}”.",
   "points.deleteOne": "Poista tämä piste",
   "points.deletePrompt": "Poistetaanko ”{name}” listalta?",
-  "points.deleted": "Poistettu listalta ”{name}”."
+  "points.deleted": "Poistettu listalta ”{name}”.",
+  "points.listFilter": "Suodata tämä lista",
+  "points.listFilterFor": "Suodata ”{name}”",
+  "points.listFilterObs": "Havainnoijat ({n})",
+  "points.listFilterApply": "Käytä",
+  "points.listFilterClear": "Tyhjennä listan suodatin",
+  "filters.from": "Alkaen",
+  "filters.to": "Asti"
 }

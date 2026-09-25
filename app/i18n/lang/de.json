@@ -1479,5 +1479,12 @@
   "points.copiedTo": "Nach „{name}“ kopiert.",
   "points.deleteOne": "Diesen Punkt löschen",
   "points.deletePrompt": "„{name}“ aus der Liste löschen?",
-  "points.deleted": "Aus „{name}“ gelöscht."
+  "points.deleted": "Aus „{name}“ gelöscht.",
+  "points.listFilter": "Diese Liste filtern",
+  "points.listFilterFor": "„{name}“ filtern",
+  "points.listFilterObs": "Beobachter ({n})",
+  "points.listFilterApply": "Anwenden",
+  "points.listFilterClear": "Filter dieser Liste löschen",
+  "filters.from": "Von",
+  "filters.to": "Bis"
 }
