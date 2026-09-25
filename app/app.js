@@ -5042,9 +5042,21 @@
         if (ctrl) { activeFetchCtrls.add(ctrl); try { updateFilterBusy(); } catch (e) {} }   // registered so a map-clear can abort it; the funnel pulses while it runs
         if (ctrl && T > 0) tmr = setTimeout(function () { killed = true; try { ctrl.abort(); } catch (e) {} }, T * 1000);
         var cs = ctrl ? Object.assign({}, c, { signal: ctrl.signal }) : c;
-        return guardFetch(failed, s.name, obsTrack(s.name, s.run(cs))).then(function (recs) {
-          if (tmr) clearTimeout(tmr);
-          if (ctrl) { activeFetchCtrls.delete(ctrl); try { updateFilterBusy(); } catch (e) {} }
+        // Releasing the registration is what stops the funnel pulsing, so it has to happen on
+        // EVERY exit — it used to sit in the success handler alone. guardFetch turns a
+        // rejection into [], which covered the async failures; what it did not cover is
+        // `s.run(cs)` throwing SYNCHRONOUSLY, while the chain is still being built. The
+        // controller was already registered, no .then was ever attached, and the funnel then
+        // pulsed "fetching" for the rest of the session with nothing in flight.
+        var release = function () {
+          if (tmr) { clearTimeout(tmr); tmr = null; }
+          if (ctrl && activeFetchCtrls.delete(ctrl)) { try { updateFilterBusy(); } catch (e) {} }
+        };
+        var started;
+        try { started = obsTrack(s.name, s.run(cs)); }
+        catch (e) { release(); started = Promise.reject(e); }
+        return guardFetch(failed, s.name, started).then(function (recs) {
+          release();
           var rr = recs || [];
           if (killed) {
             timedOut.push(s.name); var fi = failed.indexOf(s.name); if (fi >= 0) failed.splice(fi, 1);   // a timeout isn't a hard failure
@@ -8767,7 +8779,12 @@
       var el = document.getElementById("det-legend"); if (el) el.classList.add("det-counts-stale");
       setListStaleInd(true);
       clearTimeout(legendRedrawTimer);
-      legendRedrawTimer = setTimeout(function () { if (legendHasData()) updateDetLegendKeepObsScroll(); }, LEGEND_REDRAW_IDLE);
+      legendRedrawTimer = setTimeout(function () {
+        // Clear the pulse either way: recounting is what ends it, and "there is nothing
+        // left to recount" ends it just as definitely.
+        if (legendHasData()) updateDetLegendKeepObsScroll();
+        else setListStaleInd(false);
+      }, LEGEND_REDRAW_IDLE);
     });
     window.addEventListener("offline", scheduleOfflineCheck);
     window.addEventListener("online", refreshOfflineZoomCap);   // reconnected → fetch full-res deep tiles again
@@ -15605,8 +15622,16 @@
   }
   // ⏳ staleness indicator next to the list title ("Recent Observations") while the
   // counts/distances recalculation is pending (the 2 s map-stillness window).
+  var staleWatchdog = null, STALE_MAX_MS = 8000;
   function setListStaleInd(on) {
     filterStale = !!on;      // same signal drives the funnel's pulse
+    // Whatever set it, something must unset it. Every clear path so far ran inside the
+    // legend's own redraw, which is skipped when the data it would recount is gone.
+    clearTimeout(staleWatchdog); staleWatchdog = null;
+    if (on) staleWatchdog = setTimeout(function () {
+      staleWatchdog = null;
+      if (filterStale) setListStaleInd(false);
+    }, STALE_MAX_MS);
     try { updateFilterBusy(); } catch (e) {}
     var tt = document.getElementById("sp-title"); if (!tt) return;
     var ind = tt.querySelector(".stale-ind");

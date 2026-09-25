@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1910";
+var VERSION = "v1911";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Fixes the app crawling with a big imported point list. A 64,542-point list blocked the main thread for 2.1 seconds on every tick, filter change and save \u2014 now 0.16 s. The cause was the Points panel sorting every point by distance with two distance calculations per comparison, about 2.1 million of them.",
-  "\u2022 A big list now draws pins for the current view only (redrawn when the map settles), at most 4,000 at a time, and the panel lists the nearest 300 with a line saying how many there are in total.",
+  "\u2022 The funnel\u2019s blinking now always stops when the work does. Two ways it could keep pulsing with nothing running: a source that failed the moment it was called was never unregistered, and the \u201Crecount pending\u201D pulse was only ever cleared from inside a redraw that is skipped when the data it would recount is gone. Both fixed, plus a time limit so no future path can leave it blinking.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
