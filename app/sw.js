@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1906";
+var VERSION = "v1907";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Load from file now takes SEVERAL files at once. Each file becomes its own list, named after the file, and the field mapping is asked once and used for all of them \u2014 so a folder of point files is one import, not ten.",
-  "\u2022 Imported GeoJSON now carries its tags. The .kmz of a file filtered correctly while the .geojson of the same data came in untagged, and so unfilterable.",
+  "\u2022 The Help page now describes the Location filter in every language. That section existed only in English, so 14 of the 15 languages documented a filter the app has had since v1589 nowhere at all.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
