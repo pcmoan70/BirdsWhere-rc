@@ -632,6 +632,10 @@ view**.
   there. Import from either the Settings *Import* button or *Load from file* in the Points menu — both
   read all three formats (and share links), and both take **several files at once**: each file becomes
   its own list, named after the file, and the field mapping is asked once and applied to all of them.
+  A single file pre-fills the new list's name from its own file name too. A name already in use gets
+  ` #2`, ` #3` … rather than being merged into the existing list. The **note** can be built from
+  *several* fields — its picker is a checkbox dropdown — and when more than one is chosen each line is
+  labelled with the field it came from.
 - **Clicking a point** opens its record in a popup that stays open until you press its × or interact
   elsewhere; where several records share a coordinate they are listed together, newest first. Clicking
   a card opens that point's actions (source, navigate, add to route or list).

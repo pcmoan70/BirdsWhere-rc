@@ -460,9 +460,10 @@ window.AppPoints = (function () {
     });
     return { marks: marks, fields: Object.keys(fieldSet), folders: Object.keys(folderSet) };
   }
-  function startGeoJsonImport(text) {
+  function startGeoJsonImport(text, fileName) {
     var parsed; try { parsed = parseGeoJsonText(text); } catch (e) { setStatus(t("kml.parseErr")); return; }
     if (!parsed.marks.length) { setStatus(t("kml.none")); return; }
+    parsed.fileName = fileName || "";
     kmlImport = parsed; openKmlImportDialog();
   }
   // ---- KMZ (a ZIP holding doc.kml) — a tiny single-entry ZIP writer/reader,
@@ -646,6 +647,15 @@ window.AppPoints = (function () {
   }
   // Resolve a placemark field to text given a mapping token: "name" / "desc" /
   // "folder" / "data:<key>" / "" (none).
+  // The same names the dialog's pickers show, for labelling a note built from several
+  // fields. Mirrors opts() in openKmlImportDialog -- keep the two in step.
+  function noteLabel(token) {
+    if (token === "name") return t("kml.fName");
+    if (token === "desc") return t("kml.fDesc");
+    if (token === "folder") return t("kml.fFolder");
+    if (token.indexOf("data:") === 0) return token.slice(5);
+    return token;
+  }
   function kmlFieldValue(pm, token) {
     if (!token) return "";
     if (token === "name") return pm.name || "";
@@ -655,10 +665,11 @@ window.AppPoints = (function () {
     return "";
   }
   var kmlImport = null;   // { marks, fields, folders } currently staged for import
-  async function startKmlImport(text) {
+  async function startKmlImport(text, fileName) {
     var parsed;
     try { parsed = await parseKmlText(text); } catch (e) { setStatus(t("kml.parseErr")); return; }
     if (!parsed.marks.length) { setStatus(t("kml.none")); return; }
+    parsed.fileName = fileName || "";
     kmlImport = parsed;
     setStatus("");
     openKmlImportDialog();
@@ -693,14 +704,30 @@ window.AppPoints = (function () {
   function listNameFromFile(name) {
     return String(name || "").replace(/\.[^.]+$/, "").replace(/[\\/:*?"<>|]+/g, "_").trim().slice(0, 60);
   }
+  // Two files can carry the same base name (the same builder run from two folders, or a
+  // browser's "grouse (1).kmz"), and the name may already belong to a saved list. Suffix
+  // "#2", "#3" ... rather than merging them: an import must never silently fold new points
+  // into a list the user did not choose.
+  function uniqueListName(base, taken) {
+    if (taken.indexOf(base) < 0) return base;
+    for (var n = 2; ; n++) {
+      var cand = base + " #" + n;
+      if (taken.indexOf(cand) < 0) return cand;
+    }
+  }
   async function startMultiImport(files) {
     var items = [], failed = [];
+    var taken = mpCollections.map(function (c) { return c.name; });
     for (var i = 0; i < files.length; i++) {
       var f = files[i];
       setStatus(t("kml.readingN", { i: i + 1, n: files.length, name: f.name }));
       try {
         var parsed = await parsePointsBuf(await readFileBuf(f));
-        if (parsed.marks.length) items.push({ name: listNameFromFile(f.name) || f.name, parsed: parsed });
+        if (parsed.marks.length) {
+          var nm = uniqueListName(listNameFromFile(f.name) || f.name, taken);
+          taken.push(nm);
+          items.push({ name: nm, parsed: parsed });
+        }
         else failed.push(f.name);
       } catch (e) { failed.push(f.name); }
     }
@@ -738,6 +765,17 @@ window.AppPoints = (function () {
         return '<option value="' + escapeHtml(it.v) + '"' + (it.v === cur ? " selected" : "") + ">" + escapeHtml(it.l) + "</option>";
       }).join("") + "</select>";
     }
+    // The note may be built from SEVERAL fields, so it gets a checkbox dropdown rather
+    // than a single-choice <select>: a placemark often splits what belongs in one note
+    // across description + behaviour + habitat, and picking one threw the rest away.
+    function multiSel(id, items, cur) {
+      return '<div class="kml-ms" id="' + id + '-ms">' +
+        '<button type="button" class="kml-ms-btn" id="' + id + '-btn" aria-expanded="false" aria-haspopup="true"></button>' +
+        '<div class="kml-ms-menu" id="' + id + '-menu">' + items.map(function (it) {
+          return '<label class="kml-ms-item"><input type="checkbox" value="' + escapeHtml(it.v) + '"' +
+            (it.v === cur ? " checked" : "") + ">" + escapeHtml(it.l) + "</label>";
+        }).join("") + "</div></div>";
+    }
     var listItems = [{ v: "__new__", l: t("detmenu.newList") }].concat(
       mpCollections.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (c) { return { v: c.name, l: c.name }; }));
     // A batch has no target picker: the list names are the file names, shown so the user
@@ -762,7 +800,7 @@ window.AppPoints = (function () {
       targetRow +
       '<label class="kml-row">' + escapeHtml(t("kml.nameFrom")) + sel("kml-name", opts([]), defName) + "</label>" +
       '<label class="kml-row">' + escapeHtml(t("kml.tagFrom")) + sel("kml-tag", opts([{ v: "", l: t("kml.fNone") }]), defTag) + "</label>" +
-      '<label class="kml-row">' + escapeHtml(t("kml.noteFrom")) + sel("kml-note", opts([{ v: "", l: t("kml.fNone") }]), defNote) + "</label>" +
+      '<label class="kml-row">' + escapeHtml(t("kml.noteFrom")) + multiSel("kml-note", opts([]), defNote) + "</label>" +
       '<label class="kml-row kml-check"><input type="checkbox" id="kml-note-html"' + (defHtml ? " checked" : "") + " />" + escapeHtml(t("points.noteHtml")) + "</label>" +
       '<div class="kml-actions"><button type="button" id="kml-do" class="btn">' + escapeHtml(t("kml.import")) + "</button></div>" +
       "</div>";
@@ -773,8 +811,39 @@ window.AppPoints = (function () {
     ov.addEventListener("click", function (e) { if (e.target === ov) closeKmlImportDialog(); });
     document.getElementById("kml-close").addEventListener("click", closeKmlImportDialog);
     document.getElementById("kml-do").addEventListener("click", doKmlImport);
+    wireNoteMulti(ov);
   }
   function closeKmlImportDialog() { var m = document.getElementById("kml-import-modal"); if (m && m.parentNode) m.parentNode.removeChild(m); }
+  // Which fields the note is built from, in the order the dialog lists them (not the order
+  // they were ticked) so the note reads the same way every time.
+  function noteTokens() {
+    var menu = document.getElementById("kml-note-menu");
+    if (!menu) return [];
+    return [].filter.call(menu.querySelectorAll("input[type=checkbox]"), function (c) { return c.checked; })
+             .map(function (c) { return c.value; });
+  }
+  function wireNoteMulti(root) {
+    var btn = root.querySelector("#kml-note-btn"), menu = root.querySelector("#kml-note-menu");
+    if (!btn || !menu) return;
+    function label() {
+      var on = [].filter.call(menu.querySelectorAll("input[type=checkbox]"), function (c) { return c.checked; });
+      btn.textContent = (on.length === 0 ? t("kml.fNone")
+        : on.length === 1 ? on[0].parentNode.textContent.trim()
+        : t("kml.nFields", { n: on.length })) + " \u25BE";
+    }
+    btn.addEventListener("click", function (e) {
+      e.preventDefault(); e.stopPropagation();
+      var open = menu.classList.toggle("is-open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    menu.addEventListener("click", function (e) { e.stopPropagation(); });   // ticking must not close it
+    menu.addEventListener("change", label);
+    // A click anywhere else in the dialog closes it, like any dropdown.
+    root.addEventListener("click", function () {
+      menu.classList.remove("is-open"); btn.setAttribute("aria-expanded", "false");
+    });
+    label();
+  }
   // Field names the builders (and GBIF/Google Earth exports generally) use, mapped onto the
   // point's own structured fields. First match wins; a value the user mapped by hand in the
   // dialog is never overwritten.
@@ -813,13 +882,20 @@ window.AppPoints = (function () {
     var target = targetEl ? targetEl.value : "";
     var nameTok = document.getElementById("kml-name").value;
     var tagTok = document.getElementById("kml-tag").value;
-    var noteTok = document.getElementById("kml-note").value;
+    var noteToks = noteTokens();
     var noteHtmlBox = document.getElementById("kml-note-html");
     var noteIsHtml = !!(noteHtmlBox && noteHtmlBox.checked);
     function finish(listName, marks) {
       var pts = (marks || p.marks).map(function (pm) {
         var tag = kmlFieldValue(pm, tagTok).trim();
-        var note = kmlFieldValue(pm, noteTok).trim();
+        // One field → exactly what it always was. Several → each line labelled, because
+        // three bare values stacked in a note say nothing about what they are.
+        var note = noteToks.length === 1
+          ? kmlFieldValue(pm, noteToks[0]).trim()
+          : noteToks.map(function (tk) {
+              var v = kmlFieldValue(pm, tk).trim();
+              return v ? (noteLabel(tk) + ": " + v) : "";
+            }).filter(Boolean).join("\n");
         var pt = { id: mpUid(), lat: pm.lat, lon: pm.lon,
           name: kmlFieldValue(pm, nameTok).trim() || pm.name || "",
           tags: tag ? [tag] : [], note: note, source: "kml", createdAt: new Date().toISOString() };
@@ -857,7 +933,10 @@ window.AppPoints = (function () {
     }
     var one = function (nm) { var n = finish(nm); commit(); setStatus(t("kml.imported", { n: n, name: nm })); };
     if (target === "__new__") {
-      modalPrompt(t("detmenu.newListPrompt"), "").then(function (n) { n = (n || "").trim(); if (n) one(n); });
+      var suggest = p.fileName
+        ? uniqueListName(listNameFromFile(p.fileName) || p.fileName, mpCollections.map(function (c) { return c.name; }))
+        : "";
+      modalPrompt(t("detmenu.newListPrompt"), suggest).then(function (n) { n = (n || "").trim(); if (n) one(n); });
     } else one(target);
   }
   // Open Google Maps with a navigable route through the given points (the start

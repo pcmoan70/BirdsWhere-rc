@@ -21,15 +21,17 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1908";
+var VERSION = "v1909";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Each saved list is now one clean row \u2014 tick, name, funnel, \u22EF. Navigate, share, edit, download and delete moved into the \u22EF menu, where each one is a row that says what it does; six unlabelled icons used to crowd the name off the row on a phone.",
-  "\u2022 \u201CLoad from file\u201D closes the Points panel as it opens the file picker \u2014 the import reports its progress in the line above the map, which that panel was covering.",
+  "\u2022 The import\u2019s Note can now be built from SEVERAL fields at once \u2014 its picker is a dropdown of checkboxes, and with more than one ticked each line is labelled with the field it came from.",
+  "\u2022 A single file suggests its own name for the list, and a name already in use gets \u201C #2\u201D instead of being merged into that list.",
+  "\u2022 Syncing no longer switches point lists on in the map. Which lists you show is this device\u2019s business; a sync used to turn on whatever another device had ticked.",
+  "\u2022 Font sizes in the Points panel and its menus follow the app\u2019s own scale again \u2014 several bits were falling back to the browser default and rendering a size larger than the text beside them.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -6145,12 +6145,14 @@
       });
     });
     var mergedSetsList = setOrder.map(function (n) { return setByName[n]; });
-    // Which lists / detection-sets are SHOWN: union both sides (a list shown on
-    // EITHER device stays shown after the merge), keeping only names that still
-    // exist — otherwise a list synced in from the other device lands unticked and
-    // its markers never render, so it looks like nothing synced.
+    // Which lists are SHOWN is THIS device's business: a sync must not draw a list on
+    // the map because another device had it ticked. It used to union both sides — so a
+    // sync could silently cover the map with lists the user had never shown here.
+    // (Detection sets still union; they are trips, and a synced trip you cannot see
+    // looks like a failed sync.)
     var setNames = {}; mergedSets.forEach(function (c) { setNames[c.name] = 1; });
-    var shownUnion = {}; [local.mapPointsShownColls, incoming.mapPointsShownColls].forEach(function (a) { (Array.isArray(a) ? a : []).forEach(function (n) { if (n && setNames[n]) shownUnion[n] = 1; }); });
+    var shownUnion = {}; (Array.isArray(local.mapPointsShownColls) ? local.mapPointsShownColls : [])
+      .forEach(function (n) { if (n && setNames[n]) shownUnion[n] = 1; });
     var detSetNames = {}; mergedSetsList.forEach(function (s) { detSetNames[s.name] = 1; });
     var detShownUnion = {}; [local.mapDetSetsShown, incoming.mapDetSetsShown].forEach(function (a) { (Array.isArray(a) ? a : []).forEach(function (n) { if (n && detSetNames[n]) detShownUnion[n] = 1; }); });
     // Scalar settings: the winning side overrides, the other fills any gaps.
@@ -6247,7 +6249,7 @@
       newState.mapDetectionSets = mergedSetsList;
     }
     newState.mapDetectionSetsDel = Object.keys(setTomb);
-    newState.mapPointsShownColls = Object.keys(shownUnion);   // union, so synced-in lists are visible
+    newState.mapPointsShownColls = Object.keys(shownUnion);   // this device's own ticks only
     newState.mapDetSetsShown = Object.keys(detShownUnion);
     // Working set + active list: a file IMPORT shows the merged loose set (no
     // active list); a background SYNC keeps the user's loaded list active and
@@ -16775,7 +16777,7 @@
       var h = new Uint8Array(buf, 0, Math.min(4, buf.byteLength || 0));
       var isZip = h.length >= 4 && h[0] === 0x50 && h[1] === 0x4B && h[2] === 0x03 && h[3] === 0x04;
       var doneKml = function (kml) {
-        Promise.resolve(startKmlImport(kml)).then(done, function () { done(); setStatus(t("kml.parseErr")); });
+        Promise.resolve(startKmlImport(kml, f.name)).then(done, function () { done(); setStatus(t("kml.parseErr")); });
       };
       if (isZip) {
         setStatus(t("kml.unpacking", { name: f.name }));
@@ -16784,7 +16786,7 @@
       }
       var txt = new TextDecoder().decode(new Uint8Array(buf)).replace(/^\uFEFF/, "").trim();
       var c0 = txt.charAt(0);
-      if (c0 === "{" || c0 === "[") { startGeoJsonImport(txt); done(); }
+      if (c0 === "{" || c0 === "[") { startGeoJsonImport(txt, f.name); done(); }
       else if (c0 === "<") doneKml(txt);
       else if (allowShare) { importShared(txt); done(); }
       else doneKml(txt);
