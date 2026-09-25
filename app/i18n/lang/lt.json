@@ -1470,7 +1470,9 @@
   "kml.parsing": "Skaitomas failas …",
   "kml.reading2": "Skaitomi įrašai… {n} iš {total}",
   "kml.busy": "Vis dar skaitomas ankstesnis failas – akimirką",
-  "points.saveUnsaved": "Išsaugoti {n} neišsaugotų",
-  "points.saveUnsavedInto": "Įtraukti {n} laisvų taškų į",
-  "points.savedInto": "Išsaugota {n} taškų sąraše „{name}“."
+  "points.savedInto": "Išsaugota {n} taškų sąraše „{name}“.",
+  "points.saveWhat": "Ką norite išsaugoti?",
+  "points.saveFetched": "Parsiųsti taškai ({n})",
+  "points.saveCreated": "{n} savų taškų",
+  "points.saveNothing": "Pažymėkite bent vieną iš dviejų."
 }

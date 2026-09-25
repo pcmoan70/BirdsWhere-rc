@@ -1470,7 +1470,9 @@
   "kml.parsing": "Lettura del file …",
   "kml.reading2": "Lettura dei record … {n} di {total}",
   "kml.busy": "Sto ancora leggendo il file precedente — un attimo",
-  "points.saveUnsaved": "Salva {n} non salvati",
-  "points.saveUnsavedInto": "Archivia {n} punti sciolti in",
-  "points.savedInto": "Salvati {n} punti in «{name}»."
+  "points.savedInto": "Salvati {n} punti in «{name}».",
+  "points.saveWhat": "Cosa vuoi conservare?",
+  "points.saveFetched": "Punti recuperati ({n})",
+  "points.saveCreated": "{n} punti creati",
+  "points.saveNothing": "Seleziona almeno una delle due."
 }

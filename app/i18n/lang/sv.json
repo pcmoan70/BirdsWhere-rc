@@ -1470,7 +1470,9 @@
   "kml.parsing": "Läser filen …",
   "kml.reading2": "Läser poster … {n} av {total}",
   "kml.busy": "Läser fortfarande förra filen – ett ögonblick",
-  "points.saveUnsaved": "Spara {n} osparade",
-  "points.saveUnsavedInto": "Lägg {n} lösa punkter i",
-  "points.savedInto": "Sparade {n} punkter i ”{name}”."
+  "points.savedInto": "Sparade {n} punkter i ”{name}”.",
+  "points.saveWhat": "Vad vill du spara?",
+  "points.saveFetched": "Hämtade punkter ({n})",
+  "points.saveCreated": "{n} egna punkter",
+  "points.saveNothing": "Kryssa i minst en av de två."
 }

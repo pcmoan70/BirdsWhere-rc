@@ -1470,7 +1470,9 @@
   "kml.parsing": "Bestand lezen …",
   "kml.reading2": "Records lezen … {n} van {total}",
   "kml.busy": "Nog bezig met het vorige bestand – een moment",
-  "points.saveUnsaved": "{n} niet-opgeslagen bewaren",
-  "points.saveUnsavedInto": "{n} losse punten opnemen in",
-  "points.savedInto": "{n} punten opgeslagen in ‘{name}’."
+  "points.savedInto": "{n} punten opgeslagen in ‘{name}’.",
+  "points.saveWhat": "Wat wil je bewaren?",
+  "points.saveFetched": "Opgehaalde punten ({n})",
+  "points.saveCreated": "{n} eigen punten",
+  "points.saveNothing": "Vink minstens één van de twee aan."
 }

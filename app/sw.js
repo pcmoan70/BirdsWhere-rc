@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1902";
+var VERSION = "v1903";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Filing loose points into a list now looks exactly like adding an observation to a list \u2014 same heading, same rows with the map-pin icon, same spacing. It is the same code drawing both menus rather than two that merely resemble each other.",
+  "\u2022 One Save button in the Points menu instead of two. It opens a small popup asking what to keep \u2014 the fetched points, the points you placed yourself, or both \u2014 and only then asks which list to put them in (or offers a new one). Before, the two kinds had separate buttons that made you choose the WHERE before saying WHAT.",
+  "\u2022 That Save button turns orange only when you have points of your OWN that are not in a list yet. Fetched points never colour it \u2014 they can always be fetched again; your own cannot.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

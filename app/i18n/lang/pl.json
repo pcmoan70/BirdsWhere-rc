@@ -1470,7 +1470,9 @@
   "kml.parsing": "Odczyt pliku …",
   "kml.reading2": "Odczyt rekordów… {n} z {total}",
   "kml.busy": "Wciąż trwa odczyt poprzedniego pliku – chwila",
-  "points.saveUnsaved": "Zapisz {n} niezapisanych",
-  "points.saveUnsavedInto": "Umieść {n} luźnych punktów w",
-  "points.savedInto": "Zapisano {n} punktów w „{name}”."
+  "points.savedInto": "Zapisano {n} punktów w „{name}”.",
+  "points.saveWhat": "Co chcesz zachować?",
+  "points.saveFetched": "Pobrane punkty ({n})",
+  "points.saveCreated": "{n} własnych punktów",
+  "points.saveNothing": "Zaznacz co najmniej jedną z dwóch."
 }

@@ -1470,7 +1470,9 @@
   "kml.parsing": "Læser filen …",
   "kml.reading2": "Læser poster … {n} af {total}",
   "kml.busy": "Læser stadig den forrige fil – et øjeblik",
-  "points.saveUnsaved": "Gem {n} ugemte",
-  "points.saveUnsavedInto": "Læg {n} løse punkter i",
-  "points.savedInto": "Gemte {n} punkter i “{name}”."
+  "points.savedInto": "Gemte {n} punkter i “{name}”.",
+  "points.saveWhat": "Hvad vil du gemme?",
+  "points.saveFetched": "Hentede punkter ({n})",
+  "points.saveCreated": "{n} egne punkter",
+  "points.saveNothing": "Markér mindst én af de to."
 }

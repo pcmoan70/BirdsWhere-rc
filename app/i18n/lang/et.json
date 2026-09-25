@@ -1470,7 +1470,9 @@
   "kml.parsing": "Faili lugemine …",
   "kml.reading2": "Kirjete lugemine … {n}/{total}",
   "kml.busy": "Eelmist faili loetakse veel – hetk",
-  "points.saveUnsaved": "Salvesta {n} salvestamata",
-  "points.saveUnsavedInto": "Paiguta {n} vaba punkti loendisse",
-  "points.savedInto": "Salvestati {n} punkti loendisse „{name}“."
+  "points.savedInto": "Salvestati {n} punkti loendisse „{name}“.",
+  "points.saveWhat": "Mida soovid alles hoida?",
+  "points.saveFetched": "Toodud punktid ({n})",
+  "points.saveCreated": "{n} enda punkti",
+  "points.saveNothing": "Märgi vähemalt üks kahest."
 }

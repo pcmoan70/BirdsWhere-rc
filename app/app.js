@@ -16565,6 +16565,12 @@
   // Each test runs only when the pin carries that field: a list imported before the app read
   // species/date/observer out of a file has none of them, and must never be filtered away by
   // a control it cannot answer to. That is the backward-compatibility rule for old lists.
+  // Anything worth a Save button: fetched observations on the map, or loose pins.
+  function mpSaveableAny() {
+    try { if (Object.keys(detPlot).length) return true; } catch (e) {}
+    try { if (mpHasUnsaved()) return true; } catch (e) {}
+    return false;
+  }
   function listPointPasses(p) {
     if (!p) return true;
     if (p.date && !detDatePasses(p.date)) return false;
@@ -17266,15 +17272,14 @@
       // (import a shared file) is always available.
       '<div class="mp-head mp-head-actions">' +
         (Object.keys(detPlot).length ?
-          '<button type="button" id="mp-share-det" class="btn btn-light" title="' + escapeHtml(t("share.detHover")) + '" data-i18n="share.shareBtn">' + escapeHtml(t("share.shareBtn")) + "</button>" +
-          '<button type="button" id="mp-save-det" class="btn" data-i18n="points.save">' + escapeHtml(t("points.save")) + "</button>"
-          : "") +
+          '<button type="button" id="mp-share-det" class="btn btn-light" title="' + escapeHtml(t("share.detHover")) + '" data-i18n="share.shareBtn">' + escapeHtml(t("share.shareBtn")) + "</button>" : "") +
+        // ONE Save, for both kinds of point. It opens a small popup where the user ticks what
+        // to keep — the fetched observations, the pins they placed themselves, or both — and
+        // then picks the list. Two separate buttons made the user decide the WHERE before
+        // they had said WHAT, and put the same destination behind two different flows.
+        (mpSaveableAny() ? '<button type="button" id="mp-save-pts" class="btn' +
+          (mpHasUnsaved() ? " mp-save-unsaved" : "") + '">' + escapeHtml(t("points.save")) + "</button>" : "") +
         '<button type="button" id="mp-import-share" class="btn btn-light" title="' + escapeHtml(tLabel("share.importFile")) + '" data-i18n="points.loadFile">' + escapeHtml(t("points.loadFile")) + "</button>" +
-        // Loose pins that belong to no list are the data most easily lost, so the offer to
-        // file them sits in the action row with the other verbs, in orange, carrying its own
-        // count — rather than in a banner further down that read as a notice, not a button.
-        (mpHasUnsaved() ? '<button type="button" id="mp-save-unsaved" class="btn mp-save-unsaved">' +
-          escapeHtml(t("points.saveUnsaved", { n: mpState.mapPoints().length })) + "</button>" : "") +
         '<input type="file" id="share-file-input" accept=".kmz,.kml,.geojson,.json,.share,.mcshare,.txt" style="display:none" />' +
       "</div>" +
       '<div id="mp-backup-line" class="mp-backup-line"></div>' +
@@ -17306,10 +17311,48 @@
       saveMapPoints(); saveShownState(); renderMapPoints(); refreshMpPanel();
       setStatus(t("points.savedInto", { n: n, name: name }));
     }
-    var saveUnsavedBtn = panel.querySelector("#mp-save-unsaved");
-    if (saveUnsavedBtn) saveUnsavedBtn.addEventListener("click", function (e) {
-      e.preventDefault(); e.stopPropagation();
-      var anchor = this, br = anchor.getBoundingClientRect();
+    // What the Save popup offers, and what it does once the user has chosen a list. Both
+    // kinds end up in the SAME place — a point list — which is what makes one flow possible:
+    // commitDetSave writes the fetched rows into a collection, fileLoosePoints the loose pins.
+    function openSavePointsMenu(anchor) {
+      var br = anchor.getBoundingClientRect();
+      var rows = [];
+      try { rows = collectVisibleDetections(null) || []; } catch (e) { rows = []; }
+      var loose = mpState.mapPoints().length;
+      // Nothing visible to keep on either side — say so rather than opening a popup whose
+      // only outcome is "tick at least one". (The old Save button had the same guard.)
+      if (!rows.length && !loose) { setStatus(t("points.empty")); return; }
+      var el = openAnchoredMenu("detrow-menu mp-savepick-menu", anchor);
+      var hdr = document.createElement("div");
+      hdr.className = "detrow-menu-hdr"; hdr.textContent = t("points.saveWhat");
+      el.appendChild(hdr);
+      function tick(id, label, on) {
+        var lab = document.createElement("label");
+        lab.className = "detrow-menu-item mp-savepick";
+        var cb = document.createElement("input");
+        cb.type = "checkbox"; cb.id = id; cb.checked = !!on;
+        lab.appendChild(cb);
+        var sp = document.createElement("span"); sp.textContent = label; lab.appendChild(sp);
+        el.appendChild(lab);
+        return cb;
+      }
+      var cbFetched = rows.length ? tick("sp-cb-fetched", t("points.saveFetched", { n: rows.length }), true) : null;
+      var cbLoose = loose ? tick("sp-cb-loose", t("points.saveCreated", { n: loose }), true) : null;
+      var go = drmBtn(t("points.save"), function () {
+        var wantF = !!(cbFetched && cbFetched.checked), wantL = !!(cbLoose && cbLoose.checked);
+        if (!wantF && !wantL) { setStatus(t("points.saveNothing")); return; }
+        closeAnchoredMenu();
+        chooseListThen(anchor, function (name) {
+          if (wantL) fileLoosePoints(name);
+          if (wantF) commitDetSave(name, rows);          // asks for the batch colour, as before
+        });
+      }, "save", "mp-savepick-go");
+      el.appendChild(go);
+      positionAnchoredMenu(el, br.left, br.bottom + 4);
+    }
+    // The list chooser, drawn exactly like "add this observation to a list".
+    function chooseListThen(anchor, then) {
+      var br = anchor.getBoundingClientRect();
       var lists = mpState.mpCollections().slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
       // Built exactly like the "add this observation to a list" menu (drmRenderLists):
       // the same .detrow-menu-hdr heading and the same drmBtn rows with the pin icon, so
@@ -17317,18 +17360,18 @@
       var el = openAnchoredMenu("detrow-menu mp-saveinto-menu", anchor);
       var hdr = document.createElement("div");
       hdr.className = "detrow-menu-hdr";
-      hdr.textContent = t("points.saveUnsavedInto", { n: mpState.mapPoints().length });
+      hdr.textContent = t("detlist.saveTitle");
       el.appendChild(hdr);
       lists.forEach(function (c) {
         var n = (c.points && c.points.length) || 0;
-        el.appendChild(drmBtn(c.name + " (" + n + ")", function () { closeAnchoredMenu(); fileLoosePoints(c.name); }, "pin"));
+        el.appendChild(drmBtn(c.name + " (" + n + ")", function () { closeAnchoredMenu(); then(c.name); }, "pin"));
       });
       el.appendChild(drmBtn(t("detmenu.newList"), function () {
         closeAnchoredMenu();
-        modalPrompt(t("points.saveAsPrompt"), "").then(function (nm) { fileLoosePoints(nm); });
+        modalPrompt(t("points.saveAsPrompt"), "").then(function (nm) { nm = (nm || "").trim(); if (nm) then(nm); });
       }));
       positionAnchoredMenu(el, br.left, br.bottom + 4);
-    });
+    }
     panel.querySelectorAll(".mp-sort-btn").forEach(function (b) {
       b.addEventListener("click", function () {
         mpState.setMpSort(mpState.mpSort() === "name" ? "dist" : "name");   // one button: shows the current order, flips it
@@ -17437,14 +17480,10 @@
     // "Save detections" → all observations plotted on the map saved as a
     // point-list (new or appended to an existing one). Distinct from the "Save"
     // button below, which stores plotted species as a detection SET.
-    var saveDet = panel.querySelector("#mp-save-det");
-    if (saveDet) saveDet.addEventListener("click", function (e) {
-      e.stopPropagation();
-      var rows = collectVisibleDetections(null);   // every visible plotted observation
-      if (!rows.length) { setStatus(t("points.empty")); return; }
-      var r = this.getBoundingClientRect();
-      panel.style.display = "none";   // close the points dropdown so the chooser isn't clipped
-      showDetSaveMenu(r.left, r.bottom + 4, rows);
+    var savePts = panel.querySelector("#mp-save-pts");
+    if (savePts) savePts.addEventListener("click", function (e) {
+      e.preventDefault(); e.stopPropagation();
+      openSavePointsMenu(this);
     });
     var shareDet = panel.querySelector("#mp-share-det");
     if (shareDet) shareDet.addEventListener("click", function (e) { e.stopPropagation(); shareCurrentDetections(); });

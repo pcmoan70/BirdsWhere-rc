@@ -1470,7 +1470,9 @@
   "kml.parsing": "Luetaan tiedostoa …",
   "kml.reading2": "Luetaan tietueita … {n}/{total}",
   "kml.busy": "Luetaan vielä edellistä tiedostoa – hetki",
-  "points.saveUnsaved": "Tallenna {n} tallentamatonta",
-  "points.saveUnsavedInto": "Sijoita {n} irrallista pistettä",
-  "points.savedInto": "Tallennettiin {n} pistettä listaan ”{name}”."
+  "points.savedInto": "Tallennettiin {n} pistettä listaan ”{name}”.",
+  "points.saveWhat": "Mitä haluat säilyttää?",
+  "points.saveFetched": "Haetut pisteet ({n})",
+  "points.saveCreated": "{n} omaa pistettä",
+  "points.saveNothing": "Valitse vähintään toinen."
 }

@@ -1470,7 +1470,9 @@
   "kml.parsing": "Datei wird gelesen …",
   "kml.reading2": "Datensätze werden gelesen … {n} von {total}",
   "kml.busy": "Die vorige Datei wird noch gelesen – einen Moment",
-  "points.saveUnsaved": "{n} ungespeicherte sichern",
-  "points.saveUnsavedInto": "{n} freie Punkte ablegen in",
-  "points.savedInto": "{n} Punkte in „{name}“ gespeichert."
+  "points.savedInto": "{n} Punkte in „{name}“ gespeichert.",
+  "points.saveWhat": "Was möchten Sie behalten?",
+  "points.saveFetched": "Abgerufene Punkte ({n})",
+  "points.saveCreated": "{n} eigene Punkte",
+  "points.saveNothing": "Mindestens eines der beiden ankreuzen."
 }

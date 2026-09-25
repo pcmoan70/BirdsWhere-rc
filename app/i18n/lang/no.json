@@ -1470,7 +1470,9 @@
   "kml.parsing": "Leser fila …",
   "kml.reading2": "Leser poster … {n} av {total}",
   "kml.busy": "Leser fortsatt forrige fil – et øyeblikk",
-  "points.saveUnsaved": "Lagre {n} ulagrede",
-  "points.saveUnsavedInto": "Legg {n} løse punkter i",
-  "points.savedInto": "Lagret {n} punkter i «{name}»."
+  "points.savedInto": "Lagret {n} punkter i «{name}».",
+  "points.saveWhat": "Hva vil du ta vare på?",
+  "points.saveFetched": "Hentede punkter ({n})",
+  "points.saveCreated": "{n} egne punkter",
+  "points.saveNothing": "Kryss av minst én av de to."
 }

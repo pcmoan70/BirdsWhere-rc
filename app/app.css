@@ -4717,3 +4717,7 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
    the same as "add this observation to a list". Only the scroll cap is its own, since a
    user can have many more point lists than the observation menu ever shows. */
 .mp-saveinto-menu { min-width: 12em; max-height: 60vh; overflow: auto; }
+/* The Save popup's two tick rows: the shared .detrow-menu-item shape with a checkbox. */
+.mp-savepick { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.mp-savepick input { flex: 0 0 auto; margin: 0; }
+.mp-savepick-go { border-top: 1px solid var(--border, #e3ebe8); margin-top: 4px; font-weight: 600; color: var(--brand-deep, #1d5b43); }
