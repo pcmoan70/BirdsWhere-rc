@@ -2727,6 +2727,8 @@
     return n;
   }
   function filterSpRows() {
+    // The same search also filters list pins on the map (listPointPasses → pointNameMatches).
+    try { if (mpState && mpState.mpFilterRefresh) mpState.mpFilterRefresh(); } catch (e) {}
     var tb = document.getElementById("sp-tbody"); if (!tb) return;
     var q = spNameQuery.trim();
     Array.prototype.forEach.call(tb.querySelectorAll("tr"), function (tr) {
@@ -12641,6 +12643,8 @@
       if (typeof speciesPanelPopulated === "function" && speciesPanelPopulated()) renderSpControls();
       if (allFiltersPane) renderAllFiltersPane();   // keep the "all filters" pane in sync
     });
+    // the pane's filters reach imported list pins too (mpVisible → listPointPasses)
+    try { if (mpState && mpState.mpFilterRefresh) mpState.mpFilterRefresh(); } catch (e) {}
   }
   // Re-render just the filter bar on whichever surface currently hosts it (the popup,
   // or the fetch list) — for panel-open toggles that don't change the data.
@@ -16565,7 +16569,35 @@
     if (!p) return true;
     if (p.date && !detDatePasses(p.date)) return false;
     if (p.observer && !detObsPasses({ observer: p.observer })) return false;
+    var q = spNameQuery.trim();
+    if (q && !pointNameMatches(p, q)) return false;
     return true;
+  }
+  // A pin's species, as the app knows it: the file's scientific name looked up in the
+  // model's index, so the LOCAL name (and the second language) match too — typing
+  // "kattugle" finds a pin whose file only ever said "Strix aluco".
+  function labelForSci(sci) {
+    if (!sci) return null;
+    try {
+      var idx = window.AppAggregate && window.AppAggregate.ensureSciIndex && window.AppAggregate.ensureSciIndex();
+      return (idx && idx[String(sci).toLowerCase()]) || null;
+    } catch (e) { return null; }
+  }
+  function pointNameMatches(p, q) {
+    q = String(q).toLowerCase();
+    if (String(p.name || "").toLowerCase().indexOf(q) >= 0) return true;
+    var sci = p.sci || "";
+    if (sci && sci.toLowerCase().indexOf(q) >= 0) return true;
+    var l = labelForSci(sci) || (p.spKey ? labelsByKey[p.spKey] : null);
+    if (l) {
+      if (String(speciesName(l) || "").toLowerCase().indexOf(q) >= 0) return true;
+      if (secondLang) { var n2 = secondName(l); if (n2 && n2.toLowerCase().indexOf(q) >= 0) return true; }
+      if (String(l.sci || "").toLowerCase().indexOf(q) >= 0) return true;
+    }
+    // A pin with no species at all is never hidden by a species search — the
+    // backward-compatibility rule, same as for dates and observers.
+    if (!sci && !p.spKey) return true;
+    return false;
   }
   function syncListDetections() {
     if (!map || typeof detPlot === "undefined") return;

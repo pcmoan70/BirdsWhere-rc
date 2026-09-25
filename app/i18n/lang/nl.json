@@ -1463,5 +1463,9 @@
   "sync.phWriteFile": "{name} schrijven",
   "sync.driveHas": "Drive had {lists} lijsten",
   "sync.listsSkipped": "‘Puntenlijsten’ staat uit, dus ze zijn niet opgehaald",
-  "sync.noCopyBig": "Te groot voor een .kmz-kopie: {names} – de lijst zelf wordt gesynchroniseerd"
+  "sync.noCopyBig": "Te groot voor een .kmz-kopie: {names} – de lijst zelf wordt gesynchroniseerd",
+  "points.tagAdd": "Label toevoegen",
+  "points.tagRemove": "Label verwijderen",
+  "points.tagNew": "Nieuw label …",
+  "points.tagNone": "Nog geen labels in deze lijst"
 }

@@ -1463,5 +1463,9 @@
   "sync.phWriteFile": "Kirjoitetaan {name}",
   "sync.driveHas": "Drivessä oli {lists} listaa",
   "sync.listsSkipped": "”Pistelistat” ei ole valittuna, joten niitä ei haettu",
-  "sync.noCopyBig": "Liian suuri .kmz-kopioksi: {names} – itse lista synkronoidaan"
+  "sync.noCopyBig": "Liian suuri .kmz-kopioksi: {names} – itse lista synkronoidaan",
+  "points.tagAdd": "Lisää tunniste",
+  "points.tagRemove": "Poista tunniste",
+  "points.tagNew": "Uusi tunniste …",
+  "points.tagNone": "Listassa ei vielä tunnisteita"
 }

@@ -1463,5 +1463,9 @@
   "sync.phWriteFile": "Escribiendo {name}",
   "sync.driveHas": "Drive tenía {lists} listas",
   "sync.listsSkipped": "«Listas de puntos» está desmarcada, así que no se trajeron",
-  "sync.noCopyBig": "Demasiado grande para una copia .kmz: {names}: la lista sí se sincroniza"
+  "sync.noCopyBig": "Demasiado grande para una copia .kmz: {names}: la lista sí se sincroniza",
+  "points.tagAdd": "Añadir etiqueta",
+  "points.tagRemove": "Quitar la etiqueta",
+  "points.tagNew": "Nueva etiqueta …",
+  "points.tagNone": "Aún no hay etiquetas en esta lista"
 }

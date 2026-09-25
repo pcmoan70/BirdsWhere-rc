@@ -4692,3 +4692,19 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .sync-spinner-txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @keyframes sync-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .sync-spinner-ico { animation: none; } }
+
+/* Per-point tags, edited on the point's own card in the stack popup. */
+.mp-stack-body { cursor: pointer; }
+.mp-tagrow { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin: 5px 0 1px; }
+.mp-tag-chip { border: 1px solid var(--border, #cfe0d8); background: var(--chip, #eef5f2); color: var(--ink, #234); border-radius: 999px; padding: 1px 7px; font-size: var(--fs-xs); cursor: pointer; }
+.mp-tag-chip:hover { border-color: #c0392b; color: #c0392b; }
+.mp-tag-add { border: 1px dashed var(--border, #cfe0d8); background: transparent; color: var(--brand-deep, #1d5b43); border-radius: 999px; width: 20px; height: 20px; line-height: 1; padding: 0; cursor: pointer; }
+.mp-tag-add:hover { border-style: solid; border-color: var(--brand, #2f6f4f); }
+.mp-tagpick { margin: 4px 0 2px; padding: 5px; border: 1px solid var(--border, #cfe0d8); border-radius: 6px; background: var(--surface, #fff); }
+.mp-tagpick-opts { display: flex; flex-wrap: wrap; gap: 4px; }
+.mp-tagpick-opt { border: 1px solid var(--border, #cfe0d8); background: var(--surface, #fff); border-radius: 999px; padding: 1px 7px; font-size: var(--fs-xs); cursor: pointer; }
+.mp-tagpick-opt.on { background: var(--brand, #2f6f4f); border-color: var(--brand, #2f6f4f); color: #fff; }
+.mp-tagpick-none { font-size: var(--fs-xs); color: var(--muted, #777); }
+.mp-tagpick-new { display: flex; gap: 4px; margin-top: 5px; }
+.mp-tagpick-in { flex: 1 1 auto; min-width: 0; font-size: var(--fs-xs); padding: 2px 5px; }
+.mp-tagpick-ok { flex: 0 0 auto; border: 1px solid var(--brand, #2f6f4f); background: var(--brand, #2f6f4f); color: #fff; border-radius: 4px; padding: 1px 8px; cursor: pointer; }

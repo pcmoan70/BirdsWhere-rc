@@ -1463,5 +1463,9 @@
   "sync.phWriteFile": "Rašoma {name}",
   "sync.driveHas": "„Drive“ turėjo {lists} sąrašų",
   "sync.listsSkipped": "„Taškų sąrašai“ nepažymėta, todėl jie nebuvo paimti",
-  "sync.noCopyBig": "Per didelis .kmz kopijai: {names} – pats sąrašas sinchronizuojamas"
+  "sync.noCopyBig": "Per didelis .kmz kopijai: {names} – pats sąrašas sinchronizuojamas",
+  "points.tagAdd": "Pridėti žymą",
+  "points.tagRemove": "Pašalinti žymą",
+  "points.tagNew": "Nauja žyma …",
+  "points.tagNone": "Šiame sąraše dar nėra žymų"
 }

@@ -1147,24 +1147,127 @@ window.AppPoints = (function () {
     var ts = Date.parse(d || p.createdAt || "");
     return isNaN(ts) ? -8640000000000 : ts;
   }
+  // ---- per-point tags, edited from the point's own card ---------------------
+  // Which saved list owns this point (by object identity), so a tag edit persists to the
+  // right place. Loose working pins return null and are saved with the working set.
+  function ownerColl(p) {
+    var found = null;
+    mpCollections.forEach(function (c) { if (!found && (c.points || []).indexOf(p) >= 0) found = c; });
+    return found;
+  }
+  // Every tag in use in the point's own list — what the picker offers, so tagging is
+  // mostly one tap rather than typing the same word again.
+  function tagsInScope(p) {
+    var c = ownerColl(p), seen = {}, out = [];
+    ((c && c.points) || mapPoints || []).forEach(function (q) {
+      (q.tags || []).forEach(function (tg) { if (tg && !seen[tg]) { seen[tg] = 1; out.push(tg); } });
+    });
+    return out.sort(function (a, b) { return a.localeCompare(b); });
+  }
+  function pointTagsSave(p) {
+    var c = ownerColl(p);
+    if (c) { saveMapPoints(); persistMpSets(mpCollections); } else saveMapPoints();
+    renderMapPoints();
+    if (typeof refreshMpPanel === "function") refreshMpPanel();
+  }
+  function togglePointTag(p, tag) {
+    tag = String(tag || "").trim(); if (!tag) return;
+    p.tags = p.tags || [];
+    var i = p.tags.indexOf(tag);
+    if (i >= 0) p.tags.splice(i, 1); else p.tags.push(tag);
+    pointTagsSave(p);
+  }
+  // The card's tag row: the point's tags as removable chips, then ＋ to open the picker.
+  function pointTagsHtml(p) {
+    var tags = (p.tags || []).filter(function (x) { return !!x; });
+    return '<div class="mp-tagrow">' +
+      tags.map(function (tg) {
+        return '<button type="button" class="mp-tag-chip" data-tag="' + escapeHtml(tg) + '" title="' +
+          escapeHtml(t("points.tagRemove")) + '">' + escapeHtml(tg) + " \u00d7</button>";
+      }).join("") +
+      '<button type="button" class="mp-tag-add" title="' + escapeHtml(t("points.tagAdd")) + '">+</button>' +
+      "</div>";
+  }
+  // The picker, opened inside the card itself — no second popup to stack, dismiss or
+  // position, and it cannot cover the record it belongs to.
+  function pointTagPickerHtml(p) {
+    var mine = p.tags || [], opts = tagsInScope(p);
+    return '<div class="mp-tagpick">' +
+      '<div class="mp-tagpick-opts">' +
+        opts.map(function (tg) {
+          return '<button type="button" class="mp-tagpick-opt' + (mine.indexOf(tg) >= 0 ? " on" : "") +
+            '" data-tag="' + escapeHtml(tg) + '">' + escapeHtml(tg) + "</button>";
+        }).join("") +
+        (opts.length ? "" : '<span class="mp-tagpick-none">' + escapeHtml(t("points.tagNone")) + "</span>") +
+      "</div>" +
+      '<div class="mp-tagpick-new"><input type="text" class="mp-tagpick-in" placeholder="' +
+        escapeHtml(t("points.tagNew")) + '" maxlength="40" />' +
+        '<button type="button" class="mp-tagpick-ok">\u2713</button></div>' +
+      "</div>";
+  }
   function openMpStackPopup(center, group) {
     var items = group.slice().sort(function (a, b) { return mpPointWhen(b.p) - mpPointWhen(a.p); });
     var html = (items.length > 1 ? '<div class="mp-stack-hd">' + escapeHtml(t("points.stackN", { n: items.length })) + "</div>" : "") +
       items.map(function (o, i) {
-        return '<div class="mp-stack-it' + (items.length > 1 ? "" : " one") + '" role="button" tabindex="0" data-i="' + i + '" title="' + escapeHtml(t("points.cardMore")) + '">' + mpTipHtml(o.p) + "</div>";
+        return '<div class="mp-stack-it' + (items.length > 1 ? "" : " one") + '" data-i="' + i + '">' +
+          '<div class="mp-stack-body" role="button" tabindex="0" title="' + escapeHtml(t("points.cardMore")) + '">' +
+            mpTipHtml(o.p) + "</div>" + pointTagsHtml(o.p) + "</div>";
       }).join("");
     // Leaflet's own maxHeight gives the popup its scrollbar (.leaflet-popup-scrolled).
     var pop = L.popup({ className: "area-tip mp-stack-pop", maxWidth: 320, maxHeight: 300, autoPan: true })
       .setLatLng(center).setContent(html).openOn(getMap());
     var el = pop.getElement();
     if (!el) return;
-    el.querySelectorAll(".mp-stack-it").forEach(function (it) {
-      it.addEventListener("click", function () {
-        var o = items[+this.getAttribute("data-i")];
+    // The card body opens the point's actions; the tag row is edited in place, so a tag
+    // click must not also fire the action menu.
+    el.querySelectorAll(".mp-stack-body").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var o = items[+this.parentNode.getAttribute("data-i")];
         try { getMap().closePopup(pop); } catch (e) {}
         if (o) mpPinAction(o);
       });
     });
+    function wireTags() {
+      el.querySelectorAll(".mp-tag-chip").forEach(function (ch) {
+        ch.addEventListener("click", function (e) {
+          e.stopPropagation();
+          var o = items[+this.closest(".mp-stack-it").getAttribute("data-i")];
+          if (o) { togglePointTag(o.p, this.getAttribute("data-tag")); redraw(); }
+        });
+      });
+      el.querySelectorAll(".mp-tag-add").forEach(function (b) {
+        b.addEventListener("click", function (e) {
+          e.stopPropagation();
+          var row = this.parentNode, card = this.closest(".mp-stack-it");
+          var o = items[+card.getAttribute("data-i")];
+          if (!o || card.querySelector(".mp-tagpick")) return;
+          row.insertAdjacentHTML("afterend", pointTagPickerHtml(o.p));
+          var pick = card.querySelector(".mp-tagpick");
+          pick.addEventListener("click", function (ev) { ev.stopPropagation(); });
+          pick.querySelectorAll(".mp-tagpick-opt").forEach(function (opt) {
+            opt.addEventListener("click", function () { togglePointTag(o.p, this.getAttribute("data-tag")); redraw(); });
+          });
+          var inp = pick.querySelector(".mp-tagpick-in");
+          var add = function () { var v = inp.value.trim(); if (v) { togglePointTag(o.p, v); redraw(); } };
+          pick.querySelector(".mp-tagpick-ok").addEventListener("click", add);
+          inp.addEventListener("keydown", function (ev) { if (ev.key === "Enter") { ev.preventDefault(); add(); } });
+          try { inp.focus(); } catch (e) {}
+        });
+      });
+    }
+    // Re-render the cards in place after a tag change — the popup stays open where it is.
+    function redraw() {
+      var keep = el.querySelector(".mp-stack-hd");
+      el.querySelectorAll(".mp-stack-it").forEach(function (card, idx) {
+        var o = items[idx]; if (!o) return;
+        var row = card.querySelector(".mp-tagrow");
+        if (row) row.outerHTML = pointTagsHtml(o.p);
+        var pk = card.querySelector(".mp-tagpick"); if (pk) pk.remove();
+      });
+      wireTags();
+      if (keep) { /* heading unchanged */ }
+    }
+    wireTags();
   }
   // Fan the co-located pins out around their shared point ("rainbow"), each in
   // its per-species colour, with a leader line and its species/date/activity

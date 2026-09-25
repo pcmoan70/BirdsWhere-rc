@@ -1463,5 +1463,9 @@
   "sync.phWriteFile": "Zapis {name}",
   "sync.driveHas": "Dysk miał {lists} list",
   "sync.listsSkipped": "„Listy punktów” nie jest zaznaczone, więc ich nie pobrano",
-  "sync.noCopyBig": "Za duża na kopię .kmz: {names} – sama lista jest synchronizowana"
+  "sync.noCopyBig": "Za duża na kopię .kmz: {names} – sama lista jest synchronizowana",
+  "points.tagAdd": "Dodaj etykietę",
+  "points.tagRemove": "Usuń etykietę",
+  "points.tagNew": "Nowa etykieta …",
+  "points.tagNone": "Brak etykiet na tej liście"
 }

@@ -1463,5 +1463,9 @@
   "sync.phWriteFile": "Zápis {name}",
   "sync.driveHas": "Na Disku bylo {lists} seznamů",
   "sync.listsSkipped": "„Seznamy bodů“ není zaškrtnuto, takže se nestáhly",
-  "sync.noCopyBig": "Příliš velké na kopii .kmz: {names} – samotný seznam se synchronizuje"
+  "sync.noCopyBig": "Příliš velké na kopii .kmz: {names} – samotný seznam se synchronizuje",
+  "points.tagAdd": "Přidat značku",
+  "points.tagRemove": "Odebrat značku",
+  "points.tagNew": "Nová značka …",
+  "points.tagNone": "V tomto seznamu ještě nejsou značky"
 }

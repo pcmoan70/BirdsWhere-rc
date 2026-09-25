@@ -1463,5 +1463,9 @@
   "sync.phWriteFile": "Écriture de {name}",
   "sync.driveHas": "Drive contenait {lists} listes",
   "sync.listsSkipped": "« Listes de points » est décoché : elles n’ont pas été récupérées",
-  "sync.noCopyBig": "Trop volumineuse pour une copie .kmz : {names} — la liste elle-même est synchronisée"
+  "sync.noCopyBig": "Trop volumineuse pour une copie .kmz : {names} — la liste elle-même est synchronisée",
+  "points.tagAdd": "Ajouter une étiquette",
+  "points.tagRemove": "Retirer l’étiquette",
+  "points.tagNew": "Nouvelle étiquette …",
+  "points.tagNone": "Aucune étiquette dans cette liste"
 }
