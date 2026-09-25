@@ -1016,7 +1016,11 @@ window.AppPoints = (function () {
   // Distinct tag pool across all stored points, alphabetically sorted.
   function mpAllTags() {
     var s = {};
-    mapPoints.forEach(function (p) { (p.tags || []).forEach(function (t) { if (t) s[t] = true; }); });
+    var add = function (p) { (p.tags || []).forEach(function (t) { if (t) s[t] = true; }); };
+    mapPoints.forEach(add);
+    // …and every ticked saved list: an imported list's tags are the ones worth filtering on,
+    // and before this they never reached the chip row at all.
+    mpCollections.forEach(function (c) { if (shownColls[c.name]) (c.points || []).forEach(add); });
     return Object.keys(s).sort();
   }
   // OR-filter: when no tags active, show everything; otherwise show points
@@ -1036,15 +1040,58 @@ window.AppPoints = (function () {
   // touch several controls, and a list of tens of thousands of pins must not be rebuilt
   // once per keystroke. Guarded against re-entry — renderMapPoints runs
   // syncListDetections, which is itself what calls back in here.
-  var mpFilterT = null, mpRendering = false;
-  function mpFilterRefresh() {
+  var mpFilterT = null, mpRendering = false, mpBusyEls = [], mpBusyKeys = [];
+  // The redraw rebuilds the Points panel's innerHTML, which destroys the very tile we put
+  // the blink on — so remember the tile by IDENTITY and re-apply the class to whatever
+  // element takes its place.
+  function mpBusyKeyOf(el) {
+    if (!el || !el.getAttribute) return "";
+    if (el.classList && el.classList.contains("mp-chip")) return '.mp-chip[data-tag="' + (el.getAttribute("data-tag") || "") + '"]';
+    var cb = el.querySelector ? el.querySelector(".mp-coll-cb") : null;
+    var src = cb || el;
+    var nm = src.getAttribute && src.getAttribute("data-name"), ty = src.getAttribute && src.getAttribute("data-type");
+    if (nm) return '.mp-coll-row:has(.mp-coll-cb[data-name="' + nm + '"][data-type="' + (ty || "p") + '"])';
+    return "";
+  }
+  function mpBusyReapply() {
+    mpBusyKeys.forEach(function (sel) {
+      if (!sel) return;
+      var el = null;
+      try { el = document.querySelector(sel); } catch (e) { el = null; }
+      if (!el && sel.indexOf(":has(") >= 0) {                       // :has() unsupported → find it the long way
+        var m = /data-name="([^"]*)"/.exec(sel);
+        if (m) {
+          var cb = document.querySelector('.mp-coll-cb[data-name="' + m[1] + '"]');
+          el = cb && cb.closest ? cb.closest(".mp-coll-row") : null;
+        }
+      }
+      if (el && mpBusyEls.indexOf(el) < 0) { el.classList.add("filter-busy"); mpBusyEls.push(el); }
+    });
+  }
+  // `el` (optional): the tile that was clicked. It blinks with the app's existing
+  // .filter-busy pulse until the redraw is done — with a big list that redraw takes long
+  // enough that a click otherwise looked ignored. Held for a moment at minimum, so a fast
+  // filter still blinks once rather than flickering invisibly.
+  function mpFilterRefresh(el) {
+    if (el && el.classList && mpBusyEls.indexOf(el) < 0) { el.classList.add("filter-busy"); mpBusyEls.push(el); }
+    var key = mpBusyKeyOf(el);
+    if (key && mpBusyKeys.indexOf(key) < 0) mpBusyKeys.push(key);
+    var since = Date.now();
     if (mpRendering || mpFilterT) return;
     mpFilterT = (window.requestAnimationFrame || setTimeout)(function () {
       mpFilterT = null;
-      if (mpRendering) return;
+      if (mpRendering) { mpFilterBusyDone(since); return; }
       mpRendering = true;
-      try { renderMapPoints(); } catch (e) {} finally { mpRendering = false; }
+      try { renderMapPoints(); mpBusyReapply(); } catch (e) {} finally { mpRendering = false; mpFilterBusyDone(since); }
     }, 16);
+  }
+  function mpFilterBusyDone(since) {
+    if (!mpBusyEls.length) { mpBusyKeys = []; return; }
+    var els = mpBusyEls; mpBusyEls = []; mpBusyKeys = [];
+    var wait = Math.max(0, 260 - (Date.now() - since));
+    setTimeout(function () {
+      els.forEach(function (e) { try { e.classList.remove("filter-busy"); } catch (x) {} });
+    }, wait);
   }
 
   function ensureMpLayer() { if (!mpLayer) { mpLayer = L.layerGroup(); if (getMap()) mpLayer.addTo(getMap()); } return mpLayer; }

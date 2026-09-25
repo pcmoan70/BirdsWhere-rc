@@ -17315,7 +17315,9 @@
         var i = mpState.mpFilter().indexOf(tag);
         if (i >= 0) mpState.mpFilter().splice(i, 1); else mpState.mpFilter().push(tag);
         saveMapPoints();
-        renderMapPoints();
+        // The chip blinks until the map has caught up (mpFilterRefresh), instead of the
+        // click looking ignored while a large list redraws.
+        mpState.mpFilterRefresh(this);
       });
     });
     panel.querySelectorAll(".mp-fly").forEach(function (b) {
@@ -17340,7 +17342,8 @@
         var set = type === "d" ? mpState.shownDetSets() : mpState.shownColls();
         if (this.checked) set[name] = true; else delete set[name];
         saveShownState();
-        renderMapPoints();
+        // Blink the list's own row while its points are drawn or removed.
+        mpState.mpFilterRefresh(this.closest(".mp-coll-row") || this);
       });
     });
     // Per-row 🧭: export this list's / set's points as a pin overlay for Google

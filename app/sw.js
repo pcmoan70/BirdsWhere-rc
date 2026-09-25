@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1899";
+var VERSION = "v1900";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Loading a big point file now tells you where it has got to. The grouse lek file is 6.5 MB packed and 120 MB of KML with 73 891 records; the app read it silently, froze while doing so, and looked as though nothing had happened \u2014 so the natural move was to pick the file again, starting a second read behind the first. It now reports Unpacking \u2192 Reading records \u2026 n of N as it goes, and a second attempt while one is still running is told to wait instead of doubling the work.",
+  "\u2022 A list filter blinks while it works. Ticking a list, or clicking a tag, blinks that row or chip until the map has caught up \u2014 with a large list the redraw takes long enough that the click used to look ignored.",
+  "\u2022 An imported list's tags now appear as filter chips. The chip row only ever listed tags on loose working pins, so a list that arrived already tagged \u2014 \u201clek / display ground\u201d, \u201cgathering (>3 birds)\u201d \u2014 had nothing to click.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
