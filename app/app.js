@@ -13740,6 +13740,7 @@
   }
   function renderPlottedObsPage() {
     var rec = document.getElementById("sp-records"); if (!rec) return;
+    spPageIsObs = true;
     var tbl = document.getElementById("species-list-table"); if (tbl) tbl.style.display = "none";
     // Header: list EVERY fetched square, one line each, ordered by geography (not by
     // fetch time). No generic "species here" title.
@@ -13796,8 +13797,21 @@
       var movedAway = !!(spMissingAuto && refNow && currentSpView &&
         (Math.abs(refNow.lat - +currentSpView.lat) > 1e-4 || Math.abs(refNow.lon - +currentSpView.lon) > 1e-4));
       var showedObsPage = false;
-      if (!speciesPanelPopulated() || movedAway || mapFromMultiFetch) {
-        var refPt = mapFromMultiFetch ? null : refNow;
+      var haveDots = hasPlottedDetections();
+      // The Observation layout draws plotted dots and nothing else. With none on the map it
+      // renders a header over an EMPTY body — the species table is display:none in that
+      // layout — so the page opened and looked blank, which is what "clicking the List
+      // button does nothing" is. Fall back to the species table for THIS render only: the
+      // stored preference is untouched and returns as soon as there are dots again, and the
+      // layout tabs show which view you actually got.
+      var obsLayoutEmpty = (spLayout === "observation") && !haveDots;
+      if (obsLayoutEmpty) spLayout = "table";
+      // Rebuild when the page holds an observation list that has nothing left to list —
+      // otherwise the old empty page is shown again and the click looks ignored.
+      var staleObsPage = spPageIsObs && !haveDots;
+      if (!speciesPanelPopulated() || movedAway || staleObsPage || obsLayoutEmpty || (mapFromMultiFetch && haveDots)) {
+        // The multi-fetch flag only decides anything while its dots are still on the map.
+        var refPt = (mapFromMultiFetch && haveDots) ? null : refNow;
         // Dots on the map → their "By observation" list. Nothing fetched at all → the model's
         // own species for the pin / map centre, commonest first (renderSpeciesList's noFetch
         // path ends in applySightings with an empty result, which is what turns that on).
@@ -23174,6 +23188,7 @@
   // table on screen belongs to some earlier point and has nothing to do with the dots —
   // so the list view must show the "By observation" page instead of re-showing that table.
   var mapFromMultiFetch = false;
+  var spPageIsObs = false;   // the list page currently holds the "By observation" list, not a point's species table
   // Bumped on every renderSpeciesList call AND on a mode change. A render that
   // suspends at its inference await while the user switches mode (or clicks a new
   // point) sees its captured gen fall behind and bails BEFORE firing its
@@ -24972,6 +24987,7 @@
     // (so a fresh fetch's list narrows the same way the map does).
     spFilters.star = detStarFilter === 1; spFilters.rare = detRareFilter === 1; spFilters.year = detYearFilter === -1; spFilters.life = detLifeFilter === -1;
     mapFromMultiFetch = false;   // this list IS about a point again
+    spPageIsObs = false;         // ...and it holds that point's species table, not the observation list
     currentSpView = hist
       ? { mode: "historic", lat: lat, lon: lon, from: hist.from, to: hist.to, range: hist.range, months: hist.months || [] }
       : { mode: "point", lat: lat, lon: lon };

@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1912";
+var VERSION = "v1913";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Fixes the List\u21C4Map switch being missing when you open the app in list mode with nothing fetched. It starts hidden and was only re-shown on a mode change, a fetch or a list render \u2014 so a restored session never got it back, and there was simply no button where you were pressing. With no point and nothing fetched the list now opens for the middle of the map, as it was always meant to.",
+  "\u2022 Fixes the List button opening a blank page when the list was last left in \u201CObservation list\u201D view. That layout draws plotted observations and nothing else, so with none on the map you got a heading over an empty body \u2014 the species table is hidden in that view \u2014 and the click looked ignored. With nothing plotted the page now falls back to the species list for the map centre, and your Observation-list choice comes back as soon as there are observations to show.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
