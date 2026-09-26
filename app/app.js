@@ -1074,6 +1074,11 @@
   // Stops the moment the last fetch lands and the recount is done. Never pulses with
   // no filter set — then a partial view is just a partial view.
   var filterStale = false;   // pan/zoom happened; the filtered counts are pending a recompute
+  // Every funnel in the app, in one place. setFunnelBusy and updateFilterBusy each had
+  // their own list and they disagreed: a fetch pulsed three of them, a filter pass four,
+  // and the Points panel's per-list funnels were in neither. A cue that appears on some
+  // funnels and not others teaches the user to ignore it.
+  var FUNNEL_SEL = ".sp-filter-btn, .filterclear-btn, .det-clear-sel, .sp-head-funnel, .mp-coll-filt";
   function updateFilterBusy() {
     var on = false;
     // Pulse for ANY fetch in progress — a map click, a stored-location run, an "update all
@@ -1083,7 +1088,7 @@
     try { on = userFetchActive() || filterStale; } catch (e) {}
     var fb = document.getElementById("sp-filter-btn");
     if (fb) fb.classList.toggle("busy", !!on);
-    Array.prototype.forEach.call(document.querySelectorAll(".filterclear-btn, .det-clear-sel, .sp-head-funnel"), function (el) {
+    Array.prototype.forEach.call(document.querySelectorAll(FUNNEL_SEL), function (el) {
       el.classList.toggle("filter-stale", !!on);
     });
   }
@@ -9119,6 +9124,10 @@
       function onFsChange() {
         document.body.classList.toggle("fs-apple", appleTouch && isFullscreen());
         fitMapHeight();
+        // Entering or leaving full screen re-lays the whole page out, and onListView() is
+        // read from the panel's on-screen geometry — so the switch has to be re-evaluated
+        // here like it is after any other view change.
+        try { updateViewToggle(); } catch (e) {}
       }
       document.addEventListener("fullscreenchange", onFsChange);
       document.addEventListener("webkitfullscreenchange", onFsChange);   // Safari's name for it
@@ -12649,9 +12658,15 @@
   function setFunnelBusy(on) {
     funnelBusyN = Math.max(0, funnelBusyN + (on ? 1 : -1));
     var busy = funnelBusyN > 0;
-    Array.prototype.forEach.call(document.querySelectorAll(".sp-filter-btn, .filterclear-btn, .det-clear-sel, .sp-head-funnel"), function (el) {
+    Array.prototype.forEach.call(document.querySelectorAll(FUNNEL_SEL), function (el) {
       el.classList.toggle("filter-busy", busy);
     });
+  }
+  var funnelPulseT = null;
+  function pulseFunnels(ms) {
+    if (funnelPulseT) clearTimeout(funnelPulseT);   // already pulsing → extend it
+    else setFunnelBusy(true);
+    funnelPulseT = setTimeout(function () { funnelPulseT = null; setFunnelBusy(false); }, ms || 320);
   }
   function withFunnelBusy(fn) {
     setFunnelBusy(true);
@@ -16570,7 +16585,7 @@
     refreshMpPanel: refreshMpPanel, renderMpAdmin: renderMpAdmin, setStatus: setStatus,
     showDetRowMenu: showDetRowMenu, syncListDetections: syncListDetections,
     updateDetSetOverlays: updateDetSetOverlays, updateMpBadge: updateMpBadge,
-    tagDisplay: tagDisplay,
+    pulseFunnels: pulseFunnels, tagDisplay: tagDisplay,
     updateSpDistances: updateSpDistances, t: t,
     getMap: function () { return map; },
     getMarker: function () { return marker; },
@@ -20590,7 +20605,14 @@
       renderSpControls();   // re-glyphs the button and rebuilds the body (table rows / Images cards)
     });
     var vtBtn = document.getElementById("viewtoggle-btn");
-    if (vtBtn) vtBtn.addEventListener("click", function () { if (onListView()) goToMapView(); else showListView(); });
+    if (vtBtn) vtBtn.addEventListener("click", function () {
+      // Both showListView and goToMapView open with `if (!viewToggleAvail()) return;`, so a
+      // button left visible after the mode stopped qualifying was DEAD and silent — pressing
+      // it did nothing at all, with nothing to tell you why. Re-evaluate instead: that hides
+      // the switch when it genuinely does not apply, and says so.
+      if (!viewToggleAvail()) { updateViewToggle(); setStatus(t("view.unavailable")); return; }
+      if (onListView()) goToMapView(); else showListView();
+    });
 
     // Click a count cell in the per-point species list to open the recent-
     // sightings panel for that species (multi-source merge with Show in map).
@@ -23702,6 +23724,12 @@
     });
   }
   function renderSpBody() {
+    // Every heavy list pass blinks the funnels, in every layout: the table, the observation
+    // list and the Images cards all come through here, and the Images rebuild in particular
+    // had no cue at all. renderSpBody is change-driven (9 call sites: filters, sort, layout,
+    // settings, a photo arriving), not a scroll path, so this cannot flutter — and repeated
+    // calls extend one pulse rather than stacking.
+    pulseFunnels();
     var tbl = document.getElementById("species-list-table"), rec = document.getElementById("sp-records");
     if (!tbl || !rec) return;
     hideLocHoverMap();   // the hovered place name is about to be re-rendered away

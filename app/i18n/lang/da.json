@@ -1502,5 +1502,6 @@
   "kml.nFields": "{n} felter",
   "points.capped": "Viser {n} af {total} listepunkter her — zoom ind for resten.",
   "points.listTrimmed": "Nærmeste {n} af {total} punkter i de markerede lister.",
-  "points.savedHidden": "“{name}” er gemt, men de aktive filtre skjuler det — ryd dem for at se det på kortet."
+  "points.savedHidden": "“{name}” er gemt, men de aktive filtre skjuler det — ryd dem for at se det på kortet.",
+  "view.unavailable": "Listevisningen kræver et punkt eller hentede observationer her."
 }

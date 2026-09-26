@@ -1502,5 +1502,6 @@
   "kml.nFields": "{n} laukai",
   "points.capped": "Rodoma {n} iš {total} sąrašo taškų — priartinkite, kad pamatytumėte likusius.",
   "points.listTrimmed": "Artimiausi {n} iš {total} taškų pažymėtuose sąrašuose.",
-  "points.savedHidden": "„{name}“ išsaugota, bet aktyvūs filtrai ją paslepia — išvalykite juos, kad pamatytumėte žemėlapyje."
+  "points.savedHidden": "„{name}“ išsaugota, bet aktyvūs filtrai ją paslepia — išvalykite juos, kad pamatytumėte žemėlapyje.",
+  "view.unavailable": "Sąrašo rodiniui čia reikia taško arba atsiųstų stebėjimų."
 }

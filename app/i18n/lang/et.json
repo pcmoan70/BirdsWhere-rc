@@ -1502,5 +1502,6 @@
   "kml.nFields": "{n} välja",
   "points.capped": "Kuvatakse {n}/{total} loendi punkti — ülejäänute nägemiseks suumi sisse.",
   "points.listTrimmed": "Lähimad {n}/{total} punkti märgitud loendites.",
-  "points.savedHidden": "„{name}“ salvestati, kuid aktiivsed filtrid peidavad selle — tühjenda need, et seda kaardil näha."
+  "points.savedHidden": "„{name}“ salvestati, kuid aktiivsed filtrid peidavad selle — tühjenda need, et seda kaardil näha.",
+  "view.unavailable": "Loendivaade vajab siin punkti või alla laaditud vaatlusi."
 }

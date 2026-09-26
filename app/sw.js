@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1915";
+var VERSION = "v1916";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Fixes saved points not showing on the map while a big imported list was ticked. A 30,000-point import used up the whole pin budget and a hand-made five-point list was never drawn \u2014 no filter involved. Every shown list now gets a fair share of the budget, small lists are drawn on top, and the budget itself is up from 4,000 to 8,000 pins.",
-  "\u2022 A species tag now shows the species name in your language. The point files carry the scientific name as a tag so several lists can be told apart, and the tiles read \u201CButeo buteo\u201D instead of your own word for it. The stored tag is unchanged, so filtering and the files are untouched.",
+  "\u2022 The funnels now blink for every filtering or processing pass, in every view and every list layout \u2014 including the Images cards, which had no cue at all, and the per-list funnels in the Points panel, which were in neither of the two lists the app used to pulse.",
+  "\u2022 The List\u21C4Map switch no longer sits there doing nothing in silence. When the view it would open does not apply, it now says so and hides itself instead of swallowing the press. It is also re-checked when you enter or leave full screen.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

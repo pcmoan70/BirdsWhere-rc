@@ -1502,5 +1502,6 @@
   "kml.nFields": "{n} campos",
   "points.capped": "A mostrar {n} de {total} pontos de lista aqui — amplie para ver os restantes.",
   "points.listTrimmed": "Os {n} mais próximos de {total} pontos nas listas marcadas.",
-  "points.savedHidden": "«{name}» foi guardado, mas os filtros ativos ocultam-no — limpe-os para o ver no mapa."
+  "points.savedHidden": "«{name}» foi guardado, mas os filtros ativos ocultam-no — limpe-os para o ver no mapa.",
+  "view.unavailable": "A vista de lista necessita de um ponto ou de observações obtidas aqui."
 }

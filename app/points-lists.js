@@ -24,7 +24,7 @@ window.AppPoints = (function () {
   var clearSpider, detRenderer, detStarMarker, downloadCsv, escapeHtml, haversineKm, ico,
       copyPointToList, deleteListPoint, listPointPasses, looksLikeHtml, makePopupBtn, modalPrompt, mpTipHtml, openExternal, openPointEditor,
       refreshMpPanel, renderMpAdmin, setStatus, showDetRowMenu, syncListDetections,
-      tagDisplay, updateDetSetOverlays, updateMpBadge, updateSpDistances, t;
+      pulseFunnels, tagDisplay, updateDetSetOverlays, updateMpBadge, updateSpDistances, t;
   // … and accessors for app state that is replaced at runtime (the map and the
   // clicked-spot marker are built later; the spider layer is app.js's).
   var getMap, getMarker, getSpiderHidden, setSpiderLayer;
@@ -38,6 +38,7 @@ window.AppPoints = (function () {
     openPointEditor = ctx.openPointEditor; refreshMpPanel = ctx.refreshMpPanel;
     renderMpAdmin = ctx.renderMpAdmin; setStatus = ctx.setStatus; showDetRowMenu = ctx.showDetRowMenu;
     syncListDetections = ctx.syncListDetections; updateDetSetOverlays = ctx.updateDetSetOverlays;
+    pulseFunnels = ctx.pulseFunnels || function () {};
     tagDisplay = ctx.tagDisplay || function (x) { return x; };
     updateMpBadge = ctx.updateMpBadge; updateSpDistances = ctx.updateSpDistances; t = ctx.t;
     getMap = ctx.getMap; getMarker = ctx.getMarker;
@@ -1339,6 +1340,9 @@ window.AppPoints = (function () {
   // enough that a click otherwise looked ignored. Held for a moment at minimum, so a fast
   // filter still blinks once rather than flickering invisibly.
   function mpFilterRefresh(el) {
+    // The clicked tile blinks, AND so do the funnels — a points filter is a filtering pass
+    // like any other, and the funnels are where the user has learned to look for one.
+    pulseFunnels();
     if (el && el.classList && mpBusyEls.indexOf(el) < 0) { el.classList.add("filter-busy"); mpBusyEls.push(el); }
     var key = mpBusyKeyOf(el);
     if (key && mpBusyKeys.indexOf(key) < 0) mpBusyKeys.push(key);

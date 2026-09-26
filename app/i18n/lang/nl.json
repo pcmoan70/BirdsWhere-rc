@@ -1502,5 +1502,6 @@
   "kml.nFields": "{n} velden",
   "points.capped": "Toont {n} van {total} lijstpunten hier — zoom in voor de rest.",
   "points.listTrimmed": "Dichtstbijzijnde {n} van {total} punten in de aangevinkte lijsten.",
-  "points.savedHidden": "“{name}” is opgeslagen, maar de actieve filters verbergen het — wis ze om het op de kaart te zien."
+  "points.savedHidden": "“{name}” is opgeslagen, maar de actieve filters verbergen het — wis ze om het op de kaart te zien.",
+  "view.unavailable": "De lijstweergave heeft hier een punt of opgehaalde waarnemingen nodig."
 }

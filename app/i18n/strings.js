@@ -963,6 +963,7 @@ window.GeoI18N = (function () {
         "btn.showInMap": "📍 Map",
         "view.list": "List view",
         "view.map": "Map view",
+        "view.unavailable": "The list view needs a point or fetched observations here.",
         "sp.inView": "In map view: {n} species",
         "sp.plotting": "Plotting observations…",
         "sp.plottingN": "Loading observations… {n} left",

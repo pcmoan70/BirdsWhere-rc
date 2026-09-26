@@ -1502,5 +1502,6 @@
   "kml.nFields": "{n} champs",
   "points.capped": "Affiche {n} des {total} points de liste ici — zoomez pour le reste.",
   "points.listTrimmed": "Les {n} plus proches sur {total} points des listes cochées.",
-  "points.savedHidden": "« {name} » est enregistré, mais les filtres actifs le masquent — effacez-les pour le voir sur la carte."
+  "points.savedHidden": "« {name} » est enregistré, mais les filtres actifs le masquent — effacez-les pour le voir sur la carte.",
+  "view.unavailable": "La vue liste demande un point ou des observations récupérées ici."
 }
