@@ -8031,6 +8031,13 @@
       // Start Google Drive sync last, after all init-time GeoState writes, so
       // its open-time pull isn't fooled into thinking local is newer.
       if (window.GDriveSync) { window.GDriveSync.init(); wireSyncSpinner(); }
+      // The List⇄Map switch starts hidden (display:none in the template) and was only ever
+      // re-evaluated on a mode change, a fetch or a list render. So opening the app already
+      // in list mode with nothing fetched — a restored session — left it hidden for the whole
+      // session: there was no button to press, which is what "the button seems unresponsive"
+      // looks like. viewToggleAvail() also needs `labels`, which only exists once the model's
+      // label file has loaded, so this has to run here at the end of boot rather than earlier.
+      try { updateViewToggle(); } catch (e) {}
       hideBootSplash();   // boot complete — drop the static splash from index.html
     } catch (e) {
       document.getElementById("app-loading").style.display = "";   // may have been hidden before the failure

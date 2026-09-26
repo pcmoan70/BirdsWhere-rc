@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1911";
+var VERSION = "v1912";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The funnel\u2019s blinking now always stops when the work does. Two ways it could keep pulsing with nothing running: a source that failed the moment it was called was never unregistered, and the \u201Crecount pending\u201D pulse was only ever cleared from inside a redraw that is skipped when the data it would recount is gone. Both fixed, plus a time limit so no future path can leave it blinking.",
+  "\u2022 Fixes the List\u21C4Map switch being missing when you open the app in list mode with nothing fetched. It starts hidden and was only re-shown on a mode change, a fetch or a list render \u2014 so a restored session never got it back, and there was simply no button where you were pressing. With no point and nothing fetched the list now opens for the middle of the map, as it was always meant to.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
