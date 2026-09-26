@@ -24,7 +24,7 @@ window.AppPoints = (function () {
   var clearSpider, detRenderer, detStarMarker, downloadCsv, escapeHtml, haversineKm, ico,
       copyPointToList, deleteListPoint, listPointPasses, looksLikeHtml, makePopupBtn, modalPrompt, mpTipHtml, openExternal, openPointEditor,
       refreshMpPanel, renderMpAdmin, setStatus, showDetRowMenu, syncListDetections,
-      updateDetSetOverlays, updateMpBadge, updateSpDistances, t;
+      tagDisplay, updateDetSetOverlays, updateMpBadge, updateSpDistances, t;
   // … and accessors for app state that is replaced at runtime (the map and the
   // clicked-spot marker are built later; the spider layer is app.js's).
   var getMap, getMarker, getSpiderHidden, setSpiderLayer;
@@ -38,6 +38,7 @@ window.AppPoints = (function () {
     openPointEditor = ctx.openPointEditor; refreshMpPanel = ctx.refreshMpPanel;
     renderMpAdmin = ctx.renderMpAdmin; setStatus = ctx.setStatus; showDetRowMenu = ctx.showDetRowMenu;
     syncListDetections = ctx.syncListDetections; updateDetSetOverlays = ctx.updateDetSetOverlays;
+    tagDisplay = ctx.tagDisplay || function (x) { return x; };
     updateMpBadge = ctx.updateMpBadge; updateSpDistances = ctx.updateSpDistances; t = ctx.t;
     getMap = ctx.getMap; getMarker = ctx.getMarker;
     getSpiderHidden = ctx.getSpiderHidden; setSpiderLayer = ctx.setSpiderLayer;
@@ -1509,7 +1510,7 @@ window.AppPoints = (function () {
     return '<div class="mp-tagrow">' +
       tags.map(function (tg) {
         return '<button type="button" class="mp-tag-chip" data-tag="' + escapeHtml(tg) + '" title="' +
-          escapeHtml(t("points.tagRemove")) + '">' + escapeHtml(tg) + " \u00d7</button>";
+          escapeHtml(t("points.tagRemove")) + '">' + escapeHtml(tagDisplay(tg)) + " \u00d7</button>";
       }).join("") +
       '<button type="button" class="mp-tag-add" title="' + escapeHtml(t("points.tagAdd")) + '">+</button>' +
       // Copy this one record into another list, and delete it. Both act on the point the
@@ -1527,7 +1528,7 @@ window.AppPoints = (function () {
       '<div class="mp-tagpick-opts">' +
         opts.map(function (tg) {
           return '<button type="button" class="mp-tagpick-opt' + (mine.indexOf(tg) >= 0 ? " on" : "") +
-            '" data-tag="' + escapeHtml(tg) + '">' + escapeHtml(tg) + "</button>";
+            '" data-tag="' + escapeHtml(tg) + '">' + escapeHtml(tagDisplay(tg)) + "</button>";
         }).join("") +
         (opts.length ? "" : '<span class="mp-tagpick-none">' + escapeHtml(t("points.tagNone")) + "</span>") +
       "</div>" +
@@ -1648,7 +1649,10 @@ window.AppPoints = (function () {
   // looks the same and costs 2 % of the time). The user's own "Max points on map" lowers
   // it further. Small lists are untouched -- no cull, no move-redraw.
   var MP_CULL_MIN = 2000;        // total shown list points below this -> draw everything
-  var MP_DRAW_MAX = 4000;        // pins actually drawn per render when culling is on
+  // Pins actually drawn per render when culling is on. Measured cost of renderMpPin alone
+  // (draw + clearLayers): 4k = 50 ms, 10k = 118 ms, 30k = 350 ms, 64.5k = 661 ms. 8k keeps a
+  // zoomed-out redraw around 100 ms on this machine while showing far more than 4k did.
+  var MP_DRAW_MAX = 8000;
   var mpMoveT = null, mpCulling = false;
   function mpPinBudget() {
     var n = +window.GeoState.get("maxMapPoints", 50000);
@@ -1684,24 +1688,42 @@ window.AppPoints = (function () {
     var routeShows = routePoints.length === 0;   // reloaded saved routes own the numbered-pin display only when the basket is empty
     // How many list points are in play at all? Only that decides whether to cull, so a
     // handful of hand-made lists keep behaving exactly as before.
-    var shownTotal = 0;
+    var shownTotal = 0, shownLists = [];
     mpCollections.forEach(function (c) {
       if (!shownColls[c.name]) return;
       if (routeShows && isRouteColl(c)) return;
+      shownLists.push(c);
       shownTotal += (c.points || []).length;
     });
     mpCulling = shownTotal > MP_CULL_MIN;
+    // Every shown list gets a FAIR SHARE of the pin budget, allocated smallest-first so a
+    // small list uses less than its share and the surplus rolls on to the bigger ones.
+    // Without this the budget went to whichever list came first: 30,000 imported points ate
+    // all of it and a hand-made five-point list was never drawn at all, with no filter
+    // anywhere near it. Rendering then runs largest-first, so the small lists land on top
+    // instead of under a dense import.
+    shownLists.sort(function (a, b) { return ((a.points || []).length) - ((b.points || []).length); });
     // Plain numbers, not L.LatLngBounds.contains([lat, lon]) — that allocates a LatLng per
     // point, and this runs 64k times on the generated lek file.
     var vb = mpCulling ? mpViewBounds() : null, bb = null;
     if (vb) { var sw = vb.getSouthWest(), ne = vb.getNorthEast(); bb = [sw.lat, sw.lng, ne.lat, ne.lng]; }
     var budget = mpCulling ? mpPinBudget() : Infinity;
     var drawn = 0, passed = 0;
-    mpCollections.forEach(function (c) {
-      if (!shownColls[c.name]) return;
-      if (routeShows && isRouteColl(c)) return;   // drawn as numbered route stops (renderRoutePoints), not plain pins
+    // Pass 1: how many pins each list may draw.
+    var share = {}, left = budget, nLeft = shownLists.length;
+    shownLists.forEach(function (c) {
+      var want = nLeft > 0 ? Math.max(1, Math.floor(left / nLeft)) : 0;
+      var have = 0;
+      (c.points || []).forEach(function (p) { if (p && !p.spKey && isFinite(p.lat) && isFinite(p.lon)) have++; });
+      var give = Math.min(want, have);
+      share[c.name] = (budget === Infinity) ? Infinity : give;
+      left -= give; nLeft--;
+    });
+    // Pass 2: draw, largest list first so the smallest end up on top.
+    shownLists.slice().reverse().forEach(function (c) {
       var col = collColor(c);
       var lf = listFilter(c.name);
+      var quota = share[c.name], used = 0;
       (c.points || []).forEach(function (p) {
         if (!p || !isFinite(p.lat) || !isFinite(p.lon)) return;
         if (p.spKey) return;   // detection point → detPlot pipeline (handled below)
@@ -1714,8 +1736,8 @@ window.AppPoints = (function () {
         if (!mpVisible(p)) return;
         if (!listOwnFilterPasses(p, lf)) return;
         passed++;
-        if (drawn >= budget) return;
-        drawn++;
+        if (used >= quota) return;
+        used++; drawn++;
         renderMpPin(p, false, col);
       });
     });

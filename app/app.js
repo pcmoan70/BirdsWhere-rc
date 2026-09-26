@@ -16570,6 +16570,7 @@
     refreshMpPanel: refreshMpPanel, renderMpAdmin: renderMpAdmin, setStatus: setStatus,
     showDetRowMenu: showDetRowMenu, syncListDetections: syncListDetections,
     updateDetSetOverlays: updateDetSetOverlays, updateMpBadge: updateMpBadge,
+    tagDisplay: tagDisplay,
     updateSpDistances: updateSpDistances, t: t,
     getMap: function () { return map; },
     getMarker: function () { return marker; },
@@ -16746,6 +16747,18 @@
       var idx = window.AppAggregate && window.AppAggregate.ensureSciIndex && window.AppAggregate.ensureSciIndex();
       return (idx && idx[String(sci).toLowerCase()]) || null;
     } catch (e) { return null; }
+  }
+  // A tag that IS a scientific name is shown as the local species name. The point files
+  // carry "Buteo buteo" as a tag so several lists can be told apart by species, but a tile
+  // reading "Buteo buteo" is the wrong thing to put in front of someone whose app is in
+  // Norwegian. The stored tag and the filter value stay the literal string — only the label
+  // is localised, so filtering, matching and the files themselves are untouched.
+  function tagDisplay(tag) {
+    if (!tag) return tag;
+    var l = labelForSci(tag);
+    if (!l) return tag;
+    var nm = speciesName(l);
+    return nm || tag;
   }
   function pointNameMatches(p, q) {
     q = String(q).toLowerCase();
@@ -16954,7 +16967,7 @@
     // Don't repeat a tag that just duplicates the name (detection pins tag the
     // species, which is also the name) — otherwise the species shows twice.
     var tagList = (p.tags || []).filter(function (tg) { return tg && tg !== p.name; });
-    var tags = tagList.length ? '<span class="area-tip-sub">' + escapeHtml(tagList.join(" · ")) + "</span>" : "";
+    var tags = tagList.length ? '<span class="area-tip-sub">' + escapeHtml(tagList.map(tagDisplay).join(" · ")) + "</span>" : "";
     // Notes flagged as HTML (imported KML descriptions) render as sanitised markup;
     // plain notes show their text lines (date / activity / remark), dropping any
     // source URL line — so a saved detection reveals when & what behaviour was
@@ -17387,7 +17400,7 @@
     if (unionTotal > MP_LIST_MAX) unionPts = unionPts.slice(0, MP_LIST_MAX);
     var chipsHtml = allTags.map(function (tag) {
       var active = mpState.mpFilter().indexOf(tag) >= 0;
-      return '<button type="button" class="mp-chip' + (active ? " is-active" : "") + '" data-tag="' + escapeHtml(tag) + '" style="--mp-c:' + mpHashColor(tag) + '">' + escapeHtml(tag) + "</button>";
+      return '<button type="button" class="mp-chip' + (active ? " is-active" : "") + '" data-tag="' + escapeHtml(tag) + '" style="--mp-c:' + mpHashColor(tag) + '">' + escapeHtml(tagDisplay(tag)) + "</button>";
     }).join("");
     if (hasUntagged) {
       var actNoTag = mpState.mpFilter().indexOf("") >= 0;
@@ -17399,7 +17412,7 @@
       var dt = dist == null ? "" : (dist < 1 ? Math.round(dist * 1000) + " m" : dist.toFixed(1) + " km");
       var meta = u.list
         ? '<span class="mp-row-list">' + escapeHtml(u.list) + "</span>"
-        : (p.tags || []).slice(0, 3).map(function (x) { return '<span class="mp-row-tag" style="--mp-c:' + mpHashColor(x) + '">' + escapeHtml(x) + "</span>"; }).join("");
+        : (p.tags || []).slice(0, 3).map(function (x) { return '<span class="mp-row-tag" style="--mp-c:' + mpHashColor(x) + '">' + escapeHtml(tagDisplay(x)) + "</span>"; }).join("");
       return '<div class="dd-row mp-row">' +
         '<button type="button" class="dd-name mp-fly" data-id="' + escapeHtml(u.editable ? p.id : "") + '" data-lat="' + p.lat + '" data-lon="' + p.lon + '"><span class="mp-sw" style="background:' + u.color + '"></span>' + escapeHtml(p.name || "(point)") + "</button>" +
         '<span class="mp-row-meta">' + meta + '<span class="mp-dist">' + escapeHtml(dt) + "</span></span>" +
