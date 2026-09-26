@@ -1501,5 +1501,6 @@
   "points.protectedDesc": "Protegida contra eliminación: desbloquéala en la ventana de listas",
   "kml.nFields": "{n} campos",
   "points.capped": "Mostrando {n} de {total} puntos de lista aquí: amplía para ver el resto.",
-  "points.listTrimmed": "Los {n} más cercanos de {total} puntos en las listas marcadas."
+  "points.listTrimmed": "Los {n} más cercanos de {total} puntos en las listas marcadas.",
+  "points.savedHidden": "«{name}» se guardó, pero los filtros activos lo ocultan: bórralos para verlo en el mapa."
 }

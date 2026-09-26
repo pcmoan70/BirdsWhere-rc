@@ -1501,5 +1501,6 @@
   "points.protectedDesc": "Apsaugotas nuo ištrynimo — atrakinkite sąrašų lange",
   "kml.nFields": "{n} laukai",
   "points.capped": "Rodoma {n} iš {total} sąrašo taškų — priartinkite, kad pamatytumėte likusius.",
-  "points.listTrimmed": "Artimiausi {n} iš {total} taškų pažymėtuose sąrašuose."
+  "points.listTrimmed": "Artimiausi {n} iš {total} taškų pažymėtuose sąrašuose.",
+  "points.savedHidden": "„{name}“ išsaugota, bet aktyvūs filtrai ją paslepia — išvalykite juos, kad pamatytumėte žemėlapyje."
 }

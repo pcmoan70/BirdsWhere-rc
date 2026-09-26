@@ -270,6 +270,7 @@ window.GeoI18N = (function () {
         "points.listFilter": "Filter this list",
         "points.capped": "Showing {n} of {total} list points here — zoom in for the rest.",
         "points.listTrimmed": "Nearest {n} of {total} points in the ticked lists.",
+        "points.savedHidden": "“{name}” was saved, but the active filters hide it — clear them to see it on the map.",
         "points.listFilterFor": "Filter “{name}”",
         "points.listFilterObs": "Observers ({n})",
         "points.listFilterApply": "Apply",

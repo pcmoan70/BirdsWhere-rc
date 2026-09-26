@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1913";
+var VERSION = "v1914";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Fixes the List button opening a blank page when the list was last left in \u201CObservation list\u201D view. That layout draws plotted observations and nothing else, so with none on the map you got a heading over an empty body \u2014 the species table is hidden in that view \u2014 and the click looked ignored. With nothing plotted the page now falls back to the species list for the map centre, and your Observation-list choice comes back as soon as there are observations to show.",
+  "\u2022 A point you save while a tag filter is on no longer disappears without a word. It WAS saved \u2014 the filter simply hid it, because a pin without that tag is filtered out like anything else. The app now says so and tells you to clear the filter, instead of leaving you wondering whether the save worked.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

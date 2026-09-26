@@ -1501,5 +1501,6 @@
   "points.protectedDesc": "Skyddad mot borttagning — lås upp i listfönstret",
   "kml.nFields": "{n} fält",
   "points.capped": "Visar {n} av {total} listpunkter här — zooma in för resten.",
-  "points.listTrimmed": "Närmaste {n} av {total} punkter i de markerade listorna."
+  "points.listTrimmed": "Närmaste {n} av {total} punkter i de markerade listorna.",
+  "points.savedHidden": "”{name}” är sparad, men de aktiva filtren döljer den — rensa dem för att se den på kartan."
 }

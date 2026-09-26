@@ -1501,5 +1501,6 @@
   "points.protectedDesc": "Beskyttet mot sletting — lås opp i listevinduet",
   "kml.nFields": "{n} felter",
   "points.capped": "Viser {n} av {total} listepunkter her — zoom inn for resten.",
-  "points.listTrimmed": "Nærmeste {n} av {total} punkter i de avkryssede listene."
+  "points.listTrimmed": "Nærmeste {n} av {total} punkter i de avkryssede listene.",
+  "points.savedHidden": "«{name}» er lagret, men de aktive filtrene skjuler det — nullstill dem for å se det på kartet."
 }

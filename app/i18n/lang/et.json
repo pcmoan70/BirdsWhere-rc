@@ -1501,5 +1501,6 @@
   "points.protectedDesc": "Kustutamise eest kaitstud — ava lukk loendite aknas",
   "kml.nFields": "{n} välja",
   "points.capped": "Kuvatakse {n}/{total} loendi punkti — ülejäänute nägemiseks suumi sisse.",
-  "points.listTrimmed": "Lähimad {n}/{total} punkti märgitud loendites."
+  "points.listTrimmed": "Lähimad {n}/{total} punkti märgitud loendites.",
+  "points.savedHidden": "„{name}“ salvestati, kuid aktiivsed filtrid peidavad selle — tühjenda need, et seda kaardil näha."
 }

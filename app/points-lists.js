@@ -1152,18 +1152,27 @@ window.AppPoints = (function () {
     openExternal("https://www.google.com/maps/d/");
     setStatus(t("nav.kml", { n: n }));
   }
+  // A point the user just created or edited must never vanish without a word. With a tag
+  // chip active, mpVisible hides any pin that does not carry that tag — so the pin was
+  // saved and simply not drawn, and saying nothing made it look like the save had failed.
+  function mpWarnIfHidden(p) {
+    if (!p || mpVisible(p)) return;
+    setStatus(t("points.savedHidden", { name: p.name || "" }));
+  }
   function addMapPoint(p) {
     p.id = p.id || mpUid();
     p.createdAt = p.createdAt || new Date().toISOString();
     mapPoints.push(p);
     saveMapPoints();
     renderMapPoints();
+    mpWarnIfHidden(p);
   }
   function updateMapPoint(id, patch) {
     var p = mapPoints.filter(function (x) { return x.id === id; })[0]; if (!p) return;
     Object.assign(p, patch);
     saveMapPoints();
     renderMapPoints();
+    mpWarnIfHidden(p);
   }
   function deleteMapPoint(id) {
     mapPoints = mapPoints.filter(function (x) { return x.id !== id; });

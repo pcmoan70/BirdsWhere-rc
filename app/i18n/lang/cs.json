@@ -1501,5 +1501,6 @@
   "points.protectedDesc": "Chráněno proti smazání — odemkněte v okně seznamů",
   "kml.nFields": "{n} polí",
   "points.capped": "Zobrazeno {n} z {total} bodů seznamu — přibližte pro zbytek.",
-  "points.listTrimmed": "Nejbližších {n} z {total} bodů v zaškrtnutých seznamech."
+  "points.listTrimmed": "Nejbližších {n} z {total} bodů v zaškrtnutých seznamech.",
+  "points.savedHidden": "„{name}“ bylo uloženo, ale aktivní filtry jej skrývají — zrušte je, abyste jej viděli na mapě."
 }
