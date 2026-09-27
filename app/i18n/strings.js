@@ -1266,6 +1266,7 @@ window.GeoI18N = (function () {
         "loc.selNone": "None",
         "loc.fetch": "Fetch observations",
         "loc.noneSelected": "No locations selected.",
+        "loc.fetchTimeout": "✗ {name} — took too long, moving on.",
         "loc.loadOnOpen": "Load on open",
         "loc.goFetch": "Fetch observations when jumping here",
         "loc.here": "Here",

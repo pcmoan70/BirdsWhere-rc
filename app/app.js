@@ -3762,12 +3762,17 @@
       }
       var l = locs[i++];
       setStatus(t("filters.reloading", { i: i, n: total }));
-      fetchAllSightingsAt(l.lat, l.lon, null, l.radius, null)
+      var settled = false, adv = function () { if (!settled) { settled = true; setTimeout(next, 400); } };
+      var guard = setTimeout(function () { if (myLoopGen === fetchLoopGen) adv(); }, LOC_MAX_MS);
+      var started; try { started = fetchAllSightingsAt(l.lat, l.lon, null, l.radius, null); }
+      catch (e) { started = Promise.reject(e); }
+      Promise.resolve(started)
         .then(function (result) {
+          clearTimeout(guard);
           if (myLoopGen !== fetchLoopGen) return;   // red × mid-fetch → drop this location's late result
           try { plotSightingsResult(result); } catch (e) {}
-          setTimeout(next, 400);
-        }, function () { if (myLoopGen === fetchLoopGen) setTimeout(next, 400); });
+          adv();
+        }, function () { clearTimeout(guard); if (myLoopGen === fetchLoopGen) adv(); });
     })();
   }
   // ---- Update fetched areas (the ↻ button) ---------------------------------
@@ -3810,11 +3815,16 @@
       }
       var l = locs[i++];
       setStatus(t("update.running", { i: i, n: total }));
-      fetchAllSightingsAt(l.lat, l.lon, null, l.radius, l.days).then(function (result) {
+      var settled2 = false, adv2 = function () { if (!settled2) { settled2 = true; setTimeout(next, 400); } };
+      var guard2 = setTimeout(function () { if (myLoopGen === fetchLoopGen) adv2(); }, LOC_MAX_MS);
+      var started2; try { started2 = fetchAllSightingsAt(l.lat, l.lon, null, l.radius, l.days); }
+      catch (e) { started2 = Promise.reject(e); }
+      Promise.resolve(started2).then(function (result) {
+        clearTimeout(guard2);
         if (myLoopGen !== fetchLoopGen) return;
         try { plotSightingsResult(result); } catch (e) {}   // re-stamps the area's end-date to now
-        setTimeout(next, 400);
-      }, function () { if (myLoopGen === fetchLoopGen) setTimeout(next, 400); });
+        adv2();
+      }, function () { clearTimeout(guard2); if (myLoopGen === fetchLoopGen) adv2(); });
     })();
   }
   // Long-press the ↻ button → its two settings: overlap days + only-in-view.
@@ -4940,6 +4950,9 @@
   // loops, so clearing the map (red ×) can cancel every pending detection fetch.
   var activeFetchCtrls = new Set();
   var fetchLoopGen = 0;
+  // A whole location's fetch is bounded, not just its individual sources: several sources at
+  // 120 s each can serialise past any patience, and one with its timeout set to 0 has none.
+  var LOC_MAX_MS = 150000;
   // The rarity sweep's own controllers (see rarityFetchSources). Kept OUT of
   // activeFetchCtrls so a background sweep never reads as a user fetch — but a
   // map-clear aborts it like everything else.
@@ -22428,13 +22441,33 @@
       var label = t("loc.fetching", { name: l.name, i: i, n: locs.length });
       obsSetPrefix(label);   // keeps the per-source progress visible behind it
       setStatus(label);
-      fetchAllSightingsAt(l.lat, l.lon, null, l.radius || recentRadiusKm(), daysOverride)
+      // The queue advances ONLY when this location settles, so anything that stops it
+      // settling stops the whole run — and the user sees one location fetched out of four
+      // with no error. Two ways that happened:
+      //   * a source that never answers. Each SOURCE has a timeout, but a source configured
+      //     with timeout 0 ("none") has none, and nothing bounded the LOCATION.
+      //   * fetchAllSightingsAt throwing SYNCHRONOUSLY — then no .then is ever attached and
+      //     the exception unwinds out of next(), killing the queue silently. The same trap
+      //     leaked an abort controller in v1911.
+      // advance() is idempotent, so the watchdog and a late real answer cannot both step on.
+      var settled = false;
+      function advance() { if (settled) return; settled = true; setTimeout(next, 500); }
+      var guard = setTimeout(function () {
+        if (settled || myLoopGen !== fetchLoopGen) return;
+        if (!silent) setStatus(t("loc.fetchTimeout", { name: l.name }));
+        advance();
+      }, LOC_MAX_MS);
+      var started;
+      try { started = fetchAllSightingsAt(l.lat, l.lon, null, l.radius || recentRadiusKm(), daysOverride); }
+      catch (e) { started = Promise.reject(e); }
+      Promise.resolve(started)
         .then(function (result) {
+          clearTimeout(guard);
           if (myLoopGen !== fetchLoopGen) return;   // red × mid-fetch → drop this location's late result
           if (!silent) setStatus("✓ " + l.name + ": " + ((result && result.dedupTotal) || 0) + " obs");
           try { plotSightingsResult(result); } catch (e) {}
-          setTimeout(next, 500);
-        }, function () { if (myLoopGen !== fetchLoopGen) return; if (!silent) setStatus("✗ " + l.name); setTimeout(next, 500); });   // ~0.5s gap between locations
+          advance();
+        }, function () { clearTimeout(guard); if (myLoopGen !== fetchLoopGen) return; if (!silent) setStatus("✗ " + l.name); advance(); });   // ~0.5s gap between locations
     })();
   }
 

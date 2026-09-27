@@ -1503,5 +1503,6 @@
   "points.capped": "Visar {n} av {total} listpunkter här — zooma in för resten.",
   "points.listTrimmed": "Närmaste {n} av {total} punkter i de markerade listorna.",
   "points.savedHidden": "”{name}” är sparad, men de aktiva filtren döljer den — rensa dem för att se den på kartan.",
-  "view.unavailable": "Listvyn kräver en punkt eller hämtade observationer här."
+  "view.unavailable": "Listvyn kräver en punkt eller hämtade observationer här.",
+  "loc.fetchTimeout": "✗ {name} – tog för lång tid, går vidare."
 }

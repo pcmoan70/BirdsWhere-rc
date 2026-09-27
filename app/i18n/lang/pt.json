@@ -1503,5 +1503,6 @@
   "points.capped": "A mostrar {n} de {total} pontos de lista aqui — amplie para ver os restantes.",
   "points.listTrimmed": "Os {n} mais próximos de {total} pontos nas listas marcadas.",
   "points.savedHidden": "«{name}» foi guardado, mas os filtros ativos ocultam-no — limpe-os para o ver no mapa.",
-  "view.unavailable": "A vista de lista necessita de um ponto ou de observações obtidas aqui."
+  "view.unavailable": "A vista de lista necessita de um ponto ou de observações obtidas aqui.",
+  "loc.fetchTimeout": "✗ {name} – demorou demasiado, a continuar."
 }

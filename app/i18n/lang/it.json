@@ -1503,5 +1503,6 @@
   "points.capped": "Mostra {n} di {total} punti dell’elenco qui — ingrandisci per il resto.",
   "points.listTrimmed": "I {n} più vicini su {total} punti negli elenchi spuntati.",
   "points.savedHidden": "«{name}» è stato salvato, ma i filtri attivi lo nascondono: azzerali per vederlo sulla mappa.",
-  "view.unavailable": "La vista elenco richiede un punto o osservazioni scaricate qui."
+  "view.unavailable": "La vista elenco richiede un punto o osservazioni scaricate qui.",
+  "loc.fetchTimeout": "✗ {name} – troppo lento, si continua."
 }

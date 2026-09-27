@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1916";
+var VERSION = "v1917";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The funnels now blink for every filtering or processing pass, in every view and every list layout \u2014 including the Images cards, which had no cue at all, and the per-list funnels in the Points panel, which were in neither of the two lists the app used to pulse.",
-  "\u2022 The List\u21C4Map switch no longer sits there doing nothing in silence. When the view it would open does not apply, it now says so and hides itself instead of swallowing the press. It is also re-checked when you enter or leave full screen.",
+  "\u2022 \u201CFetch observations\u201D over several saved places can no longer stop after the first one. The queue only moved on when a place finished, so a source that never answered \u2014 or one that failed the instant it was called \u2014 left the rest unfetched with nothing to say why. Each place is now given its own time limit and the queue always drains, naming any place it had to skip. The \u21bb reload and update-all-areas runs had the same weakness.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
