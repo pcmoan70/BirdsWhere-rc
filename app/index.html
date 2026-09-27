@@ -51,8 +51,11 @@
        booting a large dataset. app.js removes it when the app is ready. -->
   <div id="boot-splash" aria-hidden="true">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12M6 22h12M8 2v4l4 6 4-6V2M8 22v-4l4-6 4 6v4"/></svg>
-    <span>Loading…</span>
+    <span id="boot-splash-txt">Loading…</span>
   </div>
+  <!-- Splash text + <html lang> in the device/saved language, before app.js loads.
+       A file rather than an inline script: the CSP is script-src 'self'. -->
+  <script src="splash-lang.js"></script>
   <noscript>
     <section style="max-width:720px;margin:24px auto;padding:0 16px;font:16px/1.5 system-ui,sans-serif">
       <h1>BirdsWhere — explore where and when birds are observed</h1>
