@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1917";
+var VERSION = "v1918";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 \u201CFetch observations\u201D over several saved places can no longer stop after the first one. The queue only moved on when a place finished, so a source that never answered \u2014 or one that failed the instant it was called \u2014 left the rest unfetched with nothing to say why. Each place is now given its own time limit and the queue always drains, naming any place it had to skip. The \u21bb reload and update-all-areas runs had the same weakness.",
+  "\u2022 The QR-poster launch now shows the birds to EXPECT here as well as the ones actually reported, as picture cards ordered most likely first. It used to list only what had been reported nearby, sorted by distance \u2014 54 cards where there are now 184. The species the model expects are normally hidden behind the [?] button; a poster visit turns them on for that visit only and leaves your own setting alone.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

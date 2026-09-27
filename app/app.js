@@ -6971,7 +6971,8 @@
   // the natural default) and rarity_decreasing = probability asc (rarest first).
   function urlSortState(sortby) {
     switch ((sortby || "").toLowerCase()) {
-      case "rarity_increasing": return { col: "prob", dir: "desc" };
+      case "probable": case "likely":
+      case "rarity_increasing": return { col: "prob", dir: "desc" };   // most probable first
       case "rarity_decreasing": return { col: "prob", dir: "asc" };
       case "time_recent":       return { col: "recent", dir: "desc" };
       case "distance":          return { col: "dist", dir: "asc" };   // nearest first; ties by rarity
@@ -6987,8 +6988,9 @@
   //   show=list|map  → land on the list page, or the map with dots dropping in (default)
   //   layout=table|observation → the list page's layout: ranked species table (default) or
   //                    one row per observation ("By observation")
-  //   sortby=…       → rarity_increasing (default) | rarity_decreasing | time_recent | distance
-  //                    (nearest first, equal distances by rarity) — both layouts
+  //   sortby=…       → probable (alias: likely, rarity_increasing — most probable first, the
+  //                    default) | rarity_decreasing | time_recent | distance (nearest first,
+  //                    equal distances by rarity) — all layouts
   function maybeUrlLocationParam() {
     var p = parseSemiParams();
     var locRaw = (p.location || "").trim();
@@ -7042,6 +7044,13 @@
     // the next fetch honours the Settings ticks again.
     launchBirdsOnce = true;
     showGroupWithoutSaving("aves");
+    // A poster visitor wants "what can I see here", which is the sightings AND the species
+    // the model expects. A predicted species with no observations is normally hidden (the
+    // [?] toggle, off by default), so the Images cards showed the fetched species only.
+    // Set in memory and NOT saved: this launch shows both, the visitor's own [?] choice is
+    // untouched, and pressing [?] still overrides it (that handler saves). The prediction
+    // floor (prob-min, else rarePct — 10 % by default) keeps it from becoming the whole model.
+    spShowMissing = true;
     launchNotePending = true;   // the first settled fetch may add the "few sightings — add keys" note
     stripShortcutParams();   // everything above is consumed — a reload must not run the shortcut again
 

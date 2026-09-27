@@ -715,7 +715,7 @@ the link's `layout` as its default. (Shared-link parameters `lat`/`lon`/`s` are 
 - **`layout`** — with `show=list`: `table` (default, the ranked species table), `observation` (the
   *By observation* layout — one row per record, grouped by day and observer) or `images` (the
   picture gallery, one card per species).
-- **`sortby`** — `rarity_increasing` (default; most likely / commonest species first),
+- **`sortby`** — `probable` (aliases `likely`, `rarity_increasing`; default; most likely / commonest species first),
   `rarity_decreasing` (rarest first), `time_recent` (most recently observed first) or `distance`
   (nearest observation of each species first, equal distances ordered by rarity); applies to both
   layouts.
