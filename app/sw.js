@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1920";
+var VERSION = "v1921";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Completes the previous update: the small file that puts the loading screen in your language was not part of the offline bundle, so a cold start with no connection fell back to English. It is bundled now.",
+  "\u2022 The little tile that floated over the page while syncing is gone. The Sync button already names the step and the file it is writing, counts them (\u201C3/12\u201D) and spins, with a progress bar under it \u2014 the tile repeated all of that on top of the map.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

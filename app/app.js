@@ -5878,28 +5878,16 @@
   // the corner for as long as the sync is busy, with the step and the file count beside it.
   // Registered at boot, independent of the Settings wiring, so it works even if that panel
   // is never opened.
+  // The sync used to also raise a floating tile over the page (#sync-spinner). It said
+  // exactly what the Settings sync button already says — the phase, the file being written,
+  // the "3/12" count — next to a progress bar that says the rest, so it was one more thing
+  // covering the map for no information. Removed on request; any leftover tile from a
+  // previous version is cleared on the next status event.
   function wireSyncSpinner() {
     if (!window.GDriveSync || !window.GDriveSync.onStatus) return;
-    var PH = { signin: "sync.phSignin", read: "sync.phRead", merge: "sync.phMerge",
-               write: "sync.phWrite", files: "sync.phFiles" };
-    window.GDriveSync.onStatus(function (st) {
+    window.GDriveSync.onStatus(function () {
       var el = document.getElementById("sync-spinner");
-      if (!st || !st.busy) { if (el) el.remove(); return; }
-      if (!el) {
-        el = document.createElement("div");
-        el.id = "sync-spinner"; el.className = "sync-spinner";
-        el.setAttribute("role", "status"); el.setAttribute("aria-live", "polite");
-        el.innerHTML = '<svg class="sync-spinner-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" ' +
-          'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-          '<path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg><span class="sync-spinner-txt"></span>';
-        document.body.appendChild(el);
-      }
-      var txt = st.phaseName ? t("sync.phWriteFile", { name: st.phaseName })
-                             : (PH[st.phase] ? t(PH[st.phase]) : t("gdrive.syncing"));
-      if (st.total > 1) txt = st.done + "/" + st.total + " " + txt;
-      var sp = el.querySelector(".sync-spinner-txt");
-      if (sp) sp.textContent = txt;
-      el.title = txt;
+      if (el) el.remove();
     });
   }
   function updateBackupNudge() {
