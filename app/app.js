@@ -6439,14 +6439,18 @@
   // this go to Drive in the payload as always, just without a .kmz beside them.
   var COPY_MAX_POINTS = 20000;
   function driveExtraFiles() {
-    var out = [], jobs = [], skipped = [];
+    var out = [], skipped = [];
+    // LAZY on purpose. This used to build every list's KML string and its compressed copy
+    // up front and hold them ALL in memory before the first upload — with a dozen imported
+    // lists that is hundreds of megabytes of strings at once, and the tab died with Chrome's
+    // "Aw, Snap!" (a renderer OOM). writeReadableCopies calls build() one file at a time and
+    // releases each before the next, so only ONE list is ever materialised. The closure
+    // holds a reference to the existing points array, not a copy.
     function kmz(name, points) {
       if (!points || !points.length) return;
       if (points.length > COPY_MAX_POINTS) { skipped.push(name + " (" + points.length + ")"); return; }
-      var coll = [{ name: name, points: points }];
-      jobs.push(mpState.buildKmz(mpState.buildPointsKml(coll, [])).then(function (bytes) {
-        out.push({ name: safeFileName(name) + ".kmz", mime: "application/vnd.google-earth.kmz", bytes: bytes });
-      }).catch(function () {}));
+      out.push({ name: safeFileName(name) + ".kmz", mime: "application/vnd.google-earth.kmz",
+        build: function () { return mpState.buildKmz(mpState.buildPointsKml([{ name: name, points: points }], [])); } });
     }
     try { (mpState.mpCollections() || []).forEach(function (c) { kmz("Points - " + c.name, c.points || []); }); } catch (e) {}
     try {
@@ -6471,10 +6475,8 @@
       var fc = window.AppField && window.AppField.fieldChecklistCsv && window.AppField.fieldChecklistCsv();
       if (fc) out.push({ name: "Checklists.csv", mime: "text/csv;charset=utf-8", text: fc });
     } catch (e) {}
-    return Promise.all(jobs).then(function () {
-      if (skipped.length) out._skipped = skipped;   // reported by the sync, not silently dropped
-      return out;
-    });
+    if (skipped.length) out._skipped = skipped;   // reported by the sync, not silently dropped
+    return Promise.resolve(out);
   }
   // Surface the data layer for the Google Drive sync module (gdrive-sync.js),
   // which lives outside this IIFE. It builds the payload and merges remote

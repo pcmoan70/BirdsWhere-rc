@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1921";
+var VERSION = "v1922";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The little tile that floated over the page while syncing is gone. The Sync button already names the step and the file it is writing, counts them (\u201C3/12\u201D) and spins, with a progress bar under it \u2014 the tile repeated all of that on top of the map.",
+  "\u2022 Fixes the tab crashing (\u201CAw, Snap!\u201D) when syncing with a lot of point lists. The sync built the readable .kmz copy of EVERY list before uploading any of them, and kept them all in memory \u2014 with the generated species files imported that is a few hundred megabytes on top of the lists themselves. Each copy is now built, uploaded and released one at a time.",
+  "\u2022 The little tile that floated over the page while syncing is gone: the Sync button already names the step and the file, counts them (\u201C3/12\u201D) and spins, with a progress bar under it.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

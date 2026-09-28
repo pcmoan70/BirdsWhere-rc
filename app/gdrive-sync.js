@@ -449,7 +449,16 @@ window.GDriveSync = (function () {
     for (var i = 0; i < files.length; i++) {
       var f = files[i];
       phase("files", f.name, i + 1, files.length);
-      try { await putNamedFile(f.name, f.mime, f.bytes ? new Blob([f.bytes], { type: f.mime }) : f.text, parentId); }
+      // Build THIS file now and let it go before the next one: driveExtraFiles hands back
+      // builders rather than bytes precisely so a device with many lists never holds them
+      // all at once (that OOM'd the tab).
+      try {
+        var body = f.build ? new Blob([await f.build()], { type: f.mime })
+                           : (f.bytes ? new Blob([f.bytes], { type: f.mime }) : f.text);
+        await putNamedFile(f.name, f.mime, body, parentId);
+        body = null;
+        files[i] = { name: f.name };   // drop the builder's closure once it has been written
+      }
       catch (e) { /* one bad file must not cost the others, or the sync */ }
     }
   }
