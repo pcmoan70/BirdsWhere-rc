@@ -1504,5 +1504,8 @@
   "points.listTrimmed": "Les {n} plus proches sur {total} points des listes cochées.",
   "points.savedHidden": "« {name} » est enregistré, mais les filtres actifs le masquent — effacez-les pour le voir sur la carte.",
   "view.unavailable": "La vue liste demande un point ou des observations récupérées ici.",
-  "loc.fetchTimeout": "✗ {name} – trop long, on continue."
+  "loc.fetchTimeout": "✗ {name} – trop long, on continue.",
+  "points.showNote": "Afficher la note",
+  "sync.phDownload": "Téléchargement …",
+  "sync.phMerged": "{lists} listes, {trips} sorties"
 }

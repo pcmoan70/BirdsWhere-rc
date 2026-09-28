@@ -1454,7 +1454,7 @@
   "points.stackN": "{n} punkter her – nyeste øverst",
   "points.cardMore": "Trykk for handlinger – kilde, naviger, legg i liste",
   "sync.phSignin": "Logger inn …",
-  "sync.phRead": "Leser Disk …",
+  "sync.phRead": "Leser Google Drive …",
   "sync.phMerge": "Slår sammen …",
   "sync.phWrite": "Laster opp …",
   "sync.phFiles": "Skriver filer …",
@@ -1504,5 +1504,8 @@
   "points.listTrimmed": "Nærmeste {n} av {total} punkter i de avkryssede listene.",
   "points.savedHidden": "«{name}» er lagret, men de aktive filtrene skjuler det — nullstill dem for å se det på kartet.",
   "view.unavailable": "Listevisningen krever et punkt eller hentede observasjoner her.",
-  "loc.fetchTimeout": "✗ {name} – tok for lang tid, går videre."
+  "loc.fetchTimeout": "✗ {name} – tok for lang tid, går videre.",
+  "points.showNote": "Vis notatet",
+  "sync.phDownload": "Laster ned …",
+  "sync.phMerged": "{lists} lister, {trips} turer"
 }

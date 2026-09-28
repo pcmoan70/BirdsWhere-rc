@@ -1504,5 +1504,8 @@
   "points.listTrimmed": "Nächste {n} von {total} Punkten in den angehakten Listen.",
   "points.savedHidden": "„{name}“ wurde gespeichert, aber die aktiven Filter verbergen es — setzen Sie sie zurück, um es auf der Karte zu sehen.",
   "view.unavailable": "Die Listenansicht braucht einen Punkt oder abgerufene Beobachtungen hier.",
-  "loc.fetchTimeout": "✗ {name} – hat zu lange gedauert, weiter."
+  "loc.fetchTimeout": "✗ {name} – hat zu lange gedauert, weiter.",
+  "points.showNote": "Notiz anzeigen",
+  "sync.phDownload": "Wird heruntergeladen …",
+  "sync.phMerged": "{lists} Listen, {trips} Touren"
 }

@@ -137,6 +137,11 @@ window.GDriveSync = (function () {
     lastDone = done || 0; lastTotal = total || 0;
     emit(lastStatus);
   }
+  function fmtBytes(n) {
+    n = +n || 0;
+    return n >= 1048576 ? (n / 1048576).toFixed(1) + " MB"
+         : n >= 1024 ? Math.round(n / 1024) + " kB" : n + " B";
+  }
   function pullSummary() {
     if (lastPull) return lastPull;
     try { var raw = sessionStorage.getItem(LS_LAST_PULL); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
@@ -475,9 +480,17 @@ window.GDriveSync = (function () {
     var inc = (options && options.cats) || { settings: 1, lists: 1, trips: 1, checklists: 1, fetched: 0 };
     syncing = true; lastPhase = "signin"; lastPhaseName = ""; lastDone = lastTotal = 0; emit("syncing");
     try {
+      // Each step now says WHAT it is doing, not just which step it is: the folder it found,
+      // the size it is pulling, what arrived, how big the upload is. "Reading Drive…" for
+      // twenty seconds with no detail is indistinguishable from a hang.
       phase("read");
       var meta = await findFile();                 // newest payload: latest dated run folder, else legacy
-      var remote = meta ? await downloadFile(meta.id) : null;
+      var remote = null;
+      if (meta) {
+        // Data, not wording: the folder this came from and how big it is.
+        phase("download", (meta.folderName || meta.name || "") + (meta.size ? " \u00b7 " + fmtBytes(+meta.size) : ""));
+        remote = await downloadFile(meta.id);
+      }
       phase("merge");
 
       // Scalar-settings direction (collections always union regardless). Two-way:
@@ -502,6 +515,9 @@ window.GDriveSync = (function () {
       // A pull that wins on settings reloads the page, which would take this with it —
       // and the one moment the user needs to read it is right after that reload.
       try { sessionStorage.setItem(LS_LAST_PULL, JSON.stringify(lastPull)); } catch (e) {}
+      // Re-emit so the UI sees the freshly counted `pull` in the snapshot and can say what
+      // arrived; the counting itself happens just above.
+      if (remote) phase("merge");
       var localState = {}; try { localState = JSON.parse(localStateStr()); } catch (e) {}
       var toApply = remote ? window.AppData.filterIncomingForSync(remote, inc, localState) : null;
       var before = localStateStr();
@@ -522,7 +538,7 @@ window.GDriveSync = (function () {
         var str = JSON.stringify(merged);
         // Each sync gets its own dated folder holding that run's payload AND its readable
         // copies, instead of overwriting one file and leaving loose dated JSONs beside it.
-        phase("write", FILE_NAME);
+        phase("write", fmtBytes(str.length));
         var runId = await createRunFolder();
         var created = await createFile(str, runId);
         fileId = created.id; try { localStorage.setItem(LS_FILE_ID, fileId); } catch (e) {}

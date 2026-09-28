@@ -16975,6 +16975,20 @@
     // Right-aligned under the arrow that opened it.
     positionAnchoredMenu(el, br.right - el.offsetWidth, br.bottom + 4);
   }
+  // The note on its own, from a list row. Anchored like the other row menus — and the
+  // anchor is measured BEFORE opening, because openAnchoredMenu closes the dropdowns and a
+  // hidden panel's button has a zero rect.
+  function openNotePopup(anchor, p) {
+    var br = anchor.getBoundingClientRect();
+    var el = openAnchoredMenu("detrow-menu mp-note-menu", anchor);
+    var txt = String(p.note || "").trim();
+    var body = p.noteHtml
+      ? sanitizeHtml(txt)
+      : escapeHtml(txt).replace(/\n/g, "<br>");
+    el.innerHTML = '<div class="dd-head">' + escapeHtml(p.name || t("points.note")) + "</div>" +
+      '<div class="mp-note-body">' + body + "</div>";
+    positionAnchoredMenu(el, br.right - el.offsetWidth, br.bottom + 4);
+  }
   function mpTipHtml(p) {
     var name = escapeHtml(p.name || "(point)");
     // A pin saved from a detection hovers exactly like the live plotted dot: the
@@ -17387,6 +17401,7 @@
   }
   // ---- Points dropdown panel ----
   var MP_LIST_MAX = 300;   // rows drawn in the Points panel's merged point list
+  var mpRowsShown = [];    // the rows as last drawn, so a row button can reach its point
   function refreshMpPanel() {
     var panel = document.getElementById("mp-panel"); if (!panel) return;
     // The whole panel is rebuilt from innerHTML below, which resets its scroll — so
@@ -17433,6 +17448,8 @@
       var actNoTag = mpState.mpFilter().indexOf("") >= 0;
       chipsHtml += '<button type="button" class="mp-chip' + (actNoTag ? " is-active" : "") + '" data-tag="">' + escapeHtml(t("points.notag")) + "</button>";
     }
+    unionPts.forEach(function (u, i) { u.i = i; });   // the note button's handle back to its point
+    mpRowsShown = unionPts;
     var listHtml = unionPts.length ? unionPts.map(function (u) {
       var p = u.p;
       var dist = center ? haversineKm(center.lat, center.lng, p.lat, p.lon) : null;
@@ -17440,9 +17457,15 @@
       var meta = u.list
         ? '<span class="mp-row-list">' + escapeHtml(u.list) + "</span>"
         : (p.tags || []).slice(0, 3).map(function (x) { return '<span class="mp-row-tag" style="--mp-c:' + mpHashColor(x) + '">' + escapeHtml(tagDisplay(x)) + "</span>"; }).join("");
+      // A row with a note gets a 🗒 that opens it. The note is the one piece of free text a
+      // record carries (the observer's own remark), and the list showed no sign it was there.
+      var noteBtn = String(p.note || "").trim()
+        ? '<button type="button" class="mp-row-note ico-btn" data-i="' + u.i + '" title="' + escapeHtml(t("points.showNote")) +
+          '" aria-label="' + escapeHtml(t("points.showNote")) + '">' + ico("info") + "</button>"
+        : "";
       return '<div class="dd-row mp-row">' +
         '<button type="button" class="dd-name mp-fly" data-id="' + escapeHtml(u.editable ? p.id : "") + '" data-lat="' + p.lat + '" data-lon="' + p.lon + '"><span class="mp-sw" style="background:' + u.color + '"></span>' + escapeHtml(p.name || "(point)") + "</button>" +
-        '<span class="mp-row-meta">' + meta + '<span class="mp-dist">' + escapeHtml(dt) + "</span></span>" +
+        '<span class="mp-row-meta">' + meta + '<span class="mp-dist">' + escapeHtml(dt) + "</span></span>" + noteBtn +
         (u.editable ? '<button type="button" class="dd-del mp-del" data-id="' + escapeHtml(p.id) + '" aria-label="remove">×</button>' : '<span class="mp-row-ro" title="' + escapeHtml(t("points.show")) + '"></span>') +
         "</div>";
     }).join("") : '<p class="dd-empty">' + escapeHtml(t("points.empty")) + "</p>";
@@ -17626,6 +17649,13 @@
         // The chip blinks until the map has caught up (mpFilterRefresh), instead of the
         // click looking ignored while a large list redraws.
         mpState.mpFilterRefresh(this);
+      });
+    });
+    panel.querySelectorAll(".mp-row-note").forEach(function (b) {
+      b.addEventListener("click", function (e) {
+        e.preventDefault(); e.stopPropagation();
+        var u = mpRowsShown[+this.getAttribute("data-i")];
+        if (u && u.p) openNotePopup(this, u.p);
       });
     });
     panel.querySelectorAll(".mp-fly").forEach(function (b) {
@@ -19693,14 +19723,23 @@
         gdSync.disabled = !!st.busy;
         // The button says what it is doing, not just that it is disabled: its label
         // becomes the current step and the ⟳ spins while a sync is running.
-        var PH = { signin: "sync.phSignin", read: "sync.phRead", merge: "sync.phMerge",
-                   write: "sync.phWrite", files: "sync.phFiles" };
+        var PH = { signin: "sync.phSignin", read: "sync.phRead", download: "sync.phDownload",
+                   merge: "sync.phMerge", write: "sync.phWrite", files: "sync.phFiles" };
         // While files go up the button names the one being written, rather than a
         // generic "writing files" — a sync writes a .kmz per list and two CSVs, and
         // seeing which is in flight is the difference between "stuck" and "working".
+        // "Writing <file>" keeps its own wording while the readable copies go up; every other
+        // step shows "<step> · <detail>" so the detail the sync now reports is actually seen.
         var phTxt = "";
-        if (st.busy && st.phaseName) phTxt = t("sync.phWriteFile", { name: st.phaseName });
-        else if (st.busy && PH[st.phase]) phTxt = t(PH[st.phase]);
+        if (st.busy && st.phase === "files" && st.phaseName) phTxt = t("sync.phWriteFile", { name: st.phaseName });
+        else if (st.busy && PH[st.phase]) {
+          var detail = st.phaseName || "";
+          // The merge step's detail is the count the module already put in the snapshot.
+          if (!detail && st.phase === "merge" && st.pull)
+            detail = t("sync.phMerged", { lists: st.pull.lists || 0, trips: st.pull.trips || 0 });
+          phTxt = t(PH[st.phase]) + (detail ? " \u00b7 " + detail : "");
+        }
+        else if (st.busy && st.phaseName) phTxt = st.phaseName;
         // A count while the files go up ("3/12"), so a long sync visibly advances.
         if (st.busy && st.total > 1) phTxt = st.done + "/" + st.total + " " + phTxt;
         var lbl = gdSync.querySelector(".ico-label");

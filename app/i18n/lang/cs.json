@@ -1454,7 +1454,7 @@
   "points.stackN": "{n} bodů zde – nejnovější nahoře",
   "points.cardMore": "Klepnutím zobrazíte akce – zdroj, navigace, přidat do seznamu",
   "sync.phSignin": "Přihlašování …",
-  "sync.phRead": "Čtení Disku …",
+  "sync.phRead": "Čtení Google Disku …",
   "sync.phMerge": "Slučování …",
   "sync.phWrite": "Nahrávání …",
   "sync.phFiles": "Zápis souborů …",
@@ -1504,5 +1504,8 @@
   "points.listTrimmed": "Nejbližších {n} z {total} bodů v zaškrtnutých seznamech.",
   "points.savedHidden": "„{name}“ bylo uloženo, ale aktivní filtry jej skrývají — zrušte je, abyste jej viděli na mapě.",
   "view.unavailable": "Zobrazení seznamu vyžaduje bod nebo načtená pozorování zde.",
-  "loc.fetchTimeout": "✗ {name} – trvalo příliš dlouho, pokračuji."
+  "loc.fetchTimeout": "✗ {name} – trvalo příliš dlouho, pokračuji.",
+  "points.showNote": "Zobrazit poznámku",
+  "sync.phDownload": "Stahování …",
+  "sync.phMerged": "{lists} seznamů, {trips} výprav"
 }

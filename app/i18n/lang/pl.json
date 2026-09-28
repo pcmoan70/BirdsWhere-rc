@@ -1454,7 +1454,7 @@
   "points.stackN": "{n} punktów tutaj – najnowsze na górze",
   "points.cardMore": "Dotknij, by wyświetlić działania – źródło, nawigacja, dodaj do listy",
   "sync.phSignin": "Logowanie …",
-  "sync.phRead": "Odczyt Dysku …",
+  "sync.phRead": "Odczyt Dysku Google …",
   "sync.phMerge": "Scalanie …",
   "sync.phWrite": "Wysyłanie …",
   "sync.phFiles": "Zapis plików …",
@@ -1504,5 +1504,8 @@
   "points.listTrimmed": "Najbliższe {n} z {total} punktów na zaznaczonych listach.",
   "points.savedHidden": "„{name}” zostało zapisane, ale aktywne filtry je ukrywają — wyczyść je, aby zobaczyć je na mapie.",
   "view.unavailable": "Widok listy wymaga punktu lub pobranych obserwacji w tym miejscu.",
-  "loc.fetchTimeout": "✗ {name} – trwało zbyt długo, kontynuuję."
+  "loc.fetchTimeout": "✗ {name} – trwało zbyt długo, kontynuuję.",
+  "points.showNote": "Pokaż notatkę",
+  "sync.phDownload": "Pobieranie …",
+  "sync.phMerged": "{lists} list, {trips} wycieczek"
 }

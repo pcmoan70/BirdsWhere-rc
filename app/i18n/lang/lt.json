@@ -1504,5 +1504,8 @@
   "points.listTrimmed": "Artimiausi {n} iš {total} taškų pažymėtuose sąrašuose.",
   "points.savedHidden": "„{name}“ išsaugota, bet aktyvūs filtrai ją paslepia — išvalykite juos, kad pamatytumėte žemėlapyje.",
   "view.unavailable": "Sąrašo rodiniui čia reikia taško arba atsiųstų stebėjimų.",
-  "loc.fetchTimeout": "✗ {name} – užtruko per ilgai, tęsiama."
+  "loc.fetchTimeout": "✗ {name} – užtruko per ilgai, tęsiama.",
+  "points.showNote": "Rodyti pastabą",
+  "sync.phDownload": "Atsiunčiama …",
+  "sync.phMerged": "{lists} sąrašai, {trips} išvykos"
 }

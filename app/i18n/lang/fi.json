@@ -1504,5 +1504,8 @@
   "points.listTrimmed": "Lähimmät {n}/{total} pistettä valituissa listoissa.",
   "points.savedHidden": "”{name}” tallennettiin, mutta aktiiviset suodattimet piilottavat sen — tyhjennä ne nähdäksesi sen kartalla.",
   "view.unavailable": "Listanäkymä vaatii pisteen tai haettuja havaintoja täällä.",
-  "loc.fetchTimeout": "✗ {name} – kesti liian kauan, jatketaan."
+  "loc.fetchTimeout": "✗ {name} – kesti liian kauan, jatketaan.",
+  "points.showNote": "Näytä muistiinpano",
+  "sync.phDownload": "Ladataan …",
+  "sync.phMerged": "{lists} listaa, {trips} retkeä"
 }

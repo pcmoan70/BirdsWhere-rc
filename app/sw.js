@@ -21,15 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1922";
+var VERSION = "v1923";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Fixes the tab crashing (\u201CAw, Snap!\u201D) when syncing with a lot of point lists. The sync built the readable .kmz copy of EVERY list before uploading any of them, and kept them all in memory \u2014 with the generated species files imported that is a few hundred megabytes on top of the lists themselves. Each copy is now built, uploaded and released one at a time.",
-  "\u2022 The little tile that floated over the page while syncing is gone: the Sync button already names the step and the file, counts them (\u201C3/12\u201D) and spins, with a progress bar under it.",
+  "\u2022 Imported point lists now use a tenth of the memory. Each point was carrying the placemark\u2019s whole description table \u2014 species, date, place, count, observer \u2014 as HTML, although every one of those is also stored as a proper field the filters use. The observer\u2019s own remark is kept, the duplicate table is not. Equal text is also shared between points instead of copied per point.",
+  "\u2022 A list row with a remark now has a button that shows it.",
+  "\u2022 Syncing says what it is doing at each step: the folder and size it is pulling, what arrived (\u201C23 lists, 2 trips\u201D), how big the upload is. And in Norwegian, Czech and Polish the first step said it was reading a DISK \u2014 it is Google Drive.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

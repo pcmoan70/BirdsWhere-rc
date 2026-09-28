@@ -1504,5 +1504,8 @@
   "points.listTrimmed": "Os {n} mais próximos de {total} pontos nas listas marcadas.",
   "points.savedHidden": "«{name}» foi guardado, mas os filtros ativos ocultam-no — limpe-os para o ver no mapa.",
   "view.unavailable": "A vista de lista necessita de um ponto ou de observações obtidas aqui.",
-  "loc.fetchTimeout": "✗ {name} – demorou demasiado, a continuar."
+  "loc.fetchTimeout": "✗ {name} – demorou demasiado, a continuar.",
+  "points.showNote": "Mostrar a nota",
+  "sync.phDownload": "A descarregar …",
+  "sync.phMerged": "{lists} listas, {trips} saídas"
 }

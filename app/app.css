@@ -4761,3 +4761,10 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .mp-listfilt-obshdr { margin-top: 4px; }
 .mp-listfilt-obs { max-height: 34vh; overflow: auto; }
 .mp-listfilt-go { border-top: 1px solid var(--border, #e3ebe8); margin-top: 4px; font-weight: 600; }
+/* Note popup from a list row: the observer's own remark, on its own. */
+.mp-row-note { flex: 0 0 auto; font-size: var(--fs-s); }
+.mp-note-menu { min-width: 200px; max-width: 340px; }
+.mp-note-body { padding: 4px 10px 8px; font-size: var(--fs-s); line-height: 1.45; white-space: normal;
+  overflow-wrap: break-word; max-height: 50vh; overflow-y: auto; }
+.mp-note-body table { border-collapse: collapse; font-size: var(--fs-xs); }
+.mp-note-body td { padding: 1px 5px 1px 0; vertical-align: top; }
