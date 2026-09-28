@@ -1517,5 +1517,7 @@
   "storage.compact": "Compactar as listas importadas",
   "storage.compactHint": "Os ficheiros de pontos importados trazem uma tabela de descrição que repete campos que a app já guarda. Removê-la torna as listas — e a cópia no Drive — muito menores. A nota do observador é mantida.",
   "storage.compacted": "Libertados {freed} em {n} pontos de {lists} listas.",
-  "storage.compactNone": "Nada a compactar — as listas já estão compactas."
+  "storage.compactNone": "Nada a compactar — as listas já estão compactas.",
+  "storage.compacting": "A compactar …",
+  "storage.compactFailed": "Não foi possível compactar as listas: {err}"
 }

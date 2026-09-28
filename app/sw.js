@@ -21,16 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1924";
+var VERSION = "v1925";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The Drive backup is now compressed. Measured on 117,582 imported points: 39.2 MB becomes 1.1 MB \u2014 35 times smaller. Backups written before this still read normally, and so does a browser too old to unpack them.",
-  "\u2022 Settings \u2192 Storage \u2192 Compact imported lists brings lists you imported earlier down to the same size as a fresh import, and says what it freed. The observer\u2019s own remark is kept.",
-  "\u2022 Each list\u2019s \u22EF menu can leave that list out of the backup \u2014 for reference data you can simply import again. It stays on this device and is never deleted by a sync.",
+  "\u2022 Fixes \u201CCompact imported lists\u201D appearing to do nothing. It was not saving its work \u2014 the write was called without the lists to write, so it wrote none of them \u2014 and both the spinner and the result were behind the open Settings panel, so there was nothing to see either way. It now saves, the button says \u201CCompacting\u2026\u201D while it runs, and the result appears on a line under the button.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

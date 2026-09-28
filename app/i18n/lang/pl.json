@@ -1517,5 +1517,7 @@
   "storage.compact": "Skompaktuj zaimportowane listy",
   "storage.compactHint": "Zaimportowane pliki punktów zawierają tabelę opisu powtarzającą pola, które aplikacja już przechowuje. Usunięcie jej znacznie zmniejsza listy – i kopię na Dysku. Notatka obserwatora zostaje.",
   "storage.compacted": "Zwolniono {freed} na {n} punktach w {lists} listach.",
-  "storage.compactNone": "Nie ma czego kompaktować – listy już są kompaktowe."
+  "storage.compactNone": "Nie ma czego kompaktować – listy już są kompaktowe.",
+  "storage.compacting": "Kompaktowanie …",
+  "storage.compactFailed": "Nie udało się skompaktować list: {err}"
 }

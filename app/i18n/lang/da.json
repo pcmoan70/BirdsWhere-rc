@@ -1517,5 +1517,7 @@
   "storage.compact": "Komprimér importerede lister",
   "storage.compactHint": "Importerede punktfiler har en beskrivelsestabel der gentager felter appen allerede gemmer. At fjerne den gør listerne – og Drive-kopien – meget mindre. Observatørens egen note bevares.",
   "storage.compacted": "Frigjorde {freed} over {n} punkter i {lists} lister.",
-  "storage.compactNone": "Intet at komprimere – listerne er allerede kompakte."
+  "storage.compactNone": "Intet at komprimere – listerne er allerede kompakte.",
+  "storage.compacting": "Komprimerer …",
+  "storage.compactFailed": "Kunne ikke komprimere listerne: {err}"
 }

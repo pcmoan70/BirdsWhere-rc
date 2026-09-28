@@ -940,7 +940,7 @@ window.AppPoints = (function () {
       });
     });
     internPoints(mpCollections);
-    await Promise.all(persistMpSets());
+    await persistMpSets(mpCollections);
     renderMapPoints();
     return { points: npts, stripped: stripped, before: before, after: after };
   }

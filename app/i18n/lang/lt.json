@@ -1517,5 +1517,7 @@
   "storage.compact": "Suglaudinti importuotus sąrašus",
   "storage.compactHint": "Importuoti taškų failai turi aprašo lentelę, kuri kartoja laukus, jau saugomus programoje. Ją pašalinus sąrašai – ir Drive kopija – tampa daug mažesni. Stebėtojo pastaba paliekama.",
   "storage.compacted": "Atlaisvinta {freed} iš {n} taškų {lists} sąrašuose.",
-  "storage.compactNone": "Nėra ko glaudinti – sąrašai jau suglaudinti."
+  "storage.compactNone": "Nėra ko glaudinti – sąrašai jau suglaudinti.",
+  "storage.compacting": "Glaudinama …",
+  "storage.compactFailed": "Nepavyko suglaudinti sąrašų: {err}"
 }

@@ -1517,5 +1517,7 @@
   "storage.compact": "Tiheda importitud loendid",
   "storage.compactHint": "Imporditud punktifailid kannavad kirjeldustabelit, mis kordab välju, mida rakendus juba salvestab. Selle eemaldamine teeb loendid – ja Drive'i koopia – palju väiksemaks. Vaatleja enda märkus jääb alles.",
   "storage.compacted": "Vabastati {freed}, {n} punkti {lists} loendis.",
-  "storage.compactNone": "Pole midagi tihendada – loendid on juba tihedad."
+  "storage.compactNone": "Pole midagi tihendada – loendid on juba tihedad.",
+  "storage.compacting": "Tihendamine …",
+  "storage.compactFailed": "Loendite tihendamine ebaõnnestus: {err}"
 }

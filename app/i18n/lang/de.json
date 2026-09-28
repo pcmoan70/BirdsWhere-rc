@@ -1517,5 +1517,7 @@
   "storage.compact": "Importierte Listen verdichten",
   "storage.compactHint": "Importierte Punktdateien führen eine Beschreibungstabelle mit, die Felder wiederholt, die die App schon speichert. Sie zu entfernen macht die Listen – und das Drive-Backup – deutlich kleiner. Die Notiz des Beobachters bleibt.",
   "storage.compacted": "{freed} freigegeben, über {n} Punkte in {lists} Listen.",
-  "storage.compactNone": "Nichts zu verdichten – die Listen sind schon verdichtet."
+  "storage.compactNone": "Nichts zu verdichten – die Listen sind schon verdichtet.",
+  "storage.compacting": "Wird verdichtet …",
+  "storage.compactFailed": "Die Listen konnten nicht verdichtet werden: {err}"
 }

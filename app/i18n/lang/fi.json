@@ -1517,5 +1517,7 @@
   "storage.compact": "Tiivistä tuodut listat",
   "storage.compactHint": "Tuoduissa pistetiedostoissa on kuvaustaulukko, joka toistaa kentät jotka sovellus jo tallentaa. Sen poistaminen pienentää listoja – ja Drive-kopiota – huomattavasti. Havainnoijan oma muistiinpano säilyy.",
   "storage.compacted": "Vapautettiin {freed}, {n} pistettä {lists} listassa.",
-  "storage.compactNone": "Ei tiivistettävää – listat ovat jo tiiviitä."
+  "storage.compactNone": "Ei tiivistettävää – listat ovat jo tiiviitä.",
+  "storage.compacting": "Tiivistetään …",
+  "storage.compactFailed": "Listojen tiivistäminen ei onnistunut: {err}"
 }

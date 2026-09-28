@@ -7427,6 +7427,7 @@
                 '<div class="ctrl-group" id="compact-wrap">' +
                   '<button type="button" id="compact-lists-btn" class="btn btn-light" data-i18n="storage.compact">Compact imported lists</button>' +
                   '<p class="cu-hint" data-i18n="storage.compactHint"></p>' +
+                  '<p id="compact-result" class="cu-hint compact-result" style="display:none"></p>' +
                 '</div>' +
               '</div>' +
               '<div class="settings-section" data-i18n="settings.secDisplay">Display &amp; language</div>' +
@@ -19407,16 +19408,28 @@
     wireNumSetting("rare-pct", rarePct, 1, 100, 10, function (v) { window.GeoState.save({ rarePct: v }); }, relayerDet);
     var compactBtn = document.getElementById("compact-lists-btn");
     if (compactBtn) compactBtn.addEventListener("click", function () {
-      var btn = this;
-      btn.disabled = true;
-      withFunnelBusy(function () {
+      var btn = this, label = btn.textContent;
+      // Report IN THE PANEL. The funnels the busy pulse animates and the status line above the
+      // map are both behind the open Settings panel — measured: 0 of 4 funnels on screen and the
+      // status line at zero height — so a press looked like it did nothing whether it worked or
+      // not. The button says it is working and the line under it says what happened.
+      var out = document.getElementById("compact-result");
+      function say(msg) { if (out) { out.textContent = msg; out.style.display = ""; } setStatus(msg); }
+      btn.disabled = true; btn.textContent = t("storage.compacting");
+      if (out) { out.textContent = ""; out.style.display = "none"; }
+      // A frame first, so the button's new label paints before the walk blocks the thread.
+      setTimeout(function () {
         Promise.resolve(mpState.compactStoredPoints()).then(function (r) {
-          btn.disabled = false;
+          btn.disabled = false; btn.textContent = label;
           var freed = (r.before || 0) - (r.after || 0);
-          if (!r.stripped || freed <= 0) { setStatus(t("storage.compactNone")); return; }
-          setStatus(t("storage.compacted", { freed: fmtBytes(freed), n: r.stripped, lists: mpState.mpCollections().length }));
-        }, function () { btn.disabled = false; setStatus(t("err.storageFull")); });
-      });
+          if (!r.stripped || freed <= 0) { say(t("storage.compactNone")); return; }
+          say(t("storage.compacted", { freed: fmtBytes(freed), n: r.stripped, lists: mpState.mpCollections().length }));
+        }, function (e) {
+          // Say what actually failed instead of blaming storage for every rejection.
+          btn.disabled = false; btn.textContent = label;
+          say(t("storage.compactFailed", { err: (e && e.message) ? String(e.message).slice(0, 80) : "error" }));
+        });
+      }, 30);
     });
     var rtCb = document.getElementById("rarity-ticker-toggle");
     if (rtCb) {

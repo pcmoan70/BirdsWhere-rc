@@ -1517,5 +1517,7 @@
   "storage.compact": "Komprimer importerte lister",
   "storage.compactHint": "Importerte punktfiler har en beskrivelsestabell som gjentar felter appen alt lagrer. Å fjerne den gjør listene – og Drive-kopien – mye mindre. Observatørens egen merknad beholdes.",
   "storage.compacted": "Frigjorde {freed} over {n} punkter i {lists} lister.",
-  "storage.compactNone": "Ingenting å komprimere – listene er alt kompakte."
+  "storage.compactNone": "Ingenting å komprimere – listene er alt kompakte.",
+  "storage.compacting": "Komprimerer …",
+  "storage.compactFailed": "Klarte ikke å komprimere listene: {err}"
 }

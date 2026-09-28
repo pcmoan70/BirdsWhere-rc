@@ -1517,5 +1517,7 @@
   "storage.compact": "Zkomprimovat importované seznamy",
   "storage.compactHint": "Importované soubory bodů nesou tabulku popisu, která opakuje pole, jež aplikace už ukládá. Její odstranění seznamy – a zálohu na Disku – výrazně zmenší. Poznámka pozorovatele zůstává.",
   "storage.compacted": "Uvolněno {freed} u {n} bodů v {lists} seznamech.",
-  "storage.compactNone": "Není co komprimovat – seznamy už jsou kompaktní."
+  "storage.compactNone": "Není co komprimovat – seznamy už jsou kompaktní.",
+  "storage.compacting": "Komprimuji …",
+  "storage.compactFailed": "Seznamy se nepodařilo zkomprimovat: {err}"
 }

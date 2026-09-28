@@ -1517,5 +1517,7 @@
   "storage.compact": "Compatta gli elenchi importati",
   "storage.compactHint": "I file di punti importati portano una tabella descrittiva che ripete campi già memorizzati dall’app. Rimuoverla rende gli elenchi — e il backup su Drive — molto più piccoli. La nota dell’osservatore è conservata.",
   "storage.compacted": "Liberati {freed} su {n} punti in {lists} elenchi.",
-  "storage.compactNone": "Niente da compattare — gli elenchi lo sono già."
+  "storage.compactNone": "Niente da compattare — gli elenchi lo sono già.",
+  "storage.compacting": "Compattazione …",
+  "storage.compactFailed": "Non è stato possibile compattare gli elenchi: {err}"
 }

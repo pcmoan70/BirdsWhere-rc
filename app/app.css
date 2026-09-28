@@ -4768,3 +4768,6 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
   overflow-wrap: break-word; max-height: 50vh; overflow-y: auto; }
 .mp-note-body table { border-collapse: collapse; font-size: var(--fs-xs); }
 .mp-note-body td { padding: 1px 5px 1px 0; vertical-align: top; }
+/* Result line under "Compact imported lists" — the status line above the map is behind
+   the Settings panel, so the outcome has to be readable where the button is. */
+.compact-result { margin-top: 6px; font-weight: 600; opacity: 1; }

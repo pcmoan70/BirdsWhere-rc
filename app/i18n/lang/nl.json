@@ -1517,5 +1517,7 @@
   "storage.compact": "Geïmporteerde lijsten verdichten",
   "storage.compactHint": "Geïmporteerde puntbestanden bevatten een beschrijvingstabel die velden herhaalt die de app al opslaat. Die verwijderen maakt de lijsten – en de Drive-back-up – veel kleiner. De eigen notitie van de waarnemer blijft.",
   "storage.compacted": "{freed} vrijgemaakt over {n} punten in {lists} lijsten.",
-  "storage.compactNone": "Niets te verdichten – de lijsten zijn al compact."
+  "storage.compactNone": "Niets te verdichten – de lijsten zijn al compact.",
+  "storage.compacting": "Verdichten …",
+  "storage.compactFailed": "Kon de lijsten niet verdichten: {err}"
 }

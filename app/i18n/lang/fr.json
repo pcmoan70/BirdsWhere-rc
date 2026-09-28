@@ -1517,5 +1517,7 @@
   "storage.compact": "Compacter les listes importées",
   "storage.compactHint": "Les fichiers de points importés portent un tableau de description qui répète des champs déjà stockés par l’application. Le retirer rend les listes — et la sauvegarde Drive — bien plus petites. La remarque de l’observateur est conservée.",
   "storage.compacted": "{freed} libérés sur {n} points dans {lists} listes.",
-  "storage.compactNone": "Rien à compacter — les listes le sont déjà."
+  "storage.compactNone": "Rien à compacter — les listes le sont déjà.",
+  "storage.compacting": "Compactage …",
+  "storage.compactFailed": "Impossible de compacter les listes : {err}"
 }

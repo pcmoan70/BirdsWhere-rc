@@ -280,6 +280,8 @@ window.GeoI18N = (function () {
         "points.syncOnMsg": "“{name}” will be included in the backup.",
         "points.syncOffMsg": "“{name}” will stay on this device.",
         "storage.compact": "Compact imported lists",
+        "storage.compacting": "Compacting…",
+        "storage.compactFailed": "Couldn’t compact the lists: {err}",
         "storage.compactHint": "Imported point files carry a description table that repeats fields the app already stores. Removing it makes the lists — and the Drive backup — much smaller. The observer's own remark is kept.",
         "storage.compacted": "Freed {freed} across {n} points in {lists} lists.",
         "storage.compactNone": "Nothing to compact — the lists are already compact.",
