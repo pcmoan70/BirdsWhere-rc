@@ -1519,5 +1519,7 @@
   "storage.compacted": "{freed} vrijgemaakt over {n} punten in {lists} lijsten.",
   "storage.compactNone": "Niets te verdichten – de lijsten zijn al compact.",
   "storage.compacting": "Verdichten …",
-  "storage.compactFailed": "Kon de lijsten niet verdichten: {err}"
+  "storage.compactFailed": "Kon de lijsten niet verdichten: {err}",
+  "points.editPoint": "Dit punt bewerken",
+  "points.edited": "“{name}” bijgewerkt."
 }

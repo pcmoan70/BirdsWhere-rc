@@ -1519,5 +1519,7 @@
   "storage.compacted": "Frigjorde {freed} over {n} punkter i {lists} lister.",
   "storage.compactNone": "Intet at komprimere – listerne er allerede kompakte.",
   "storage.compacting": "Komprimerer …",
-  "storage.compactFailed": "Kunne ikke komprimere listerne: {err}"
+  "storage.compactFailed": "Kunne ikke komprimere listerne: {err}",
+  "points.editPoint": "Redigér dette punkt",
+  "points.edited": "“{name}” opdateret."
 }

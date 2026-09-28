@@ -1519,5 +1519,7 @@
   "storage.compacted": "Vapautettiin {freed}, {n} pistettä {lists} listassa.",
   "storage.compactNone": "Ei tiivistettävää – listat ovat jo tiiviitä.",
   "storage.compacting": "Tiivistetään …",
-  "storage.compactFailed": "Listojen tiivistäminen ei onnistunut: {err}"
+  "storage.compactFailed": "Listojen tiivistäminen ei onnistunut: {err}",
+  "points.editPoint": "Muokkaa tätä pistettä",
+  "points.edited": "”{name}” päivitetty."
 }

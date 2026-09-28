@@ -1519,5 +1519,7 @@
   "storage.compacted": "Vabastati {freed}, {n} punkti {lists} loendis.",
   "storage.compactNone": "Pole midagi tihendada – loendid on juba tihedad.",
   "storage.compacting": "Tihendamine …",
-  "storage.compactFailed": "Loendite tihendamine ebaõnnestus: {err}"
+  "storage.compactFailed": "Loendite tihendamine ebaõnnestus: {err}",
+  "points.editPoint": "Muuda seda punkti",
+  "points.edited": "„{name}“ uuendatud."
 }

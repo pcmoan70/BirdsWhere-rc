@@ -1519,5 +1519,7 @@
   "storage.compacted": "Frigjorde {freed} över {n} punkter i {lists} listor.",
   "storage.compactNone": "Inget att komprimera – listorna är redan kompakta.",
   "storage.compacting": "Komprimerar …",
-  "storage.compactFailed": "Kunde inte komprimera listorna: {err}"
+  "storage.compactFailed": "Kunde inte komprimera listorna: {err}",
+  "points.editPoint": "Redigera denna punkt",
+  "points.edited": "”{name}” uppdaterad."
 }

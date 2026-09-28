@@ -638,7 +638,9 @@ view**.
   labelled with the field it came from.
 - **Clicking a point** opens its record in a popup that stays open until you press its × or interact
   elsewhere; where several records share a coordinate they are listed together, newest first. Clicking
-  a card opens that point's actions (source, navigate, add to route or list).
+  a card opens that point's actions (source, navigate, add to route or list). Each card carries a
+  **✎ edit** (name, tags, colour, note — for points inside a saved list as well as loose pins), a
+  **copy to another list** and a **delete**.
   Import reports the placemarks found and lets you map each placemark field (name / description /
   folder / ExtendedData) to the point's name, tags and note, with a *Note contains HTML* option.
 - **Observer lists & nicknames** — build named sets of observers, filter the map/list to them

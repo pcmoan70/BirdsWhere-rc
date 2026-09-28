@@ -1519,5 +1519,7 @@
   "storage.compacted": "{freed} freigegeben, über {n} Punkte in {lists} Listen.",
   "storage.compactNone": "Nichts zu verdichten – die Listen sind schon verdichtet.",
   "storage.compacting": "Wird verdichtet …",
-  "storage.compactFailed": "Die Listen konnten nicht verdichtet werden: {err}"
+  "storage.compactFailed": "Die Listen konnten nicht verdichtet werden: {err}",
+  "points.editPoint": "Diesen Punkt bearbeiten",
+  "points.edited": "„{name}“ aktualisiert."
 }

@@ -1519,5 +1519,7 @@
   "storage.compacted": "Atlaisvinta {freed} iš {n} taškų {lists} sąrašuose.",
   "storage.compactNone": "Nėra ko glaudinti – sąrašai jau suglaudinti.",
   "storage.compacting": "Glaudinama …",
-  "storage.compactFailed": "Nepavyko suglaudinti sąrašų: {err}"
+  "storage.compactFailed": "Nepavyko suglaudinti sąrašų: {err}",
+  "points.editPoint": "Redaguoti šį tašką",
+  "points.edited": "„{name}“ atnaujintas."
 }

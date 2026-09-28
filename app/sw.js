@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1925";
+var VERSION = "v1926";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Fixes \u201CCompact imported lists\u201D appearing to do nothing. It was not saving its work \u2014 the write was called without the lists to write, so it wrote none of them \u2014 and both the spinner and the result were behind the open Settings panel, so there was nothing to see either way. It now saves, the button says \u201CCompacting\u2026\u201D while it runs, and the result appears on a line under the button.",
+  "\u2022 A point\u2019s popup now has a \u270E to edit it \u2014 its name, tags, colour and note \u2014 and that works for points inside a saved list, not only loose pins. Editing one used to save nothing at all, silently.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

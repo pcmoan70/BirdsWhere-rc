@@ -1519,5 +1519,7 @@
   "storage.compacted": "Se liberaron {freed} en {n} puntos de {lists} listas.",
   "storage.compactNone": "Nada que compactar: las listas ya lo están.",
   "storage.compacting": "Compactando …",
-  "storage.compactFailed": "No se pudieron compactar las listas: {err}"
+  "storage.compactFailed": "No se pudieron compactar las listas: {err}",
+  "points.editPoint": "Editar este punto",
+  "points.edited": "«{name}» actualizado."
 }

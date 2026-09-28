@@ -1519,5 +1519,7 @@
   "storage.compacted": "Liberati {freed} su {n} punti in {lists} elenchi.",
   "storage.compactNone": "Niente da compattare — gli elenchi lo sono già.",
   "storage.compacting": "Compattazione …",
-  "storage.compactFailed": "Non è stato possibile compattare gli elenchi: {err}"
+  "storage.compactFailed": "Non è stato possibile compattare gli elenchi: {err}",
+  "points.editPoint": "Modifica questo punto",
+  "points.edited": "«{name}» aggiornato."
 }

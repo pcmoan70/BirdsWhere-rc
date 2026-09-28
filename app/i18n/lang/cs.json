@@ -1519,5 +1519,7 @@
   "storage.compacted": "Uvolněno {freed} u {n} bodů v {lists} seznamech.",
   "storage.compactNone": "Není co komprimovat – seznamy už jsou kompaktní.",
   "storage.compacting": "Komprimuji …",
-  "storage.compactFailed": "Seznamy se nepodařilo zkomprimovat: {err}"
+  "storage.compactFailed": "Seznamy se nepodařilo zkomprimovat: {err}",
+  "points.editPoint": "Upravit tento bod",
+  "points.edited": "„{name}“ aktualizován."
 }

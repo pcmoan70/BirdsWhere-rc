@@ -943,6 +943,8 @@ window.GeoI18N = (function () {
         "points.pickColor": "Colour for {n} points to save?",
         "points.color": "Colour",
         "points.editList": "Edit list",
+        "points.editPoint": "Edit this point",
+        "points.edited": "“{name}” updated.",
         "points.editListHint": "Sets the colour and tags for every point in this list (and can rename it).",
         "points.adminTitle": "Edit & protect lists",
         "points.adminHint": "Protect a list from deletion (lock), delete a list, or expand one to edit or remove its points.",

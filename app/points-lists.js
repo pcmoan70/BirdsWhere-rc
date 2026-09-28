@@ -1623,6 +1623,7 @@ window.AppPoints = (function () {
       // Copy this one record into another list, and delete it. Both act on the point the
       // card belongs to, so they sit on the card rather than behind the action menu.
       '<span class="mp-card-acts">' +
+        '<button type="button" class="mp-card-edit ico-btn" title="' + escapeHtml(t("points.editPoint")) + '" aria-label="' + escapeHtml(t("points.editPoint")) + '">' + ico("edit") + "</button>" +
         '<button type="button" class="mp-card-copy ico-btn" title="' + escapeHtml(t("points.copyTo")) + '" aria-label="' + escapeHtml(t("points.copyTo")) + '">' + ico("copy") + "</button>" +
         '<button type="button" class="mp-card-del" title="' + escapeHtml(t("points.deleteOne")) + '" aria-label="' + escapeHtml(t("points.deleteOne")) + '">\u00d7</button>' +
       "</span></div>";
@@ -1672,6 +1673,17 @@ window.AppPoints = (function () {
           e.stopPropagation();
           var o = items[+this.closest(".mp-stack-it").getAttribute("data-i")];
           if (o) { togglePointTag(o.p, this.getAttribute("data-tag")); redraw(); }
+        });
+      });
+      // The pencil opens the same editor a loose pin has always had — name, tags, colour,
+      // note — now reaching points that live in a LIST too (see applyPointEdit in app.js).
+      el.querySelectorAll(".mp-card-edit").forEach(function (b) {
+        b.addEventListener("click", function (e) {
+          e.stopPropagation();
+          var o = items[+this.closest(".mp-stack-it").getAttribute("data-i")];
+          if (!o || !openPointEditor) return;
+          try { getMap().closePopup(pop); } catch (x) {}   // the editor opens its own popup here
+          openPointEditor(o.p);
         });
       });
       el.querySelectorAll(".mp-card-copy").forEach(function (b) {

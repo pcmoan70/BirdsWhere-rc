@@ -17064,7 +17064,9 @@
     // New points get a "Save to list" picker; the choice (the active list) is
     // remembered, so subsequent points drop straight into the same list. A LOOSE
     // point being edited (no active list) gets it too, so it can be filed later.
-    var showListSel = !isEdit || !mpState.mpActiveName();
+    // A point that already belongs to a saved list is not looking for one — offering the
+    // picker there invites moving it by accident. Copy-to-list is the deliberate way.
+    var showListSel = (!isEdit || !mpState.mpActiveName()) && !(isEdit && ownerListOf(p));
     var listSel = !showListSel ? "" :
       '<label>' + esc(t("points.saveToList")) +
         '<select id="mp-listsel">' +
@@ -17141,7 +17143,21 @@
       var sel = document.getElementById("mp-listsel");
       var target = sel ? sel.value : "";
       if (isEdit) {
-        updateMapPoint(p.id, { name: name, tags: tags, note: note, color: color });
+        var patch = { name: name, tags: tags, note: note, color: color };
+        var ownerName = ownerListOf(p);
+        if (ownerName) {
+          // A point inside a saved list: patch it in place and persist the list, the same way
+          // removeListPoint does. updateMapPoint searches only the loose set and would have
+          // silently done nothing here.
+          if (!p.id) p.id = mpState.mpUid();
+          Object.assign(p, patch);
+          if (!patch.note) delete p.note;
+          delete p.noteHtml;                     // edited by hand → plain text from now on
+          saveMapPoints(); renderMapPoints(); refreshMpPanel();
+          setStatus(t("points.edited", { name: name || p.name || "" }));
+          map.closePopup(); return;
+        }
+        updateMapPoint(p.id, patch);
         // A loose pin can be filed into a list from its editor: move the (updated)
         // point into the chosen collection and drop the loose pin.
         if (target && !mpState.mpActiveName()) {
