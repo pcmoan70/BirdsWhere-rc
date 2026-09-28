@@ -1507,5 +1507,15 @@
   "loc.fetchTimeout": "✗ {name} – trwało zbyt długo, kontynuuję.",
   "points.showNote": "Pokaż notatkę",
   "sync.phDownload": "Pobieranie …",
-  "sync.phMerged": "{lists} list, {trips} wycieczek"
+  "sync.phMerged": "{lists} list, {trips} wycieczek",
+  "points.syncOn": "Ta lista jest synchronizowana",
+  "points.syncOnDesc": "Podróżuje z kopią zapasową na inne urządzenia. Wyłącz dla danych referencyjnych, które możesz zaimportować ponownie.",
+  "points.syncOff": "Ta lista nie jest synchronizowana",
+  "points.syncOffDesc": "Zostaje tylko na tym urządzeniu. Włącz, aby dołączyć ją do kopii.",
+  "points.syncOnMsg": "„{name}” zostanie dołączona do kopii zapasowej.",
+  "points.syncOffMsg": "„{name}” zostanie tylko na tym urządzeniu.",
+  "storage.compact": "Skompaktuj zaimportowane listy",
+  "storage.compactHint": "Zaimportowane pliki punktów zawierają tabelę opisu powtarzającą pola, które aplikacja już przechowuje. Usunięcie jej znacznie zmniejsza listy – i kopię na Dysku. Notatka obserwatora zostaje.",
+  "storage.compacted": "Zwolniono {freed} na {n} punktach w {lists} listach.",
+  "storage.compactNone": "Nie ma czego kompaktować – listy już są kompaktowe."
 }

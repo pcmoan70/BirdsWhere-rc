@@ -1507,5 +1507,15 @@
   "loc.fetchTimeout": "✗ {name} – hat zu lange gedauert, weiter.",
   "points.showNote": "Notiz anzeigen",
   "sync.phDownload": "Wird heruntergeladen …",
-  "sync.phMerged": "{lists} Listen, {trips} Touren"
+  "sync.phMerged": "{lists} Listen, {trips} Touren",
+  "points.syncOn": "Diese Liste wird synchronisiert",
+  "points.syncOnDesc": "Sie reist mit dem Backup zu Ihren anderen Geräten. Für Referenzdaten, die Sie neu importieren können, abschalten.",
+  "points.syncOff": "Diese Liste wird nicht synchronisiert",
+  "points.syncOffDesc": "Sie bleibt nur auf diesem Gerät. Einschalten, um sie ins Backup aufzunehmen.",
+  "points.syncOnMsg": "„{name}“ kommt ins Backup.",
+  "points.syncOffMsg": "„{name}“ bleibt auf diesem Gerät.",
+  "storage.compact": "Importierte Listen verdichten",
+  "storage.compactHint": "Importierte Punktdateien führen eine Beschreibungstabelle mit, die Felder wiederholt, die die App schon speichert. Sie zu entfernen macht die Listen – und das Drive-Backup – deutlich kleiner. Die Notiz des Beobachters bleibt.",
+  "storage.compacted": "{freed} freigegeben, über {n} Punkte in {lists} Listen.",
+  "storage.compactNone": "Nichts zu verdichten – die Listen sind schon verdichtet."
 }

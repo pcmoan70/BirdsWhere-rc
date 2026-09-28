@@ -1507,5 +1507,15 @@
   "loc.fetchTimeout": "✗ {name}: tardó demasiado, se continúa.",
   "points.showNote": "Mostrar la nota",
   "sync.phDownload": "Descargando …",
-  "sync.phMerged": "{lists} listas, {trips} salidas"
+  "sync.phMerged": "{lists} listas, {trips} salidas",
+  "points.syncOn": "Esta lista se sincroniza",
+  "points.syncOnDesc": "Viaja con la copia de seguridad a tus otros dispositivos. Desactívalo para datos de referencia que puedas reimportar.",
+  "points.syncOff": "Esta lista no se sincroniza",
+  "points.syncOffDesc": "Se queda solo en este dispositivo. Actívalo para incluirla en la copia.",
+  "points.syncOnMsg": "«{name}» se incluirá en la copia de seguridad.",
+  "points.syncOffMsg": "«{name}» se quedará en este dispositivo.",
+  "storage.compact": "Compactar las listas importadas",
+  "storage.compactHint": "Los archivos de puntos importados llevan una tabla de descripción que repite campos que la app ya guarda. Quitarla hace las listas —y la copia en Drive— mucho más pequeñas. Se conserva la nota del observador.",
+  "storage.compacted": "Se liberaron {freed} en {n} puntos de {lists} listas.",
+  "storage.compactNone": "Nada que compactar: las listas ya lo están."
 }

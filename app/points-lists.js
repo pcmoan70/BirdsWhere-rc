@@ -910,6 +910,40 @@ window.AppPoints = (function () {
     var s = String(note);
     return s.indexOf("<table>") >= 0 && /<td><b>(Species|Date|Place|Breeding evidence)<\/b><\/td>/.test(s);
   }
+  // Pull the observer's remark back out of a generated table. On points imported BEFORE the
+  // note became a field, that text exists nowhere else — dropping the table without this would
+  // destroy it. The builder writes it as the row <td><b>Notes</b></td><td>…</td>.
+  function remarkFromTable(note) {
+    var m = /<td><b>Notes<\/b><\/td>\s*<td>([\s\S]*?)<\/td>/i.exec(String(note || ""));
+    if (!m) return "";
+    return m[1].replace(/<[^>]*>/g, "")
+      .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"')
+      .replace(/&#x27;|&#39;/g, "'").replace(/&amp;/g, "&").trim();
+  }
+  // One-off: bring lists imported before v1923 down to the same size as a fresh import.
+  // Returns {points, stripped, before, after} in bytes so the UI can say what it freed.
+  async function compactStoredPoints() {
+    var before = 0, after = 0, stripped = 0, npts = 0;
+    mpCollections.forEach(function (c) {
+      (c.points || []).forEach(function (p) {
+        if (!p) return;
+        npts++;
+        var n = p.note ? String(p.note).length : 0;
+        before += n;
+        if (isGeneratedTable(p.note)) {
+          var remark = remarkFromTable(p.note);
+          if (remark) p.note = remark; else delete p.note;
+          delete p.noteHtml;
+          stripped++;
+        }
+        after += p.note ? String(p.note).length : 0;
+      });
+    });
+    internPoints(mpCollections);
+    await Promise.all(persistMpSets());
+    renderMapPoints();
+    return { points: npts, stripped: stripped, before: before, after: after };
+  }
   function applyKmlFields(pt, data) {
     if (!data) return;
     Object.keys(FIELD_ALIASES).forEach(function (field) {
@@ -1844,6 +1878,7 @@ window.AppPoints = (function () {
     buildPointsKml: buildPointsKml, buildPointsGeoJson: buildPointsGeoJson, buildKmz: buildKmz,
     exportPointsGeoJson: exportPointsGeoJson, extractKmlFromKmz: extractKmlFromKmz,
     startKmlImport: startKmlImport, startGeoJsonImport: startGeoJsonImport, startMultiImport: startMultiImport,
+    compactStoredPoints: compactStoredPoints,
     sendPointsToGoogle: sendPointsToGoogle,
     // ---- route ----
     loadRoute: loadRoute, addToRoute: addToRoute, renderRoutePoints: renderRoutePoints,

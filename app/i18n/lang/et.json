@@ -1507,5 +1507,15 @@
   "loc.fetchTimeout": "✗ {name} – võttis liiga kaua, lähen edasi.",
   "points.showNote": "Näita märkust",
   "sync.phDownload": "Allalaadimine …",
-  "sync.phMerged": "{lists} loendit, {trips} retke"
+  "sync.phMerged": "{lists} loendit, {trips} retke",
+  "points.syncOn": "Seda loendit sünkroonitakse",
+  "points.syncOnDesc": "See rändab varukoopiaga teie teistesse seadmetesse. Lülita välja viiteandmete puhul, mida saad uuesti importida.",
+  "points.syncOff": "Seda loendit ei sünkroonita",
+  "points.syncOffDesc": "See jääb ainult sellesse seadmesse. Lülita sisse, et see varukoopiasse võtta.",
+  "points.syncOnMsg": "„{name}“ võetakse varukoopiasse.",
+  "points.syncOffMsg": "„{name}“ jääb sellesse seadmesse.",
+  "storage.compact": "Tiheda importitud loendid",
+  "storage.compactHint": "Imporditud punktifailid kannavad kirjeldustabelit, mis kordab välju, mida rakendus juba salvestab. Selle eemaldamine teeb loendid – ja Drive'i koopia – palju väiksemaks. Vaatleja enda märkus jääb alles.",
+  "storage.compacted": "Vabastati {freed}, {n} punkti {lists} loendis.",
+  "storage.compactNone": "Pole midagi tihendada – loendid on juba tihedad."
 }

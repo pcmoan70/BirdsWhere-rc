@@ -21,16 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1923";
+var VERSION = "v1924";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Imported point lists now use a tenth of the memory. Each point was carrying the placemark\u2019s whole description table \u2014 species, date, place, count, observer \u2014 as HTML, although every one of those is also stored as a proper field the filters use. The observer\u2019s own remark is kept, the duplicate table is not. Equal text is also shared between points instead of copied per point.",
-  "\u2022 A list row with a remark now has a button that shows it.",
-  "\u2022 Syncing says what it is doing at each step: the folder and size it is pulling, what arrived (\u201C23 lists, 2 trips\u201D), how big the upload is. And in Norwegian, Czech and Polish the first step said it was reading a DISK \u2014 it is Google Drive.",
+  "\u2022 The Drive backup is now compressed. Measured on 117,582 imported points: 39.2 MB becomes 1.1 MB \u2014 35 times smaller. Backups written before this still read normally, and so does a browser too old to unpack them.",
+  "\u2022 Settings \u2192 Storage \u2192 Compact imported lists brings lists you imported earlier down to the same size as a fresh import, and says what it freed. The observer\u2019s own remark is kept.",
+  "\u2022 Each list\u2019s \u22EF menu can leave that list out of the backup \u2014 for reference data you can simply import again. It stays on this device and is never deleted by a sync.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

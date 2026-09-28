@@ -1507,5 +1507,15 @@
   "loc.fetchTimeout": "✗ {name} – troppo lento, si continua.",
   "points.showNote": "Mostra la nota",
   "sync.phDownload": "Scaricamento …",
-  "sync.phMerged": "{lists} elenchi, {trips} uscite"
+  "sync.phMerged": "{lists} elenchi, {trips} uscite",
+  "points.syncOn": "Questo elenco viene sincronizzato",
+  "points.syncOnDesc": "Viaggia con il backup verso gli altri dispositivi. Disattiva per dati di riferimento che puoi reimportare.",
+  "points.syncOff": "Questo elenco non viene sincronizzato",
+  "points.syncOffDesc": "Resta solo su questo dispositivo. Attiva per includerlo nel backup.",
+  "points.syncOnMsg": "«{name}» sarà incluso nel backup.",
+  "points.syncOffMsg": "«{name}» resterà su questo dispositivo.",
+  "storage.compact": "Compatta gli elenchi importati",
+  "storage.compactHint": "I file di punti importati portano una tabella descrittiva che ripete campi già memorizzati dall’app. Rimuoverla rende gli elenchi — e il backup su Drive — molto più piccoli. La nota dell’osservatore è conservata.",
+  "storage.compacted": "Liberati {freed} su {n} punti in {lists} elenchi.",
+  "storage.compactNone": "Niente da compattare — gli elenchi lo sono già."
 }

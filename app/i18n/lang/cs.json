@@ -1507,5 +1507,15 @@
   "loc.fetchTimeout": "✗ {name} – trvalo příliš dlouho, pokračuji.",
   "points.showNote": "Zobrazit poznámku",
   "sync.phDownload": "Stahování …",
-  "sync.phMerged": "{lists} seznamů, {trips} výprav"
+  "sync.phMerged": "{lists} seznamů, {trips} výprav",
+  "points.syncOn": "Tento seznam se synchronizuje",
+  "points.syncOnDesc": "Cestuje se zálohou do vašich dalších zařízení. Vypněte u referenčních dat, která můžete znovu importovat.",
+  "points.syncOff": "Tento seznam se nesynchronizuje",
+  "points.syncOffDesc": "Zůstane jen v tomto zařízení. Zapněte, aby byl v záloze.",
+  "points.syncOnMsg": "„{name}“ bude v záloze.",
+  "points.syncOffMsg": "„{name}“ zůstane v tomto zařízení.",
+  "storage.compact": "Zkomprimovat importované seznamy",
+  "storage.compactHint": "Importované soubory bodů nesou tabulku popisu, která opakuje pole, jež aplikace už ukládá. Její odstranění seznamy – a zálohu na Disku – výrazně zmenší. Poznámka pozorovatele zůstává.",
+  "storage.compacted": "Uvolněno {freed} u {n} bodů v {lists} seznamech.",
+  "storage.compactNone": "Není co komprimovat – seznamy už jsou kompaktní."
 }

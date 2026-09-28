@@ -5812,7 +5812,14 @@
     try { if (typeof detSetStore !== "undefined") state.mapDetectionSets = detSetStore.filter(function (s) { return s && s.name; }); } catch (e) {}
     // Named point lists moved to IndexedDB too — re-attach them so the Drive payload
     // shape (and every existing backup) is unchanged.
-    try { if (mpState.mpIdbReady && mpState.mpIdbReady()) state.mapPointSets = mpState.mpCollections().filter(function (c) { return c && c.name; }); } catch (e) {}
+    // A list flagged "don't sync" stays on this device. Safe to omit: mergePointSets starts
+    // from the LOCAL sets and only adds/merges incoming ones, so a list missing from the
+    // payload is never dropped — and reference data you can re-import at will is exactly what
+    // should not travel. The biggest generated list alone is over half the payload.
+    try {
+      if (mpState.mpIdbReady && mpState.mpIdbReady())
+        state.mapPointSets = mpState.mpCollections().filter(function (c) { return c && c.name && !c.noSync; });
+    } catch (e) {}
     // Names the user's own use has accumulated — harvested from iNaturalist, and the
     // extra vernaculars — live in IndexedDB and were never in the payload, so every
     // new device started collecting them again from scratch.
@@ -7414,6 +7421,12 @@
                   '<button type="button" class="clear-cache-btn" data-clear="harvest"><span class="clear-lbl" data-i18n="clear.harvest">Downloaded names</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="offline"><span class="clear-lbl" data-i18n="clear.offline">Offline areas</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="images"><span class="clear-lbl" data-i18n="clear.images">Species photos</span><span class="clear-cnt"></span></button>' +
+                '</div>' +
+                // Not a cache clear — it rewrites the lists in place, so it sits under its own
+                // label with what it does spelled out. One press, reports what it freed.
+                '<div class="ctrl-group" id="compact-wrap">' +
+                  '<button type="button" id="compact-lists-btn" class="btn btn-light" data-i18n="storage.compact">Compact imported lists</button>' +
+                  '<p class="cu-hint" data-i18n="storage.compactHint"></p>' +
                 '</div>' +
               '</div>' +
               '<div class="settings-section" data-i18n="settings.secDisplay">Display &amp; language</div>' +
@@ -17749,7 +17762,20 @@
         });
       });
     });
-      root.querySelectorAll(".mp-coll-more").forEach(function (b) {
+      root.querySelectorAll(".mp-coll-nosync").forEach(function (b) {
+      b.addEventListener("click", function (e) {
+        e.preventDefault();
+        var name = this.getAttribute("data-name");
+        var c = mpState.mpCollections().filter(function (x) { return x.name === name; })[0];
+        closeAnchoredMenu();
+        if (!c) return;
+        if (c.noSync) delete c.noSync; else c.noSync = true;
+        saveMapPoints();
+        setStatus(t(c.noSync ? "points.syncOffMsg" : "points.syncOnMsg", { name: name }));
+        refreshMpPanel();
+      });
+    });
+    root.querySelectorAll(".mp-coll-more").forEach(function (b) {
         b.addEventListener("click", function (e) {
           e.preventDefault(); e.stopPropagation();
           openCollMoreMenu(this);
@@ -17781,6 +17807,13 @@
       if (type === "p") html += row("mp-coll-edit", ico("edit"), t("points.editList"), t("points.editDesc"),
                                     'data-name="' + escapeHtml(name) + '"');
       if (count) html += row("mp-coll-dl", ico("download"), t("points.download"), t("points.downloadDesc"));
+      if (type === "p") {
+        var noSync = !!(mpState.mpCollections().filter(function (x) { return x.name === name; })[0] || {}).noSync;
+        html += row("mp-coll-nosync", ico(noSync ? "block" : "cloud"),
+                    t(noSync ? "points.syncOff" : "points.syncOn"),
+                    t(noSync ? "points.syncOffDesc" : "points.syncOnDesc"),
+                    'data-name="' + escapeHtml(name) + '"');
+      }
       html += isProt
         ? row("mp-more-locked", ico("lock"), t("lists.protect"), t("points.protectedDesc"), 'disabled')
         : row("mp-coll-del", "\u00D7", t(type === "d" ? "dset.delete" : "points.deleteColl"), t("points.deleteDesc"));
@@ -19372,6 +19405,19 @@
     }
     function relayerDet() { rebuildDetLayers(); updateDetLegend(); }
     wireNumSetting("rare-pct", rarePct, 1, 100, 10, function (v) { window.GeoState.save({ rarePct: v }); }, relayerDet);
+    var compactBtn = document.getElementById("compact-lists-btn");
+    if (compactBtn) compactBtn.addEventListener("click", function () {
+      var btn = this;
+      btn.disabled = true;
+      withFunnelBusy(function () {
+        Promise.resolve(mpState.compactStoredPoints()).then(function (r) {
+          btn.disabled = false;
+          var freed = (r.before || 0) - (r.after || 0);
+          if (!r.stripped || freed <= 0) { setStatus(t("storage.compactNone")); return; }
+          setStatus(t("storage.compacted", { freed: fmtBytes(freed), n: r.stripped, lists: mpState.mpCollections().length }));
+        }, function () { btn.disabled = false; setStatus(t("err.storageFull")); });
+      });
+    });
     var rtCb = document.getElementById("rarity-ticker-toggle");
     if (rtCb) {
       rtCb.checked = rarityTickerOn();

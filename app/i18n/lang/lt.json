@@ -1507,5 +1507,15 @@
   "loc.fetchTimeout": "✗ {name} – užtruko per ilgai, tęsiama.",
   "points.showNote": "Rodyti pastabą",
   "sync.phDownload": "Atsiunčiama …",
-  "sync.phMerged": "{lists} sąrašai, {trips} išvykos"
+  "sync.phMerged": "{lists} sąrašai, {trips} išvykos",
+  "points.syncOn": "Šis sąrašas sinchronizuojamas",
+  "points.syncOnDesc": "Jis keliauja su atsargine kopija į kitus jūsų įrenginius. Išjunkite nuorodų duomenims, kuriuos galite importuoti iš naujo.",
+  "points.syncOff": "Šis sąrašas nesinchronizuojamas",
+  "points.syncOffDesc": "Jis lieka tik šiame įrenginyje. Įjunkite, kad įtrauktumėte jį į kopiją.",
+  "points.syncOnMsg": "„{name}“ bus įtrauktas į atsarginę kopiją.",
+  "points.syncOffMsg": "„{name}“ liks šiame įrenginyje.",
+  "storage.compact": "Suglaudinti importuotus sąrašus",
+  "storage.compactHint": "Importuoti taškų failai turi aprašo lentelę, kuri kartoja laukus, jau saugomus programoje. Ją pašalinus sąrašai – ir Drive kopija – tampa daug mažesni. Stebėtojo pastaba paliekama.",
+  "storage.compacted": "Atlaisvinta {freed} iš {n} taškų {lists} sąrašuose.",
+  "storage.compactNone": "Nėra ko glaudinti – sąrašai jau suglaudinti."
 }

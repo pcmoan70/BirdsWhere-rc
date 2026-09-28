@@ -1507,5 +1507,15 @@
   "loc.fetchTimeout": "✗ {name} – tok for lang tid, går videre.",
   "points.showNote": "Vis notatet",
   "sync.phDownload": "Laster ned …",
-  "sync.phMerged": "{lists} lister, {trips} turer"
+  "sync.phMerged": "{lists} lister, {trips} turer",
+  "points.syncOn": "Synkroniserer denne listen",
+  "points.syncOnDesc": "Den følger med sikkerhetskopien til de andre enhetene dine. Slå av for referansedata du kan importere på nytt.",
+  "points.syncOff": "Synkroniserer ikke denne listen",
+  "points.syncOffDesc": "Den blir bare på denne enheten. Slå på for å ta den med i sikkerhetskopien.",
+  "points.syncOnMsg": "«{name}» blir tatt med i sikkerhetskopien.",
+  "points.syncOffMsg": "«{name}» blir bare på denne enheten.",
+  "storage.compact": "Komprimer importerte lister",
+  "storage.compactHint": "Importerte punktfiler har en beskrivelsestabell som gjentar felter appen alt lagrer. Å fjerne den gjør listene – og Drive-kopien – mye mindre. Observatørens egen merknad beholdes.",
+  "storage.compacted": "Frigjorde {freed} over {n} punkter i {lists} lister.",
+  "storage.compactNone": "Ingenting å komprimere – listene er alt kompakte."
 }

@@ -1507,5 +1507,15 @@
   "loc.fetchTimeout": "✗ {name} – kesti liian kauan, jatketaan.",
   "points.showNote": "Näytä muistiinpano",
   "sync.phDownload": "Ladataan …",
-  "sync.phMerged": "{lists} listaa, {trips} retkeä"
+  "sync.phMerged": "{lists} listaa, {trips} retkeä",
+  "points.syncOn": "Synkronoidaan tämä lista",
+  "points.syncOnDesc": "Se kulkee varmuuskopion mukana muihin laitteisiisi. Kytke pois viitetiedoille, jotka voit tuoda uudelleen.",
+  "points.syncOff": "Ei synkronoida tätä listaa",
+  "points.syncOffDesc": "Se pysyy vain tässä laitteessa. Kytke päälle ottaaksesi sen varmuuskopioon.",
+  "points.syncOnMsg": "”{name}” otetaan varmuuskopioon.",
+  "points.syncOffMsg": "”{name}” pysyy vain tässä laitteessa.",
+  "storage.compact": "Tiivistä tuodut listat",
+  "storage.compactHint": "Tuoduissa pistetiedostoissa on kuvaustaulukko, joka toistaa kentät jotka sovellus jo tallentaa. Sen poistaminen pienentää listoja – ja Drive-kopiota – huomattavasti. Havainnoijan oma muistiinpano säilyy.",
+  "storage.compacted": "Vapautettiin {freed}, {n} pistettä {lists} listassa.",
+  "storage.compactNone": "Ei tiivistettävää – listat ovat jo tiiviitä."
 }
