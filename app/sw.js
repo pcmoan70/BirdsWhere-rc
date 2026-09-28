@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1919";
+var VERSION = "v1920";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The loading screen now greets you in your own language instead of always in English, and the page declares that language from the first paint. It follows the same rule the rest of the app does: your own choice if you have made one, otherwise your device\u2019s language, English when that is not one of the 15.",
+  "\u2022 Completes the previous update: the small file that puts the loading screen in your language was not part of the offline bundle, so a cold start with no connection fell back to English. It is bundled now.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
@@ -138,6 +138,7 @@ var SHELL = [
   "index.html",
   "f/index.html",      // short link (QR poster) → forwards to the full shortcut URL
   "sw-register.js",
+  "splash-lang.js",   // splash text + <html lang> before app.js — must be in the shell or an offline cold start loses it
   "app.js",
   "rarity.js",
   "offline-maps.js",
