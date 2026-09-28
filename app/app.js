@@ -17020,9 +17020,32 @@
       return head + (subL.length ? '<span class="area-tip-note">' + subL.map(escapeHtml).join("<br>") + "</span>" : "");
     }
     // Don't repeat a tag that just duplicates the name (detection pins tag the
-    // species, which is also the name) — otherwise the species shows twice.
-    var tagList = (p.tags || []).filter(function (tg) { return tg && tg !== p.name; });
+    // species, which is also the name) — nor the activity, which now has its own line.
+    var actTxt = p.act ? tagDisplay(p.act) : "";
+    var tagList = (p.tags || []).filter(function (tg) {
+      return tg && tg !== p.name && !(actTxt && tagDisplay(tg) === actTxt);
+    });
     var tags = tagList.length ? '<span class="area-tip-sub">' + escapeHtml(tagList.map(tagDisplay).join(" · ")) + "</span>" : "";
+    // The record itself. Until v1927 these fields were held on the point and shown NOWHERE:
+    // the card rendered name + tags + note only, and the values were visible purely as the
+    // imported <description> table. Dropping that table (on import since v1923, and in
+    // Compact) therefore emptied the card — for the 32–57 % of records whose file carries no
+    // remark it left nothing but the species name. Rendered as values, not labels, so the
+    // card stays compact and needs no new translated strings.
+    var metaBits = [];
+    if (p.date) metaBits.push(p.date);
+    if (p.count != null && p.count !== "") metaBits.push("×" + p.count);
+    if (p.place) metaBits.push(p.place);
+    if (p.country) metaBits.push(p.country);
+    var meta = metaBits.length ? '<span class="mp-card-meta">' + escapeHtml(metaBits.join(" · ")) + "</span>" : "";
+    var actBits = [];
+    if (actTxt) actBits.push(actTxt);
+    if (p.stage) actBits.push(p.stage);
+    var actLine = actBits.length ? '<span class="mp-card-act">' + escapeHtml(actBits.join(" · ")) + "</span>" : "";
+    var byBits = [];
+    if (p.observer) byBits.push(p.observer);
+    if (p.dset) byBits.push(p.dset);
+    var by = byBits.length ? '<span class="mp-card-by">' + escapeHtml(byBits.join(" · ")) + "</span>" : "";
     // Notes flagged as HTML (imported KML descriptions) render as sanitised markup;
     // plain notes show their text lines (date / activity / remark), dropping any
     // source URL line — so a saved detection reveals when & what behaviour was
@@ -17035,7 +17058,7 @@
         .filter(function (s) { return s && !/^https?:\/\//i.test(s); });
       note = noteLines.length ? '<span class="area-tip-note">' + noteLines.map(escapeHtml).join("<br>") + "</span>" : "";
     }
-    return "<b>" + name + "</b>" + tags + note;
+    return "<b>" + name + "</b>" + tags + meta + actLine + note + by;
   }
   function updateMpBadge() {
     // Badge = number of saved point-lists (not the count of loose working pins).

@@ -20,7 +20,7 @@ layered on top are the real sightings.
 > Model outputs are estimates, not ground truth; BirdWeather detections are AI acoustic
 > identifications, not human-verified.
 
-*Documentation last updated 2026-09-08 (app version ~v1597).*
+*Documentation last updated 2026-09-29 (app version ~v1927).*
 
 ---
 
@@ -637,7 +637,10 @@ view**.
   *several* fields — its picker is a checkbox dropdown — and when more than one is chosen each line is
   labelled with the field it came from.
 - **Clicking a point** opens its record in a popup that stays open until you press its × or interact
-  elsewhere; where several records share a coordinate they are listed together, newest first. Clicking
+  elsewhere; where several records share a coordinate they are listed together, newest first. The card
+  shows the whole imported record — tags, then **date · ×count · place · country**, the **activity /
+  breeding evidence** and life stage, the observer's remark, and who recorded it (with the dataset) —
+  reading it from the point's own fields, so it survives *Compact imported lists*. Clicking
   a card opens that point's actions (source, navigate, add to route or list). Each card carries a
   **✎ edit** (name, tags, colour, note — for points inside a saved list as well as loose pins), a
   **copy to another list** and a **delete**.

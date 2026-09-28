@@ -1884,6 +1884,10 @@ button.dd-name:hover { text-decoration: underline; }
 .list-mgr .lm-del { background: none; border: none; cursor: pointer; color: var(--brand); font-size: var(--fs-h); line-height: 1; padding: 0 2px; }
 .area-tip .area-tip-sub { display: block; color: var(--ink-muted, #666); font-size: var(--fs-xs); }   /* own line under the bold title */
 .area-tip .area-tip-note { display: block; margin-top: 3px; color: var(--ink-muted, #666); font-size: var(--fs-xs); line-height: 1.35; }
+/* The imported record on a point card: what the dropped <description> table used to show. */
+.area-tip .mp-card-meta { display: block; margin-top: 2px; color: var(--ink-muted, #666); font-size: var(--fs-xs); font-variant-numeric: tabular-nums; }
+.area-tip .mp-card-act { display: block; margin-top: 2px; font-size: var(--fs-xs); font-weight: 600; }
+.area-tip .mp-card-by { display: block; margin-top: 2px; color: var(--ink-muted, #888); font-size: var(--fs-xs); opacity: 0.85; }
 .area-tip .area-tip-sep { display: block; height: 5px; }
 .dd-dot-near { background: #22a447; }
 .dd-dot-mid { background: #ef9420; }

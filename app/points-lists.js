@@ -215,7 +215,8 @@ window.AppPoints = (function () {
   // reads a point can tell the difference. The pool is local to the call, so it is collected
   // and only the shared strings the points still hold survive.
   var INTERN_FIELDS = ["name", "sci", "date", "observer", "count", "place", "source",
-                       "createdAt", "color", "spColor", "src", "act", "list"];
+                       "createdAt", "color", "spColor", "src", "act", "list",
+                       "stage", "country", "dset"];
   function internPoints(colls) {
     var pool = Object.create(null), tagPool = Object.create(null), n = 0;
     function sh(v) {
@@ -897,7 +898,18 @@ window.AppPoints = (function () {
     // The observer's own remark. Without this it survived ONLY inside the placemark's
     // <description> HTML, so dropping that table would have thrown the one piece of free
     // text the file carries away with the duplication.
-    note: ["notes", "occurrenceRemarks", "remarks", "fieldNotes", "comment"]
+    note: ["notes", "occurrenceRemarks", "remarks", "fieldNotes", "comment"],
+    // What the record SHOWS, plus the rest of what the <description> table displayed. Every
+    // one of these travels in ExtendedData on the files the point builders write, and until
+    // v1927 NOTHING read them: the value existed only inside that table. So dropping the
+    // table -- on import since v1923, and in Compact -- is what took the activity off the
+    // card. "evidence" is listed before "category" because a mentions file carries both and
+    // evidence is the specific one.
+    act: ["activity", "act", "evidence", "behavior", "behaviour",
+          "breedingEvidence", "breeding_evidence", "category"],
+    stage: ["lifeStage", "life_stage", "lifestage", "age"],
+    country: ["country", "countryCode", "country_code"],
+    dset: ["dataset", "datasetName", "dataset_name", "collectionCode"]
   };
   // Our own point builders write the whole record as an HTML <table> into <description>:
   // species, date, place, country, evidence, count, notes, observer, dataset, a GBIF link.
@@ -913,17 +925,68 @@ window.AppPoints = (function () {
   // Pull the observer's remark back out of a generated table. On points imported BEFORE the
   // note became a field, that text exists nowhere else — dropping the table without this would
   // destroy it. The builder writes it as the row <td><b>Notes</b></td><td>…</td>.
-  function remarkFromTable(note) {
-    var m = /<td><b>Notes<\/b><\/td>\s*<td>([\s\S]*?)<\/td>/i.exec(String(note || ""));
-    if (!m) return "";
-    return m[1].replace(/<[^>]*>/g, "")
+  function unTable(html) {
+    return String(html || "").replace(/<[^>]*>/g, "")
       .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"')
       .replace(/&#x27;|&#39;/g, "'").replace(/&amp;/g, "&").trim();
+  }
+  function remarkFromTable(note) {
+    var m = /<td><b>Notes<\/b><\/td>\s*<td>([\s\S]*?)<\/td>/i.exec(String(note || ""));
+    return m ? unTable(m[1]) : "";
+  }
+  // Which table rows can fill each structured field, BEST FIRST. Order matters and row order
+  // must not decide it: a per-species file writes both "Category" (the palette bucket, whose
+  // value is the 4-language legend label) and "Breeding evidence" (what THIS record shows),
+  // and the specific one has to win even though the table prints it later.
+  var TABLE_FIELD_ROWS = {
+    sci: ["species"],
+    date: ["date"],
+    place: ["place", "locality"],
+    country: ["country"],
+    count: ["count"],
+    stage: ["life stage"],
+    note: ["notes"],
+    observer: ["observer"],
+    dset: ["dataset"],
+    act: ["breeding evidence", "evidence", "activity", "behaviour", "behavior", "category"]
+  };
+  // A point imported before v1923 kept the whole table as its note and has NO fields at all:
+  // its activity, life stage, country and dataset live only in these rows. So the table has to
+  // be READ before it is dropped -- otherwise compacting is itself what destroys the record.
+  function fieldsFromTable(note, pt) {
+    var s = String(note || ""), got = 0, m, rows = {};
+    var rx = /<td><b>([^<]+)<\/b><\/td>\s*<td>([\s\S]*?)<\/td>/gi;
+    while ((m = rx.exec(s))) {
+      var lab = m[1].trim().toLowerCase(), v = unTable(m[2]);
+      if (v && rows[lab] == null) rows[lab] = v;
+    }
+    Object.keys(TABLE_FIELD_ROWS).forEach(function (f) {
+      if (pt[f] != null && pt[f] !== "") return;
+      var cand = TABLE_FIELD_ROWS[f];
+      for (var i = 0; i < cand.length; i++) {
+        var v = rows[cand[i]];
+        if (!v) continue;
+        // The Species row carries a binomial in a per-record file but the CATEGORY label in a
+        // per-category one -- only take it when it really looks like a scientific name.
+        if (f === "sci" && !/^[A-Z][a-z]+ [a-z][a-z-]+$/.test(v)) continue;
+        if (f === "date") { var d = /\d{4}-\d{2}-\d{2}/.exec(v); v = d ? d[0] : v.slice(0, 10); }
+        // "territory - territory / display / revir / spill" is a legend label, not a value:
+        // keep the key and drop the translations it carries for the map legend.
+        if (f === "act" && / - /.test(v) && /\//.test(v.split(" - ").slice(1).join(" - "))) v = v.split(" - ")[0].trim();
+        pt[f] = v; got++; return;
+      }
+    });
+    // the "Record" row was a link to the source occurrence
+    if (!pt.url) {
+      var a = /<td><b>Record<\/b><\/td>\s*<td>\s*<a href="([^"]+)"/i.exec(s);
+      if (a) { pt.url = a[1]; got++; }
+    }
+    return got;
   }
   // One-off: bring lists imported before v1923 down to the same size as a fresh import.
   // Returns {points, stripped, before, after} in bytes so the UI can say what it freed.
   async function compactStoredPoints() {
-    var before = 0, after = 0, stripped = 0, npts = 0;
+    var before = 0, after = 0, stripped = 0, npts = 0, recovered = 0;
     mpCollections.forEach(function (c) {
       (c.points || []).forEach(function (p) {
         if (!p) return;
@@ -931,6 +994,7 @@ window.AppPoints = (function () {
         var n = p.note ? String(p.note).length : 0;
         before += n;
         if (isGeneratedTable(p.note)) {
+          recovered += fieldsFromTable(p.note, p);   // MUST run before the table goes
           var remark = remarkFromTable(p.note);
           if (remark) p.note = remark; else delete p.note;
           delete p.noteHtml;
@@ -942,7 +1006,7 @@ window.AppPoints = (function () {
     internPoints(mpCollections);
     await persistMpSets(mpCollections);
     renderMapPoints();
-    return { points: npts, stripped: stripped, before: before, after: after };
+    return { points: npts, stripped: stripped, before: before, after: after, recovered: recovered };
   }
   function applyKmlFields(pt, data) {
     if (!data) return;
@@ -958,6 +1022,13 @@ window.AppPoints = (function () {
         return;
       }
     });
+    // The source occurrence link, so the card's "source" row still works once the generated
+    // table (whose last row was that link) is gone.
+    if (!pt.url) {
+      var u = data.url || data.link || data.references || data.occurrenceURL;
+      if (!u && data.gbifID) u = "https://www.gbif.org/occurrence/" + String(data.gbifID).trim();
+      if (u) pt.url = String(u).trim();
+    }
     // Tags may travel as a field too ("a; b" or "a, b"), alongside whatever the dialog mapped.
     var tg = data.tags || data.tag;
     if (tg) {
@@ -1000,6 +1071,7 @@ window.AppPoints = (function () {
         // structured fields do not, and goes.
         var droppedTable = false;
         if (isGeneratedTable(pt.note)) {
+          fieldsFromTable(pt.note, pt);   // anything the ExtendedData did not already carry
           var remark = "";
           try { remark = String((pm.data && (pm.data.notes || pm.data.occurrenceRemarks)) || "").trim(); } catch (e) {}
           if (remark) pt.note = remark; else delete pt.note;

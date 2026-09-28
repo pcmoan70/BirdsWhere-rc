@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1926";
+var VERSION = "v1927";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 A point\u2019s popup now has a \u270E to edit it \u2014 its name, tags, colour and note \u2014 and that works for points inside a saved list, not only loose pins. Editing one used to save nothing at all, silently.",
+  "\u2022 A point\u2019s card now shows the whole record again \u2014 date, count, place, activity / breeding evidence, life stage, the remark and the observer. Imported lists were showing little more than the species name.",
+  "\u2022 \u201cCompact imported lists\u201d no longer loses anything: it reads the record out of the description table before removing it. Lists you already compacted keep their date, place, count and remark \u2014 re-import the file to get the activity back.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
