@@ -21099,6 +21099,61 @@
     a.unshift(text);
     window.GeoState.save({ placeRecent: a.slice(0, 5) });
   }
+  // Coordinates typed or pasted into the place box → {lat, lon}, or null when the text
+  // is not a coordinate pair. Accepts decimal degrees ("59.9139, 10.7522" · "59,9139 10,7522"
+  // · "N59.91 E10.75" · "59.91N 10.75E"), degrees-minutes(-seconds) in any symbol style
+  // ("59°54'50\"N 10°45'08\"E" · "59 54.83 N, 10 45.13 E" · "59 54 50 10 45 08") and pasted
+  // links (…@59.91,10.75… · ?lat=59.91&lon=10.75 · geo:59.91,10.75). Latitude is taken first
+  // unless N/S/E/W letters say otherwise, or only the swapped order is in range.
+  function parseCoordText(s) {
+    s = (s || "").trim();
+    if (!s) return null;
+    var m = /[?&#](?:lat|latitude)=(-?\d+(?:\.\d+)?)(?:[^\d-]|-(?!\d))*?(?:lon|lng|longitude)=(-?\d+(?:\.\d+)?)/i.exec(s) ||
+            /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/.exec(s) || /^geo:(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/i.exec(s);
+    if (m) return coordPair([+m[1]], null, [+m[2]], null);
+    if (/^[a-z][a-z0-9+.-]*:\/\//i.test(s)) return null;   // some other link — not coordinates
+    // Decimal commas ("59,9139 10,7522"): commas only between digits, no dots, another separator present.
+    if (s.indexOf(".") < 0 && /^[^,]*\d,\d[^,]*[;\s][^,]*\d,\d[^,]*$/.test(s)) s = s.replace(/(\d),(\d)/g, "$1.$2");
+    s = s.toUpperCase().replace(/[′’´]/g, "'").replace(/[″”]/g, '"').replace(/º|DEG/g, "°");
+    var tokRe = /[NSEW](?![A-Z])|-?\d+(?:\.\d+)?\s*[°'"]?/g;
+    if (s.replace(tokRe, "").replace(/[,;\s°'"]/g, "") !== "") return null;   // leftover text → a place name
+    if (!/[.°'"NSEW]/.test(s)) return null;   // "12 34": bare integers read as text, not a coordinate
+    var comps = [], cur = { n: [], h: null }, toks = s.match(tokRe) || [];
+    for (var i = 0; i < toks.length; i++) {
+      var tk = toks[i];
+      if (/^[NSEW]$/.test(tk)) {
+        if (cur.n.length) { cur.h = cur.h || tk; comps.push(cur); cur = { n: [], h: null }; }
+        else if (comps.length && !comps[comps.length - 1].h) comps[comps.length - 1].h = tk;   // trailing letter after 3 numbers
+        else cur.h = tk;   // leading letter: "N59.91"
+      } else {
+        cur.n.push(parseFloat(tk));
+        if (cur.n.length === 3) { comps.push(cur); cur = { n: [], h: null }; }
+      }
+    }
+    if (cur.n.length) comps.push(cur);
+    if (comps.length === 1 && !comps[0].h && comps[0].n.length % 2 === 0) {   // "59.91 10.75" / "59 54 10 45"
+      var half = comps[0].n.length / 2;
+      comps = [{ n: comps[0].n.slice(0, half), h: null }, { n: comps[0].n.slice(half), h: null }];
+    }
+    if (comps.length !== 2) return null;
+    return coordPair(comps[0].n, comps[0].h, comps[1].n, comps[1].h);
+  }
+  function coordPair(n1, h1, n2, h2) {
+    function val(n, h) {
+      if (!n.length || n.length > 3) return NaN;
+      for (var i = 1; i < n.length; i++) if (n[i] < 0 || n[i] >= 60) return NaN;
+      var v = Math.abs(n[0]) + (n[1] || 0) / 60 + (n[2] || 0) / 3600;
+      if (n[0] < 0 || (1 / n[0]) < 0 || h === "S" || h === "W") v = -v;
+      return v;
+    }
+    var a = val(n1, h1), b = val(n2, h2);
+    if (isNaN(a) || isNaN(b)) return null;
+    var lat = a, lon = b;
+    if ((h1 === "E" || h1 === "W") || (h2 === "N" || h2 === "S")) { lat = b; lon = a; }   // letters fix the order
+    else if (!h1 && !h2 && Math.abs(a) > 90 && Math.abs(b) <= 90) { lat = b; lon = a; }  // "10.75 59.91" → only this order fits
+    if (!(Math.abs(lat) <= 90 && Math.abs(lon) <= 180)) return null;
+    return { lat: lat, lon: lon };
+  }
   function wirePlaceSearch() {
     var inp = document.getElementById("place-search");
     var res = document.getElementById("place-results");
@@ -21117,6 +21172,8 @@
     var run = function () {
       var q = inp.value.trim();
       if (q.length < 2) { showRecent(); return; }   // empty/short → offer the recent searches
+      var xy = parseCoordText(q);   // "59.9139, 10.7522" / DMS / a pasted map link → one direct result, no geocoder
+      if (xy) { selIdx = -1; renderPlaceResults(res, [{ lat: xy.lat, lon: xy.lon, display_name: "📍 " + fmtCoordPair(xy) }]); return; }
       var b = map.getBounds();
       var vb = [b.getWest(), b.getNorth(), b.getEast(), b.getSouth()].map(function (n) { return n.toFixed(6); }).join(",");
       // bounded=0: the viewbox only BIASES ranking toward the current area — matches
@@ -21140,13 +21197,20 @@
       var items = res.querySelectorAll(".sr-item");
       if (e.key === "ArrowDown") { e.preventDefault(); selIdx = Math.min(selIdx + 1, items.length - 1); highlightItem(items, selIdx); }
       else if (e.key === "ArrowUp") { e.preventDefault(); selIdx = Math.max(selIdx - 1, 0); highlightItem(items, selIdx); }
-      else if (e.key === "Enter") { e.preventDefault(); if (selIdx >= 0 && items[selIdx]) items[selIdx].click(); else { clearTimeout(timer); run(); } }
+      else if (e.key === "Enter") {
+        e.preventDefault();
+        var xy = parseCoordText(inp.value);
+        if (selIdx >= 0 && items[selIdx]) items[selIdx].click();
+        else if (xy) { pushRecentPlace(inp.value); gotoPlace(xy.lat, xy.lon); res.style.display = "none"; }   // coordinates: Enter goes straight there
+        else { clearTimeout(timer); run(); }
+      }
       else if (e.key === "Escape") { res.style.display = "none"; }
     });
     document.addEventListener("click", function (e) {
       if (!res.contains(e.target) && e.target !== inp) res.style.display = "none";
     });
   }
+  function fmtCoordPair(xy) { return xy.lat.toFixed(5) + "°, " + xy.lon.toFixed(5) + "°"; }
   function renderPlaceResults(res, list) {
     if (!list.length) { res.innerHTML = '<div class="sr-empty">' + escapeHtml(t("place.none")) + "</div>"; res.style.display = "block"; return; }
     res.innerHTML = list.map(function (r) {
