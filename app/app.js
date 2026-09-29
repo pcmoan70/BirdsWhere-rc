@@ -8032,12 +8032,18 @@
         hasHere = qp.has("here");
         hasLocParam = !!parseSemiParams().location;
         sharedOpen = qp.has("lat") || qp.has("lon") || qp.has("s") || /[#&]s=/.test(location.hash || "");
+        // An OS-opened file is an explicit intent, like a shared link: go straight to the map.
+        if (qp.has("shared-file") || qp.has("open-file")) sharedOpen = true;
         plainOpen = !(hasHere || sharedOpen || hasLocParam);
       } catch (e) {}
       if (!sharedOpen && !launchGated) showPerfModal();   // a gated launch already showed (and dismissed) it
       initOfflineIndicator();
       maybeShowMovedNotice();
       maybeImportMigrated();   // arriving from the old origin with #migrate=… → merge the carried data
+      // A KML / KMZ / GeoJSON opened from the OS: desktop "Open with" (launchQueue) or the
+      // Android share sheet (?shared-file=N parked by the service worker).
+      consumeLaunchFiles();
+      consumeSharedFiles();
       initInstall();
       initRarityAlerts();
       // Keyless first tap on the rarity bell → the one-time eBird-key nudge
@@ -16848,6 +16854,57 @@
   }
   // Detection sets shown as overlays — one map layer-group per ticked set, kept
   // in sync with shownDetSets. Each set's stored dots are drawn in their colour.
+  // ---- opening a KML / KMZ / GeoJSON from OUTSIDE the app -------------------------------
+  // Two different platform mechanisms, because no single one covers both:
+  //
+  //   * DESKTOP Chromium (installed PWA) supports the File Handling API, so the manifest's
+  //     `file_handlers` puts BirdsWhere in the OS "Open with" list and the file arrives here
+  //     through launchQueue. Chrome/Edge 102+ on Windows, macOS, Linux and ChromeOS.
+  //   * ANDROID Chrome has NO file_handlers, but it does have a share target that accepts
+  //     files, which puts BirdsWhere in the system Share sheet. That is a POST, so the service
+  //     worker parks the files in a cache and redirects to ?shared-file=N, which we collect
+  //     below. Safari/iOS supports neither, so there the file input remains the only way in.
+  //
+  // Both paths end in importPointsFile(), the same reader every in-app button uses.
+  function consumeLaunchFiles() {
+    if (!("launchQueue" in window) || !window.launchQueue.setConsumer) return;
+    try {
+      window.launchQueue.setConsumer(function (params) {
+        if (!params || !params.files || !params.files.length) return;
+        Promise.all(params.files.map(function (h) { return h.getFile(); }))
+          .then(function (files) { if (files.length) importPointsFile(files, false); })
+          .catch(function () { setStatus(t("kml.parseErr")); });
+      });
+    } catch (e) { /* not supported on this platform */ }
+  }
+
+  async function consumeSharedFiles() {
+    var qp;
+    try { qp = new URLSearchParams(location.search); } catch (e) { return; }
+    var n = parseInt(qp.get("shared-file") || "", 10);
+    if (isNaN(n)) return;
+    // Drop the parameter straight away so a reload cannot re-import the same file.
+    try { history.replaceState(null, "", location.pathname); } catch (e) {}
+    if (!n) { setStatus(t("kml.parseErr")); return; }
+    try {
+      var names = await caches.keys();
+      var name = names.filter(function (x) { return /shared-files$/.test(x); })[0];
+      if (!name) return;
+      var c = await caches.open(name);
+      var keys = await c.keys();
+      var files = [];
+      for (var i = 0; i < keys.length; i++) {
+        var res = await c.match(keys[i]);
+        if (!res) continue;
+        var blob = await res.blob();
+        var leaf = decodeURIComponent(keys[i].url.split("/").pop() || ("shared-" + i));
+        files.push(new File([blob], leaf, { type: blob.type || "application/octet-stream" }));
+      }
+      await Promise.all(keys.map(function (k) { return c.delete(k); }));
+      if (files.length) importPointsFile(files, false);
+    } catch (e) { setStatus(t("kml.parseErr")); }
+  }
+
   // One reader behind every "load points from a file" button. Branch on the bytes,
   // not on the button: ZIP magic → KMZ, a leading { or [ → GeoJSON, < → KML, and
   // anything else → a share link (the points panel's original job).

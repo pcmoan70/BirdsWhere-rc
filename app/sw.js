@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1927";
+var VERSION = "v1928";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 A point\u2019s card now shows the whole record again \u2014 date, count, place, activity / breeding evidence, life stage, the remark and the observer. Imported lists were showing little more than the species name.",
-  "\u2022 \u201cCompact imported lists\u201d no longer loses anything: it reads the record out of the description table before removing it. Lists you already compacted keep their date, place, count and remark \u2014 re-import the file to get the activity back.",
+  "\u2022 BirdsWhere can now OPEN a .kml, .kmz or .geojson straight from your files. On a computer, install the app and it appears in the system \u201cOpen with\u201d list. On Android, share the file to BirdsWhere from the share sheet. The file lands in the usual import dialog.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
@@ -58,6 +57,11 @@ var IMG_CACHE = "species-images";
 var IMG_CAP = 1500;
 var API_CACHE = RC_TAG + "api-" + VERSION;       // geocode / overpass / species lookups
 var META_CACHE = "meta-config";         // version-independent: holds the user's cache-cap setting
+// Files handed to us by the Android share sheet. The share target is a POST, which cannot be
+// answered by a redirect alone -- the page has no way to read the body -- so the SW parks the
+// files here and the page collects them on the next load. Version-independent, and emptied by
+// the page as soon as it has them.
+var SHARE_CACHE = RC_TAG + "shared-files";
 var DEFAULT_MAX_TILES = 11000;          // fallback LRU tile cap before the app pushes its setting
 var PINNED_PREFIX = "pinned-";          // explicitly downloaded offline areas (never auto-purged)
 // The "Map cache buffer" (Settings) in tiles, set by the app via postMessage and
@@ -329,7 +333,7 @@ function reload(url) {
 }
 
 self.addEventListener("activate", function (event) {
-  var keep = [SHELL_CACHE, DATA_CACHE, TILE_CACHE, API_CACHE, META_CACHE, IMG_CACHE];
+  var keep = [SHELL_CACHE, DATA_CACHE, TILE_CACHE, API_CACHE, META_CACHE, IMG_CACHE, SHARE_CACHE];
   event.waitUntil(
     caches
       .keys()
@@ -354,6 +358,30 @@ self.addEventListener("activate", function (event) {
 
 self.addEventListener("fetch", function (event) {
   var req = event.request;
+
+  // Android share sheet -> BirdsWhere. Must come before the non-GET bail-out below.
+  if (req.method === "POST" && /\/share-target\/?$/.test(new URL(req.url).pathname)) {
+    event.respondWith((async function () {
+      var to = "./?shared-file=0";
+      try {
+        var fd = await req.formData();
+        var files = fd.getAll("files").filter(function (f) { return f && f.name; });
+        if (files.length) {
+          var c = await caches.open(SHARE_CACHE);
+          var keys = await c.keys();
+          await Promise.all(keys.map(function (k) { return c.delete(k); }));   // no stale carry-over
+          for (var i = 0; i < files.length; i++) {
+            await c.put(new Request("./shared/" + i + "/" + encodeURIComponent(files[i].name)),
+                        new Response(files[i], { headers: { "Content-Type": files[i].type || "application/octet-stream" } }));
+          }
+          to = "./?shared-file=" + files.length;
+        }
+      } catch (e) { /* fall through to the 0-file redirect; the page then says nothing arrived */ }
+      return Response.redirect(to, 303);
+    })());
+    return;
+  }
+
   if (req.method !== "GET") return;
 
   var url = new URL(req.url);

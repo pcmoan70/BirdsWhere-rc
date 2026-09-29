@@ -20,7 +20,7 @@ layered on top are the real sightings.
 > Model outputs are estimates, not ground truth; BirdWeather detections are AI acoustic
 > identifications, not human-verified.
 
-*Documentation last updated 2026-09-29 (app version ~v1927).*
+*Documentation last updated 2026-09-29 (app version ~v1928).*
 
 ---
 
@@ -626,6 +626,12 @@ view**.
   right-click** that button for the **Edit & protect lists** admin: rename a list, set its
   colour/tags for every point, **protect** it from deletion (🔒), delete it, or expand it to
   edit/remove individual points.
+- **Opening a file from the OS** — a `.kml`, `.kmz` or `.geojson` can be opened **from outside the
+  app**, landing in the same import dialog. On **desktop Chromium** (Chrome/Edge 102+, Windows ·
+  macOS · Linux · ChromeOS) install BirdsWhere and it registers as a file handler, so the file lists
+  it under *Open with*. On **Android Chrome** there is no file-handler API, but BirdsWhere registers
+  as a **share target that accepts files**, so *Share → BirdsWhere* from a file manager does the same
+  job. **iOS/Safari supports neither**, so there the *Load from file* button remains the only route.
 - **Import / export** — points import and export as **KML, KMZ and GeoJSON**. Export everything from
   Settings → *Map points*; download a **single list or trip** from the ↓ beside its × — in the Points
   menu and in the lists window (press-and-hold or right-click the Points button) — choosing the format
