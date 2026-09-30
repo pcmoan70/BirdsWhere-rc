@@ -437,6 +437,11 @@ window.AppFetch = (function () {
   // (the fetch timeout can cut it; the observations themselves are kept), capped
   // so a hotspot can't trigger thousands of lookups. Responses are SW-cached.
   var EBIRD_CHECKLIST_CAP = 150;
+  // A checklist's observer + comments never change once submitted: remember every lookup for
+  // the session, so re-fetching the same area does not ask eBird again. Eight parallel raw
+  // fetches per burst drew HTTP 429 from eBird (2026-10-01); now three at a time, each through
+  // fetchRetry (which waits out a 429 with Retry-After) and 120 ms apart.
+  var ebirdChkMemo = Object.create(null);   // subId -> { name, cmt: { speciesCode -> comment } }
   async function ebirdEnrichObservers(obs, tok, geoEp, signal) {
     if (!Array.isArray(obs) || !obs.length) return;
     var apiBase = String(geoEp).replace(/\/v2\/.*$/, "/v2/");   // share the host with the geo endpoint
@@ -444,20 +449,28 @@ window.AppFetch = (function () {
     obs.forEach(function (o) { if (o && o.subId && !seen[o.subId]) { seen[o.subId] = 1; ids.push(o.subId); } });
     ids = ids.slice(0, EBIRD_CHECKLIST_CAP);   // newest-first; cap the lookups
     var map = Object.create(null), cmt = Object.create(null), next = 0;
+    ids = ids.filter(function (id) {   // already known → use the memo, no request
+      var m = ebirdChkMemo[id]; if (!m) return true;
+      if (m.name) map[id] = m.name;
+      for (var k in m.cmt) cmt[id + "|" + k] = m.cmt[k];
+      return false;
+    });
     async function worker() {
       while (next < ids.length) {
         if (signal && signal.aborted) return;
         var id = ids[next++];
         try {
-          var rr = await fetch(apiBase + "product/checklist/view/" + encodeURIComponent(id), { headers: { "X-eBirdApiToken": tok }, signal: signal });
-          if (rr.ok) {
+          await gbifSleep(120, signal);   // pace the burst
+          var rr = await fetchRetry(apiBase + "product/checklist/view/" + encodeURIComponent(id), { headers: { "X-eBirdApiToken": tok } }, signal);
+          if (rr && rr.ok) {
+            var memo = { name: "", cmt: Object.create(null) };
             var j = await rr.json();
             if (j && j.userDisplayName) {
               // eBird returns the pseudonym + the real name (e.g. "Anonymous
               // eBirder Bastian Achenbach"); show the real name when one follows.
               var nm = String(j.userDisplayName).trim();
               var real = nm.replace(/^Anonymous eBirder\b\s*/i, "").trim();
-              map[id] = real || nm;
+              map[id] = memo.name = real || nm;
             }
             // Per-species observer comment — eBird's note equivalent, absent from the
             // geo/recent feed but present here (the call we already make for the name).
@@ -465,14 +478,15 @@ window.AppFetch = (function () {
               j.obs.forEach(function (ob) {
                 if (!ob || !ob.speciesCode) return;
                 var c = ob.comments || ob.comment || "";
-                if (c) cmt[id + "|" + ob.speciesCode] = String(c);
+                if (c) cmt[id + "|" + ob.speciesCode] = memo.cmt[ob.speciesCode] = String(c);
               });
             }
+            ebirdChkMemo[id] = memo;
           }
         } catch (e) { if (signal && signal.aborted) return; }   // a single failed/aborted lookup just leaves that checklist unnamed
       }
     }
-    var pool = []; for (var w = 0; w < 8; w++) pool.push(worker());
+    var pool = []; for (var w = 0; w < 3; w++) pool.push(worker());
     await Promise.all(pool);
     obs.forEach(function (o) {
       if (!o || !o.subId) return;
