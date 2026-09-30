@@ -1899,8 +1899,11 @@
     if (!holder) return;
     var key = holder.getAttribute("data-key"); if (!key) return;
     var color = (typeof detPlot !== "undefined" && detPlot[key] && detPlot[key].color) || speciesColor(key);
+    var html = detSwatch(color, isInteresting(key), !!rare, key);
+    if (holder._sw === html) return;   // unchanged: the swatch was rebuilt as fresh HTML for every row on every pass
+    holder._sw = html;
     holder.className = "sp-dot";
-    holder.innerHTML = detSwatch(color, isInteresting(key), !!rare, key);
+    holder.innerHTML = html;
   }
   // Distance origin for the list views: while automatic updating is ON, your LIVE
   // GPS position (so every distance-sorted surface re-sorts as you move); else the
@@ -2622,6 +2625,7 @@
     // explicit probability floor set by the user still wins.
     var MODEL_FLOOR = 0.01, MODEL_MIN_ROWS = 10, MODEL_TOP_N = 25, autoCut = 0;
     var floor = (+document.getElementById("prob-min").value || 0) / 100;   // once per pass (was a DOM read per row)
+    var rareCut = rarePct() / 100, missingOn = spMissingOn();   // once per pass (rarePct read storage per row)
     var tRows = 0, tDom = 0, tMark = perfOn ? performance.now() : 0;   // ?perf=1: row work vs DOM work
     if (spMissingAuto) {
       var ps = [];
@@ -2701,8 +2705,8 @@
       // (it has no dates); the species-flag, rarity and selection filters still apply.
       // Predicted species down to the list's own probability floor; with the floor at 0 %
       // the rare threshold guards instead — else the whole model would pour into the list.
-      var missingCut = spMissingAuto ? Math.max(floor, autoCut) : (floor > 0 ? floor : rarePct() / 100);
-      var missingOk = spMissingOn() && !!agg && !entry && !extra &&
+      var missingCut = spMissingAuto ? Math.max(floor, autoCut) : (floor > 0 ? floor : rareCut);
+      var missingOk = missingOn && !!agg && !entry && !extra &&
         (+tr.getAttribute("data-prob") || 0) >= missingCut;
       // What the list offers BEFORE the species selection narrows it — the pool the
       // lists/groups picker works from when nothing is plotted (see listPool).
@@ -14025,7 +14029,7 @@
       // [?] predictions have no detections to be "in view" — keep them (applyAgeFilter let them through).
       var missing = spMissingOn() && !!sl && !tr.classList.contains("sp-has-det") && !tr.classList.contains("sp-extra");
       var show = missing || tr.classList.contains("sp-has-det") || tr.classList.contains("sp-extra");
-      tr.style.display = show ? "" : "none";
+      if ((tr.style.display === "none") === show) tr.style.display = show ? "" : "none";
       if (show) shown++;
     });
     try { setStatusFor(t("sp.inView", { n: shown }), 2000); } catch (e) {}
@@ -14932,7 +14936,7 @@
     updateDetLegend();
     var dm = document.getElementById("detlist-modal");
     if (dm && dm.style.display === "flex" && typeof renderDetListModal === "function") renderDetListModal();
-    if (typeof speciesPanelPopulated === "function" && speciesPanelPopulated()) renderSpControls();
+    if (typeof speciesPanelPopulated === "function" && speciesPanelPopulated()) refilterSpTable();   // counts only: no rebuild of the table's rows after a pan
     var nl = document.querySelector("#sp-filters-wrap .det-obs-list") || document.querySelector("#detlist-filters-wrap .det-obs-list"); if (nl) nl.scrollTop = st;
   }
   // Small popup (anchored to a clicked observer name) to toggle that observer's
