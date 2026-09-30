@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1933";
+var VERSION = "v1934";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Lists follow the map: the species table, its expanded records, the \u2630 detections list and the header's fetched-area descriptions show only what is inside the current map view, re-scoped one second after the map stops moving; the \u201cIn map view: n species\u201d note fades after 2 s. Clear filters (funnel-\u00d7) also zooms back out to every fetched point.",
+  "\u2022 Faster filtering and map moves: a filter change no longer re-counts every species five times over, and panning re-scopes the lists in one pass. Same results, less waiting.",
+  "\u2022 Lists follow the map: the species table, its expanded records, the \u2630 detections list and the header's fetched-area descriptions show only what is inside the current map view. Clear filters (funnel-\u00d7) also zooms back out to every fetched point.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -9908,7 +9908,16 @@
   }
   function setDetTodayFilter(on) { detTodayFilter = !!on; detFiltersRefresh(); }
   // Distinct source labels among the plotted rows (what a source filter can pick from).
-  function detSourcesPresent() {
+  // Observers / locations / sources present depend only on WHAT is plotted, not on the filters:
+  // cache them by the plot signature (the all-filters pane rebuilt all three on every change).
+  var _plotListMemo = { sig: "", obs: null, loc: null, src: null };
+  function plotListMemo(slot, compute) {
+    var sig = detPlotSig();
+    if (_plotListMemo.sig !== sig) _plotListMemo = { sig: sig, obs: null, loc: null, src: null };
+    return _plotListMemo[slot] || (_plotListMemo[slot] = compute());
+  }
+  function detSourcesPresent() { return plotListMemo("src", detSourcesPresentRaw); }
+  function detSourcesPresentRaw() {
     var s = Object.create(null);
     Object.keys(detPlot).forEach(function (k) { (detPlot[k].rows || []).forEach(function (r) { var l = srcLabel(r); if (l) s[l] = 1; }); });
     return Object.keys(s).sort();
@@ -9965,7 +9974,7 @@
     if (detFocusObs) return (r.observer || "").indexOf(detFocusObs) >= 0;   // legend hover isolates one observer
     if (!detObsFilter) return true;
     var obs = (r.observer || "").trim();
-    if (!detObsRealNames(obs).length) return detObsAllowNone;   // empty, or only tags → "no observer" bucket
+    if (!rowMemo(r, "_obsN", function (x) { return detObsRealNames((x.observer || "").trim()); }).length) return detObsAllowNone;   // empty, or only tags → "no observer" bucket
     for (var i = 0; i < detObsNames.length; i++) if (obs.indexOf(detObsNames[i]) >= 0) return true;   // substring match
     return false;
   }
@@ -9977,7 +9986,7 @@
   var detLocFilter = null;              // Set of selected place names (incl "") or null = all
   var detLocNames = [];                 // selected non-empty place names
   var detLocAllowNone = false;          // is "(no location)" selected
-  function detLocKey(r) { return placeAccurate(r) ? String(r.place || "").trim() : ""; }
+  function detLocKey(r) { return rowMemo(r, "_locK", function (x) { return placeAccurate(x) ? String(x.place || "").trim() : ""; }); }
   var detLocRestored = false;           // loaded from storage (not chosen this session) → healable
   function setDetLocFilter(set, restored) {
     // null = all locations; empty Set = "None" (a base to then tick a few); a Set
@@ -10049,20 +10058,10 @@
       saveLegendState(); detFiltersRefresh();
     }, 1000);
   }
-  // Heal a remembered location filter whose selected names aren't among the
-  // currently-plotted locations (else the map silently blanks). Explicit "None"
-  // (empty Set) is left alone. Mirrors reconcileObsFilter.
-  function reconcileLocFilter() {
-    if (!detLocFilter || !detLocFilter.size) return false;
-    if (!Object.keys(detPlot).length) return false;
-    var lo = detAllLocations(), present = detLocAllowNone && lo.hasNone;
-    for (var i = 0; !present && i < detLocNames.length; i++) if (lo.names.indexOf(detLocNames[i]) >= 0) present = true;
-    if (present) return false;
-    setDetLocFilter(null); saveLegendState(); return true;
-  }
   // Distinct accurate place names among the plotted rows (+ a "(no location)" flag)
   // — what the location checklist offers.
-  function detAllLocations() {
+  function detAllLocations() { return plotListMemo("loc", detAllLocationsRaw); }
+  function detAllLocationsRaw() {
     var set = Object.create(null), hasNone = false;
     Object.keys(detPlot).forEach(function (k) {
       (detPlot[k].rows || []).forEach(function (r) {
@@ -10211,8 +10210,17 @@
     for (var i = 0; i < (rows || []).length; i++) { var r = rows[i]; if (detRowPasses(r)) vis.push(r); }
     return specimenTotal(vis);
   }
-  function detSpeciesCount(k) { return dedupedSpecimenTotal((dEntry(k) || {}).rows || []); }
-  function detSpeciesPairs(k) { return distinctObsDatePairs((dEntry(k) || {}).rows || []); }
+  // Per-tick memo for the per-species counts: the same species was dedup-counted by the legend,
+  // the funnel bar, the count gate and the table in one filter change. Cleared by
+  // invalidateFilterMemos() and at the end of the tick (a map move is its own tick).
+  var _cntMemo = Object.create(null), _cntTick = false;
+  function cntMemo(key, compute) {
+    if (!_cntTick) { _cntTick = true; setTimeout(function () { _cntTick = false; _cntMemo = Object.create(null); }, 0); }
+    var v = _cntMemo[key];
+    return v !== undefined ? v : (_cntMemo[key] = compute());
+  }
+  function detSpeciesCount(k) { return countPassing(k, false); }
+  function detSpeciesPairs(k) { return cntMemo("p|" + k, function () { return distinctObsDatePairs((dEntry(k) || {}).rows || []); }); }
   // Number of distinct observations behind the specimen total: distinct observer × date
   // pairs (deduplicated records) over the rows that pass the active filters. Shown in
   // the Total column as "31(3)" — 31 specimens across 3 observation events.
@@ -10226,7 +10234,13 @@
     }
     return n;
   }
-  function detPassesCount(k) { return (spCountMin == null && spCountMax == null) || countInBounds(spCountMetric === "pairs" ? detSpeciesPairs(k) : detSpeciesCount(k)); }
+  // At the default (Total ≥ 1, no max) the count gate cannot hide a species that has a dot to
+  // show — every surface already drops a species with no passing row — so skip the dedup pass
+  // it would otherwise run for every species in every caller of detIsVisible (5+ per change).
+  function detPassesCount(k) {
+    if (spCountMax == null && (spCountMin == null || spCountMin <= 1)) return true;
+    return countInBounds(spCountMetric === "pairs" ? detSpeciesPairs(k) : detSpeciesCount(k));
+  }
   // "Rare here": a species observed at this spot that the HABITAT MODEL says is
   // unlikely to be here — model probability at most rarePct%.
   //
@@ -10336,7 +10350,7 @@
   // a species passes when its best-spot model probability lies inside [lo, hi].
   // Unknown probability (not yet computed / non-model species) never hides.
   function detPassesProb(k) {
-    var lo = +document.getElementById("prob-min").value, hi = +document.getElementById("prob-max").value;
+    var c = dateCfg(), lo = c.plo, hi = c.phi;
     if (!(lo > 0 || hi < 100)) return true;   // default range → no gate
     var p = (k in detProbMax) ? detProbMax[k] : -1;
     if (!isFinite(p) || p < 0) return true;
@@ -10845,12 +10859,43 @@
   function dateCfg() {
     if (_dateCfgMemo) return _dateCfgMemo;
     var days = detRecencyDays();
+    var pmin = document.getElementById("prob-min"), pmax = document.getElementById("prob-max");
     _dateCfgMemo = { days: days, cut: days > 0 ? isoDaysAgo(days) : "",
-                     range: detDateRange(), months: detMonths(), daySel: detDaySelActive() };
+                     range: detDateRange(), months: detMonths(), daySel: detDaySelActive(),
+                     plo: pmin ? +pmin.value : 0, phi: pmax ? +pmax.value : 100 };   // the two sliders, once per tick (were two DOM reads per species)
     setTimeout(function () { _dateCfgMemo = null; }, 0);
     return _dateCfgMemo;
   }
-  function invalidateFilterMemos() { _detRemovedMemo = null; _dateCfgMemo = null; _plotSigMemo = null; }
+  function invalidateFilterMemos() { _detRemovedMemo = null; _dateCfgMemo = null; _plotSigMemo = null; _cntMemo = Object.create(null); }
+  // ?perf=1 — every filter/view stage logs its milliseconds to a console.table, so a speed-up
+  // is measured on real data rather than assumed (tasks/filter-perf_20260930.md, stage 0).
+  var perfOn = /[?&]perf=1(?:&|$)/.test(location.search), _perfRows = [], _perfFlush = null;
+  function perfWrap(name, fn) {
+    return function () {
+      var t0 = performance.now();
+      try { return fn.apply(this, arguments); }
+      finally {
+        _perfRows.push({ stage: name, ms: +(performance.now() - t0).toFixed(1) });
+        clearTimeout(_perfFlush);
+        _perfFlush = setTimeout(function () {
+          var rows = _perfRows; _perfRows = [];
+          rows.push({ stage: "TOTAL (" + rows.length + " stages)", ms: +rows.reduce(function (a, r) { return a + r.ms; }, 0).toFixed(1) });
+          console.table(rows);
+        }, 80);
+      }
+    };
+  }
+  // A memo that lives on the row itself, non-enumerable so it never serialises into storage
+  // (the `_dk` pattern): the observer split, the source label, the location key and the
+  // 10-char date were recomputed for every row on every filter pass.
+  function rowMemo(r, key, compute) {
+    var v = r[key];
+    if (v !== undefined) return v;
+    v = compute(r);
+    try { Object.defineProperty(r, key, { value: v, enumerable: false, writable: true, configurable: true }); }
+    catch (e) { r[key] = v; }
+    return v;
+  }
   function detDatePasses(dateStr) {
     var c = dateCfg(), d0 = String(dateStr || "").slice(0, 10);
     if (!detDaySuspend) {
@@ -11027,11 +11072,13 @@
   // GBIF aggregates records from other platforms; show the originating platform with a
   // "[GBIF]" tag so it's clear it came via GBIF — e.g. "Observation.org[GBIF]".
   function srcLabel(r) {
-    if (r.src === "GBIF") {
-      var o = r.origin ? shortOrigin(r.origin) : "";
-      return (o && o !== "GBIF") ? o + "[GBIF]" : "GBIF";
-    }
-    return r.src || "";
+    return rowMemo(r, "_srcL", function (x) {
+      if (x.src === "GBIF") {
+        var o = x.origin ? shortOrigin(x.origin) : "";
+        return (o && o !== "GBIF") ? o + "[GBIF]" : "GBIF";
+      }
+      return x.src || "";
+    });
   }
   // Whether the user can actually query a source — used to flag records in a shared
   // map that came from a source the recipient has no access to (a keyed source with
@@ -12717,6 +12764,22 @@
       try { fn(); } finally { setFunnelBusy(false); }
     }, 30);
   }
+  if (perfOn) {
+    rebuildDetLayers = perfWrap("rebuildDetLayers", rebuildDetLayers);
+    updateDetLegend = perfWrap("updateDetLegend", updateDetLegend);
+    updateHdrHisto = perfWrap("updateHdrHisto", updateHdrHisto);
+    renderDetListModal = perfWrap("renderDetListModal", renderDetListModal);
+    renderSpControls = perfWrap("renderSpControls", renderSpControls);
+    renderAllFiltersPane = perfWrap("renderAllFiltersPane", renderAllFiltersPane);
+    applyAgeFilter = perfWrap("applyAgeFilter", applyAgeFilter);
+    restrictListToView = perfWrap("restrictListToView", restrictListToView);
+    renderSpCoordsAreas = perfWrap("renderSpCoordsAreas", renderSpCoordsAreas);
+    computeDotClusters = perfWrap("computeDotClusters", computeDotClusters);
+    ensureDedup = perfWrap("ensureDedup", ensureDedup);
+    detFilteredStats = perfWrap("detFilteredStats", detFilteredStats);
+    collectVisibleDetections = perfWrap("collectVisibleDetections", collectVisibleDetections);
+    saveLegendState = perfWrap("saveLegendState", saveLegendState);
+  }
   function detFiltersRefresh() {
     invalidateFilterMemos();   // a filter just changed — never re-use the previous pass's snapshot
     withFunnelBusy(function () {
@@ -13620,7 +13683,6 @@
     ensureDedup();
     reconcileObsFilter();   // drop a stale observer filter that no longer matches any plotted observer
     reconcileLocFilter();   // …and a stale location filter, which would hide every fetched record
-    reconcileLocFilter();   // …and likewise a stale location filter
 
     if (detFocusKey && !detPlot[detFocusKey]) detFocusKey = null;   // focused species gone → don't mute everything
     recolorDetections();
@@ -13910,15 +13972,9 @@
   function restrictListToView() {
     var tbody = document.getElementById("sp-tbody"); if (!tbody || !map) return;
     syncAlertPlot();   // make sure alert species are current before deciding what stays in view
-    var b = map.getBounds();
-    var inView = Object.create(null);
-    unionDetKeys().forEach(function (k) {   // detPlot ∪ rarity-alert species
-      var e = dEntry(k); if (!e || !e.rows) return;
-      for (var i = 0; i < e.rows.length; i++) {
-        var r = e.rows[i];
-        if (isFinite(+r.lat) && isFinite(+r.lon) && b.contains([+r.lat, +r.lon]) && detDatePasses(r.date) && detPassesNew(r)) { inView[k] = 1; break; }
-      }
-    });
+    // applyAgeFilter() scopes every species row to the map view (detRowInView) and hides a
+    // species whose in-view, filtered count is 0 — the separate in-view scan this function
+    // used to make first (a second walk of every row) decided the same thing with fewer filters.
     applyAgeFilter();   // baseline: the filters (and the [?] predicted rows) decide first
     var shown = 0;
     // Species rows only (direct children): querySelectorAll("tr") would also reach the
@@ -13932,7 +13988,7 @@
       else { var ex = tr.querySelector(".det-count-extra[data-sci]"); if (ex) key = "x:" + String(ex.getAttribute("data-sci") || "").toLowerCase(); }
       // [?] predictions have no detections to be "in view" — keep them (applyAgeFilter let them through).
       var missing = spMissingOn() && !!sl && !tr.classList.contains("sp-has-det") && !tr.classList.contains("sp-extra");
-      var show = missing || !!(key && inView[key]);
+      var show = missing || tr.classList.contains("sp-has-det") || tr.classList.contains("sp-extra");
       tr.style.display = show ? "" : "none";
       if (show) shown++;
     });
@@ -14953,11 +15009,12 @@
       b.addEventListener("click", function (e) { e.stopPropagation(); observerActionMenu(this.getAttribute("data-obs"), r); });
     });
   }
-  function detAllObservers() {
+  function detAllObservers() { return plotListMemo("obs", detAllObserversRaw); }
+  function detAllObserversRaw() {
     var set = Object.create(null), hasNone = false;
     Object.keys(detPlot).forEach(function (k) {
       (detPlot[k].rows || []).forEach(function (r) {
-        var real = detObsRealNames(r.observer);   // split into single names, drop org/source tags
+        var real = rowMemo(r, "_obsN", function (x) { return detObsRealNames((x.observer || "").trim()); });   // split once per row
         if (real.length) real.forEach(function (n) { set[n] = 1; });
         else hasNone = true;                       // empty or only tags → "(no observer)"
       });
@@ -15178,8 +15235,12 @@
   // optionally restricted to the current map view (legendViewBounds). The counts match
   // the Species-list Total / count filter (specimens, not records).
   function countPassing(k, inView) {
+    var b = inView ? legendViewBounds : null;
+    return cntMemo((b ? "v|" + b.toBBoxString() + "|" : "a|") + k, function () { return countPassingRaw(k, b); });
+  }
+  function countPassingRaw(k, b) {
     var e = dEntry(k); if (!e || !e.rows) return 0;
-    var b = inView ? legendViewBounds : null, vis = [];
+    var vis = [];
     for (var i = 0; i < e.rows.length; i++) {
       var r = e.rows[i];
       if (!detRowPasses(r)) continue;
