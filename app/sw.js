@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1934";
+var VERSION = "v1935";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Faster filtering and map moves: a filter change no longer re-counts every species five times over, and panning re-scopes the lists in one pass. Same results, less waiting.",
+  "\u2022 Faster filtering and map moves: a filter change no longer re-counts every species five times over, panning re-scopes the species table with far less work, and the map-tile cache trims itself again (it had grown past what the browser would list).",
   "\u2022 Lists follow the map: the species table, its expanded records, the \u2630 detections list and the header's fetched-area descriptions show only what is inside the current map view. Clear filters (funnel-\u00d7) also zooms back out to every fetched point.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
@@ -49,7 +49,12 @@ var DATA_CACHE = RC_TAG + "data-" + DATA_REV;    // model / labels / taxonomy / 
 // blob live here together, under one byte budget + one LRU. The app writes its
 // range cache into this same cache (see MAP_POOL_CACHE in app.js), so it isn't
 // wiped on a deploy and both compete for the same space.
-var TILE_CACHE = "map-pool";            // map tiles + computed range data
+var TILE_CACHE = "map-pool";            // the app's computed range data (+ tiles cached before v1935)
+// Tiles are SHARDED over 16 caches by URL hash. One big pool broke its own LRU: with tens of
+// thousands of tiles, cache.keys() threw "Operation too large" (2026-10-01), so the trim never
+// ran and the pool only grew. A shard holds at most cap/16 entries, well inside the limit.
+var TILE_SHARDS = 16, TILE_SHARD_PREFIX = "map-pool-s";
+function tileShard(url) { var h = 0; for (var i = 0; i < url.length; i++) h = (h * 31 + url.charCodeAt(i)) | 0; return TILE_SHARD_PREFIX + ((h >>> 0) % TILE_SHARDS); }
 // Species photos (the Images layout's Wikimedia thumbnails): version-independent
 // and cache-first — a photo is downloaded once and then served from the device,
 // surviving app updates; FIFO-capped by count (~40 KB per 500 px thumbnail).
@@ -118,7 +123,7 @@ self.addEventListener("message", function (event) {
     var tiles = tilesForMB(d.mb);
     tileCap = tiles;
     caches.open(META_CACHE).then(function (c) { c.put("https://config.local/tilecap", new Response(tiles === Infinity ? "-1" : String(tiles))); });
-    caches.open(TILE_CACHE).then(function (c) { trim(c, tiles); });   // shrink now if the new cap is smaller
+    for (var si = 0; si < TILE_SHARDS; si++) (function (name) { caches.open(name).then(function (c) { trim(c, Math.ceil(tiles / TILE_SHARDS)); }); })(TILE_SHARD_PREFIX + si);   // shrink now if the new cap is smaller
   }
 });
 
@@ -342,7 +347,7 @@ self.addEventListener("activate", function (event) {
         return Promise.all(
           names.map(function (n) {
             // Keep current caches and all pinned offline areas (version-independent).
-            if (keep.indexOf(n) !== -1 || n.indexOf(PINNED_PREFIX) === 0) return;
+            if (keep.indexOf(n) !== -1 || n.indexOf(PINNED_PREFIX) === 0 || n.indexOf(TILE_SHARD_PREFIX) === 0) return;
             // Only ever delete OUR OWN channel's caches: RC deletes rc-*; production
             // deletes non-rc names (the channels share one origin-wide cache store).
             var isRc = n.indexOf("rc-") === 0;
@@ -551,7 +556,11 @@ function tileResponse(req) {
     })(0);
   }).then(function (pinnedHit) {
     if (pinnedHit) return pinnedHit;
-    return getTileCap().then(function (cap) { return cacheFirstCapped(req, TILE_CACHE, cap); });
+    // A tile cached before the shards (in the old pool) still serves: match() needs no enumeration.
+    return caches.open(TILE_CACHE).then(function (old) { return old.match(req); }).then(function (hit) {
+      if (hit) return hit;
+      return getTileCap().then(function (cap) { return cacheFirstCapped(req, tileShard(req.url), Math.ceil(cap / TILE_SHARDS)); });
+    });
   });
 }
 
@@ -615,7 +624,9 @@ function queueTrim(cache, max) {
 // but it is NOT a tile and must never be evicted by tile churn — exclude it from
 // both the cap count and deletion.
 function trim(cache, max) {
-  return cache.keys().then(function (keys) {
+  if (!isFinite(max)) return Promise.resolve();
+  return cache.keys().catch(function () { return null; }).then(function (keys) {   // an enumeration the browser refuses → skip this pass, never throw
+    if (!keys) return;
     var tiles = keys.filter(function (k) { return k.url.indexOf("mapcache.local") < 0; });
     if (tiles.length <= max) return;
     var excess = tiles.length - max;

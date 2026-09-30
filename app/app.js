@@ -2621,6 +2621,7 @@
     // desert), its best MODEL_TOP_N anyway — the answer must never be a blank page. An
     // explicit probability floor set by the user still wins.
     var MODEL_FLOOR = 0.01, MODEL_MIN_ROWS = 10, MODEL_TOP_N = 25, autoCut = 0;
+    var floor = (+document.getElementById("prob-min").value || 0) / 100;   // once per pass (was a DOM read per row)
     if (spMissingAuto) {
       var ps = [];
       Array.prototype.forEach.call(tbody.children, function (tr) {
@@ -2634,10 +2635,13 @@
     Array.prototype.forEach.call(tbody.querySelectorAll("tr"), function (tr) {
       if (tr.classList.contains("sp-detail-row")) return;   // handled by refreshSpExpansions below
       var extra = tr.classList.contains("sp-extra");
-      var sl = tr.querySelector(".sp-link"), key = sl && sl.getAttribute("data-key");
+      // The row's cells, looked up once per row for its lifetime (five querySelectors per row per pass before).
+      var C = tr._spCells || (tr._spCells = { sl: tr.querySelector(".sp-link"), dot: tr.querySelector(".sp-dot"), nd: tr.querySelector(".det-nd"),
+                                             ndBtn: tr.querySelector(".det-nd .det-count-btn"), last: tr.querySelector(".sp-last"), ex: tr.querySelector(".det-count-extra[data-sci]") });
+      var sl = C.sl, key = sl && sl.getAttribute("data-key");
       tr.classList.toggle("sp-deleted", !!(key && deletedSpecies[key]));   // grey a species removed from the map
       // Repaint the species dot with its live state (★ / rare-here / year·life need / blocked).
-      if (!extra && key) { var _dot = tr.querySelector(".sp-dot"); if (_dot) paintSpDot(_dot, !!(rareAll && rareAll[key])); }
+      if (!extra && key && C.dot) paintSpDot(C.dot, !!(rareAll && rareAll[key]));
       var entry = (!extra && key && agg) ? agg[key] : null;
       // ◉ rare: species outside the model ("extras") never carry the marker.
       var rareOk = !rareSet || (!extra && !!(key && rareSet[key]));
@@ -2652,24 +2656,31 @@
         // observer + source filters. Total, pairs, the Last cell and row visibility all
         // derive from this subset, so the date-range panel actually narrows the table
         // (and the "N hidden" recency note matches what the Total now leaves out).
-        var winRows = entry.rows.filter(function (r) { return detRowPasses(r) && detRowInView(r); });   // in-window AND in the map view
+        var winRows = [], rows = entry.rows, latest = "";
+        for (var wi = 0; wi < rows.length; wi++) {
+          var wr = rows[wi];
+          if (!detRowPasses(wr) || !detRowInView(wr)) continue;
+          winRows.push(wr);
+          if (wr.date && wr.date > latest) latest = wr.date;   // ISO strings order as dates: one Date.parse per species, not per row
+        }
         fc = dedupedSpecimenTotal(winRows);   // total specimens AFTER de-duplication, in-window
-        winRows.forEach(function (r) {
-          var ts = r.date ? Date.parse(r.date + "T00:00:00") : 0; if (ts && ts > flatest) flatest = ts;
-        });
+        flatest = latest ? (Date.parse(String(latest).slice(0, 10) + "T00:00:00") || 0) : 0;
         tr.classList.toggle("sp-has-det", fc > 0);
-        var ndBtn = tr.querySelector(".det-nd .det-count-btn"); if (ndBtn) ndBtn.textContent = fc;
         var pairs = fc > 0 ? distinctObsDatePairs(winRows) : 0;
-        setPairsSuffix(tr.querySelector(".det-nd"), pairs);
-        tr.setAttribute("data-total", fc); tr.setAttribute("data-pairs", pairs);   // Total-panel sort keys
-        var lastTd = tr.querySelector(".sp-last"); if (lastTd) lastCellSet(lastTd, flatest);
-        if (flatest) tr.setAttribute("data-last", flatest); else tr.removeAttribute("data-last");
+        // Write the DOM only when a value changed: the table is re-scoped on every pan.
+        if (C.ndBtn && C.ndBtn.textContent !== String(fc)) C.ndBtn.textContent = fc;
+        if (tr.getAttribute("data-pairs") !== String(pairs)) { setPairsSuffix(C.nd, pairs); tr.setAttribute("data-pairs", pairs); }
+        if (tr.getAttribute("data-total") !== String(fc)) tr.setAttribute("data-total", fc);   // Total-panel sort keys
+        if (String(flatest || "") !== (tr.getAttribute("data-last") || "")) {
+          if (C.last) lastCellSet(C.last, flatest);
+          if (flatest) tr.setAttribute("data-last", flatest); else tr.removeAttribute("data-last");
+        }
         obsFilteredOut = !!(entry.count) && fc === 0;
       } else if (extra) {
         fc = parseInt(tr.getAttribute("data-count"), 10) || 0;
         flatest = parseInt(tr.getAttribute("data-last"), 10) || 0;
         tr.setAttribute("data-total", fc); tr.setAttribute("data-pairs", parseInt(tr.getAttribute("data-pairs"), 10) || 0);
-        var lastTdE = tr.querySelector(".sp-last"); if (lastTdE) lastCellSet(lastTdE, flatest);
+        if (C.last) lastCellSet(C.last, flatest);
       } else {
         // Model row with NO detections (no agg entry → blank Total). fc stays 0; also
         // zero the sort keys so a Total/Observations ≥ N filter (which reads data-total /
@@ -2692,7 +2703,6 @@
       // (it has no dates); the species-flag, rarity and selection filters still apply.
       // Predicted species down to the list's own probability floor; with the floor at 0 %
       // the rare threshold guards instead — else the whole model would pour into the list.
-      var floor = (+document.getElementById("prob-min").value || 0) / 100;
       var missingCut = spMissingAuto ? Math.max(floor, autoCut) : (floor > 0 ? floor : rarePct() / 100);
       var missingOk = spMissingOn() && !!agg && !entry && !extra &&
         (+tr.getAttribute("data-prob") || 0) >= missingCut;
@@ -2705,10 +2715,7 @@
       // "x:<scientific name>" key the rest of the app uses, or every extra (which is
       // where the butterflies actually are) would be judged keyless and dropped.
       var bflyKey = key;
-      if (!bflyKey) {
-        var exB = tr.querySelector(".det-count-extra[data-sci]");
-        if (exB) bflyKey = "x:" + String(exB.getAttribute("data-sci") || "").toLowerCase();
-      }
+      if (!bflyKey && C.ex) bflyKey = "x:" + String(C.ex.getAttribute("data-sci") || "").toLowerCase();
       var bflyOk = detPassesBflySp(bflyKey);
       var pooled = (missingOk || (recencyOk && countOk && !obsFilteredOut)) && rareOk && buildOk && bflyOk;
       tr.classList.toggle("sp-pool", pooled);
@@ -10229,7 +10236,7 @@
     for (var i = 0; i < (rows || []).length; i++) {
       var r = rows[i];
       if (!detRowPasses(r)) continue;
-      var key = (r.observer || "").toLowerCase().replace(/\s+/g, " ").trim() + "|" + String(r.date || "").slice(0, 10);
+      var key = rowMemo(r, "_pk", function (x) { return (x.observer || "").toLowerCase().replace(/\s+/g, " ").trim() + "|" + String(x.date || "").slice(0, 10); });
       if (!seen[key]) { seen[key] = 1; n++; }
     }
     return n;
@@ -12779,6 +12786,10 @@
     detFilteredStats = perfWrap("detFilteredStats", detFilteredStats);
     collectVisibleDetections = perfWrap("collectVisibleDetections", collectVisibleDetections);
     saveLegendState = perfWrap("saveLegendState", saveLegendState);
+    refreshSpExpansions = perfWrap("  refreshSpExpansions", refreshSpExpansions);
+    repaintDotsOutsideTable = perfWrap("  repaintDotsOutsideTable", repaintDotsOutsideTable);
+    updateRecencyNote = perfWrap("  updateRecencyNote", updateRecencyNote);
+    filterSpRows = perfWrap("  filterSpRows", filterSpRows);
   }
   function detFiltersRefresh() {
     invalidateFilterMemos();   // a filter just changed — never re-use the previous pass's snapshot
@@ -13557,9 +13568,13 @@
   // inside the current map view — as the legend already does — and re-filter when the map
   // moves (listViewKick). The dot layers keep their one-screen culling margin above so
   // panning shows dots before the rebuild; hence a predicate beside detRowPasses, not in it.
-  var listViewBounds = null;
-  function captureListView() { listViewBounds = map ? map.getBounds() : null; }
-  function detRowInView(r) { return !listViewBounds || (isFinite(+r.lat) && isFinite(+r.lon) && listViewBounds.contains([+r.lat, +r.lon])); }
+  var listViewBounds = null, lvS = 0, lvN = 0, lvW = 0, lvE = 0;
+  function captureListView() {
+    listViewBounds = map ? map.getBounds() : null;
+    if (listViewBounds) { lvS = listViewBounds.getSouth(); lvN = listViewBounds.getNorth(); lvW = listViewBounds.getWest(); lvE = listViewBounds.getEast(); }
+  }
+  // Four number compares per row (Leaflet's contains() allocated a LatLng per call, per row per pass).
+  function detRowInView(r) { return !listViewBounds || (r.lat >= lvS && r.lat <= lvN && r.lon >= lvW && r.lon <= lvE); }
   function computeDotClusters(allowed) {
     if (!dotClusterOn() || !map || detFocusKey) return null;
     var D = DOT_CLUSTER_PX, z = map.getZoom();
@@ -19354,7 +19369,9 @@
         });
       }
       var p;
-      if (what === "tiles") p = window.caches ? caches.delete("map-pool") : Promise.resolve();   // LRU tile pool (NOT the pinned offline areas)
+      if (what === "tiles") p = window.caches ? caches.keys().then(function (names) {   // the old pool + every tile shard (NOT the pinned offline areas)
+        return Promise.all(names.filter(function (n) { return n === "map-pool" || n.indexOf("map-pool-s") === 0; }).map(function (n) { return caches.delete(n); }));
+      }) : Promise.resolve();
       else if (what === "range") {   // computed Species-Range / Richness H3 cells (in-memory Map + its blob in the shared pool)
         h3RangeCache.clear();
         if (h3SaveTimer) { clearTimeout(h3SaveTimer); h3SaveTimer = null; }   // don't let a pending save re-persist the just-cleared data
@@ -19474,7 +19491,10 @@
         setCnt("birds", Object.keys(bs).length, jsonBytes(bs));
       }
       if (window.caches) {
-        caches.open("map-pool").then(function (c) { return c.keys(); }).then(function (k) { setCnt("tiles", k.length, k.length * 22000, true); }).catch(function () {});
+        caches.keys().then(function (names) {   // sum the tile shards (+ whatever the old pool still lists; a refused enumeration counts as 0)
+          var pools = names.filter(function (n) { return n === "map-pool" || n.indexOf("map-pool-s") === 0; });
+          return Promise.all(pools.map(function (n) { return caches.open(n).then(function (c) { return c.keys(); }).then(function (k) { return k.length; }).catch(function () { return 0; }); }));
+        }).then(function (ns) { var n = ns.reduce(function (a, b) { return a + b; }, 0); setCnt("tiles", n, n * 22000, true); }).catch(function () {});
         caches.open("species-images").then(function (c) { return c.matchAll(); }).then(function (rs) {   // photos are CORS responses → real sizes
           var by = 0; rs.forEach(function (r) { by += (+r.headers.get("content-length") || 0); });
           setCnt("images", rs.length, by);
