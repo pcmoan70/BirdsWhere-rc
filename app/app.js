@@ -889,6 +889,16 @@
       m.box.querySelector("#nudge-ok").addEventListener("click", m.close);
     } catch (e) {}
   }
+  // A status line that goes away by itself after *ms* — unless something else has replaced it.
+  var statusForTimer = null;
+  function setStatusFor(msg, ms) {
+    setStatus(msg);
+    clearTimeout(statusForTimer);
+    statusForTimer = setTimeout(function () {
+      var el = document.getElementById("app-status");
+      if (el && el.textContent === msg) setStatus("");
+    }, ms);
+  }
   function setStatus(msg, isErr) {
     if (isErr) appErrLog(msg);
     var el = document.getElementById("app-status");
@@ -13810,7 +13820,7 @@
     if (map) {
       var vb = map.getBounds();
       rows = rows.filter(function (r) { return isFinite(+r.lat) && isFinite(+r.lon) && vb.contains([+r.lat, +r.lon]); });
-      try { setStatus(t("sp.inView", { n: rows.length })); } catch (e) {}
+      try { setStatusFor(t("sp.inView", { n: rows.length }), 2000); } catch (e) {}
     }
     rec.style.display = "";
     rec.innerHTML = rows.length ? buildSpObsHtml(rows) : '<div class="dl-empty">' + escapeHtml(t("detlist.empty")) + "</div>";
@@ -13926,7 +13936,7 @@
       tr.style.display = show ? "" : "none";
       if (show) shown++;
     });
-    try { setStatus(t("sp.inView", { n: shown })); } catch (e) {}
+    try { setStatusFor(t("sp.inView", { n: shown }), 2000); } catch (e) {}
   }
   function goToMapView() {
     if (!viewToggleAvail()) return;
@@ -18651,8 +18661,10 @@
       dotClusterTimer = setTimeout(function () { try { rebuildDetLayers(); } catch (e) {} }, 150);
     }
     map.on("zoomend moveend", dotViewKick);
-    // The list surfaces follow the map view: once a pan/zoom settles, re-scope the species
-    // table (and its "In map view: n" status) and the fetch-list modal to the new bounds.
+    // The list surfaces follow the map view: one second after the last pan/zoom movement,
+    // re-scope the species table (and its "In map view: n" status, shown for 2 s) and the
+    // fetch-list modal to the new bounds. A full second, not the dots' 150 ms: the re-scope
+    // walks every plotted row, and running it on every pause made panning feel sticky.
     var listViewTimer = null;
     function listViewKick() {
       if (!hasPlottedDetections()) return;
@@ -18665,7 +18677,7 @@
           var dm = document.getElementById("detlist-modal");
           if (dm && dm.style.display === "flex") renderDetListModal();
         } catch (e) {}
-      }, 300);
+      }, 1000);
     }
     map.on("zoomend moveend", listViewKick);
     map.on("moveend", function () { if (legendStackCtrl) scheduleClcQuery(); });   // re-limit the CORINE legend to the new view
