@@ -1817,6 +1817,7 @@
   function refreshSpExpansions() {
     var tbody = document.getElementById("sp-tbody"); if (!tbody) return;
     Array.prototype.slice.call(tbody.querySelectorAll(".sp-detail-row")).forEach(function (tr) { if (tr.parentNode) tr.parentNode.removeChild(tr); });
+    if (!Object.keys(spExpanded).length && !tbody.querySelector("tr.sp-open")) return;   // nothing expanded, nothing marked: skip the per-row scan (it ran on every pan)
     // Mark expanded species rows so the row shows it's open (the ▸ caret was removed;
     // the whole row is the expand target now — see the sp-tbody click handler).
     Array.prototype.forEach.call(tbody.querySelectorAll("tr"), function (tr) {
@@ -2757,9 +2758,12 @@
     try { if (mpState && mpState.mpFilterRefresh) mpState.mpFilterRefresh(); } catch (e) {}
     var tb = document.getElementById("sp-tbody"); if (!tb) return;
     var q = spNameQuery.trim();
+    if (!q) {   // no search: only rows still carrying the class need touching (every row was visited before)
+      Array.prototype.forEach.call(tb.querySelectorAll("tr.sp-hide-search"), function (tr) { tr.classList.remove("sp-hide-search"); });
+      return;
+    }
     Array.prototype.forEach.call(tb.querySelectorAll("tr"), function (tr) {
       if (tr.classList.contains("sp-detail-row")) return;   // sub-rows follow their species
-      if (!q) { tr.classList.remove("sp-hide-search"); return; }
       tr.classList.toggle("sp-hide-search", !spRowMatchesName(tr, q));
     });
   }
@@ -12823,7 +12827,7 @@
   // and then filtered it: 130-280 ms of a filter change on the owner's data (2026-10-01).
   // The Images cards and the observation list are drawn FROM the pass, so they still render.
   function refilterSpTable() {
-    if (spLayout !== "table") { renderSpControls(); return; }
+    if (spLayout !== "table") { renderSpBody(); return; }   // the cards / observation rows are drawn from the pass; the filter bar and header stay
     applyAgeFilter();
     if (speciesListSort.col) sortSpeciesList();   // Total / pairs / Last / Dist orders change with the filters
     renderSpFilterBtn(); updateRecencyNote();
