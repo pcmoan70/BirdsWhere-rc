@@ -2622,6 +2622,7 @@
     // explicit probability floor set by the user still wins.
     var MODEL_FLOOR = 0.01, MODEL_MIN_ROWS = 10, MODEL_TOP_N = 25, autoCut = 0;
     var floor = (+document.getElementById("prob-min").value || 0) / 100;   // once per pass (was a DOM read per row)
+    var tRows = 0, tDom = 0, tMark = perfOn ? performance.now() : 0;   // ?perf=1: row work vs DOM work
     if (spMissingAuto) {
       var ps = [];
       Array.prototype.forEach.call(tbody.children, function (tr) {
@@ -2656,12 +2657,14 @@
         // observer + source filters. Total, pairs, the Last cell and row visibility all
         // derive from this subset, so the date-range panel actually narrows the table
         // (and the "N hidden" recency note matches what the Total now leaves out).
+        if (perfOn) { tDom += performance.now() - tMark; tMark = performance.now(); }
         var winRows = passRows(key, listViewBounds), latest = "";   // shared with the legend's count for this viewport
         for (var wi = 0; wi < winRows.length; wi++) { var wd = winRows[wi].date; if (wd && wd > latest) latest = wd; }   // ISO strings order as dates
         fc = cntMemo((listViewBounds ? "v|" + listViewBounds.toBBoxString() + "|" : "a|") + key, function () { return specimenTotal(winRows); });   // deduped specimens, in-window + in-view
         flatest = latest ? (Date.parse(String(latest).slice(0, 10) + "T00:00:00") || 0) : 0;
         tr.classList.toggle("sp-has-det", fc > 0);
         var pairs = fc > 0 ? distinctObsDatePairs(winRows) : 0;
+        if (perfOn) { tRows += performance.now() - tMark; tMark = performance.now(); }
         // Write the DOM only when a value changed: the table is re-scoped on every pan.
         if (C.ndBtn && C.ndBtn.textContent !== String(fc)) C.ndBtn.textContent = fc;
         if (tr.getAttribute("data-pairs") !== String(pairs)) { setPairsSuffix(C.nd, pairs); tr.setAttribute("data-pairs", pairs); }
@@ -2716,6 +2719,7 @@
       tr.classList.toggle("sp-pool", pooled);
       tr.style.display = (pooled && selOk && excOk) ? "" : "none";
     });
+    if (perfOn) { tDom += performance.now() - tMark; _perfRows.push({ stage: "    applyAgeFilter: row work", ms: +tRows.toFixed(1) }, { stage: "    applyAgeFilter: DOM + per-row rest", ms: +tDom.toFixed(1) }); }
     refreshSpExpansions();   // keep expanded detail sub-rows under their (visible) species
     repaintDotsOutsideTable(rareAll);   // Images cards / observation rows / the ☰ popover
     updateRecencyNote();
@@ -5678,9 +5682,17 @@
     var myGen = detPlotGen;      // if the map is cleared while this runs, don't replot the late result
     var mapFetch = spMapFetch;   // this fetch intended to drop dots on the map (map-first point flow)
     hideSourceCounts();   // clear any prior location's "Loaded: …" line before this fetch
-    var onPartial = function (partial) { applySightings(tbody, token, partial, false); };   // live-fill rows as each source returns (recent) / each month batch (historic)
+    // Live-fill as sources return, but at most one re-render per 500 ms: every partial batch
+    // re-ran the table pass, the dots and the legend (up to 3 s per batch on a big set).
+    var partialTimer = null, partialLast = null;
+    var onPartial = function (partial) {
+      partialLast = partial;
+      if (partialTimer) return;   // a render is due; it will take the latest batch
+      partialTimer = setTimeout(function () { partialTimer = null; var pp = partialLast; partialLast = null; if (pp) applySightings(tbody, token, pp, false); }, 500);
+    };
     var fetchP = histRange ? fetchHistoricSightingsAt(lat, lon, histRange, onProg, onPartial) : fetchAllSightingsAt(lat, lon, onPartial);
     return fetchP.then(function (result) {
+      clearTimeout(partialTimer); partialTimer = null; partialLast = null;   // the final result supersedes any pending partial render
       // Superseded by a newer fetch (the user triggered another): don't touch the newer
       // list, but STILL plot this fetch's detections in the background so no queued fetch
       // is lost — the dots accumulate (plotDetections merges) like any other fetch.
@@ -12796,11 +12808,22 @@
       saveLegendState(); rebuildDetLayers(); updateDetLegend();
       var dm = document.getElementById("detlist-modal");
       if (dm && dm.style.display === "flex" && typeof renderDetListModal === "function") renderDetListModal();
-      if (typeof speciesPanelPopulated === "function" && speciesPanelPopulated()) renderSpControls();
+      if (typeof speciesPanelPopulated === "function" && speciesPanelPopulated()) refilterSpTable();
       if (allFiltersPane) renderAllFiltersPane();   // keep the "all filters" pane in sync
     });
     // the pane's filters reach imported list pins too (mpVisible → listPointPasses)
     try { if (mpState && mpState.mpFilterRefresh) mpState.mpFilterRefresh(); } catch (e) {}
+  }
+  // A filter change re-scopes the rows of the EXISTING table (one pass, then the sort when a
+  // column depends on filtered values) — renderSpControls regenerated every row's HTML first
+  // and then filtered it: 130-280 ms of a filter change on the owner's data (2026-10-01).
+  // The Images cards and the observation list are drawn FROM the pass, so they still render.
+  function refilterSpTable() {
+    if (spLayout !== "table") { renderSpControls(); return; }
+    applyAgeFilter();
+    if (speciesListSort.col) sortSpeciesList();   // Total / pairs / Last / Dist orders change with the filters
+    renderSpFilterBtn(); updateRecencyNote();
+    if (typeof renderSpHeads === "function") renderSpHeads();
   }
   // Re-render just the filter bar on whichever surface currently hosts it (the popup,
   // or the fetch list) — for panel-open toggles that don't change the data.
