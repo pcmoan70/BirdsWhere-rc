@@ -18660,6 +18660,8 @@
       listViewTimer = setTimeout(function () {
         try {
           if (typeof speciesPanelPopulated === "function" && speciesPanelPopulated()) restrictListToView();
+          var lc = lastSpCoords;   // the header's area descriptions follow the view too
+          if (lc && lc.el && lc.el.isConnected) renderSpCoordsAreas(lc.el, lc.lat, lc.lon, lc.summary);
           var dm = document.getElementById("detlist-modal");
           if (dm && dm.style.display === "flex") renderDetListModal();
         } catch (e) {}
@@ -23135,7 +23137,14 @@
     // squares fetched earlier somewhere else would answer a question nobody asked (a pin in
     // Iceland under a header reading "Åfjord"), so that list gets its own point's place.
     if (spMissingAuto && isFinite(lat) && isFinite(lon)) { setCoordsWithPlace(el, lat, lon, summary); return; }
-    var raw = (fetchedAreas || []).map(function (a) {
+    // Only the fetched squares that touch the current map view are described — the header
+    // names what the list below shows (the list itself is scoped to the view), and re-renders
+    // when the map settles (listViewKick). A square entirely off screen is not a filter target
+    // here; its observations are not in the list either.
+    var vb = map ? map.getBounds() : null;
+    var raw = (fetchedAreas || []).filter(function (a) {
+      return !vb || !(a.bounds && a.bounds.intersects) || vb.intersects(a.bounds);
+    }).map(function (a) {
       var c = a.bounds && a.bounds.getCenter ? a.bounds.getCenter() : null;
       return { id: a.id, name: a.name || "", clat: c ? c.lat : NaN, clon: c ? c.lng : NaN };
     }).filter(function (a) { return isFinite(a.clat) && isFinite(a.clon); });
