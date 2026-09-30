@@ -18665,11 +18665,18 @@
     // re-scope the species table (and its "In map view: n" status, shown for 2 s) and the
     // fetch-list modal to the new bounds. A full second, not the dots' 150 ms: the re-scope
     // walks every plotted row, and running it on every pause made panning feel sticky.
-    var listViewTimer = null;
+    var listViewTimer = null, listViewAt = null;   // centre + zoom of the last re-scope
     function listViewKick() {
       if (!hasPlottedDetections()) return;
       clearTimeout(listViewTimer);
       listViewTimer = setTimeout(function () {
+        // A layout refit — the status line collapsing when its 2-s "In map view" note clears,
+        // a panel opening — makes Leaflet fire moveend without the view having moved (the map
+        // just got taller). Re-scoping on it re-posted the note, which cleared, which refitted…
+        // a loop every 3 s. Only a real change of centre (> 2 px) or zoom counts as movement.
+        var c = map.getCenter(), z = map.getZoom();
+        if (listViewAt && listViewAt.z === z && map.project(c, z).distanceTo(map.project(listViewAt.c, z)) < 2) return;
+        listViewAt = { c: c, z: z };
         try {
           if (typeof speciesPanelPopulated === "function" && speciesPanelPopulated()) restrictListToView();
           var lc = lastSpCoords;   // the header's area descriptions follow the view too
