@@ -2656,14 +2656,9 @@
         // observer + source filters. Total, pairs, the Last cell and row visibility all
         // derive from this subset, so the date-range panel actually narrows the table
         // (and the "N hidden" recency note matches what the Total now leaves out).
-        var winRows = [], rows = entry.rows, latest = "";
-        for (var wi = 0; wi < rows.length; wi++) {
-          var wr = rows[wi];
-          if (!detRowPasses(wr) || !detRowInView(wr)) continue;
-          winRows.push(wr);
-          if (wr.date && wr.date > latest) latest = wr.date;   // ISO strings order as dates: one Date.parse per species, not per row
-        }
-        fc = dedupedSpecimenTotal(winRows);   // total specimens AFTER de-duplication, in-window
+        var winRows = passRows(key, listViewBounds), latest = "";   // shared with the legend's count for this viewport
+        for (var wi = 0; wi < winRows.length; wi++) { var wd = winRows[wi].date; if (wd && wd > latest) latest = wd; }   // ISO strings order as dates
+        fc = cntMemo((listViewBounds ? "v|" + listViewBounds.toBBoxString() + "|" : "a|") + key, function () { return specimenTotal(winRows); });   // deduped specimens, in-window + in-view
         flatest = latest ? (Date.parse(String(latest).slice(0, 10) + "T00:00:00") || 0) : 0;
         tr.classList.toggle("sp-has-det", fc > 0);
         var pairs = fc > 0 ? distinctObsDatePairs(winRows) : 0;
@@ -10877,9 +10872,11 @@
   // ?perf=1 — every filter/view stage logs its milliseconds to a console.table, so a speed-up
   // is measured on real data rather than assumed (tasks/filter-perf_20260930.md, stage 0).
   var perfOn = /[?&]perf=1(?:&|$)/.test(location.search), _perfRows = [], _perfFlush = null;
-  function perfWrap(name, fn) {
+  function perfCaller() { try { return (new Error().stack || "").split("\n").slice(3, 6).map(function (l) { return l.replace(/^\s*at\s+/, "").replace(/\s*\(.*$/, ""); }).join(" < "); } catch (e) { return ""; } }
+  function perfWrap(name, fn, withCaller) {
     return function () {
       var t0 = performance.now();
+      if (withCaller) _perfRows.push({ stage: "-> " + name + " called by", ms: 0, from: perfCaller() });
       try { return fn.apply(this, arguments); }
       finally {
         _perfRows.push({ stage: name, ms: +(performance.now() - t0).toFixed(1) });
@@ -12778,7 +12775,7 @@
     renderDetListModal = perfWrap("renderDetListModal", renderDetListModal);
     renderSpControls = perfWrap("renderSpControls", renderSpControls);
     renderAllFiltersPane = perfWrap("renderAllFiltersPane", renderAllFiltersPane);
-    applyAgeFilter = perfWrap("applyAgeFilter", applyAgeFilter);
+    applyAgeFilter = perfWrap("applyAgeFilter", applyAgeFilter, true);
     restrictListToView = perfWrap("restrictListToView", restrictListToView);
     renderSpCoordsAreas = perfWrap("renderSpCoordsAreas", renderSpCoordsAreas);
     computeDotClusters = perfWrap("computeDotClusters", computeDotClusters);
@@ -12786,6 +12783,7 @@
     detFilteredStats = perfWrap("detFilteredStats", detFilteredStats);
     collectVisibleDetections = perfWrap("collectVisibleDetections", collectVisibleDetections);
     saveLegendState = perfWrap("saveLegendState", saveLegendState);
+    detFiltersRefresh = perfWrap("detFiltersRefresh", detFiltersRefresh, true);
     refreshSpExpansions = perfWrap("  refreshSpExpansions", refreshSpExpansions);
     repaintDotsOutsideTable = perfWrap("  repaintDotsOutsideTable", repaintDotsOutsideTable);
     updateRecencyNote = perfWrap("  updateRecencyNote", updateRecencyNote);
@@ -15249,20 +15247,27 @@
   // Deduped SPECIMENS of a species passing the active date/observer/source filters,
   // optionally restricted to the current map view (legendViewBounds). The counts match
   // the Species-list Total / count filter (specimens, not records).
+  // The rows of a species that pass the filters inside a viewport (null = anywhere): ONE pass per
+  // species per tick, shared by the legend (countPassing), the funnel bar and the species table
+  // (applyAgeFilter), which each walked and dedup-grouped the same rows before.
+  function passRows(k, b) {
+    var key = (b ? "r|" + b.toBBoxString() + "|" : "r|") + k;
+    return cntMemo(key, function () {
+      var e = dEntry(k); if (!e || !e.rows) return [];
+      var vis = [], rows = e.rows;
+      var s = b ? b.getSouth() : 0, n = b ? b.getNorth() : 0, w = b ? b.getWest() : 0, ee = b ? b.getEast() : 0;
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i];
+        if (!detRowPasses(r)) continue;
+        if (b && !(r.lat >= s && r.lat <= n && r.lon >= w && r.lon <= ee)) continue;
+        vis.push(r);
+      }
+      return vis;
+    });
+  }
   function countPassing(k, inView) {
     var b = inView ? legendViewBounds : null;
-    return cntMemo((b ? "v|" + b.toBBoxString() + "|" : "a|") + k, function () { return countPassingRaw(k, b); });
-  }
-  function countPassingRaw(k, b) {
-    var e = dEntry(k); if (!e || !e.rows) return 0;
-    var vis = [];
-    for (var i = 0; i < e.rows.length; i++) {
-      var r = e.rows[i];
-      if (!detRowPasses(r)) continue;
-      if (b && !(isFinite(+r.lat) && isFinite(+r.lon) && b.contains([+r.lat, +r.lon]))) continue;
-      vis.push(r);
-    }
-    return specimenTotal(vis);
+    return cntMemo((b ? "v|" + b.toBBoxString() + "|" : "a|") + k, function () { return specimenTotal(passRows(k, b)); });
   }
   // The "n" of the legend's "n/t": specimens IN THE CURRENT VIEW passing the filters —
   // so panning/zooming recomputes it (the legend re-renders on moveend). legendViewBounds
