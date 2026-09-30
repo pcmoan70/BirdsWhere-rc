@@ -1781,7 +1781,7 @@
       var lbl = labelsByKey[key], nm = (lbl && speciesName(lbl)) || e.name || key, spCol = e.color || speciesColor(key);
       rows = [];
       e.rows.forEach(function (r) {
-        if (!detRowPasses(r)) return;
+        if (!detRowPasses(r) || !detRowInView(r)) return;   // the same rows the Total counted
         rows.push({ key: key, name: nm, color: spCol, lat: r.lat, lon: r.lon, date: r.date || "", src: r.src || "", origin: r.origin || "",
           url: r.url || "", place: r.place || "", placeCoarse: !!r.placeCoarse, posFuzzM: +r.posFuzzM || 0, count: (r.count != null ? r.count : ""), act: r.act || "", note: r.note || "", flags: r.flags || "", observer: r.observer || "",
           photo: r.photo || "", photoBig: r.photoBig || "", photoBy: r.photoBy || "", photos: r.photos || null, rl: r.rl || "",   // the observer's own pictures + red-list code
@@ -2597,6 +2597,7 @@
   // row disappears) WITHOUT rebuilding the list. Normally those filters are applied
   // when the rows are built, so the default (no arg) leaves them alone.
   function applyAgeFilter(withBuild) {
+    captureListView();   // one viewport for every row of this pass
     var tbody = document.getElementById("sp-tbody");
     if (!tbody) return;
     var agg = tbody._sightingsAgg, days = speciesAgeFilterDays;
@@ -2641,7 +2642,7 @@
         // observer + source filters. Total, pairs, the Last cell and row visibility all
         // derive from this subset, so the date-range panel actually narrows the table
         // (and the "N hidden" recency note matches what the Total now leaves out).
-        var winRows = entry.rows.filter(function (r) { return detRowPasses(r); });
+        var winRows = entry.rows.filter(function (r) { return detRowPasses(r) && detRowInView(r); });   // in-window AND in the map view
         fc = dedupedSpecimenTotal(winRows);   // total specimens AFTER de-duplication, in-window
         winRows.forEach(function (r) {
           var ts = r.date ? Date.parse(r.date + "T00:00:00") : 0; if (ts && ts > flatest) flatest = ts;
@@ -13070,7 +13071,8 @@
     // Per-location popup: the records at the clicked spot. Filtering lives on the
     // fetched species list now; here we just show + sort + save/navigate. The global
     // filters (set from the fetch list) still apply through collectVisibleDetections.
-    var rows = collectVisibleDetections(detListNear, true);
+    captureListView();
+    var rows = collectVisibleDetections(detListNear, true).filter(detRowInView);   // list views follow the map view
     // Title = the place name the data SOURCE supplies for this spot: an eBird hotspot
     // / BirdWeather station name where present, else the first record's own place text.
     var titleEl = document.getElementById("detlist-title");
@@ -13477,6 +13479,14 @@
   var detCullBounds = null;
   function detViewBounds() { return map ? map.getBounds().pad(1.0) : null; }
   function inCull(r) { return !detCullBounds || detCullBounds.contains([r.lat, r.lon]); }
+  // Map-view scoping for every LIST surface: the species table (Total / pairs / Last and
+  // row visibility), its expanded record lists and the fetch-list modal show only records
+  // inside the current map view — as the legend already does — and re-filter when the map
+  // moves (listViewKick). The dot layers keep their one-screen culling margin above so
+  // panning shows dots before the rebuild; hence a predicate beside detRowPasses, not in it.
+  var listViewBounds = null;
+  function captureListView() { listViewBounds = map ? map.getBounds() : null; }
+  function detRowInView(r) { return !listViewBounds || (isFinite(+r.lat) && isFinite(+r.lon) && listViewBounds.contains([+r.lat, +r.lon])); }
   function computeDotClusters(allowed) {
     if (!dotClusterOn() || !map || detFocusKey) return null;
     var D = DOT_CLUSTER_PX, z = map.getZoom();
@@ -14182,6 +14192,7 @@
     window.GeoState.save({ detRecencyDays: 0, detDateRange: null, detMonths: [] });   // days + range + months → All
     detFiltersRefresh();                                                     // map + legend + open list(s)
     if (typeof renderSpHeads === "function") renderSpHeads();                // refresh column header labels + funnels
+    fitToDetections();                                                       // and show ALL fetched points again (the lists follow the view)
   }
   // The red × clears the WHOLE map of plotted points: fetched dots, plus every
   // shown saved list / detection set (un-ticked so nothing is re-injected — the
@@ -18640,6 +18651,21 @@
       dotClusterTimer = setTimeout(function () { try { rebuildDetLayers(); } catch (e) {} }, 150);
     }
     map.on("zoomend moveend", dotViewKick);
+    // The list surfaces follow the map view: once a pan/zoom settles, re-scope the species
+    // table (and its "In map view: n" status) and the fetch-list modal to the new bounds.
+    var listViewTimer = null;
+    function listViewKick() {
+      if (!hasPlottedDetections()) return;
+      clearTimeout(listViewTimer);
+      listViewTimer = setTimeout(function () {
+        try {
+          if (typeof speciesPanelPopulated === "function" && speciesPanelPopulated()) restrictListToView();
+          var dm = document.getElementById("detlist-modal");
+          if (dm && dm.style.display === "flex") renderDetListModal();
+        } catch (e) {}
+      }, 300);
+    }
+    map.on("zoomend moveend", listViewKick);
     map.on("moveend", function () { if (legendStackCtrl) scheduleClcQuery(); });   // re-limit the CORINE legend to the new view
     map.on("moveend", function () {   // "far migrant HERE" depends on the viewing region — re-filter when it changes
       if (detRegionMode !== "far") return;

@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1929";
+var VERSION = "v1930";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The place search box (\ud83d\udd0d) now takes coordinates: 59.9139, 10.7522 \u00b7 59\u00b054'50\"N 10\u00b045'08\"E \u00b7 N59.91 E10.75 \u00b7 or a pasted map link. Enter flies straight there.",
+  "\u2022 Lists follow the map: the species table, its expanded records and the \u2630 detections list show only what is inside the current map view and re-filter as you pan or zoom. Clear filters (funnel-\u00d7) also zooms back out to every fetched point.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

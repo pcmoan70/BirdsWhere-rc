@@ -605,6 +605,11 @@ view**.
 
 ## Detections list
 
+Every list of observations — the species table (its Total, pairs and Last cells and which rows
+show), each species' expanded records, and the ☰ detections list — is **scoped to the current map
+view** and re-filters as you pan or zoom, the same way the legend counts only what is on screen.
+**Clear filters** (the funnel-×) also zooms the map back out to every fetched point.
+
 - **☰ Detections list** — a large-text list sorted **By date** (grouped by date, then
   observer/station) or **By species**, with a narrow **Filter species** box and the day / rarity+year-list
   / observer filters beside it. Each row's **🎯** flies the map to the record; tapping the row opens its
