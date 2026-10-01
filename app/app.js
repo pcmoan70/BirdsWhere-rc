@@ -17983,12 +17983,12 @@
           var allC = panel.querySelector(".mp-chip-all");
           if (allC) allC.classList.toggle("is-active", Array.prototype.every.call(chips, function (c) { return c.getAttribute("data-all") || c.classList.contains("is-active"); }));
         }
-        saveMapPoints();
         clearTimeout(mpChipTimer);
         var el = this;
-        // The chip blinks until the map has caught up (mpFilterRefresh), instead of the
-        // click looking ignored while a large list redraws.
-        mpChipTimer = setTimeout(function () { mpChipTimer = null; mpState.mpFilterRefresh(el); }, 1000);
+        // NOTHING heavy on the click itself: the save serialises every stored point (the lag
+        // the owner felt with 35k points), so it waits for the timer with the redraw. The
+        // chip blinks until the map has caught up (mpFilterRefresh).
+        mpChipTimer = setTimeout(function () { mpChipTimer = null; saveMapPoints(); mpState.mpFilterRefresh(el); }, 1000);
       });
     });
     panel.querySelectorAll(".mp-row-note").forEach(function (b) {
