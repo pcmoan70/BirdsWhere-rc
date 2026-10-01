@@ -976,44 +976,46 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
 
 ### How the look-alike model works
 
-`tools/gen-confusion.py` builds the lists offline. The **Match** weight fuses complementary signals:
+`tools/gen-confusion.py` builds the lists offline from three ingredients, all **location-free**:
 
-1. **iNaturalist misID** (0.40 of the morphology block) — how often two species are *actually*
-   confused by observers, from iNaturalist's `similar_species` aggregation. This is real human
-   ground truth, and it also **adds cross-family look-alikes** that measurements never would (e.g. a
-   vireo mistaken for a flycatcher). Fetched per species with `tools/fetch-inat-misid.py` (rate-limited,
-   resumable) and mapped to model codes by `tools/build-misid-bycode.py`.
-2. **Shape** (0.24) — AVONET size-normalized log-shape ratios (bill, wing, tail, tarsus…), 10 % slack
-   per axis, so jizz matters more than absolute size.
-3. **Size** (0.12) — body mass + wing length.
-4. **Ecological niche** (0.09) — matching habitat / trophic niche / primary lifestyle.
-5. **Genus** (0.15) — a same-genus boost.
+1. **The misID model → Match.** `tools/misid-model.py` trains a gradient-boosted classifier
+   (HistGradientBoosting, monotone constraints, 5-fold validation on held-out *families*) on
+   ~803,000 ordered species pairs — every same-family pair, every iNaturalist confusion partner, the
+   40 nearest names in BioCLIP 2's text space and a few random negatives for the 4,446 species with
+   ≥ 20 recorded confusions. Inputs per pair: BioCLIP 2 **name-embedding** cosine and mutual ranks
+   (the text tower of a model trained on 200 M organism photos — the strongest signal), AVONET
+   **shape** distance and similarity, linear-size and mass gaps with the size gate, **niche** and
+   lifestyle match, convergence, same genus / family / order, and HBW **plumage-colour** overlap
+   (♂ and ♀). The target is "this partner holds ≥ 5 % of the species' confusions **at equal
+   exposure**" (see 3). No range, season, co-occurrence or popularity input, so the model can only
+   learn appearance. Held-out families: recall@10 0.62 on the raw iNat lists, 0.92 among candidates
+   that actually co-occur, and 60 % of look-alikes that never meet kept in the top 10 (a model given
+   co-occurrence keeps 44 %). The final model scores **1.68 M candidate pairs for all 10,049
+   species** (`bird_databases/confusion/misid-match-scores.csv`); its probability × 100 is the
+   stored Match. Species without a score (none in practice) fall back to the older fused
+   shape/size/niche/genus/colour heuristic with its size and taxon gates.
+2. **iNaturalist misID → misID.** How often two species are *actually* confused by observers, from
+   iNaturalist's `similar_species` aggregation (fetched per species with `tools/fetch-inat-misid.py`,
+   mapped to model codes by `tools/build-misid-bycode.py`; 8,309 species). Real human ground truth,
+   and the source of cross-family look-alikes measurements never find (a vireo for a flycatcher).
+3. **Co-occurrence correction.** A confusion needs both birds in front of the same photographer,
+   so raw counts are appearance × exposure. `tools/gen-cooccurrence.py` runs the app's own geomodel
+   over a 2° grid × 12 weeks and gives `cooc(A→B)`, the chance B is around where and when A is seen;
+   every count is divided by `(cooc + 1e-4)^0.16` (the fitted elasticity) before the ranking, the
+   keep rules and the stored share use it. misID therefore reads "confused when both are around",
+   and geography enters the app's Score exactly once, as Here. Measured on the raw data: co-occurrence
+   alone predicts a ≥ 5 % confusion partner with AUC 0.85, and 29 % of confusions are between birds
+   that hardly co-occur.
 
-Two **gates** then scale everything inferred from morphology, colour and taxonomy: a **major size
-difference** (about 1.4× in linear size or 3× in body mass halves it; 2× / 9× cuts it to a fifth) and
-**taxonomic distance** (same family 1, same order ~0.6, unrelated ~0.35). Real iNaturalist confusions are
-never gated, so a Sparrowhawk still lists the Goshawk (Match 55, misID 75 %).
+Per species the candidates are the family ∪ the iNat partners; strong real confusions survive the
+cut by the keep rules (share ≥ 8 %, mutual for middling Match, no 8× mass gap), a few cross-family
+slots go to convergent birds (same lifestyle and niche, shared shape — swifts and martins, plovers
+and sandpipers), and the app's file keeps each species' **9 best partners** by `0.25·Match +
+0.75·misID`; the full lists stay on the data disk (`bird_databases/confusion/confusion_full.csv`).
+Species that AVONET (2022 taxonomy) predates — recent splits such as the Hudsonian Whimbrel — borrow
+the measurements of their strongest same-genus iNaturalist confusion partner (266 species).
 
-**Convergence relaxes both gates.** Birds that make their living the same way — same AVONET foraging
-lifestyle and trophic niche — and genuinely share a shape are confused across taxonomy: swifts, swiftlets
-and martins are aerial invertivores with one silhouette, plovers and sandpipers share a wader build. The
-taxonomic gate is lifted toward 1 in proportion to that convergence, and for two **aerial** species the
-size step is doubled, because size is the first cue you lose against the sky. Because a crowd of
-congeners otherwise fills every slot, up to six extra slots hold the best few (max 3) partners from each
-family the list doesn't already cover. A Common Swift now lists Barn Swallow, Crag Martin and House
-Martin, a Barn Swallow lists the Common Swift, a Dunlin lists the Ringed Plover, and Goldcrest ↔
-Chiffchaff rose from 18 to 47 — while same-family pairs and unrelated ones (Swift ↔ Blackbird) are
-unchanged. Cost: 1.7 % more entries.
-
-A **plumage-colour** score is then averaged in (≈ half the final Match): per-sex RGB histograms
-(6×6×6 = 216 bins) from the HBW-RGB illustration dataset, matched separately for male and female so a
-look-alike must resemble the bird in both plumages. Pairs iNaturalist has no confusion data for fall
-back to the morphology + colour axes alone; pairs with no colour data keep the morphology score.
-Species that AVONET (2022 taxonomy) predates — recent splits such as the Hudsonian Whimbrel — borrow the
-measurements of their strongest same-genus iNaturalist confusion partner (the split sister), so they get a
-list too (266 species, e.g. the barn owls and warbling vireos) instead of none at all.
-
-Data files: `app/confusion.csv` (per-bird partner list, `code:Match:misID`), `app/species-traits.json`
+Data files: `app/confusion.csv` (per-bird partner list, `code:Match[:misID]`, misID stored only ≥ 5 %), `app/species-traits.json`
 (per-species colour / size / ecology for the compare card, built by `tools/gen-species-traits.py`), and
 `tools/inat-misid-*.json` (the fetched human-confusion map). The look-alike list is **location-agnostic**
 — all the "where" comes from the on-device habitat model at runtime.
