@@ -4524,8 +4524,10 @@
         '<td class="dset-actions">' +
           '<button type="button" class="mp-coll-edit ico-btn lists-coll-edit" data-name="' + escapeHtml(c.name) + '" title="' + escapeHtml(t("points.editList")) + '" aria-label="' + escapeHtml(t("points.editList")) + '">' + ico("edit") + "</button>" +
           (n ? '<button type="button" class="mp-coll-dl ico-btn lists-coll-dl" data-type="p" data-name="' + escapeHtml(c.name) + '" title="' + escapeHtml(t("points.download")) + '" aria-label="' + escapeHtml(t("points.download")) + '">' + ico("download") + "</button>" : "") +
-          '<label class="lists-protect' + (prot ? " on" : "") + '" title="' + escapeHtml(t("lists.protect")) + '"><input type="checkbox" class="lists-protect-cb" data-name="' + escapeHtml(c.name) + '"' + (prot ? " checked" : "") + " />" + ico(prot ? "lock" : "lockopen") + "</label>" +
-          '<button type="button" class="src-del lists-del-coll" data-name="' + escapeHtml(c.name) + '"' + (prot ? " disabled" : "") + ' aria-label="' + escapeHtml(t("offline.delete")) + '">×</button>' +
+          // One column: a protected list shows a lock (hover explains; protection is set in ✎ Edit list),
+          // an unprotected one the red × (owner, 2026-10-01 — two columns, lock toggle + ×, before).
+          (prot ? '<span class="mp-coll-lock lists-lock" title="' + escapeHtml(t("lists.protectedMsg", { name: c.name })) + '" aria-label="' + escapeHtml(t("lists.protect")) + '">' + ico("lock") + "</span>"
+                : '<button type="button" class="src-del lists-del-coll" data-name="' + escapeHtml(c.name) + '" aria-label="' + escapeHtml(t("offline.delete")) + '">×</button>') +
         "</td></tr>");
       if (open) rows.push('<tr class="lists-body-row"><td colspan="2">' + listPointRows(c.name) + "</td></tr>");
     });
@@ -4535,9 +4537,6 @@
         e.preventDefault(); e.stopPropagation();
         openPointsDownloadMenu(this, "p", this.getAttribute("data-name"));
       });
-    });
-    el.querySelectorAll(".lists-protect-cb").forEach(function (cb) {
-      cb.addEventListener("change", function () { setCollProtected(this.getAttribute("data-name"), this.checked); renderMpAdmin(); });
     });
     el.querySelectorAll(".lists-del-coll").forEach(function (b) {
       b.addEventListener("click", function () {

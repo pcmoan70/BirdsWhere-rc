@@ -125,6 +125,7 @@ window.AppPoints = (function () {
         '<input type="color" id="ce-color" data-auto="' + esc(auto) + '" value="' + esc(cur) + '" />' +
         '<button type="button" id="ce-color-auto" class="mp-color-reset" title="' + esc(t("points.colorAuto")) + '" aria-label="' + esc(t("points.colorAuto")) + '">↺</button></span>' +
       '<label class="kml-row kml-check"><input type="checkbox" id="ce-note-html"' + (allHtml ? " checked" : "") + " />" + esc(t("points.noteHtml")) + "</label>" +
+      '<label class="kml-row kml-check"><input type="checkbox" id="ce-protect"' + (isCollProtected(c.name) ? " checked" : "") + " />" + esc(t("lists.protect")) + "</label>" +
       '<p class="cu-hint">' + esc(t("points.editListHint")) + "</p>" +
       '<div class="kml-actions"><button type="button" id="ce-save" class="btn">' + esc(t("points.save")) + "</button></div>" +
       "</div>";
@@ -159,6 +160,7 @@ window.AppPoints = (function () {
         if (wasProt) { setCollProtected(old, false); setCollProtected(newName, true); }
         saveShownState();
       }
+      setCollProtected(c.name, document.getElementById("ce-protect").checked);   // after the rename: keyed by the final name
       saveMapPoints(); renderMapPoints(); if (typeof refreshMpPanel === "function") refreshMpPanel();
       if (typeof renderMpAdmin === "function") renderMpAdmin();
       close();

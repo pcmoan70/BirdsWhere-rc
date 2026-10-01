@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1952";
+var VERSION = "v1953";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Points \u2192 Load from file now also takes a direct link to a .kmz / .kml / .geojson file (a GitHub raw link, for instance). The separate Load-from-link button and the Google API key field are gone.",
+  "\u2022 Lists window: one column instead of two \u2014 a protected list shows a lock (hover for the note), an unprotected one the red \u00d7. Protection is now switched under \u270e Edit list.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

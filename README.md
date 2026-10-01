@@ -644,7 +644,8 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   labelled row that says what it does: navigate, share link, edit list, download, delete (a protected
   list shows the lock there instead of delete). **Press-and-hold or
   right-click** that button for the **Edit & protect lists** admin: rename a list, set its
-  colour/tags for every point, **protect** it from deletion (🔒), delete it, or expand it to
+  colour/tags for every point and tick **Protect from deletion** there (a protected list then shows a
+  🔒 in place of its red × — hover it for the note), delete it, or expand it to
   edit/remove individual points.
 - **Opening a file from the OS** — a `.kml`, `.kmz` or `.geojson` can be opened **from outside the
   app**, landing in the same import dialog. On **desktop Chromium** (Chrome/Edge 102+, Windows ·
