@@ -24458,6 +24458,7 @@
   function openPhotoLightbox(img) {
     closePhotoLightbox();
     var box = document.createElement("div"); box.id = "photo-lightbox"; box.setAttribute("role", "dialog");
+    box._openedAt = Date.now();   // the overlay's own clock: the release of the hold must not count as the closing tap
     var big = document.createElement("img"); big.alt = img.alt || ""; big.decoding = "async";
     var src = img.currentSrc || img.src, bigSrc = spImgAtWidth(src, PHOTO_BIG_W);
     big.addEventListener("error", function () { if (big.src !== src) big.src = src; });   // no 1600 px rendition → the card's own picture
@@ -24472,7 +24473,8 @@
     // The click a touch hold emits on release lands on the OVERLAY (it is on top by then) and
     // closed the picture before it was seen (owner's report, 2026-10-01): ignore clicks for a
     // moment after the hold fired.
-    box.addEventListener("click", function (e) { if (e.target.closest("a")) return; e.stopPropagation(); if (Date.now() - lbHoldAt < 900) return; closePhotoLightbox(); });
+    box.addEventListener("click", function (e) { if (e.target.closest("a")) return; e.stopPropagation(); if (Date.now() - box._openedAt < 900) return; closePhotoLightbox(); });
+    box.addEventListener("pointerup", function (e) { e.stopPropagation(); }, true);   // the hold's release lands here on touch: not a tap
     document.body.appendChild(box);
     document.addEventListener("keydown", lbKey);
   }
@@ -24492,7 +24494,10 @@
     }, true);
     document.addEventListener("pointermove", function (e) { if (lbHoldT && lbStart && (Math.abs(e.clientX - lbStart.x) > 8 || Math.abs(e.clientY - lbStart.y) > 8)) cancel(); }, true);
     document.addEventListener("pointerup", cancel, true); document.addEventListener("pointercancel", cancel, true);
-    document.addEventListener("click", function (e) { if (Date.now() - lbHoldAt < 900 && e.target.closest && e.target.closest(".spg-img img, #photo-lightbox")) { e.stopPropagation(); e.preventDefault(); } }, true);
+    document.addEventListener("click", function (e) {
+      var lb = document.getElementById("photo-lightbox");
+      if ((Date.now() - lbHoldAt < 900 || (lb && Date.now() - lb._openedAt < 900)) && e.target.closest && e.target.closest(".spg-img img, #photo-lightbox")) { e.stopPropagation(); e.preventDefault(); }
+    }, true);
     document.addEventListener("contextmenu", function (e) { if (e.target.closest && e.target.closest(".spg-img img") && (lbHoldT || Date.now() - lbHoldAt < 800)) e.preventDefault(); }, true);
   })();
   function spImgThumb(thumb) {
