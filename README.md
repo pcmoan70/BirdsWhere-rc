@@ -947,7 +947,7 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
     grid × 12 weeks: `tools/gen-cooccurrence.py`; share ∝ co-occurrence^0.16 was the fitted
     elasticity). It reads "how often they are confused when both are around". Shares are
     renormalised over the listed partners (sum ≈ 100 %).
-  - The app ships only each species' **11 best partners** by the location-free score; the full
+  - The app ships only each species' **9 best partners** by the location-free score; the full
     ranked lists stay on the data disk (`confusion_full.csv`).
   Each input must be **significant** before it counts: a **Match below 10 %** or a **misID below
   5 %** contributes nothing, so a species cannot earn a place in the ranking on a 3 % resemblance
