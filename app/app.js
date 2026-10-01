@@ -11237,7 +11237,7 @@
       e.rows.forEach(function (r) { if (r.rarity) { delete r.rarity; changed = true; } });
       if (e.rows.length !== before) changed = true;
       if (e.alert) delete e.alert;
-      if (!e.rows.length) { if (e.group) { try { map.removeLayer(e.group); } catch (x) {} } delete detPlot[k]; delete detSelected[k]; }
+      if (!e.rows.length) { if (e.group) { try { map.removeLayer(e.group); } catch (x) {} } delete detPlot[k]; }   // selection kept, as in syncListDetections
     });
     // 2. Inject the current rarity list, grouped by species key (deduped vs fetched rows
     //    by mergeDetRows — an eBird notable that also came through a fetch merges into one row).
@@ -17150,7 +17150,12 @@
       var e = detPlot[k], before = (e.rows || []).length;
       e.rows = (e.rows || []).filter(function (r) { return !r._list; });
       if (e.rows.length !== before) { changed = true; dropped += before - e.rows.length; }
-      if (!e.rows.length) { if (e.group) { map.removeLayer(e.group); } delete detPlot[k]; delete detSelected[k]; }
+      // A list-only species loses all its rows here and is re-injected just below — its legend
+      // SELECTION must survive that round trip. Deleting it made every renderMapPoints (a pan,
+      // a chip, a tick) silently undo a tap on a list species' name (owner, 2026-10-01:
+      // "clicking species name in legend still does not trigger filtering"). A stale key for a
+      // species that truly left is harmless: detSelectionActive only counts keys in detPlot.
+      if (!e.rows.length) { if (e.group) { map.removeLayer(e.group); } delete detPlot[k]; }
     });
     // 2. Inject the current shown lists' detection points, grouped by species key.
     mpState.mpCollections().forEach(function (c) {
