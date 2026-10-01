@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1980";
+var VERSION = "v1981";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Tapping a species name in the legend now keeps filtering a saved list's dots: the selection used to be silently dropped by the next map pan, chip or tick (the list's points are re-injected on every redraw).",
-  "\u2022 Point-list tag chips and the list's funnel filter apply to the plotted species dots too."
+  "\u2022 Saved lists remember their habitat probabilities: each record's probability (its date and place) is computed once, written onto the list, and reused on every later open \u2014 the legend order and the Prob column of a person list are there without re-inference."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

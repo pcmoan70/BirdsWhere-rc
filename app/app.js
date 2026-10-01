@@ -15817,6 +15817,31 @@
     return { lat: glat, lon: ix * dLon, key: iy + ":" + ix };
   }
   function obsWeekOf(r) { return (r && r.date) ? weekOfDate(r.date) : weekOfToday(); }
+  // A probability a saved list carries on its point goes straight into the cache, so a list
+  // imported or computed once never costs an inference again (owner, 2026-10-01: "the stored
+  // list updated accordingly").
+  function seedObsProb(key, r) {
+    var lbl = labelsByKey[key]; if (!lbl || lbl.index == null || !(r._prob >= 0)) return;
+    obsProbCache[lbl.index + "|" + obsWeekOf(r) + "|" + snapCell(+r.lat, +r.lon).key] = r._prob;
+  }
+  // After a pass: write each list row's probability back onto its point and save the list,
+  // once per pass (the list file itself is the cache from then on).
+  function persistListProbs(keys) {
+    var byList = Object.create(null), any = false;
+    keys.forEach(function (k) {
+      (detPlot[k].rows || []).forEach(function (r) {
+        if (!r._list || !r._mpId || !r._listName || !(r._prob >= 0)) return;
+        (byList[r._listName] = byList[r._listName] || Object.create(null))[r._mpId] = r._prob; any = true;
+      });
+    });
+    if (!any) return;
+    var changed = false;
+    mpState.mpCollections().forEach(function (c) {
+      var m = byList[c.name]; if (!m) return;
+      (c.points || []).forEach(function (p) { var v = m[p.id]; if (v != null && p.prob !== v) { p.prob = v; changed = true; } });
+    });
+    if (changed) saveMapPoints();
+  }
   function computeDetProbs(sig) {
     var keys = Object.keys(detPlot);
     var idxOf = Object.create(null);
@@ -15831,6 +15856,7 @@
         detProbMax[k] = (mx === -Infinity) ? -1 : mx;   // ◉ rare
       });
       detProbSig = sig; detProbBusy = false;
+      try { persistListProbs(keys); } catch (e) {}       // saved lists remember their rows' probabilities
       try { harvestLocalRarities(keys); } catch (e) {}   // low-probability detections → the rarity list
       try { maybeShowRarityTicker(); } catch (e) {}      // a fetch was waiting on these probabilities
       if (detPlotSig() === sig) {
@@ -17175,6 +17201,7 @@
           placeCoarse: !!p.placeCoarse, posFuzzM: +p.posFuzzM || 0, _list: true, listColor: col, _listName: c.name, _mpId: p.id };
         var e = detPlot[p.spKey];
         if (!e) e = detPlot[p.spKey] = { key: p.spKey, name: p.name || p.spKey, color: p.spColor || "#888", rows: [], group: null, cls: p.spCls || (taxByCode[p.spKey] && taxByCode[p.spKey].class_name) || "" };
+        if (p.prob != null && +p.prob >= 0) { row._prob = +p.prob; seedObsProb(p.spKey, row); }   // probability stored on the list point (computed on an earlier run) → no inference again
         e.rows = mergeDetRows(e.rows, [row]);
         changed = true; injected++;
       });
