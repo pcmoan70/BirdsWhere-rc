@@ -17983,12 +17983,14 @@
           var allC = panel.querySelector(".mp-chip-all");
           if (allC) allC.classList.toggle("is-active", Array.prototype.every.call(chips, function (c) { return c.getAttribute("data-all") || c.classList.contains("is-active"); }));
         }
+        // The selection is remembered on this device at once — a tiny write of the tag array
+        // alone (owner, 2026-10-01); it is not part of the Drive sync. NOTHING heavy on the
+        // click itself: the full save serialises every stored point (the lag felt with 35k
+        // points), so the redraw waits for the timer. The chip blinks until the map caught up.
+        window.GeoState.save({ mapPointsFilter: mpState.mpFilter().slice() });
         clearTimeout(mpChipTimer);
         var el = this;
-        // NOTHING heavy on the click itself: the save serialises every stored point (the lag
-        // the owner felt with 35k points), so it waits for the timer with the redraw. The
-        // chip blinks until the map has caught up (mpFilterRefresh).
-        mpChipTimer = setTimeout(function () { mpChipTimer = null; saveMapPoints(); mpState.mpFilterRefresh(el); }, 1000);
+        mpChipTimer = setTimeout(function () { mpChipTimer = null; mpState.mpFilterRefresh(el); }, 1000);
       });
     });
     panel.querySelectorAll(".mp-row-note").forEach(function (b) {
