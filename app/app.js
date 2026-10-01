@@ -17961,7 +17961,9 @@
           var every = mpAllTags().concat(mpState.mapPoints().some(function (p) { return !p.tags || !p.tags.length; }) ? [""] : []);
           var on = every.every(function (tg) { return mpState.mpFilter().indexOf(tg) >= 0; });
           mpState.setMpFilter(on ? [] : every);
-          saveMapPoints(); mpState.mpFilterRefresh(this); return;
+          saveMapPoints(); mpState.mpFilterRefresh(this);
+          if (typeof refreshMpPanel === "function") refreshMpPanel();   // every chip changes state, not just the clicked one
+          return;
         }
         var tag = this.getAttribute("data-tag");
         var i = mpState.mpFilter().indexOf(tag);
