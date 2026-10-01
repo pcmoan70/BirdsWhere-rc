@@ -1521,5 +1521,15 @@
   "storage.compacting": "Compactage …",
   "storage.compactFailed": "Impossible de compacter les listes : {err}",
   "points.editPoint": "Modifier ce point",
-  "points.edited": "« {name} » mis à jour."
+  "points.edited": "« {name} » mis à jour.",
+  "rarity.band": "Groupes BAND",
+  "rarity.bandToken": "Jeton d’accès BAND",
+  "rarity.bandLoad": "Charger mes groupes",
+  "rarity.bandLoading": "Chargement des groupes…",
+  "rarity.bandNone": "Aucun groupe BAND trouvé — vérifiez le jeton d’accès.",
+  "rarity.bandLang": "Noms d’espèces en",
+  "rarity.bandLoc": "Lieu d’alerte (🔔)",
+  "rarity.bandAlert": "Publication BAND",
+  "rarity.whyBand": "Une espèce citée dans une publication d’un de vos groupes BAND.",
+  "rarity.bandHint": "Surveillez aussi les publications de vos groupes ornithologiques sur BAND (band.us). Collez un jeton d’accès personnel (BAND Developers → My Apps → Connect BAND account), chargez vos groupes et cochez ceux à suivre. Les nouvelles publications sont parcourues à la recherche de noms d’espèces dans la langue choisie (noms scientifiques toujours) ; un oiseau cité est traité comme une observation au lieu 🔔 choisi — une publication n’a pas de coordonnées — et donne une alerte quand le modèle l’y juge improbable, comme pour toute autre source."
 }

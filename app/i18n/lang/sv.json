@@ -1521,5 +1521,15 @@
   "storage.compacting": "Komprimerar …",
   "storage.compactFailed": "Kunde inte komprimera listorna: {err}",
   "points.editPoint": "Redigera denna punkt",
-  "points.edited": "”{name}” uppdaterad."
+  "points.edited": "”{name}” uppdaterad.",
+  "rarity.band": "BAND-grupper",
+  "rarity.bandToken": "BAND-åtkomsttoken",
+  "rarity.bandLoad": "Hämta mina grupper",
+  "rarity.bandLoading": "Hämtar grupper…",
+  "rarity.bandNone": "Inga BAND-grupper hittades — kontrollera åtkomsttoken.",
+  "rarity.bandLang": "Artnamn på",
+  "rarity.bandLoc": "Larmplats (🔔)",
+  "rarity.bandAlert": "BAND-inlägg",
+  "rarity.whyBand": "En art som nämns i ett inlägg i en av dina BAND-grupper.",
+  "rarity.bandHint": "Bevaka även inläggen i dina fågelgrupper på BAND (band.us). Klistra in en personlig åtkomsttoken (BAND Developers → My Apps → Connect BAND account), hämta grupperna och bocka för dem du vill följa. Nya inlägg söks igenom efter artnamn på valt språk (vetenskapliga namn alltid); en nämnd fågel behandlas som en observation på vald 🔔-plats — ett inlägg saknar koordinater — och larmar när modellen finner den osannolik där, som från alla andra källor."
 }

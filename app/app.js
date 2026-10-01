@@ -7382,6 +7382,15 @@
                 '<p class="cu-hint" data-i18n="rarity.countryWideTip">For every 🔔 point, fetch rare-bird alerts for its entire country instead of just the radius around it. Points that share a country are fetched once. Uses more of your eBird API budget.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
+                '<label for="rarity-band-token" data-i18n="rarity.band">BAND groups</label>' +
+                '<div class="ctrl-inline rarity-email-row">' +
+                  '<input id="rarity-band-token" type="password" autocomplete="off" spellcheck="false" data-i18n-ph="rarity.bandToken" placeholder="BAND access token" />' +
+                  '<button type="button" id="rarity-band-load" class="btn btn-light" data-i18n="rarity.bandLoad">Load my groups</button>' +
+                '</div>' +
+                '<div id="rarity-band-list"></div>' +
+                '<p class="cu-hint" data-i18n="rarity.bandHint">Also watch the posts of your birding groups on BAND (band.us). Paste a personal access token (BAND Developers → My Apps → Connect BAND account), load your groups and tick the ones to follow. New posts are searched for species names in the chosen language (scientific names always); a named bird is treated as a sighting at the chosen 🔔 location — a post has no coordinates — and alerts when the model finds it unlikely there, like any other source.</p>' +
+              '</div>' +
+              '<div class="ctrl-group">' +
                 '<label for="rarity-prob-th" data-i18n="rarity.probTh">Rarity threshold (%)</label>' +
                 '<input id="rarity-prob-th" type="number" min="0" max="100" step="1" />' +
                 '<p class="cu-hint" data-i18n="rarity.probThHint">A bird counts as a rarity when the model finds it unlikely at its own spot and week — probability below this %. Applies to both your own fetched observations and eBird notable alerts. Default 15. 0/100 = off.</p>' +
@@ -19780,6 +19789,51 @@
       rCw.checked = !!rarityCfg().countryWide;
       rCw.addEventListener("change", function () { raritySave({ countryWide: !!this.checked }); scheduleRarityPoll(); });   // takes effect on the next poll
     }
+    // BAND groups: token + the list of groups (tick · names-in language · alert location).
+    var rBt = document.getElementById("rarity-band-token"), rBl = document.getElementById("rarity-band-load"), rBL = document.getElementById("rarity-band-list");
+    function renderBandList(bands) {
+      if (!rBL) return;
+      var locs = window.AppRarity.rarityLocs(), langs = (window.GeoI18N.LANGS || []);
+      rBL.innerHTML = (bands || []).map(function (b) {
+        var k = escapeHtml(b.key);
+        return '<div class="ctrl-inline rarity-band-row" data-k="' + k + '">' +
+          '<label class="ctrl-check"><input type="checkbox" class="rb-on"' + (b.on ? " checked" : "") + "> " + escapeHtml(b.name || b.key) +
+            (b.members ? ' <span class="cu-hint">(' + b.members + ")</span>" : "") + "</label>" +
+          '<select class="rb-lang" title="' + escapeHtml(t("rarity.bandLang")) + '">' + langs.map(function (L) {
+            return '<option value="' + L.code + '"' + ((b.lang || lang) === L.code ? " selected" : "") + ">" + escapeHtml(L.name) + "</option>"; }).join("") + "</select>" +
+          '<select class="rb-loc" title="' + escapeHtml(t("rarity.bandLoc")) + '">' + locs.map(function (l) {
+            var lk = window.AppRarity.rarityLocKey(l);
+            return '<option value="' + escapeHtml(lk) + '"' + (b.loc === lk ? " selected" : "") + ">" + escapeHtml(l.name || lk) + "</option>"; }).join("") + "</select>" +
+          "</div>";
+      }).join("");
+    }
+    function saveBandList() {
+      var out = [];
+      Array.prototype.forEach.call(rBL.querySelectorAll(".rarity-band-row"), function (row) {
+        var k = row.getAttribute("data-k"), old = (rarityCfg().bands || []).filter(function (b) { return b.key === k; })[0] || {};
+        out.push({ key: k, name: old.name || k, members: old.members || 0, on: !!row.querySelector(".rb-on").checked,
+          lang: row.querySelector(".rb-lang").value, loc: row.querySelector(".rb-loc").value });
+      });
+      raritySave({ bands: out }); rarityAlertsChanged();
+    }
+    if (rBt) {
+      rBt.value = rarityCfg().bandToken || "";
+      rBt.addEventListener("change", function () { raritySave({ bandToken: this.value.trim() }); rarityAlertsChanged(); });
+    }
+    if (rBL) { renderBandList(rarityCfg().bands); rBL.addEventListener("change", saveBandList); }
+    if (rBl) rBl.addEventListener("click", function () {
+      var tok = rBt ? rBt.value.trim() : "";
+      if (!tok) { if (rBL) rBL.textContent = t("rarity.bandNone"); return; }
+      raritySave({ bandToken: tok });
+      var btn = this; btn.disabled = true; if (rBL) rBL.textContent = t("rarity.bandLoading");
+      window.AppRarity.bandListBands(tok).then(function (bs) {
+        var old = {}; (rarityCfg().bands || []).forEach(function (b) { old[b.key] = b; });
+        var merged = (bs || []).map(function (b) { var o = old[b.band_key] || {}; return { key: b.band_key, name: b.name || b.band_key, members: b.member_count || 0, on: !!o.on, lang: o.lang || lang, loc: o.loc || "" }; });
+        raritySave({ bands: merged }); renderBandList(merged);
+        if (!merged.length && rBL) rBL.textContent = t("rarity.bandNone");
+        rarityAlertsChanged();
+      }, function () { if (rBL) rBL.textContent = t("rarity.bandNone"); }).then(function () { btn.disabled = false; });
+    });
     var rNtf = document.getElementById("rarity-notif-toggle");
     if (rNtf) {
       rNtf.checked = rarityCfg().sysNotif && ("Notification" in window) && Notification.permission === "granted";
@@ -22931,6 +22985,7 @@
     getShowSci: function () { return showSci; },
     getDetPlot: function () { return detPlot; },
     getLabelsByKey: function () { return labelsByKey; },
+    ensureLangNames: ensureLangNames, getTaxByCode: function () { return taxByCode; },
   });
 
 

@@ -1521,5 +1521,15 @@
   "storage.compacting": "Compactando …",
   "storage.compactFailed": "No se pudieron compactar las listas: {err}",
   "points.editPoint": "Editar este punto",
-  "points.edited": "«{name}» actualizado."
+  "points.edited": "«{name}» actualizado.",
+  "rarity.band": "Grupos de BAND",
+  "rarity.bandToken": "Token de acceso de BAND",
+  "rarity.bandLoad": "Cargar mis grupos",
+  "rarity.bandLoading": "Cargando grupos…",
+  "rarity.bandNone": "No se encontraron grupos de BAND — revisa el token de acceso.",
+  "rarity.bandLang": "Nombres de especies en",
+  "rarity.bandLoc": "Lugar de alerta (🔔)",
+  "rarity.bandAlert": "Publicación de BAND",
+  "rarity.whyBand": "Una especie mencionada en una publicación de uno de tus grupos de BAND.",
+  "rarity.bandHint": "Vigila también las publicaciones de tus grupos de aves en BAND (band.us). Pega un token de acceso personal (BAND Developers → My Apps → Connect BAND account), carga tus grupos y marca los que quieras seguir. Las publicaciones nuevas se buscan por nombres de especies en el idioma elegido (los nombres científicos siempre); un ave mencionada se trata como una observación en el lugar 🔔 elegido — una publicación no tiene coordenadas — y avisa cuando el modelo la considera improbable allí, como con cualquier otra fuente."
 }

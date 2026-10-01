@@ -1521,5 +1521,15 @@
   "storage.compacting": "Compattazione …",
   "storage.compactFailed": "Non è stato possibile compattare gli elenchi: {err}",
   "points.editPoint": "Modifica questo punto",
-  "points.edited": "«{name}» aggiornato."
+  "points.edited": "«{name}» aggiornato.",
+  "rarity.band": "Gruppi BAND",
+  "rarity.bandToken": "Token di accesso BAND",
+  "rarity.bandLoad": "Carica i miei gruppi",
+  "rarity.bandLoading": "Caricamento gruppi…",
+  "rarity.bandNone": "Nessun gruppo BAND trovato — controlla il token di accesso.",
+  "rarity.bandLang": "Nomi delle specie in",
+  "rarity.bandLoc": "Luogo di allerta (🔔)",
+  "rarity.bandAlert": "Post BAND",
+  "rarity.whyBand": "Una specie citata in un post di uno dei tuoi gruppi BAND.",
+  "rarity.bandHint": "Segui anche i post dei tuoi gruppi di birdwatching su BAND (band.us). Incolla un token di accesso personale (BAND Developers → My Apps → Connect BAND account), carica i gruppi e spunta quelli da seguire. I nuovi post vengono cercati per nomi di specie nella lingua scelta (nomi scientifici sempre); un uccello citato è trattato come un’osservazione nel luogo 🔔 scelto — un post non ha coordinate — e dà un’allerta quando il modello lo ritiene improbabile lì, come per ogni altra fonte."
 }

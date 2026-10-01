@@ -454,6 +454,14 @@ not just eBird* (Settings → Rarity alerts). These background checks stay out o
 they never touch the loading line or the status text, they are **skipped while a fetch of yours is
 running**, and they **abort themselves** if you start one — the next check picks up where it left off.
 
+**BAND groups** (Settings → Rarity alerts → *BAND groups*): the posts of your birding groups on
+[BAND](https://band.us) are watched too. Paste a personal access token (BAND Developers → My Apps →
+*Connect BAND account*), load your groups and tick the ones to follow, each with the language its
+members write in and the 🔔 location it belongs to. New posts are searched for whole-word species
+names in that language (scientific names always); a named bird counts as a sighting at that 🔔 spot
+(a post carries no coordinates) and alerts when the model finds it unlikely there — the same gate,
+list, map ★ and notifications as every other source, with the source shown as *BAND post*.
+
 When a **never-seen-before** rarity arrives it:
 
 - lands on the map as a **pulsing red ★** (its own layer: it ignores the legend filters, but it is

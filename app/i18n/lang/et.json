@@ -1521,5 +1521,15 @@
   "storage.compacting": "Tihendamine …",
   "storage.compactFailed": "Loendite tihendamine ebaõnnestus: {err}",
   "points.editPoint": "Muuda seda punkti",
-  "points.edited": "„{name}“ uuendatud."
+  "points.edited": "„{name}“ uuendatud.",
+  "rarity.band": "BAND-i grupid",
+  "rarity.bandToken": "BAND-i pääsutõend",
+  "rarity.bandLoad": "Laadi minu grupid",
+  "rarity.bandLoading": "Gruppide laadimine…",
+  "rarity.bandNone": "BAND-i gruppe ei leitud — kontrolli pääsutõendit.",
+  "rarity.bandLang": "Liiginimed keeles",
+  "rarity.bandLoc": "Teavituskoht (🔔)",
+  "rarity.bandAlert": "BAND-i postitus",
+  "rarity.whyBand": "Liik, mida mainitakse mõne sinu BAND-i grupi postituses.",
+  "rarity.bandHint": "Jälgi ka oma linnuvaatlusgruppide postitusi BAND-is (band.us). Kleebi isiklik pääsutõend (BAND Developers → My Apps → Connect BAND account), laadi grupid ja märgi need, mida jälgida. Uusi postitusi otsitakse valitud keele liiginimede järgi (teaduslikud nimed alati); mainitud lindu käsitletakse vaatlusena valitud 🔔-kohas — postitusel pole koordinaate — ja teavitatakse, kui mudel peab seda seal ebatõenäoliseks, nagu iga muu allika puhul."
 }

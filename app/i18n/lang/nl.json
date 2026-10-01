@@ -1521,5 +1521,15 @@
   "storage.compacting": "Verdichten …",
   "storage.compactFailed": "Kon de lijsten niet verdichten: {err}",
   "points.editPoint": "Dit punt bewerken",
-  "points.edited": "“{name}” bijgewerkt."
+  "points.edited": "“{name}” bijgewerkt.",
+  "rarity.band": "BAND-groepen",
+  "rarity.bandToken": "BAND-toegangstoken",
+  "rarity.bandLoad": "Mijn groepen laden",
+  "rarity.bandLoading": "Groepen laden…",
+  "rarity.bandNone": "Geen BAND-groepen gevonden — controleer het toegangstoken.",
+  "rarity.bandLang": "Soortnamen in",
+  "rarity.bandLoc": "Alarmlocatie (🔔)",
+  "rarity.bandAlert": "BAND-bericht",
+  "rarity.whyBand": "Een soort die in een bericht van een van je BAND-groepen wordt genoemd.",
+  "rarity.bandHint": "Volg ook de berichten van je vogelgroepen op BAND (band.us). Plak een persoonlijk toegangstoken (BAND Developers → My Apps → Connect BAND account), laad je groepen en vink aan welke je wilt volgen. Nieuwe berichten worden doorzocht op soortnamen in de gekozen taal (wetenschappelijke namen altijd); een genoemde vogel geldt als waarneming op de gekozen 🔔-locatie — een bericht heeft geen coördinaten — en geeft een melding wanneer het model hem daar onwaarschijnlijk vindt, zoals bij elke andere bron."
 }

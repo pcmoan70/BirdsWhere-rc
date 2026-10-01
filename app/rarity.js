@@ -15,6 +15,7 @@ window.AppRarity = (function () {
 
   // ---- injected by app.js (init) -----------------------------------------
   // Plain function aliases (stable references) …
+  var ensureLangNames, getTaxByCode;   // BAND: the species-name packs + the taxonomy rows they fill
   var detIsRare, detName, ebirdKey, escapeHtml, fmtDate, getHereFix, getStoredLocations,
       hereAsLoc, hereCfg, hideDetHover, holdDelay, ico, llFromAttrs, onDetMarkerClick,
       recentRadiusKm, safeHref, setStatus, setTabAlert, showDetHover, spDetailTableHtml,
@@ -43,6 +44,7 @@ window.AppRarity = (function () {
     appErrLog = ctx.appErrLog;
     getMap = ctx.getMap; getLang = ctx.getLang; getShowSci = ctx.getShowSci;
     getDetPlot = ctx.getDetPlot; getLabelsByKey = ctx.getLabelsByKey;
+    ensureLangNames = ctx.ensureLangNames; getTaxByCode = ctx.getTaxByCode;
   }
 
   // ---- eBird rarity alerts ---------------------------------------------------
@@ -73,7 +75,9 @@ window.AppRarity = (function () {
     if (!isFinite(+c.probPct)) c.probPct = 15;
     if (!isFinite(+c.showDays) || +c.showDays < 0) c.showDays = 7;   // display window: 0 = Today, else last N days
     if (c.showMap == null) c.showMap = true;   // rarity records plotted on the map as ordinary (filtered) dots
-    if (c.countryWide == null) c.countryWide = false;   // fetch notable for each point's WHOLE COUNTRY, not just its radius
+    if (c.countryWide == null) c.countryWide = false;
+    if (!c.bandToken) c.bandToken = "";          // BAND groups (band.us): a personal access token …
+    if (!Array.isArray(c.bands)) c.bands = [];   // … and the groups to watch [{key, name, on, lang, loc}]   // fetch notable for each point's WHOLE COUNTRY, not just its radius
     // Also sweep the ORDINARY observation sources (GBIF / iNaturalist / the national
     // portals / eBird / BirdWeather) around each 🔔 location and alert on anything the
     // model finds unlikely there — eBird's notable feed only covers what eBird itself flags.
@@ -137,6 +141,64 @@ window.AppRarity = (function () {
     if (!o) return "";
     return o.obsId || (o.subId && o.speciesCode ? o.subId + "|" + o.speciesCode : "") ||
       (o.speciesCode ? o.speciesCode + "|" + (o.obsDt || "") + "|" + o.lat + "," + o.lng : "");
+  }
+  // ---- BAND groups (band.us) ------------------------------------------------
+  // The owner's birding BAND groups as one more alert source: new posts are scanned for species
+  // names in the band's language (whole words; scientific names always) and a hit is handled as a
+  // sighting at the band's 🔔 location. Auth is a personal access token (BAND Developers → My Apps →
+  // Connect BAND account); the API answers the browser directly (CORS), so no server is involved.
+  var BAND_API = "https://openapi.band.us";
+  var rarityBadBandToken = null;   // the token that last got 401 — retried only after it changes
+  function pad2(n) { return (n < 10 ? "0" : "") + n; }
+  function bandFetch(path, params, signal) {
+    var q = Object.keys(params).map(function (k) { return k + "=" + encodeURIComponent(params[k]); }).join("&");
+    return fetch(BAND_API + path + "?" + q, { signal: signal }).then(function (r) {
+      if (!r.ok) { var e = new Error("BAND " + r.status); e.status = r.status; throw e; }
+      return r.json();
+    }).then(function (j) {
+      if (!j || j.result_code !== 1) { var e2 = new Error("BAND result " + (j && j.result_code)); e2.status = (j && j.result_code === 300) ? 401 : 0; throw e2; }
+      return j.result_data || {};
+    });
+  }
+  function bandListBands(token) { return bandFetch("/v2.1/bands", { access_token: token }).then(function (d) { return d.bands || []; }); }
+  function bandOn() { var c = rarityCfg(); return !!c.bandToken && c.bands.some(function (b) { return b && b.on; }); }
+  // A post body is HTML-escaped text with <band:refer>/<band:hashtag> tags → plain text.
+  function bandPlain(s) {
+    return String(s || "").replace(/<[^>]*>/g, " ").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
+  }
+  // Name index per language: [lower-cased name, code, scientific] for every BIRD the taxonomy
+  // names in that language, plus every scientific name. Built once per language per session.
+  var bandIdx = {};
+  function bandNameIndex(lg) {
+    if (bandIdx[lg]) return Promise.resolve(bandIdx[lg]);
+    var L = (window.GeoI18N && window.GeoI18N.langByCode && window.GeoI18N.langByCode(lg)) || { taxCol: "com_name" };
+    return Promise.resolve(ensureLangNames ? ensureLangNames(L.taxCol) : false).then(function () {
+      var tax = (getTaxByCode && getTaxByCode()) || {}, lbl = getLabelsByKey() || {}, out = [], seen = Object.create(null);
+      function add(nm, code, sci) { nm = String(nm || "").trim().toLowerCase(); if (nm.length < 3 || seen[nm]) return; seen[nm] = 1; out.push([nm, code, sci]); }
+      Object.keys(tax).forEach(function (code) {
+        var row = tax[code]; if (!row || String(row.class_name || "").toLowerCase() !== "aves") return;
+        var l = lbl[code], sci = (l && l.sci) || "";
+        add(row[L.taxCol] || row.com_name, code, sci);
+        if (sci) add(sci, code, sci);
+      });
+      bandIdx[lg] = out; return out;
+    });
+  }
+  // A letter in any alphabet changes under case mapping; digits count too (ES5-safe, no \p{L}).
+  function bandLetter(ch) { return !!ch && (ch.toLowerCase() !== ch.toUpperCase() || /[0-9]/.test(ch)); }
+  // Whole-word hits of the index in a text; one hit per species.
+  function bandMatches(text, idx) {
+    var low = String(text || "").toLowerCase(), hits = [], got = Object.create(null);
+    if (!low) return hits;
+    for (var i = 0; i < idx.length; i++) {
+      var nm = idx[i][0], at = low.indexOf(nm);
+      while (at >= 0) {
+        if (!bandLetter(low.charAt(at - 1)) && !bandLetter(low.charAt(at + nm.length))) { if (!got[idx[i][1]]) { got[idx[i][1]] = 1; hits.push(idx[i]); } break; }
+        at = low.indexOf(nm, at + 1);
+      }
+    }
+    return hits;
   }
   var rarityTimer = null, rarityPollBusy = false, rarityChangedTm = null;
   var rarityPollRemain = 0;        // 🔔 locations still to fetch in the running cycle (bell subscript)
@@ -203,6 +265,7 @@ window.AppRarity = (function () {
       if (it.prob != null && (e.prob == null || it.prob < e.prob)) e.prob = it.prob;
       if (it.area && !e.area) e.area = it.area;
       if (it.src === "ebird") e.src = "ebird";   // eBird-notable beats "local" as the group's badge
+      else if (it.src === "band" && e.src !== "ebird") e.src = "band";
     });
     var cut = Date.now() - 30 * 86400000;
     a = a.filter(function (e) {
@@ -244,7 +307,7 @@ window.AppRarity = (function () {
   function clearLocalRarities() {
     var a = getRarityList();
     if (!a.length) return false;
-    var keep = a.filter(function (e) { return e.src === "ebird"; });
+    var keep = a.filter(function (e) { return e.src === "ebird" || e.src === "band"; });
     if (keep.length === a.length) return false;   // nothing local to drop
     window.GeoState.save({ rarityList: keep });
     rarityPlotList();     // refresh the pulsing rarity dots to match
@@ -302,6 +365,7 @@ window.AppRarity = (function () {
   // Why a record is in the rarity list — shown per detection in the ⓘ details:
   // eBird's notable-sightings report, or the model-probability threshold.
   function rarityWhy(e, r) {
+    if (r.why === "band") return t("rarity.whyBand");
     if (r.why === "prob" || (!r.why && e.src !== "ebird"))
       return t("rarity.whyProb", { p: (r.prob != null ? r.prob : (e.prob != null ? e.prob : "?")), th: rarityCfg().probPct });
     return t("rarity.whyEbird");
@@ -554,7 +618,7 @@ window.AppRarity = (function () {
     // eBird's notable feed needs a working key; the ordinary-source sweep doesn't —
     // so a poll is worth running as long as ONE of the two can deliver something.
     var ebirdOn = !!tok && tok !== rarityBadKey, sweepOn = rarityAllSources();
-    if (!ebirdOn && !sweepOn) { raritySave({ lastPoll: Date.now() }); scheduleRarityPoll(); return; }
+    if (!ebirdOn && !sweepOn && !bandOn()) { raritySave({ lastPoll: Date.now() }); scheduleRarityPoll(); return; }
     // Offline: nothing was checked, so lastPoll must NOT move — it is what
     // rarityPollIfOverdue and scheduleRarityPoll measure from, and stamping it here
     // made reconnecting wait out a whole interval. Retry shortly; the `online` event
@@ -584,11 +648,12 @@ window.AppRarity = (function () {
         // coordinate-less record of that species into one nonsense entry.
         if (!isFinite(+o.lat) || !isFinite(+o.lng)) return;
         var mp = (o._mprob != null && isFinite(o._mprob)) ? o._mprob : null;   // model prob % (own point + found-week), null when not a model species
+        var band = !!o._band;   // a species named in a BAND post (see bandStep) — same path, its own badge
         listAdds.push({ fresh: !cfg.seen[id] && !seeding, k: rarityGroupKey(o.sciName, o.lat, o.lng), rid: id, sci: o.sciName || "",
           name: o.comName || o.sciName || "?", dt: o.obsDt || "", place: o.locName || "",
           observer: o.userDisplayName || "", count: o.howMany != null ? o.howMany : "",
           note: o.comments || "", url: o.subId ? "https://ebird.org/checklist/" + o.subId : "",
-          lat: +o.lat, lon: +o.lng, area: areaName, src: "ebird", rsrc: "eBird", why: "ebird",
+          lat: +o.lat, lon: +o.lng, area: areaName, src: band ? "band" : "ebird", rsrc: band ? "BAND" : "eBird", why: band ? "band" : "ebird",
           recProb: mp, prob: mp });
         if (cfg.seen[id]) return;
         cfg.seen[id] = Date.now();
@@ -622,7 +687,7 @@ window.AppRarity = (function () {
     (function next() {
       rarityPollRemain = Math.max(0, locs.length - i);   // bell subscript: fetches still to go
       updateRarityBell();
-      if (i >= locs.length) { finish(); return; }
+      if (i >= locs.length) { bandStep(finish); return; }   // the BAND groups come after the 🔔 locations
       var l = locs[i++];
       // The Here placeholder resolves its GPS fix first; unresolvable → skip this cycle.
       if (l.here && !isFinite(+l.lat)) {
@@ -673,6 +738,49 @@ window.AppRarity = (function () {
           .then(function (obs) { if (tm) clearTimeout(tm); handleObs(obs, rarityLocKey(l), l.name, fetchDone); }, function (err) { fetchErr(tm, err); });
       }
     })();
+    // BAND groups: one request per ticked band (newest 20 posts). Each post is scanned ONCE
+    // (its key goes into the seen-set); every species named in it becomes an observation-shaped
+    // record at the band's alert location, so the model gate, seeding, list and announcing are
+    // exactly those of an eBird notable record.
+    function bandStep(done) {
+      var bands = (cfg.bands || []).filter(function (b) { return b && b.on && b.key; });
+      if (!cfg.bandToken || !bands.length || rarityBadBandToken === cfg.bandToken) { done(); return; }
+      var j = 0;
+      (function nextBand() {
+        if (j >= bands.length) { done(); return; }
+        var b = bands[j++], loc = null;
+        locs.forEach(function (l) { if (!loc && rarityLocKey(l) === b.loc) loc = l; });
+        loc = loc || locs[0];
+        if (!loc || !isFinite(+loc.lat)) { nextBand(); return; }   // a post has no coordinates: it needs a 🔔 spot to sit at
+        var ctrl = (typeof AbortController !== "undefined") ? new AbortController() : null;
+        var tm = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (e) {} }, 30000) : null;
+        var lg = b.lang || getLang();
+        Promise.all([bandNameIndex(lg), bandFetch("/v2/band/posts", { access_token: cfg.bandToken, band_key: b.key, locale: "en_US" }, ctrl && ctrl.signal)])
+          .then(function (r) {
+            if (tm) clearTimeout(tm);
+            var idx = r[0], items = (r[1] && r[1].items) || [], obs = [], lbl = getLabelsByKey() || {};
+            items.forEach(function (p) {
+              if (!p || !p.post_key) return;
+              var pk = "band:" + p.post_key;
+              if (cfg.seen[pk]) return;   // scanned on an earlier poll
+              cfg.seen[pk] = Date.now();
+              var txt = bandPlain(p.content), w = new Date(+p.created_at || Date.now());
+              var dt = w.getFullYear() + "-" + pad2(w.getMonth() + 1) + "-" + pad2(w.getDate()) + " " + pad2(w.getHours()) + ":" + pad2(w.getMinutes());
+              bandMatches(txt, idx).forEach(function (h) {
+                var l = lbl[h[1]];
+                obs.push({ sciName: h[2] || h[0], comName: (l && speciesName(l)) || h[0], speciesCode: h[1], obsId: pk + "|" + h[1],
+                  lat: +loc.lat, lng: +loc.lon, obsDt: dt, locName: b.name || "BAND", userDisplayName: (p.author && p.author.name) || "",
+                  comments: txt.slice(0, 300), howMany: "", _band: b.name || "BAND" });
+              });
+            });
+            handleObs(obs, "band:" + b.key, b.name || "BAND", function () { setTimeout(nextBand, 600); });
+          }, function (err) {
+            if (tm) clearTimeout(tm);
+            if (err && err.status === 401) { rarityBadBandToken = cfg.bandToken; setStatus(t("rarity.bandNone")); }   // retried only after the token changes
+            nextBand();
+          });
+      })();
+    }
     function finish() {
       if (finished) return;              // watchdog and the normal end can both arrive
       finished = true; clearTimeout(watchTm);
@@ -1048,7 +1156,7 @@ window.AppRarity = (function () {
         // eBird's rarity report shows as "eBird alert" (per-record why flag).
         var srcSeen = Object.create(null), srcList = [];
         e.recs.forEach(function (r) {
-          var s = (r.why === "ebird" || (!r.why && e.src === "ebird")) ? t("rarity.ebirdAlert") : (r.src || "").trim();
+          var s = (r.why === "ebird" || (!r.why && e.src === "ebird")) ? t("rarity.ebirdAlert") : r.why === "band" ? t("rarity.bandAlert") : (r.src || "").trim();
           if (s && !srcSeen[s]) { srcSeen[s] = 1; srcList.push(s); }
         });
         if (!srcList.length && e.src === "ebird") srcList.push(t("rarity.ebirdAlert"));
@@ -1289,6 +1397,7 @@ window.AppRarity = (function () {
     harvestLocalRarities: harvestLocalRarities,
     rarityEmailPost: rarityEmailPost, rarityEmailValid: rarityEmailValid, rarityEmailState: rarityEmailState,
     rarityEmailTestSend: rarityEmailTestSend,
+    bandListBands: bandListBands, bandMatches: bandMatches, bandPlain: bandPlain, rarityLocs: rarityLocs, rarityLocKey: rarityLocKey,
     showPanel: showRarityPanel, pageClosed: rarityPageClosed,
     initRarityAlerts: initRarityAlerts,
     // the group key behind the currently-open rarity window (app.js clears it

@@ -1521,5 +1521,15 @@
   "storage.compacting": "Komprimerer …",
   "storage.compactFailed": "Kunne ikke komprimere listerne: {err}",
   "points.editPoint": "Redigér dette punkt",
-  "points.edited": "“{name}” opdateret."
+  "points.edited": "“{name}” opdateret.",
+  "rarity.band": "BAND-grupper",
+  "rarity.bandToken": "BAND-adgangstoken",
+  "rarity.bandLoad": "Hent mine grupper",
+  "rarity.bandLoading": "Henter grupper…",
+  "rarity.bandNone": "Ingen BAND-grupper fundet — tjek adgangstokenet.",
+  "rarity.bandLang": "Artsnavne på",
+  "rarity.bandLoc": "Alarmsted (🔔)",
+  "rarity.bandAlert": "BAND-opslag",
+  "rarity.whyBand": "En art nævnt i et opslag i en af dine BAND-grupper.",
+  "rarity.bandHint": "Følg også opslagene i dine fuglegrupper på BAND (band.us). Indsæt et personligt adgangstoken (BAND Developers → My Apps → Connect BAND account), hent grupperne og sæt flueben ved dem, du vil følge. Nye opslag gennemsøges for artsnavne på det valgte sprog (videnskabelige navne altid); en nævnt fugl behandles som en observation på det valgte 🔔-sted — et opslag har ingen koordinater — og udløser en alarm, når modellen finder den usandsynlig dér, som fra alle andre kilder."
 }
