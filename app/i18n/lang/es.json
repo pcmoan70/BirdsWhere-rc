@@ -970,6 +970,8 @@
   "rl.dd": "Datos insuficientes",
   "obs.activity": "Actividad",
   "obs.notes": "Notas",
+  "obs.copyNote": "Copiar nota",
+  "obs.noteCopied": "Nota copiada",
   "obs.status": "Estado",
   "obs.unconfirmed": "No confirmado",
   "obs.exEscapee": "Escapado",

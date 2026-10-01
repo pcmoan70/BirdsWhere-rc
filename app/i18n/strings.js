@@ -749,6 +749,8 @@ window.GeoI18N = (function () {
         "rl.dd": "Data deficient",
         "obs.activity": "Activity",
         "obs.notes": "Notes",
+        "obs.copyNote": "Copy note",
+        "obs.noteCopied": "Note copied",
         "obs.status": "Status",
         "obs.unconfirmed": "Unconfirmed",
         "obs.exEscapee": "Escapee",

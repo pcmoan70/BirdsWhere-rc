@@ -970,6 +970,8 @@
   "rl.dd": "Onvoldoende gegevens",
   "obs.activity": "Activiteit",
   "obs.notes": "Notities",
+  "obs.copyNote": "Notitie kopiëren",
+  "obs.noteCopied": "Notitie gekopieerd",
   "obs.status": "Status",
   "obs.unconfirmed": "Niet bevestigd",
   "obs.exEscapee": "Ontsnapt",

@@ -608,6 +608,8 @@
   "rl.dd": "Kunskapsbrist",
   "obs.activity": "Aktivitet",
   "obs.notes": "Anteckningar",
+  "obs.copyNote": "Kopiera anteckning",
+  "obs.noteCopied": "Anteckning kopierad",
   "obs.status": "Status",
   "obs.unconfirmed": "Obekräftad",
   "obs.exEscapee": "Förrymd",

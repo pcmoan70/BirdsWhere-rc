@@ -970,6 +970,8 @@
   "rl.dd": "Puuduliku andmestikuga",
   "obs.activity": "Tegevus",
   "obs.notes": "Märkmed",
+  "obs.copyNote": "Kopeeri märkus",
+  "obs.noteCopied": "Märkus kopeeritud",
   "obs.status": "Olek",
   "obs.unconfirmed": "Kinnitamata",
   "obs.exEscapee": "Põgenik",

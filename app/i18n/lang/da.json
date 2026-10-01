@@ -970,6 +970,8 @@
   "rl.dd": "Utilstrækkelige data",
   "obs.activity": "Aktivitet",
   "obs.notes": "Noter",
+  "obs.copyNote": "Kopiér note",
+  "obs.noteCopied": "Note kopieret",
   "obs.status": "Status",
   "obs.unconfirmed": "Ubekræftet",
   "obs.exEscapee": "Undsluppen",

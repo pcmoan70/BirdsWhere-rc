@@ -970,6 +970,8 @@
   "rl.dd": "Datamangel",
   "obs.activity": "Aktivitet",
   "obs.notes": "Notater",
+  "obs.copyNote": "Kopier notat",
+  "obs.noteCopied": "Notat kopiert",
   "obs.status": "Status",
   "obs.unconfirmed": "Ubekreftet",
   "obs.exEscapee": "Rømling",

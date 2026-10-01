@@ -970,6 +970,8 @@
   "rl.dd": "Puutteellisesti tunnettu",
   "obs.activity": "Toiminta",
   "obs.notes": "Muistiinpanot",
+  "obs.copyNote": "Kopioi muistiinpano",
+  "obs.noteCopied": "Muistiinpano kopioitu",
   "obs.status": "Tila",
   "obs.unconfirmed": "Vahvistamaton",
   "obs.exEscapee": "Karkulainen",

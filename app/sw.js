@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1967";
+var VERSION = "v1968";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Fix for the blank map: the automatic re-fetch of failed tiles (v1965) itself produced tile addresses with a fractional zoom. It now uses the app\u2019s rounding-safe redraw.",
+  "\u2022 Observation popup: every record that carries a note now shows an \u24d8 \u2014 hover it to read the note, click it for a window with a copy button.",
+  "\u2022 Points \u2192 Load from file: a BirdsWhere .share file (an observation list) can be loaded by link as well as from disk."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

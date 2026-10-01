@@ -2911,7 +2911,12 @@ button.dd-name:hover { text-decoration: underline; }
 .bird-zoom-pop .bzp-min { display: flex; flex-wrap: wrap; gap: 4px; }
 .bird-zoom-pop .bzp-chip { border: 1px solid var(--border, #ccc); background: #fff; border-radius: 999px; padding: 2px 9px; font: inherit; font-size: var(--fs-s); cursor: pointer; }
 .bird-zoom-pop .bzp-chip.on { background: var(--brand, #0b7a5a); border-color: var(--brand, #0b7a5a); color: #fff; font-weight: 600; }
-.obs-info-pop .oip-head { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .04em; color: var(--ink-faint); margin-bottom: 6px; }
+.obs-info-pop { user-select: text; }   /* the note window exists to be copied from */
+.obs-info-pop .oip-head { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .04em; color: var(--ink-faint); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+.obs-info-pop .oip-copy { margin-left: auto; border: 1px solid var(--border); background: #fff; border-radius: 5px; padding: 2px 5px; cursor: pointer; color: var(--ink-muted); display: inline-flex; }
+.obs-info-pop .oip-copy .btn-ico { width: var(--ico-m); height: var(--ico-m); }
+.obs-info-pop .oip-copy.done { color: var(--brand, #2e8b74); border-color: var(--brand, #2e8b74); }
+.dl-row .obs-info { margin-left: 4px; }
 .obs-info-pop .oip-row { display: flex; gap: 8px; margin-top: 5px; }
 .obs-info-pop .oip-lbl { flex: 0 0 auto; min-width: 62px; color: var(--ink-muted); }
 .obs-info-pop .oip-val { flex: 1 1 auto; white-space: pre-wrap; word-break: break-word; }

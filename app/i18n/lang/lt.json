@@ -970,6 +970,8 @@
   "rl.dd": "Trūksta duomenų",
   "obs.activity": "Veikla",
   "obs.notes": "Pastabos",
+  "obs.copyNote": "Kopijuoti pastabą",
+  "obs.noteCopied": "Pastaba nukopijuota",
   "obs.status": "Būsena",
   "obs.unconfirmed": "Nepatvirtinta",
   "obs.exEscapee": "Pabėgęs",

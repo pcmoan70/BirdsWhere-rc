@@ -305,8 +305,9 @@ these headers — or **Dist** — for a wrapped explanation of how the value is 
 records grouped by *date · observer · location · distance · source(s) · count*, each species row
 showing prob / season / yr-peak / count plus an **ⓘ** that pops up the observation's **activity,
 notes and status** where the source provides them (GBIF, iNaturalist, Artsobservasjoner,
-Artportalen — and eBird checklist comments plus unconfirmed/exotic flags); hover the ⓘ on a
-desktop, tap it on touch. Expanding a species in the table opens its records as an aligned
+Artportalen — and eBird checklist comments plus unconfirmed/exotic flags). Hovering the ⓘ shows
+the note itself; a click opens the note window, which has a copy button. The same ⓘ sits on each
+record of the map-dot observation popup. Expanding a species in the table opens its records as an aligned
 sub-table.
 
 **Observation photos** — when the source ships the observer's own pictures (iNaturalist, GBIF,
@@ -658,9 +659,10 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
 - **Import / export** — points import and export as **KML, KMZ and GeoJSON**. Export everything from
   Settings → *Map points*; download a **single list or trip** from the ↓ beside its × — in the Points
   menu and in the lists window (press-and-hold or right-click the Points button) — choosing the format
-  there. *Load from file* also takes a **direct link** to a .kmz / .kml / .geojson the host lets a
-  browser fetch (a GitHub raw link, say) — the popover has the file picker and a link field; the
-  bytes then take the same import path. Google Drive share links cannot be fetched by a web page
+  there. *Load from file* also takes a **direct link** to a .kmz / .kml / .geojson — or a BirdsWhere
+  **.share** file (an observation list: it opens as plotted detections, like fetched observations) —
+  that the host lets a browser fetch (a GitHub raw link, say) — the popover has the file picker and
+  a link field; the bytes then take the same import path. Google Drive share links cannot be fetched by a web page
   (Drive refuses cross-site browser requests), so download such a file and choose it instead.
   Import from either the Settings
   *Import* button or *Load from file* in the Points menu — both

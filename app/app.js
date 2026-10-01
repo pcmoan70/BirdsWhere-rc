@@ -1992,6 +1992,17 @@
     return spans.slice(0, OBS_SHOWN).join(", ") +
       '<span class="sp-obs-more sp-obs-filter" role="button" data-obs="' + escapeHtml(all) + '" title="' + escapeHtml(t("obs.showAll")) + '">\u2026</span>';
   }
+  // The record's ⓘ (activity / note / status flags — source-dependent: GBIF, iNaturalist,
+  // Artsobservasjoner, Artportalen have them; eBird/BirdNET don't). Hovering shows the note
+  // itself; a click opens the note window (showObsInfoPopup), where the text can be copied.
+  // A note that carries a web link gets the green "link out" arrow instead of ⓘ.
+  function obsInfoIconHtml(d, note) {
+    var al = d.act ? actLabel(d.act) : "", nt = String(note == null ? (d.note || "") : note).trim(), fl = String(d.flags || "").trim();
+    if (!al && !nt && !fl) return "";
+    var hasLink = /https?:\/\//i.test(nt), tip = nt ? (nt.length > 400 ? nt.slice(0, 400) + "…" : nt) : (al || t("obs.infoLabel"));
+    return ' <span class="obs-info' + (hasLink ? " obs-info-link" : "") + '" role="button" tabindex="0" aria-label="' + escapeHtml(t("obs.infoLabel")) + '" title="' + escapeHtml(tip) +
+      '" data-act="' + escapeHtml(d.act || "") + '" data-note="' + escapeHtml(String(d.note || "")) + '" data-flags="' + escapeHtml(fl) + '" data-src="' + escapeHtml(srcLabel(d)) + '">' + ico(hasLink ? "linkout" : "info") + "</span>";
+  }
   function spRecRowHtml(d, opts) {
     var km = spRecDistKm(d); km = isFinite(km) ? escapeHtml(nearbyFmtDist(km)) : "";
     // Probability as a coloured bar (same treatment as the Species-list table), black
@@ -2026,7 +2037,6 @@
     // iNaturalist, Artsobservasjoner, Artportalen have them; eBird/BirdNET don't),
     // an ⓘ opens a small formatted popup with those details.
     var infoAl = d.act ? actLabel(d.act) : "", infoNt = String(d.note || "").trim(), infoFl = String(d.flags || "").trim();
-    var hasLink = /https?:\/\//i.test(infoNt);   // the note carries a web link → green "link out" arrow instead of ⓘ
     // The recorder's OWN photo of this bird (iNaturalist / GBIF / Artsobservasjoner and the
     // other Nordic portals): a camera button straight to the picture, no detour via the source.
     // All of this observation's pictures (most sources ship several); the button carries
@@ -2038,10 +2048,7 @@
         '" data-photos="' + escapeHtml(plist.join(" ")) + '" data-name="' + escapeHtml(dispName) + '" data-url="' + escapeHtml(d.url || "") + '">' + ico("camera") +
         (plist.length > 1 ? '<span class="obs-photo-n">' + plist.length + "</span>" : "") + "</span>"
       : "";
-    var infoIcon = (infoAl || infoNt || infoFl)
-      ? ' <span class="obs-info' + (hasLink ? " obs-info-link" : "") + '" role="button" tabindex="0" aria-label="' + escapeHtml(t("obs.infoLabel")) + '" title="' + escapeHtml(t("obs.infoLabel")) +
-        '" data-act="' + escapeHtml(d.act || "") + '" data-note="' + escapeHtml(String(d.note || "")) + '" data-flags="' + escapeHtml(infoFl) + '" data-src="' + escapeHtml(srcLabel(d)) + '">' + ico(hasLink ? "linkout" : "info") + "</span>"
-      : "";
+    var infoIcon = obsInfoIconHtml(d, infoNt);
     return '<tr class="sp-d-row"' + recAttrs + ">" +
       '<td class="num sp-d-cnt">' + cnt + "</td>" +   // count FIRST, left of the name
       (showName ? '<td class="sp-d-name">' + sw + nameLink + "</td>" : "") +
@@ -11539,7 +11546,7 @@
       meta = [distTxt ? '<span class="dl-dist">' + escapeHtml(distTxt) + "</span>" : "",
         showDate ? dateClickHtml(d.date) : "",
         (d.count != null && d.count !== "") ? "×" + escapeHtml(String(d.count)) : "",
-        srcHtml].filter(Boolean).join(" · ");
+        srcHtml].filter(Boolean).join(" · ") + obsInfoIconHtml(d, note);   // ⓘ: hover = the note, click = a copyable note window
       subLines =
         (al ? '<span class="dl-sub" title="' + escapeHtml(al) + '">' + escapeHtml(al) + "</span>" : "") +
         (note ? '<span class="dl-sub dl-note" title="' + escapeHtml(note) + '">' + linkifyHtml(note) + "</span>" : "");
@@ -11802,11 +11809,20 @@
     // Anchored to the ⓘ, so a note opened from inside a records list stacks on it.
     var el = openAnchoredMenu("obs-info-pop", anchor);
     _obsInfoPop = el;
-    var html = '<div class="oip-head">' + escapeHtml(src || t("obs.infoLabel")) + "</div>";
+    var html = '<div class="oip-head">' + escapeHtml(src || t("obs.infoLabel")) +
+      (nt ? '<button type="button" class="oip-copy" title="' + escapeHtml(t("obs.copyNote")) + '" aria-label="' + escapeHtml(t("obs.copyNote")) + '">' + ico("copy") + "</button>" : "") + "</div>";
     if (fls.length) html += '<div class="oip-row"><span class="oip-lbl">' + escapeHtml(t("obs.status")) + '</span><span class="oip-val">' + escapeHtml(fls.join(" · ")) + "</span></div>";
     if (al) html += '<div class="oip-row"><span class="oip-lbl">' + escapeHtml(t("obs.activity")) + '</span><span class="oip-val">' + escapeHtml(al) + "</span></div>";
     if (nt) html += '<div class="oip-row"><span class="oip-lbl">' + escapeHtml(t("obs.notes")) + '</span><span class="oip-val">' + linkifyHtml(nt) + "</span></div>";
     el.innerHTML = html;
+    var cp = el.querySelector(".oip-copy");
+    if (cp) cp.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var txt = [fls.length ? t("obs.status") + ": " + fls.join(" · ") : "", al ? t("obs.activity") + ": " + al : "", nt].filter(Boolean).join("\n");
+      var ok = function () { cp.classList.add("done"); setStatus(t("obs.noteCopied")); setTimeout(function () { cp.classList.remove("done"); }, 1200); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, function () {});
+      else { try { var ta = document.createElement("textarea"); ta.value = txt; el.appendChild(ta); ta.select(); document.execCommand("copy"); el.removeChild(ta); ok(); } catch (err) {} }
+    });
     // Just clear of the pointer, so the note does not open under the finger/cursor that
     // asked for it. Without coordinates (a keyboard activation) fall back to the icon.
     var px, py;
@@ -17131,7 +17147,7 @@
       .then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.blob(); })
       .then(function (b) {
         if (/text\/html/i.test(b.type || "")) throw new Error("html");   // a web page, not a list
-        importPointsFile([new File([b], name || "points", { type: b.type || "" })], false);
+        importPointsFile([new File([b], name || "points", { type: b.type || "" })], true);   // a .share file by link imports like one picked from disk
       })
       .catch(function () { mpState.mpLoading(null); setStatus(t("points.linkFail")); });
   }

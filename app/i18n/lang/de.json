@@ -970,6 +970,8 @@
   "rl.dd": "Daten unzureichend",
   "obs.activity": "Aktivität",
   "obs.notes": "Notizen",
+  "obs.copyNote": "Notiz kopieren",
+  "obs.noteCopied": "Notiz kopiert",
   "obs.status": "Status",
   "obs.unconfirmed": "Unbestätigt",
   "obs.exEscapee": "Gefangenschaftsflüchtling",

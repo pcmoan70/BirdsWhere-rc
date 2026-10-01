@@ -970,6 +970,8 @@
   "rl.dd": "Nedostatek údajů",
   "obs.activity": "Aktivita",
   "obs.notes": "Poznámky",
+  "obs.copyNote": "Kopírovat poznámku",
+  "obs.noteCopied": "Poznámka zkopírována",
   "obs.status": "Stav",
   "obs.unconfirmed": "Nepotvrzeno",
   "obs.exEscapee": "Uprchlík",
