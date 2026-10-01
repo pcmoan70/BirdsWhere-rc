@@ -24469,7 +24469,10 @@
     box.appendChild(cap);
     var x = document.createElement("button"); x.type = "button"; x.className = "lb-close"; x.textContent = "×"; x.setAttribute("aria-label", t("btn.close"));
     box.appendChild(x);
-    box.addEventListener("click", function (e) { if (e.target.closest("a")) return; e.stopPropagation(); closePhotoLightbox(); });
+    // The click a touch hold emits on release lands on the OVERLAY (it is on top by then) and
+    // closed the picture before it was seen (owner's report, 2026-10-01): ignore clicks for a
+    // moment after the hold fired.
+    box.addEventListener("click", function (e) { if (e.target.closest("a")) return; e.stopPropagation(); if (Date.now() - lbHoldAt < 900) return; closePhotoLightbox(); });
     document.body.appendChild(box);
     document.addEventListener("keydown", lbKey);
   }
@@ -24489,7 +24492,7 @@
     }, true);
     document.addEventListener("pointermove", function (e) { if (lbHoldT && lbStart && (Math.abs(e.clientX - lbStart.x) > 8 || Math.abs(e.clientY - lbStart.y) > 8)) cancel(); }, true);
     document.addEventListener("pointerup", cancel, true); document.addEventListener("pointercancel", cancel, true);
-    document.addEventListener("click", function (e) { if (Date.now() - lbHoldAt < 800 && e.target.closest && e.target.closest(".spg-img img")) { e.stopPropagation(); e.preventDefault(); } }, true);
+    document.addEventListener("click", function (e) { if (Date.now() - lbHoldAt < 900 && e.target.closest && e.target.closest(".spg-img img, #photo-lightbox")) { e.stopPropagation(); e.preventDefault(); } }, true);
     document.addEventListener("contextmenu", function (e) { if (e.target.closest && e.target.closest(".spg-img img") && (lbHoldT || Date.now() - lbHoldAt < 800)) e.preventDefault(); }, true);
   })();
   function spImgThumb(thumb) {
