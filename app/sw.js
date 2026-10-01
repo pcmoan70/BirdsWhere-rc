@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1982";
+var VERSION = "v1983";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Load from file takes several .share observation lists at once (and mixed with KMZ files): each becomes its own saved list, no prompt per file \u2014 it used to answer \u201cNo placemarks with coordinates found\u201d."
+  "\u2022 Loading several files at once saves them as lists without showing them on the map; a single file is shown as before. Tick the lists you want in the Points menu."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

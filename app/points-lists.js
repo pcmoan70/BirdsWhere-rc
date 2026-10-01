@@ -1094,7 +1094,7 @@ window.AppPoints = (function () {
     var noteToks = noteTokens();
     var noteHtmlBox = document.getElementById("kml-note-html");
     var noteIsHtml = !!(noteHtmlBox && noteHtmlBox.checked);
-    function finish(listName, marks) {
+    function finish(listName, marks, show) {
       var pts = (marks || p.marks).map(function (pm) {
         var tag = normTag(kmlFieldValue(pm, tagTok));
         // One field → exactly what it always was. Several → each line labelled, because
@@ -1139,7 +1139,7 @@ window.AppPoints = (function () {
       if (!c) { c = { name: listName, points: [] }; mpCollections.push(c); }
       c.points = c.points.concat(pts);
       internPoints([c]);   // a fresh import is the other place equal strings arrive unshared
-      shownColls[listName] = true;
+      if (show !== false) shownColls[listName] = true;   // a batch of files is saved UNTICKED (owner, 2026-10-02): tick what you want to see
       return pts.length;
     }
     // Commit once for the whole batch: one saveMapPoints / renderMapPoints for N lists
@@ -1150,7 +1150,7 @@ window.AppPoints = (function () {
     }
     if (p.files && p.files.length) {
       var total = 0;
-      p.files.forEach(function (b) { total += finish(b.name, b.marks); });
+      p.files.forEach(function (b) { total += finish(b.name, b.marks, p.files.length === 1); });
       commit();
       setStatus(p.files.length > 1 ? t("kml.importedN", { n: total, lists: p.files.length })
                                    : t("kml.imported", { n: total, name: p.files[0].name }));

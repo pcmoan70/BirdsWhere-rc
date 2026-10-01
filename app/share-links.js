@@ -649,8 +649,10 @@ window.AppShare = (function () {
           var doList = function () {
             applySharedContext(obj.detections, obj.group);   // the sender's species group + family colours
             var r = importPointsColl(lnm, detSetToPoints(obj.detections));
+            if (opts.quiet) delete mpState.shownColls()[r.name];   // several files at once: saved, not shown (owner, 2026-10-02)
             saveMapPoints(); saveShownState(); renderMapPoints();
-            fitSharedLatLngs(r.ll); setStatus(t(r.updated ? "share.updated" : "share.imported", { name: r.name }));
+            if (!opts.quiet) fitSharedLatLngs(r.ll);
+            setStatus(t(r.updated ? "share.updated" : "share.imported", { name: r.name }));
           };
           if (opts.quiet) { doList(); return; }   // a batch of files: the picker was the confirmation
           return modalConfirm(t(updL ? "share.updatePrompt" : "share.importPrompt", { name: lnm, n: n })).then(function (ok) { if (ok) doList(); });
