@@ -1538,5 +1538,7 @@
   "points.linkFetching": "Haetaan listaa linkistä…",
   "points.linkFail": "Listaa ei voitu hakea tästä linkistä.",
   "points.chooseFile": "Valitse tiedosto…",
-  "kml.importing": "Lisätään pisteet listaan ”{name}”…"
+  "kml.importing": "Lisätään pisteet listaan ”{name}”…",
+  "points.tagsAll": "Kaikki",
+  "points.tagsAllHint": "Valitse kaikki tunnisteet – tai ei mitään, kun kaikki on valittu"
 }

@@ -1538,5 +1538,7 @@
   "points.linkFetching": "Lijst wordt via de link opgehaald…",
   "points.linkFail": "Kon geen lijst via die link ophalen.",
   "points.chooseFile": "Bestand kiezen…",
-  "kml.importing": "Punten worden aan ‘{name}’ toegevoegd…"
+  "kml.importing": "Punten worden aan ‘{name}’ toegevoegd…",
+  "points.tagsAll": "Alle",
+  "points.tagsAllHint": "Alle tags selecteren — of geen, als ze allemaal geselecteerd zijn"
 }

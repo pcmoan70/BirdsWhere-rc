@@ -1538,5 +1538,7 @@
   "points.linkFetching": "Hämtar listan från länken…",
   "points.linkFail": "Kunde inte hämta någon lista från den länken.",
   "points.chooseFile": "Välj fil…",
-  "kml.importing": "Lägger in punkterna i ”{name}” …"
+  "kml.importing": "Lägger in punkterna i ”{name}” …",
+  "points.tagsAll": "Alla",
+  "points.tagsAllHint": "Välj alla taggar – eller inga när alla är valda"
 }

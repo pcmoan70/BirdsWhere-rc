@@ -1538,5 +1538,7 @@
   "points.linkFetching": "Pobieranie listy z linku…",
   "points.linkFail": "Nie udało się pobrać listy z tego linku.",
   "points.chooseFile": "Wybierz plik…",
-  "kml.importing": "Dodawanie punktów do „{name}”…"
+  "kml.importing": "Dodawanie punktów do „{name}”…",
+  "points.tagsAll": "Wszystkie",
+  "points.tagsAllHint": "Zaznacz wszystkie tagi — albo żaden, gdy wszystkie są zaznaczone"
 }

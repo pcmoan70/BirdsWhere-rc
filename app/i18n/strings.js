@@ -965,6 +965,8 @@ window.GeoI18N = (function () {
         "points.byName": "Name",
         "points.sortToggle": "Sort order — tap to switch",
         "points.notag": "(no tag)",
+        "points.tagsAll": "All",
+        "points.tagsAllHint": "Select every tag — or, when all are selected, none",
         "points.clear": "Clear",
         "points.discardUnsavedPrompt": "You have unsaved points that aren't in any list. Loading a list will discard them. Continue?",
         "points.clearUnsavedPrompt": "You have unsaved points that aren't in any list. Clear them anyway?",

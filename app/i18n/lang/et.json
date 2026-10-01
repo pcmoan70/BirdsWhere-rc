@@ -1538,5 +1538,7 @@
   "points.linkFetching": "Nimekirja laadimine lingilt…",
   "points.linkFail": "Sellelt lingilt ei õnnestunud nimekirja laadida.",
   "points.chooseFile": "Vali fail…",
-  "kml.importing": "Punktide lisamine nimekirja „{name}“ …"
+  "kml.importing": "Punktide lisamine nimekirja „{name}“ …",
+  "points.tagsAll": "Kõik",
+  "points.tagsAllHint": "Vali kõik sildid — või mitte ühtegi, kui kõik on valitud"
 }

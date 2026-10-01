@@ -1538,5 +1538,7 @@
   "points.linkFetching": "Liste wird vom Link geladen…",
   "points.linkFail": "Von diesem Link konnte keine Liste geladen werden.",
   "points.chooseFile": "Datei wählen…",
-  "kml.importing": "Punkte werden zu „{name}“ hinzugefügt …"
+  "kml.importing": "Punkte werden zu „{name}“ hinzugefügt …",
+  "points.tagsAll": "Alle",
+  "points.tagsAllHint": "Alle Tags auswählen — oder keines, wenn alle ausgewählt sind"
 }

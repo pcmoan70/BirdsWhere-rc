@@ -1538,5 +1538,7 @@
   "points.linkFetching": "Recupero dell’elenco dal link…",
   "points.linkFail": "Impossibile recuperare un elenco da quel link.",
   "points.chooseFile": "Scegli file…",
-  "kml.importing": "Aggiunta dei punti a «{name}»…"
+  "kml.importing": "Aggiunta dei punti a «{name}»…",
+  "points.tagsAll": "Tutti",
+  "points.tagsAllHint": "Seleziona tutti i tag — o nessuno quando sono tutti selezionati"
 }

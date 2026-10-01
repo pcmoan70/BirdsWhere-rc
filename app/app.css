@@ -4783,3 +4783,4 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 /* "Loading <file>…" while a point list is read / parsed / added (above every panel). */
 .mp-loading { z-index: 9000; }
 .mp-loading .kml-modal-box { width: auto; max-width: 94vw; padding: 14px 22px; }
+.mp-chip-all { font-weight: 600; }

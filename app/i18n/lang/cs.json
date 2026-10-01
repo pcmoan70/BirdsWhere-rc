@@ -1538,5 +1538,7 @@
   "points.linkFetching": "Načítání seznamu z odkazu…",
   "points.linkFail": "Z tohoto odkazu se nepodařilo načíst žádný seznam.",
   "points.chooseFile": "Vybrat soubor…",
-  "kml.importing": "Přidávání bodů do „{name}“…"
+  "kml.importing": "Přidávání bodů do „{name}“…",
+  "points.tagsAll": "Vše",
+  "points.tagsAllHint": "Vybrat všechny štítky — nebo žádný, když jsou vybrány všechny"
 }

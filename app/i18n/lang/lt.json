@@ -1538,5 +1538,7 @@
   "points.linkFetching": "Sąrašas gaunamas iš nuorodos…",
   "points.linkFail": "Iš šios nuorodos nepavyko gauti sąrašo.",
   "points.chooseFile": "Pasirinkti failą…",
-  "kml.importing": "Taškai pridedami į „{name}“…"
+  "kml.importing": "Taškai pridedami į „{name}“…",
+  "points.tagsAll": "Visos",
+  "points.tagsAllHint": "Pasirinkti visas žymas — arba nė vienos, kai pasirinktos visos"
 }

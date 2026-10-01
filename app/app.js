@@ -17742,6 +17742,13 @@
       var actNoTag = mpState.mpFilter().indexOf("") >= 0;
       chipsHtml += '<button type="button" class="mp-chip' + (actNoTag ? " is-active" : "") + '" data-tag="">' + escapeHtml(t("points.notag")) + "</button>";
     }
+    // "All" in front: one click selects every tag (then untick the few to exclude), the next
+    // clears them all (owner, 2026-10-01). Only worth showing with two or more chips.
+    var allChips = allTags.concat(hasUntagged ? [""] : []);
+    if (allChips.length > 1) {
+      var allOn = allChips.every(function (tg) { return mpState.mpFilter().indexOf(tg) >= 0; });
+      chipsHtml = '<button type="button" class="mp-chip mp-chip-all' + (allOn ? " is-active" : "") + '" data-all="1" title="' + escapeHtml(t("points.tagsAllHint")) + '">' + escapeHtml(t("points.tagsAll")) + "</button>" + chipsHtml;
+    }
     unionPts.forEach(function (u, i) { u.i = i; });   // the note button's handle back to its point
     mpRowsShown = unionPts;
     var listHtml = unionPts.length ? unionPts.map(function (u) {
@@ -17950,6 +17957,12 @@
     });
     panel.querySelectorAll(".mp-chip").forEach(function (b) {
       b.addEventListener("click", function () {
+        if (this.getAttribute("data-all")) {   // every tag ↔ none
+          var every = mpAllTags().concat(mpState.mapPoints().some(function (p) { return !p.tags || !p.tags.length; }) ? [""] : []);
+          var on = every.every(function (tg) { return mpState.mpFilter().indexOf(tg) >= 0; });
+          mpState.setMpFilter(on ? [] : every);
+          saveMapPoints(); mpState.mpFilterRefresh(this); return;
+        }
         var tag = this.getAttribute("data-tag");
         var i = mpState.mpFilter().indexOf(tag);
         if (i >= 0) mpState.mpFilter().splice(i, 1); else mpState.mpFilter().push(tag);
