@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1966";
+var VERSION = "v1967";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Fix: a map could stay blank for good when an offline area had been saved at a fractional zoom \u2014 the tile zoom cap then put a fraction into every tile address. The cap is now always a whole number, and tiles that failed to load are fetched again on reconnect and every 20 s.",
+  "\u2022 Fix for the blank map: the automatic re-fetch of failed tiles (v1965) itself produced tile addresses with a fractional zoom. It now uses the app\u2019s rounding-safe redraw.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

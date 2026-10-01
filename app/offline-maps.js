@@ -529,6 +529,7 @@ window.AppOffline = (function () {
     setMaxZoom: function (v) { offlineMaxZoom = v; },
     // the basemap is erroring out → the app treats itself as offline
     tilesFailing: function () { return offlineTilesFailing; },
+    redrawTiles: redrawTiles,   // rounding-safe re-request (layer.redraw() leaves a fractional tile zoom under zoomSnap 0)
     setTilesFailing: function (v) { offlineTilesFailing = v; },
   };
 })();

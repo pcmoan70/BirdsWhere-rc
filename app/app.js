@@ -9494,7 +9494,9 @@
     if (!tileFailN) return;
     if (navigator.onLine === false || !map) { scheduleTileRetry(20000); return; }   // still offline: look again later
     tileFailN = 0;
-    [baseLayer, labelsOverlay].forEach(function (l) { if (l && l._map) { try { l.redraw(); } catch (e) {} } });
+    // NOT l.redraw(): under zoomSnap 0 it sets a fractional tile zoom and every tile URL reads
+    // ".../2.4876…/x/y.png" — a blank map (reproduced on v1965). AppOffline.redrawTiles rounds.
+    [baseLayer, labelsOverlay].forEach(function (l) { if (l && l._map) window.AppOffline.redrawTiles(l); });
   }
   window.addEventListener("online", function () { if (tileFailN) { clearTimeout(tileRetryT); tileRetryT = null; setTimeout(retryFailedTiles, 1500); } });
   var labelsRenderedOffline = null;   // connectivity the current label layer was built for
