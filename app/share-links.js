@@ -474,7 +474,7 @@ window.AppShare = (function () {
     Object.keys(detections || {}).forEach(function (k) {
       var e = detections[k]; if (!e || !e.rows) return;
       var key = e.key || k, isX = key.indexOf("x:") === 0, lbl = !isX && getLabelsByKey()[key];
-      var sci = lbl ? lbl.sci : (isX ? key.slice(2) : key), nm = lbl ? (lbl.common || sci) : (e.name || sci);
+      var sci = lbl ? lbl.sci : (isX ? key.slice(2) : ""), nm = lbl ? (lbl.common || sci) : (e.name || sci || key);   // labels not loaded yet (boot migration): the key alone still plots
       e.rows.forEach(function (r) {
         if (!isFinite(+r.lat) || !isFinite(+r.lon)) return;
         var p = { id: "s" + stamp + (++i).toString(36), lat: +r.lat, lon: +r.lon, name: nm, sci: sci, spKey: key, spColor: e.color || "", createdAt: now };
@@ -720,6 +720,7 @@ window.AppShare = (function () {
     pointShareUrl: pointShareUrl,
     offerShareUrl: offerShareUrl,
     importShared: importShared,
+    detSetToPoints: detSetToPoints,
     maybeImportShared: maybeImportShared,
     maybeOpenSharedPoint: maybeOpenSharedPoint,
     detRowCount: detRowCount,

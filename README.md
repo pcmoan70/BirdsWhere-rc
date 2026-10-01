@@ -667,7 +667,9 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   in the Points menu with its tick, year tag chips and ⋯ menu, survives reloads, and while ticked its
   records are plotted exactly like fetched observations (date · observer · place groups, count, note,
   source link, ⓘ). Loading the same list again replaces it. A shared *link* (`?s=`) still plots once
-  without saving. Google Drive share links cannot be fetched by a web page
+  without saving. Fetched observations you **Save** from the Points menu become the same kind of
+  list, with the whole record kept; saved "trips" from earlier versions are converted into such
+  lists on the first start. Google Drive share links cannot be fetched by a web page
   (Drive refuses cross-site browser requests), so download such a file and choose it instead.
   Import from either the Settings
   *Import* button or *Load from file* in the Points menu — both

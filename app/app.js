@@ -9294,6 +9294,7 @@
     loadDetections();      // restore any "Show in map" detection points
     restoreFetchedAreas(); // ...and their fetched-area outlines (per-area red × needs them)
     loadMapPoints();       // user-added pins + saved named lists (IndexedDB, hydrated above)
+    try { migrateDetSetsToLists(); } catch (e) {}   // old "trips" (detection sets) → ordinary saved lists, once
     try { updateBackupNudge(); } catch (e) {}   // gear/Sync go orange when the lists have outgrown the last backup
     loadRoute(); updateRouteChip(); renderRoutePoints();   // restore the route basket, its pill + on-map stops
     ensureMpLayer();
@@ -11634,10 +11635,21 @@
     // the plotted detection — its colour/star/rare for the symbol and swatch, and
     // the species key + individual count + date so the hover card can show the
     // same "★name ×N (nd)" line a live detection shows.
-    return { id: mpUid(), lat: +d.lat, lon: +d.lon, name: d.name || "",
-      tags: d.name ? [d.name] : [], note: lines.join("\n"), source: "detection", createdAt: new Date().toISOString(),
+    // The whole record is kept (observer, remark, place, flags, origin, class) so a saved
+    // list shows its rows exactly like the fetch they came from (owner, 2026-10-01). The
+    // record's own remark is the note; the old synthetic "date / activity" note only when
+    // there is none.
+    var lbl = d.key && labelsByKey[d.key], ent = d.key && dEntry(d.key);
+    var p = { id: mpUid(), lat: +d.lat, lon: +d.lon, name: d.name || "",
+      tags: (d.name ? [d.name] : []).concat(d.date ? [String(d.date).slice(0, 4)] : []), note: d.note || lines.join("\n"), source: "detection", createdAt: new Date().toISOString(),
       spColor: d.color || "", spKey: d.key || "", star: !!isInteresting(d.key), rare: !!detIsRare(d.key),
       count: (d.count != null && d.count !== "") ? d.count : "", date: d.date || "", url: d.url || "", act: d.act || "", src: d.src || "" };
+    if (lbl) p.sci = lbl.sci; else if (d.key && d.key.indexOf("x:") === 0) p.sci = d.key.slice(2);
+    var cls = d.cls || (ent && ent.cls) || ""; if (cls) p.spCls = cls;
+    ["observer", "place", "flags", "origin"].forEach(function (f) { if (d[f]) p[f] = d[f]; });
+    if (d.placeCoarse) p.placeCoarse = 1;
+    if (+d.posFuzzM > 0) p.posFuzzM = +d.posFuzzM;
+    return p;
   }
   function addDetPoint(d, listName) {
     if (d.lat == null || isNaN(d.lat) || d.lon == null || isNaN(d.lon)) { closeDetRowMenu(); return; }
@@ -14544,6 +14556,27 @@
     // Saving a name un-tombstones it (a fresh set with that name should stick).
     window.GeoState.save({ mapDetectionSetsDel: detSetTombstones().filter(function (n) { return n !== name; }) });
     return persistDetSet(name, cur || blob);
+  }
+  // Saved fetches used to be a separate kind of thing — a "trip" / detection set, drawn as a
+  // dot overlay with no legend, list or filters. Owner (2026-10-01): "fetched sets that are
+  // saved and lists made externally and loaded should appear as saved lists by default". The
+  // Save popup already files fetched observations into point lists; this turns every trip
+  // still in the store into such a list (same name, every record kept, ticked if it was
+  // shown) and removes the trip, so one kind of saved list remains.
+  function migrateDetSetsToLists() {
+    var sets = detSets(); if (!sets.length) return;
+    var colls = mpState.mpCollections(), moved = 0;
+    sets.forEach(function (set) {
+      var pts = detSetToPoints(set.detections);
+      if (!colls.some(function (c) { return c.name === set.name; })) {
+        colls.push({ name: set.name, points: pts, source: "trip" });
+        if (mpState.shownDetSets()[set.name]) mpState.shownColls()[set.name] = true;
+        moved++;
+      }
+      delete mpState.shownDetSets()[set.name];
+      deleteDetSet(set.name);
+    });
+    if (moved) { saveMapPoints(); saveShownState(); }
   }
   function deleteDetSet(name) {
     var tomb = detSetTombstones(); if (tomb.indexOf(name) === -1) tomb.push(name);
@@ -23242,6 +23275,7 @@
       pointShareUrl = window.AppShare.pointShareUrl,
       offerShareUrl = window.AppShare.offerShareUrl,
       importShared = window.AppShare.importShared,
+      detSetToPoints = window.AppShare.detSetToPoints,
       maybeImportShared = window.AppShare.maybeImportShared,
       maybeOpenSharedPoint = window.AppShare.maybeOpenSharedPoint,
       detRowCount = window.AppShare.detRowCount,
