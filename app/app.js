@@ -10819,7 +10819,10 @@
     // instead of showing the capture-locale name (e.g. Norwegian "hønsehauk").
     if (e.key && e.key.indexOf("x:") === 0) {
       var sci = e.key.slice(2);
-      var l2 = AppAggregate.ensureSciIndex()[sci.toLowerCase()] || AppAggregate.labelBySciEpithet(sci, e.cls) || AppAggregate.labelBySciGenus(sci, e.cls);
+      // The epithet-only matcher needs the record's class: without one, "Astragalus norvegicus"
+      // (a plant) resolved to the Brown Rat and every "… vulgare" to a katydid (seen on an
+      // imported person list, 2026-10-01). Genus + epithet is still allowed to answer.
+      var l2 = AppAggregate.ensureSciIndex()[sci.toLowerCase()] || (e.cls ? AppAggregate.labelBySciEpithet(sci, e.cls) : null) || AppAggregate.labelBySciGenus(sci, e.cls);
       if (l2) return speciesName(l2);
       return extraDisplayName(sci, e.name, e.cls);
     }
@@ -11791,7 +11794,7 @@
   // eBird status codes → localized labels (U = unconfirmed; X/N/P = exotic tiers).
   function obsFlagLabels(flags) {
     var M = { U: "obs.unconfirmed", X: "obs.exEscapee", N: "obs.exNaturalized", P: "obs.exProvisional" };
-    return String(flags || "").split(",").map(function (c) { return M[c] ? t(M[c]) : ""; }).filter(Boolean);
+    return String(flags || "").split(",").map(function (c) { return M[c] ? t(M[c]) : c.trim(); }).filter(Boolean);   // an unknown flag is free text (a person list's "named in the notes")
   }
   var _obsInfoAnchor = null, _obsInfoPop = null;
   // Escape text, then turn any http(s) URL in it into a link that opens in a new tab

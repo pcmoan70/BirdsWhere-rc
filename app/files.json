@@ -1,11 +1,11 @@
 {
- "_version": "v1968",
+ "_version": "v1969",
  "./": "b8b6f8532cb02ce5",
  "index.html": "b8b6f8532cb02ce5",
  "f/index.html": "33e8fb93adaefc8c",
  "sw-register.js": "6af3e5669b9a4b90",
  "splash-lang.js": "825be77e9bcbb2a8",
- "app.js": "bdacb35065499929",
+ "app.js": "17a2bb9300cb8eb8",
  "rarity.js": "7fe4944309aaa9d5",
  "offline-maps.js": "61c707f5cc96f4f7",
  "points-lists.js": "06551962581503fa",
