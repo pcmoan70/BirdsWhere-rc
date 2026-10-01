@@ -1489,6 +1489,7 @@ window.GeoI18N = (function () {
         "ctrl.dotCluster": "Cluster crowded dots",
         "sci.familyTip": "All species in this family, ranked by probability — click a name for info",
         "family.unknown": "Family unknown",
+        "family.shownOf": "{n} of {m} family members shown — the most likely here (the table view lists them all)",
         "ctrl.dotClusterHint": "Observation dots that overlap on screen merge into a count dot coloured by the rarest species present — with the usual ★ and black rare-here markers when the cluster holds starred or locally-rare species; tap to zoom in and split it apart. Dots standing free stay ordinary dots at every zoom.",
         "ctrl.rarityTicker": "Rarest-finds intro",
         "ctrl.rarityTickerHint": "Off by default. After each fetch, the rarest species found scroll up from the bottom of the map in their dot colours down the right side (rarest at the top) and stay there until you act. Tap a tile to jump to that species in the list; any other tap, key or map move dismisses it.",

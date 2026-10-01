@@ -1531,5 +1531,6 @@
   "rarity.bandLoc": "Alarmort (🔔)",
   "rarity.bandAlert": "BAND-Beitrag",
   "rarity.whyBand": "Eine Art, die in einem Beitrag einer deiner BAND-Gruppen genannt wird.",
-  "rarity.bandHint": "Beobachte auch die Beiträge deiner Vogelgruppen auf BAND (band.us). Füge ein persönliches Zugriffstoken ein (BAND Developers → My Apps → Connect BAND account), lade die Gruppen und hake die an, denen du folgen willst. Neue Beiträge werden nach Artnamen in der gewählten Sprache durchsucht (wissenschaftliche Namen immer); ein genannter Vogel gilt als Sichtung am gewählten 🔔-Ort — ein Beitrag hat keine Koordinaten — und löst einen Alarm aus, wenn das Modell ihn dort für unwahrscheinlich hält, wie bei jeder anderen Quelle."
+  "rarity.bandHint": "Beobachte auch die Beiträge deiner Vogelgruppen auf BAND (band.us). Füge ein persönliches Zugriffstoken ein (BAND Developers → My Apps → Connect BAND account), lade die Gruppen und hake die an, denen du folgen willst. Neue Beiträge werden nach Artnamen in der gewählten Sprache durchsucht (wissenschaftliche Namen immer); ein genannter Vogel gilt als Sichtung am gewählten 🔔-Ort — ein Beitrag hat keine Koordinaten — und löst einen Alarm aus, wenn das Modell ihn dort für unwahrscheinlich hält, wie bei jeder anderen Quelle.",
+  "family.shownOf": "{n} von {m} Arten der Familie gezeigt — die hier wahrscheinlichsten (die Tabellenansicht zeigt alle)"
 }

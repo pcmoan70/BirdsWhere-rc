@@ -1531,5 +1531,6 @@
   "rarity.bandLoc": "Alarmsted (🔔)",
   "rarity.bandAlert": "BAND-opslag",
   "rarity.whyBand": "En art nævnt i et opslag i en af dine BAND-grupper.",
-  "rarity.bandHint": "Følg også opslagene i dine fuglegrupper på BAND (band.us). Indsæt et personligt adgangstoken (BAND Developers → My Apps → Connect BAND account), hent grupperne og sæt flueben ved dem, du vil følge. Nye opslag gennemsøges for artsnavne på det valgte sprog (videnskabelige navne altid); en nævnt fugl behandles som en observation på det valgte 🔔-sted — et opslag har ingen koordinater — og udløser en alarm, når modellen finder den usandsynlig dér, som fra alle andre kilder."
+  "rarity.bandHint": "Følg også opslagene i dine fuglegrupper på BAND (band.us). Indsæt et personligt adgangstoken (BAND Developers → My Apps → Connect BAND account), hent grupperne og sæt flueben ved dem, du vil følge. Nye opslag gennemsøges for artsnavne på det valgte sprog (videnskabelige navne altid); en nævnt fugl behandles som en observation på det valgte 🔔-sted — et opslag har ingen koordinater — og udløser en alarm, når modellen finder den usandsynlig dér, som fra alle andre kilder.",
+  "family.shownOf": "{n} af {m} arter i familien vist — de mest sandsynlige her (tabelvisningen viser alle)"
 }

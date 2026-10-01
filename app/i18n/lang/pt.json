@@ -1531,5 +1531,6 @@
   "rarity.bandLoc": "Local de alerta (🔔)",
   "rarity.bandAlert": "Publicação BAND",
   "rarity.whyBand": "Uma espécie mencionada numa publicação de um dos seus grupos BAND.",
-  "rarity.bandHint": "Acompanhe também as publicações dos seus grupos de observação de aves no BAND (band.us). Cole um token de acesso pessoal (BAND Developers → My Apps → Connect BAND account), carregue os grupos e assinale os que quer seguir. As novas publicações são pesquisadas por nomes de espécies no idioma escolhido (nomes científicos sempre); uma ave mencionada é tratada como uma observação no local 🔔 escolhido — uma publicação não tem coordenadas — e alerta quando o modelo a considera improvável ali, como em qualquer outra fonte."
+  "rarity.bandHint": "Acompanhe também as publicações dos seus grupos de observação de aves no BAND (band.us). Cole um token de acesso pessoal (BAND Developers → My Apps → Connect BAND account), carregue os grupos e assinale os que quer seguir. As novas publicações são pesquisadas por nomes de espécies no idioma escolhido (nomes científicos sempre); uma ave mencionada é tratada como uma observação no local 🔔 escolhido — uma publicação não tem coordenadas — e alerta quando o modelo a considera improvável ali, como em qualquer outra fonte.",
+  "family.shownOf": "{n} de {m} espécies da família mostradas — as mais prováveis aqui (a vista de tabela mostra todas)"
 }

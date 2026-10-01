@@ -11737,6 +11737,7 @@
   // Photo-card popups shrink-wrap to the squarest grid for their card count — 6 cards → 3 × 2,
   // 7–8 → 4 × 2, 9 → 3 × 3, 10–12 → 4 × 3 — instead of filling 900 px and stranding one or two
   // cards on a last row (owner, 2026-10-01). Cards are 150 px wide and about 1.73× as tall.
+  var PHOTO_CARDS_MAX = 10;   // photo-card popups show at most this many cards (the bird + 9)
   function fitCardGrid(el, n) {
     var cw = 150, gap = 8, pad = 28;                                              // card · strip gap · strip padding 16 + menu padding 8 + border 2 (+2 slack; the menu is border-box)
     var maxCols = Math.max(1, Math.floor((Math.min(window.innerWidth * 0.97, 900) - pad) / (cw + gap)));
@@ -11875,6 +11876,13 @@
     });
     if (cell) arr.sort(function (a, b) { return b.p - a.p; });
     else arr.sort(function (a, b) { return speciesName(a.m).localeCompare(speciesName(b.m)); });
+    // At most PHOTO_CARDS_MAX cards, like the confusion popup (owner, 2026-10-01): the species
+    // itself plus the best of the rest — by Here when there is a point, else the first by name.
+    var famTotal = arr.length;
+    if (arr.length > PHOTO_CARDS_MAX) {
+      var self = arr.filter(function (w) { return w.m.key === key; });
+      arr = self.concat(arr.filter(function (w) { return w.m.key !== key; }).slice(0, PHOTO_CARDS_MAX - self.length));
+    }
     var L = { here: t("confusion.colHere"), season: t("th.season"), ytop: ytopLabel() };
     var pct = function (p) { var v = p * 100; return v >= 0.5 ? Math.round(v) + "%" : (p > 0 ? "<1%" : "0%"); };
     // Same metric row as the confusion cards, data-hintkey and all: bar behind, label
@@ -11911,6 +11919,7 @@
       "</div>";
     }).join("");
     el.appendChild(strip); fitCardGrid(el, strip.children.length);   // shrink-wrap to the squarest grid (6 cards → 3 × 2)
+    if (famTotal > arr.length) { var more = document.createElement("div"); more.className = "conf-legend"; more.textContent = t("family.shownOf", { n: arr.length, m: famTotal }); el.appendChild(more); }
     centerPhotoPopup(el);
     wirePhotoCards(el, strip);
     wireYearProbTips(el);                                    // hold Here / Season / Yr peak → the year curve

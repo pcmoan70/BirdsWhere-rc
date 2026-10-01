@@ -1531,5 +1531,6 @@
   "rarity.bandLoc": "Įspėjimo vieta (🔔)",
   "rarity.bandAlert": "BAND įrašas",
   "rarity.whyBand": "Rūšis, paminėta vienos iš jūsų BAND grupių įraše.",
-  "rarity.bandHint": "Taip pat stebėkite savo paukščių stebėtojų grupių įrašus BAND (band.us). Įklijuokite asmeninį prieigos raktą (BAND Developers → My Apps → Connect BAND account), įkelkite grupes ir pažymėkite tas, kurias norite sekti. Naujuose įrašuose ieškoma rūšių pavadinimų pasirinkta kalba (moksliniai pavadinimai visada); paminėtas paukštis laikomas stebėjimu pasirinktoje 🔔 vietoje — įrašas neturi koordinačių — ir įspėjama, kai modelis laiko jį ten mažai tikėtinu, kaip ir iš bet kurio kito šaltinio."
+  "rarity.bandHint": "Taip pat stebėkite savo paukščių stebėtojų grupių įrašus BAND (band.us). Įklijuokite asmeninį prieigos raktą (BAND Developers → My Apps → Connect BAND account), įkelkite grupes ir pažymėkite tas, kurias norite sekti. Naujuose įrašuose ieškoma rūšių pavadinimų pasirinkta kalba (moksliniai pavadinimai visada); paminėtas paukštis laikomas stebėjimu pasirinktoje 🔔 vietoje — įrašas neturi koordinačių — ir įspėjama, kai modelis laiko jį ten mažai tikėtinu, kaip ir iš bet kurio kito šaltinio.",
+  "family.shownOf": "Rodoma {n} iš {m} šeimos rūšių — labiausiai tikėtinos čia (lentelės rodinys rodo visas)"
 }

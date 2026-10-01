@@ -1531,5 +1531,6 @@
   "rarity.bandLoc": "Hälytyspaikka (🔔)",
   "rarity.bandAlert": "BAND-julkaisu",
   "rarity.whyBand": "Laji, joka mainitaan jonkin BAND-ryhmäsi julkaisussa.",
-  "rarity.bandHint": "Seuraa myös lintuharrastusryhmiesi julkaisuja BANDissa (band.us). Liitä henkilökohtainen käyttöoikeustunnus (BAND Developers → My Apps → Connect BAND account), hae ryhmät ja rastita seurattavat. Uusista julkaisuista etsitään lajinimiä valitulla kielellä (tieteelliset nimet aina); mainittu lintu käsitellään havaintona valitussa 🔔-paikassa — julkaisulla ei ole koordinaatteja — ja siitä hälytetään, kun malli pitää sitä siellä epätodennäköisenä, kuten muistakin lähteistä."
+  "rarity.bandHint": "Seuraa myös lintuharrastusryhmiesi julkaisuja BANDissa (band.us). Liitä henkilökohtainen käyttöoikeustunnus (BAND Developers → My Apps → Connect BAND account), hae ryhmät ja rastita seurattavat. Uusista julkaisuista etsitään lajinimiä valitulla kielellä (tieteelliset nimet aina); mainittu lintu käsitellään havaintona valitussa 🔔-paikassa — julkaisulla ei ole koordinaatteja — ja siitä hälytetään, kun malli pitää sitä siellä epätodennäköisenä, kuten muistakin lähteistä.",
+  "family.shownOf": "{n}/{m} heimon lajia näytetään — todennäköisimmät täällä (taulukkonäkymä näyttää kaikki)"
 }

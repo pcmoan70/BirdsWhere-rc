@@ -1531,5 +1531,6 @@
   "rarity.bandLoc": "Luogo di allerta (🔔)",
   "rarity.bandAlert": "Post BAND",
   "rarity.whyBand": "Una specie citata in un post di uno dei tuoi gruppi BAND.",
-  "rarity.bandHint": "Segui anche i post dei tuoi gruppi di birdwatching su BAND (band.us). Incolla un token di accesso personale (BAND Developers → My Apps → Connect BAND account), carica i gruppi e spunta quelli da seguire. I nuovi post vengono cercati per nomi di specie nella lingua scelta (nomi scientifici sempre); un uccello citato è trattato come un’osservazione nel luogo 🔔 scelto — un post non ha coordinate — e dà un’allerta quando il modello lo ritiene improbabile lì, come per ogni altra fonte."
+  "rarity.bandHint": "Segui anche i post dei tuoi gruppi di birdwatching su BAND (band.us). Incolla un token di accesso personale (BAND Developers → My Apps → Connect BAND account), carica i gruppi e spunta quelli da seguire. I nuovi post vengono cercati per nomi di specie nella lingua scelta (nomi scientifici sempre); un uccello citato è trattato come un’osservazione nel luogo 🔔 scelto — un post non ha coordinate — e dà un’allerta quando il modello lo ritiene improbabile lì, come per ogni altra fonte.",
+  "family.shownOf": "{n} di {m} specie della famiglia mostrate — le più probabili qui (la vista a tabella le elenca tutte)"
 }
