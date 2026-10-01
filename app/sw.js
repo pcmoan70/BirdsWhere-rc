@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1951";
+var VERSION = "v1952";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Points \u2192 Load from link: import a point list from a Google Drive share link (needs a Google API key, Settings \u2192 Map points) or any direct .kmz / .kml / .geojson URL. Fix: a language pack changed by an update could be loaded stale from the browser cache, leaving new texts in English.",
+  "\u2022 Points \u2192 Load from file now also takes a direct link to a .kmz / .kml / .geojson file (a GitHub raw link, for instance). The separate Load-from-link button and the Google API key field are gone.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
