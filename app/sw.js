@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1959";
+var VERSION = "v1960";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Tag chips: the selection is remembered on this device the moment you tap (and survives a reload); tapping stays instant, the redraw follows one second after the last tap.",
+  "\u2022 Tag chips: ordered \u2014 counts first, then months and season, mention categories, other words, species names last \u2014 each with the number of shown points carrying it. A tag no longer carries a record count of its own (\u201ceggs (3)\u201d and \u201ceggs\u201d were two chips).",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

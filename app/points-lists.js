@@ -198,8 +198,11 @@ window.AppPoints = (function () {
     if (reset && ci) reset.addEventListener("click", function () { ci.value = ci.getAttribute("data-auto") || "#888888"; });
   }
   // Comma-separated free-form tag input → clean, deduped lowercase-trimmed array.
+  // A tag never carries a record count: a KML folder "eggs (3)" and a category "eggs" are the
+  // same tag (owner, 2026-10-01 — the chips showed both); the chip shows the live count instead.
+  function normTag(t) { return String(t || "").replace(/\s*\(\d[\d\s.,]*\)\s*$/, "").trim(); }
   function mpParseTags(s) {
-    return String(s || "").split(",").map(function (t) { return t.trim(); }).filter(function (t, i, a) { return t && a.indexOf(t) === i; });
+    return String(s || "").split(",").map(function (t) { return normTag(t); }).filter(function (t, i, a) { return t && a.indexOf(t) === i; });
   }
   function mpUid() { return "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
   // ---- Named lists in IndexedDB ---------------------------------------------
@@ -238,6 +241,7 @@ window.AppPoints = (function () {
         // so share the ARRAY, not just its strings.
         var tg = p.tags;
         if (tg && tg.length) {
+          for (var j0 = 0; j0 < tg.length; j0++) tg[j0] = normTag(tg[j0]);   // stored "eggs (3)" → "eggs" (idempotent)
           var key = tg.join("\u0001"), hit = tagPool[key];
           if (hit) p.tags = hit;
           else { for (var j = 0; j < tg.length; j++) tg[j] = sh(tg[j]); tagPool[key] = tg; }
@@ -330,7 +334,7 @@ window.AppPoints = (function () {
   function loadMapPoints() {
     loadListFilters();   // also when IndexedDB never hydrated (initMpSetStore bailed)
     mapPoints = (window.GeoState.get("mapPoints", []) || []).filter(function (p) { return p && isFinite(p.lat) && isFinite(p.lon); });
-    mpFilter = window.GeoState.get("mapPointsFilter", []) || [];
+    mpFilter = (window.GeoState.get("mapPointsFilter", []) || []).map(normTag).filter(function (t, i, a) { return a.indexOf(t) === i; });
     // With IndexedDB as the store the lists are already hydrated (initMpSetStore) and
     // the blob no longer carries them — reading it here would wipe them.
     if (!mpIdbReady) mpCollections = (window.GeoState.get("mapPointSets", []) || []).filter(function (c) { return c && c.name; });
@@ -1073,7 +1077,7 @@ window.AppPoints = (function () {
     var noteIsHtml = !!(noteHtmlBox && noteHtmlBox.checked);
     function finish(listName, marks) {
       var pts = (marks || p.marks).map(function (pm) {
-        var tag = kmlFieldValue(pm, tagTok).trim();
+        var tag = normTag(kmlFieldValue(pm, tagTok));
         // One field → exactly what it always was. Several → each line labelled, because
         // three bare values stacked in a note say nothing about what they are.
         var note = noteToks.length === 1
@@ -1999,7 +2003,7 @@ window.AppPoints = (function () {
     // ---- state (app.js reads through these) ----
     mapPoints: function () { return mapPoints; },
     setMapPoints: function (v) { mapPoints = v; },
-    mpFilter: function () { return mpFilter; },
+    mpFilter: function () { return mpFilter; }, normTag: normTag,
     setMpFilter: function (v) { mpFilter = v; },
     mpShown: function () { return mpShown; },
     setMpShown: function (v) { mpShown = v; },

@@ -16896,6 +16896,22 @@
   // One list's own filter: a date range and a set of observers, matched fuzzily. Drawn in the
   // shared .detrow-menu shape, like every other menu here.
   var mpChipTimer = null;   // the tag-chip row's "apply 1 s after the last click" timer
+  // Where a tag chip sorts: [group, key]. 0 numbers (by their first number) · 1 months (calendar
+  // order, English / Norwegian / Swedish names, then the season words) · 2 mention categories ·
+  // 3 everything else · 4 species names (what tagDisplay resolves to a species).
+  var TAG_MONTHS = ["january|januar|januari", "february|februar|februari", "march|mars", "april", "may|mai|maj", "june|juni", "july|juli",
+                    "august|augusti", "september", "october|oktober", "november", "december|desember"];
+  var TAG_MENTION = /^mention:|species mentioned|interaction with the species|prey or kill|breeding of the species|uncertain identification|generic term|falcon nest|plucking post|arten nevnt|arten n[äa]mnd/i;
+  function tagRank(tag) {
+    var s = String(tag || "").trim(), low = s.toLowerCase();
+    var m = /^(\d+(?:[.,]\d+)?)/.exec(s);
+    if (m) return [0, parseFloat(m[1].replace(",", "."))];
+    for (var i = 0; i < TAG_MONTHS.length; i++) if (new RegExp("^(?:" + TAG_MONTHS[i] + ")$").test(low)) return [1, i];
+    if (/season|sesong|s[äa]song/.test(low)) return [1, 12];
+    if (TAG_MENTION.test(low)) return [2, 0];
+    if (labelForSci(s) || /^[A-Z][a-z-]+ [a-z-]+$/.test(s)) return [4, 0];
+    return [3, 0];
+  }
   function openListFilterMenu(anchor, name) {
     var br = anchor.getBoundingClientRect();
     var f = mpState.listFilter(name) || { from: "", to: "", obs: [] };
@@ -17743,13 +17759,26 @@
     // other half of the cost. Show the nearest MP_LIST_MAX and say how many there are.
     var unionTotal = unionPts.length;
     if (unionTotal > MP_LIST_MAX) unionPts = unionPts.slice(0, MP_LIST_MAX);
+    // Chip order and counts (owner, 2026-10-01): numbers first ("1-3 birds"), then months and
+    // season, then the mention categories, then every other word, species names last; each
+    // chip shows how many of the shown points carry the tag.
+    var tagCount = Object.create(null), untaggedN = 0;
+    function countTags(p) { if (!p) return; if (p.tags && p.tags.length) p.tags.forEach(function (tg) { if (tg) tagCount[tg] = (tagCount[tg] || 0) + 1; }); else untaggedN++; }
+    mpState.mapPoints().forEach(countTags);
+    mpState.mpCollections().forEach(function (c) { if (mpState.shownColls()[c.name]) (c.points || []).forEach(countTags); });
+    allTags.sort(function (a, b) {
+      var ra = tagRank(a), rb = tagRank(b);
+      if (ra[0] !== rb[0]) return ra[0] - rb[0];
+      if (ra[1] !== rb[1]) return ra[1] - rb[1];
+      return tagDisplay(a).localeCompare(tagDisplay(b));
+    });
     var chipsHtml = allTags.map(function (tag) {
       var active = mpState.mpFilter().indexOf(tag) >= 0;
-      return '<button type="button" class="mp-chip' + (active ? " is-active" : "") + '" data-tag="' + escapeHtml(tag) + '" style="--mp-c:' + mpHashColor(tag) + '">' + escapeHtml(tagDisplay(tag)) + "</button>";
+      return '<button type="button" class="mp-chip' + (active ? " is-active" : "") + '" data-tag="' + escapeHtml(tag) + '" style="--mp-c:' + mpHashColor(tag) + '">' + escapeHtml(tagDisplay(tag)) + ' <span class="mp-chip-n">(' + (tagCount[tag] || 0) + ")</span></button>";
     }).join("");
     if (hasUntagged) {
       var actNoTag = mpState.mpFilter().indexOf("") >= 0;
-      chipsHtml += '<button type="button" class="mp-chip' + (actNoTag ? " is-active" : "") + '" data-tag="">' + escapeHtml(t("points.notag")) + "</button>";
+      chipsHtml += '<button type="button" class="mp-chip' + (actNoTag ? " is-active" : "") + '" data-tag="">' + escapeHtml(t("points.notag")) + ' <span class="mp-chip-n">(' + untaggedN + ")</span></button>";
     }
     // "All" in front: one click selects every tag (then untick the few to exclude), the next
     // clears them all (owner, 2026-10-01). Only worth showing with two or more chips.
