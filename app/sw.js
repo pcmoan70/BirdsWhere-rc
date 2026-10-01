@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1973";
+var VERSION = "v1974";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Observer lists can be imported from a file: Lists \u2192 Observer lists \u2192 Import\u2026 takes a .csv / .txt with one name per line (first column, or an \u201cobserver\u201d column) and names the list after the file."
+  "\u2022 /owl_network (the Finnskogen owl-observer network) now opens without a trailing slash too \u2014 the app's service worker used to answer that address with the app itself.",
+  "\u2022 Observer lists can be imported from a .csv / .txt file (Lists \u2192 Observer lists \u2192 Import\u2026)."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
@@ -414,7 +415,7 @@ self.addEventListener("fetch", function (event) {
   if (sameOrigin) {
     // Static, crawlable pages (about/…, robots.txt, sitemap.xml) are plain web pages, not
     // the app shell: never answer them with the cached index.html — leave them to the network.
-    if (/\/(about|owl_network)\//.test(url.pathname) || /\/(robots\.txt|sitemap\.xml|google[0-9a-f]+\.html)$/.test(url.pathname)) return;   // owl_network/: the Finnskogen observer graph, a standalone page
+    if (/\/(about|owl_network)(\/|$)/.test(url.pathname) || /\/(robots\.txt|sitemap\.xml|google[0-9a-f]+\.html)$/.test(url.pathname)) return;   // owl_network/: the Finnskogen observer graph, a standalone page
     // (The Migration Aloft radar moved to its own repo/site — no /aloft/ path here now.)
     if (/\.(onnx|csv|wasm|mjs)$/.test(url.pathname) ||
         /\/vendor\//.test(url.pathname) ||
