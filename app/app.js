@@ -11738,7 +11738,7 @@
   // 7–8 → 4 × 2, 9 → 3 × 3, 10–12 → 4 × 3 — instead of filling 900 px and stranding one or two
   // cards on a last row (owner, 2026-10-01). Cards are 150 px wide and about 1.73× as tall.
   function fitCardGrid(el, n) {
-    var cw = 150, gap = 8, pad = 24;                                              // card · strip gap · strip + menu padding
+    var cw = 150, gap = 8, pad = 28;                                              // card · strip gap · strip padding 16 + menu padding 8 + border 2 (+2 slack; the menu is border-box)
     var maxCols = Math.max(1, Math.floor((Math.min(window.innerWidth * 0.97, 900) - pad) / (cw + gap)));
     var sq = Math.sqrt(n * 1.73), best = null;
     [Math.floor(sq), Math.ceil(sq)].forEach(function (c) {                        // the two column counts nearest a square…
