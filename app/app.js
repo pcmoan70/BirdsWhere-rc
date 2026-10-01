@@ -9384,7 +9384,7 @@
     // Tile fetches failing (even when navigator reports "online" — captive portal /
     // dead connection) → treat like offline so the zoom cap upscales cached tiles
     // instead of leaving blank deep tiles; a successful load clears the flag.
-    baseLayer.on("tileerror", function () { window.AppOffline.setTilesFailing(true); scheduleOfflineCheck(); });
+    baseLayer.on("tileerror", function () { window.AppOffline.setTilesFailing(true); scheduleOfflineCheck(); noteTileError(); });
     baseLayer.on("tileload", function () { if (window.AppOffline.tilesFailing()) { window.AppOffline.setTilesFailing(false); refreshOfflineZoomCap(); } });
     baseLayer.addTo(map);
     baseLayer.bringToBack();
@@ -9482,6 +9482,21 @@
   // Offline = no network for vector tiles/glyphs. Treat a dead/captive connection
   // (tiles erroring despite navigator.onLine) the same, so labels don't blank out.
   function isOfflineNow() { return (navigator.onLine === false) || window.AppOffline.tilesFailing(); }
+  // Tiles that failed to load (offline, captive portal, a dropped request) stay blank: Leaflet
+  // never retries them on its own. Count the failures and redraw the base + label layers when
+  // the connection comes back, or — while online — every 20 s until a redraw comes back clean
+  // (owner, 2026-10-01: "make sure the webpage triggers fetching of map tiles when there are none").
+  // Cached tiles are served by the service worker instantly, so a redraw only costs the gaps.
+  var tileRetryT = null, tileFailN = 0;
+  function noteTileError() { tileFailN++; scheduleTileRetry(20000); }
+  function scheduleTileRetry(ms) { if (tileRetryT) return; tileRetryT = setTimeout(function () { tileRetryT = null; retryFailedTiles(); }, ms); }
+  function retryFailedTiles() {
+    if (!tileFailN) return;
+    if (navigator.onLine === false || !map) { scheduleTileRetry(20000); return; }   // still offline: look again later
+    tileFailN = 0;
+    [baseLayer, labelsOverlay].forEach(function (l) { if (l && l._map) { try { l.redraw(); } catch (e) {} } });
+  }
+  window.addEventListener("online", function () { if (tileFailN) { clearTimeout(tileRetryT); tileRetryT = null; setTimeout(retryFailedTiles, 1500); } });
   var labelsRenderedOffline = null;   // connectivity the current label layer was built for
   function applyLabelsOverlay() {
     if (labelsOverlay) { try { map.removeLayer(labelsOverlay); } catch (e) {} labelsOverlay = null; }
@@ -9508,6 +9523,7 @@
     // don't match the cached (aligned) grid, so only use it online; offline stays aligned.
     if (off > 0 && !offline) { opts.zoomOffset = off; opts.tileSize = 256 / Math.pow(2, off); }
     labelsOverlay = L.tileLayer(rasterLabelsUrl(bm), opts).addTo(map);
+    labelsOverlay.on("tileerror", noteTileError);
     try { labelsOverlay.bringToFront(); } catch (e) {}   // above basemap tiles, below data markers
   }
   // Swap the label layer vector↔raster when connectivity flips — but only on an actual
