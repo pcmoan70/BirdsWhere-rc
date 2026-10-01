@@ -17124,9 +17124,13 @@
       var col = collColor(c);
       (c.points || []).forEach(function (p) {
         if (!p || !p.spKey || !isFinite(p.lat) || !isFinite(p.lon)) return;
-        var row = { lat: +p.lat, lon: +p.lon, date: p.date || "", url: p.url || "", count: p.count, act: p.act || "", src: p.src || "list", _list: true, listColor: col, _listName: c.name, _mpId: p.id };
+        // The whole record rides along (observer, note, place, flags …) so a list made from an
+        // observation file — a .share person list, a KMZ with ExtendedData — reads like a fetch.
+        var row = { lat: +p.lat, lon: +p.lon, date: p.date || "", url: p.url || "", count: p.count, act: p.act || "", src: p.src || "list",
+          observer: p.observer || "", note: p.note || "", place: p.place || "", flags: p.flags || "", origin: p.origin || "",
+          placeCoarse: !!p.placeCoarse, posFuzzM: +p.posFuzzM || 0, _list: true, listColor: col, _listName: c.name, _mpId: p.id };
         var e = detPlot[p.spKey];
-        if (!e) e = detPlot[p.spKey] = { key: p.spKey, name: p.name || p.spKey, color: p.spColor || "#888", rows: [], group: null, cls: (taxByCode[p.spKey] && taxByCode[p.spKey].class_name) || "" };
+        if (!e) e = detPlot[p.spKey] = { key: p.spKey, name: p.name || p.spKey, color: p.spColor || "#888", rows: [], group: null, cls: p.spCls || (taxByCode[p.spKey] && taxByCode[p.spKey].class_name) || "" };
         e.rows = mergeDetRows(e.rows, [row]);
         changed = true;
       });
@@ -17248,7 +17252,7 @@
       var c0 = txt.charAt(0);
       if (c0 === "{" || c0 === "[") { startGeoJsonImport(txt, f.name); mpState.mpLoading(null); done(); }
       else if (c0 === "<") doneKml(txt);
-      else if (allowShare) { mpState.mpLoading(null); importShared(txt); done(); }
+      else if (allowShare) { mpState.mpLoading(null); importShared(txt, { asList: true, fileName: f.name }); done(); }   // a .share file → a saved point list
       else doneKml(txt);
     };
     rd.readAsArrayBuffer(f);

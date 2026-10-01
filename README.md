@@ -661,9 +661,13 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   Settings → *Map points*; download a **single list or trip** from the ↓ beside its × — in the Points
   menu and in the lists window (press-and-hold or right-click the Points button) — choosing the format
   there. *Load from file* also takes a **direct link** to a .kmz / .kml / .geojson — or a BirdsWhere
-  **.share** file (an observation list: it opens as plotted detections, like fetched observations) —
-  that the host lets a browser fetch (a GitHub raw link, say) — the popover has the file picker and
-  a link field; the bytes then take the same import path. Google Drive share links cannot be fetched by a web page
+  **.share** file — that the host lets a browser fetch (a GitHub raw link, say) — the popover has the
+  file picker and a link field; the bytes then take the same import path. A **.share observation
+  list** loaded this way (a person's records, say) is **saved as a point list** like a KMZ: it appears
+  in the Points menu with its tick, year tag chips and ⋯ menu, survives reloads, and while ticked its
+  records are plotted exactly like fetched observations (date · observer · place groups, count, note,
+  source link, ⓘ). Loading the same list again replaces it. A shared *link* (`?s=`) still plots once
+  without saving. Google Drive share links cannot be fetched by a web page
   (Drive refuses cross-site browser requests), so download such a file and choose it instead.
   Import from either the Settings
   *Import* button or *Load from file* in the Points menu — both

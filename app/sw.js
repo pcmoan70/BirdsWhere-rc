@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1975";
+var VERSION = "v1976";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Species pictures: a right-click (desktop) or a long press (phone) on any card photo \u2014 confusion species, family, the Images layout \u2014 now reliably opens the full-screen picture instead of the browser's own image menu."
+  "\u2022 An observation list (.share) loaded via Points \u2192 Load from file is now SAVED as a point list: tick it on and off, filter it by year, delete it \u2014 and while ticked its records show like fetched observations (observer, note, source link).",
+  "\u2022 Species pictures: right-click / long press on a card photo opens it full screen."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

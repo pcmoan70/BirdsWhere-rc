@@ -221,7 +221,7 @@ window.AppPoints = (function () {
   // and only the shared strings the points still hold survive.
   var INTERN_FIELDS = ["name", "sci", "date", "observer", "count", "place", "source",
                        "createdAt", "color", "spColor", "src", "act", "list",
-                       "stage", "country", "dset"];
+                       "stage", "country", "dset", "note", "flags", "origin", "spKey", "spCls"];
   function internPoints(colls) {
     var pool = Object.create(null), tagPool = Object.create(null), n = 0;
     function sh(v) {
