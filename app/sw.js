@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1971";
+var VERSION = "v1972";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 New standalone page /owl_network: the network of people who observe owls together in the Finnskogen area (drag, zoom, filters)."
+  "\u2022 Observer lists can be imported from a file: Lists \u2192 Observer lists \u2192 Import\u2026 takes a .csv / .txt with one name per line (first column, or an \u201cobserver\u201d column) and names the list after the file."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

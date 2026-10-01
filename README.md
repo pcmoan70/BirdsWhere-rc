@@ -684,7 +684,9 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   folder / ExtendedData) to the point's name, tags and note, with a *Note contains HTML* option.
 - **Observer lists & nicknames** — build named sets of observers, filter the map/list to them
   via the legend's 👤 scope cycle, hover a name to isolate their records, or tap a name (in the
-  legend or the detections list) to add them to a list.
+  legend or the detections list) to add them to a list. *Lists → Observer lists… → Import…* loads a
+  list from a .csv / .txt file (one observer per line: the first column, or an "observer" column);
+  the list is named after the file, and importing the same file again replaces its members.
 - **Stored locations** — from a point's *Location ▸ → 📍 Save location*, name a spot and give it
   a radius. Press-and-hold the **🔍** search button to recall them: while the
   popup is open each ticked location previews on the map as a dashed square with a **📍 pin** at

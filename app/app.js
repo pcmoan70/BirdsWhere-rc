@@ -14939,6 +14939,23 @@
   }
   // Popup to manage observer lists: pick a list to edit, rename/delete it, remove
   // members, and add members by fuzzy-searching observers that have observations.
+  // Observer names out of a text/CSV file: one per line; with a delimiter (tab ; ,) the
+  // column headed observer / name / navn, else the first column. Quotes stripped, blanks
+  // and duplicates dropped, order kept.
+  function parseObserverListText(txt) {
+    var lines = String(txt || "").replace(/^\uFEFF/, "").split(/\r?\n/).filter(function (l) { return l.trim(); });
+    if (!lines.length) return [];
+    var delim = /\t/.test(lines[0]) ? "\t" : (lines[0].split(";").length > lines[0].split(",").length ? ";" : (lines[0].indexOf(",") >= 0 ? "," : null));
+    var cells = function (l) { return (delim ? l.split(delim) : [l]).map(function (c) { return c.trim().replace(/^"(.*)"$/, "$1").trim(); }); };
+    var head = cells(lines[0]), col = 0, hasHead = false;
+    head.forEach(function (h, i) { if (!hasHead && /^(observer|observers|name|navn|observat[øo]r|recordedby)$/i.test(h)) { col = i; hasHead = true; } });
+    var out = [], seen = {};
+    lines.slice(hasHead ? 1 : 0).forEach(function (l) {
+      var n = cells(l)[col] || ""; if (!n || seen[n.toLowerCase()]) return;
+      seen[n.toLowerCase()] = true; out.push(n);
+    });
+    return out;
+  }
   function openObserverEditor() {
     var m = createModal({ boxClass: "obs-editor", onClose: function () { if (document.getElementById("det-legend")) updateDetLegend(); } });
     var box = m.box, close = m.close;
@@ -14990,6 +15007,8 @@
             return '<option value="' + i + '"' + (i === selLi ? " selected" : "") + ">" + esc(Lx.name) + "</option>";
           }).join("") + "</select>" : "") +
           '<button type="button" class="obs-ed-new btn btn-light">＋ ' + esc(t("obs.newList")) + "</button>" +
+          '<button type="button" class="obs-ed-import btn btn-light" title="' + esc(t("obs.importHint")) + '">' + esc(t("obs.importList")) + "</button>" +
+          '<input type="file" class="obs-ed-file" accept=".csv,.txt,.tsv,text/csv,text/plain" hidden />' +
         "</div>";
       if (L) {
         html += '<div class="obs-ed-list">' +
@@ -15013,6 +15032,29 @@
       box.querySelector(".obs-ed-new").addEventListener("click", function () {
         modalPrompt(t("obs.newListPrompt"), "").then(function (nm) { nm = (nm || "").trim(); if (!nm) return; var a = getObserverLists(); a.push({ name: nm, observers: [] }); saveObserverLists(a); selLi = a.length - 1; render(); });
       });
+      // Import a list from a file: a .csv / .txt with one observer per line — the first
+      // column, or the column headed "observer"/"name" (the year-list CSVs from the
+      // Artsobservasjoner scrape, say). Named after the file; re-importing the same file
+      // replaces that list's members.
+      var impBtn = box.querySelector(".obs-ed-import"), impFile = box.querySelector(".obs-ed-file");
+      if (impBtn && impFile) {
+        impBtn.addEventListener("click", function () { impFile.value = ""; impFile.click(); });
+        impFile.addEventListener("change", function () {
+          var f = this.files && this.files[0]; if (!f) return;
+          var rd = new FileReader();
+          rd.onload = function () {
+            var names = parseObserverListText(String(rd.result || ""));
+            if (!names.length) { setStatus(t("obs.importNone")); return; }
+            var nm = String(f.name || "").replace(/\.[^.]+$/, "").trim() || t("obs.newList");
+            var a = getObserverLists(), i = -1;
+            a.forEach(function (Lx, ix) { if (Lx.name === nm) i = ix; });
+            if (i >= 0) a[i].observers = names; else { a.push({ name: nm, observers: names }); i = a.length - 1; }
+            saveObserverLists(a); selLi = i; render();
+            setStatus(t("obs.imported", { name: nm, n: names.length }));
+          };
+          rd.readAsText(f);
+        });
+      }
       var nameInp = box.querySelector(".obs-ed-lname");
       if (nameInp) nameInp.addEventListener("change", function () { var a = getObserverLists(); if (a[selLi]) { a[selLi].name = this.value.trim() || a[selLi].name; saveObserverLists(a); } });
       var del = box.querySelector(".obs-ed-ldel");
