@@ -1552,12 +1552,16 @@ window.AppPoints = (function () {
     if (key && mpBusyKeys.indexOf(key) < 0) mpBusyKeys.push(key);
     var since = Date.now();
     if (mpRendering || mpFilterT) return;
-    mpFilterT = (window.requestAnimationFrame || setTimeout)(function () {
+    // requestAnimationFrame must be CALLED ON window: `(window.requestAnimationFrame || setTimeout)(fn)`
+    // throws "Illegal invocation" in Chrome, which left the tag chips blinking and the map
+    // unchanged (owner, 2026-10-01: "the map points are not filtered like for fetched data").
+    var later = window.requestAnimationFrame ? function (fn) { return window.requestAnimationFrame(fn); } : function (fn) { return setTimeout(fn, 16); };
+    mpFilterT = later(function () {
       mpFilterT = null;
       if (mpRendering) { mpFilterBusyDone(since); return; }
       mpRendering = true;
-      try { renderMapPoints(); mpBusyReapply(); } catch (e) {} finally { mpRendering = false; mpFilterBusyDone(since); }
-    }, 16);
+      try { renderMapPoints(); mpBusyReapply(); } catch (e) { console.error("renderMapPoints failed", e); } finally { mpRendering = false; mpFilterBusyDone(since); }
+    });
   }
   function mpFilterBusyDone(since) {
     if (!mpBusyEls.length) { mpBusyKeys = []; return; }

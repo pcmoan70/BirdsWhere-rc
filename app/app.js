@@ -12884,6 +12884,7 @@
   }
   if (perfOn) {
     rebuildDetLayers = perfWrap("rebuildDetLayers", rebuildDetLayers);
+    syncListDetections = perfWrap("syncListDetections", syncListDetections);
     updateDetLegend = perfWrap("updateDetLegend", updateDetLegend);
     updateHdrHisto = perfWrap("updateHdrHisto", updateHdrHisto);
     renderDetListModal = perfWrap("renderDetListModal", renderDetListModal);
@@ -17142,13 +17143,13 @@
   }
   function syncListDetections() {
     if (!map || typeof detPlot === "undefined") return;
-    var changed = false;
+    var changed = false, dropped = 0, injected = 0, skipped = 0;
     // 1. Drop previously-injected list rows; remove species left with no rows
     //    (i.e. list-only species whose list is no longer shown).
     Object.keys(detPlot).forEach(function (k) {
       var e = detPlot[k], before = (e.rows || []).length;
       e.rows = (e.rows || []).filter(function (r) { return !r._list; });
-      if (e.rows.length !== before) changed = true;
+      if (e.rows.length !== before) { changed = true; dropped += before - e.rows.length; }
       if (!e.rows.length) { if (e.group) { map.removeLayer(e.group); } delete detPlot[k]; delete detSelected[k]; }
     });
     // 2. Inject the current shown lists' detection points, grouped by species key.
@@ -17161,7 +17162,7 @@
         // funnel (date range / observers) — used to reach only the plain pins; the species
         // points were injected whatever the chips said (owner, 2026-10-01: "the map points
         // are not filtered like for fetched data").
-        if (!mpVisible(p) || !mpState.listOwnFilterPasses(p, lf)) return;
+        if (!mpVisible(p) || !mpState.listOwnFilterPasses(p, lf)) { skipped++; return; }
         // The whole record rides along (observer, note, place, flags …) so a list made from an
         // observation file — a .share person list, a KMZ with ExtendedData — reads like a fetch.
         var row = { lat: +p.lat, lon: +p.lon, date: p.date || "", url: p.url || "", count: p.count, act: p.act || "", src: p.src || "list",
@@ -17170,9 +17171,10 @@
         var e = detPlot[p.spKey];
         if (!e) e = detPlot[p.spKey] = { key: p.spKey, name: p.name || p.spKey, color: p.spColor || "#888", rows: [], group: null, cls: p.spCls || (taxByCode[p.spKey] && taxByCode[p.spKey].class_name) || "" };
         e.rows = mergeDetRows(e.rows, [row]);
-        changed = true;
+        changed = true; injected++;
       });
     });
+    if (perfOn) console.log("SYNC list rows: dropped " + dropped + ", injected " + injected + ", skipped by list filters " + skipped + ", changed " + changed);
     if (!changed) return;   // no list rows added/removed → fetched layers already current
     recolorDetections();
     rebuildDetLayers();
