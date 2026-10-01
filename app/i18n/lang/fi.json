@@ -1533,12 +1533,9 @@
   "rarity.whyBand": "Laji, joka mainitaan jonkin BAND-ryhmäsi julkaisussa.",
   "rarity.bandHint": "Seuraa myös lintuharrastusryhmiesi julkaisuja BANDissa (band.us). Liitä henkilökohtainen käyttöoikeustunnus (BAND Developers → My Apps → Connect BAND account), hae ryhmät ja rastita seurattavat. Uusista julkaisuista etsitään lajinimiä valitulla kielellä (tieteelliset nimet aina); mainittu lintu käsitellään havaintona valitussa 🔔-paikassa — julkaisulla ei ole koordinaatteja — ja siitä hälytetään, kun malli pitää sitä siellä epätodennäköisenä, kuten muistakin lähteistä.",
   "family.shownOf": "{n}/{m} heimon lajia näytetään — todennäköisimmät täällä (taulukkonäkymä näyttää kaikki)",
-  "points.loadLink": "Lataa linkistä",
-  "points.linkPh": "Google Drive -jakolinkki tai tiedoston URL",
-  "points.linkHint": "Google Drive -tiedosto, joka on jaettu ”kaikille, joilla on linkki” (tarvitsee Google API -avaimen kohdassa Asetukset → Karttapisteet), tai suora linkki .kmz-/.kml-/.geojson-tiedostoon, jonka sivusto sallii selaimen hakea. Lista tuodaan kuten tiedosto.",
+  "points.linkPh": "…tai liitä linkki .kmz-/.kml-/.geojson-tiedostoon",
+  "points.linkHint": "Suora linkki, jonka sivusto sallii selaimen hakea — GitHubin raw-linkki toimii; Google Drive -jakolinkki ei (lataa tiedosto ja valitse se).",
   "points.linkFetching": "Haetaan listaa linkistä…",
-  "points.linkFail": "Listaa ei voitu hakea linkistä — onko tiedosto jaettu ”kaikille, joilla on linkki”?",
-  "points.driveKey": "Google API -avain (Drive-linkit)",
-  "points.driveKeyHint": "Vain kohtaan Pisteet → Lataa linkistä Google Drive -jakolinkillä: Drive toimittaa jaetun tiedoston verkkosivulle rajapintansa kautta, joka vaatii API-avaimen (Google Cloud Console → API:t → Drive API → Tunnistetiedot; rajaa se tähän sivustoon). Suorat .kmz-/.kml-/.geojson-linkit eivät tarvitse avainta.",
-  "points.driveNoKey": "Google Drive -linkki tarvitsee Google API -avaimen — lisää se kohdassa Asetukset → Karttapisteet."
+  "points.linkFail": "Listaa ei voitu hakea tästä linkistä.",
+  "points.chooseFile": "Valitse tiedosto…"
 }

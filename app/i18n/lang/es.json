@@ -1533,12 +1533,9 @@
   "rarity.whyBand": "Una especie mencionada en una publicación de uno de tus grupos de BAND.",
   "rarity.bandHint": "Vigila también las publicaciones de tus grupos de aves en BAND (band.us). Pega un token de acceso personal (BAND Developers → My Apps → Connect BAND account), carga tus grupos y marca los que quieras seguir. Las publicaciones nuevas se buscan por nombres de especies en el idioma elegido (los nombres científicos siempre); un ave mencionada se trata como una observación en el lugar 🔔 elegido — una publicación no tiene coordenadas — y avisa cuando el modelo la considera improbable allí, como con cualquier otra fuente.",
   "family.shownOf": "{n} de {m} especies de la familia mostradas — las más probables aquí (la vista de tabla las muestra todas)",
-  "points.loadLink": "Cargar desde enlace",
-  "points.linkPh": "Enlace compartido de Google Drive o URL de archivo",
-  "points.linkHint": "Un archivo de Google Drive compartido como «cualquiera con el enlace» (necesita la clave de API de Google en Ajustes → Puntos del mapa), o un enlace directo a un archivo .kmz / .kml / .geojson que el sitio permita descargar a un navegador. La lista se importa como un archivo.",
+  "points.linkPh": "…o pega un enlace a un archivo .kmz / .kml / .geojson",
+  "points.linkHint": "Un enlace directo que el sitio permita descargar a un navegador — un enlace raw de GitHub funciona; un enlace compartido de Google Drive no (descarga el archivo y elígelo).",
   "points.linkFetching": "Obteniendo la lista del enlace…",
-  "points.linkFail": "No se pudo obtener la lista de ese enlace — ¿está el archivo compartido como «cualquiera con el enlace»?",
-  "points.driveKey": "Clave de API de Google (enlaces de Drive)",
-  "points.driveKeyHint": "Solo para Puntos → Cargar desde enlace con un enlace compartido de Google Drive: Drive entrega un archivo compartido a una página web mediante su API, que necesita una clave de API (Google Cloud Console → API → Drive API → Credenciales; restríngela a este sitio). Los enlaces directos .kmz / .kml / .geojson no necesitan clave.",
-  "points.driveNoKey": "Un enlace de Google Drive necesita una clave de API de Google — añádela en Ajustes → Puntos del mapa."
+  "points.linkFail": "No se pudo obtener una lista de ese enlace.",
+  "points.chooseFile": "Elegir archivo…"
 }

@@ -1533,12 +1533,9 @@
   "rarity.whyBand": "Una specie citata in un post di uno dei tuoi gruppi BAND.",
   "rarity.bandHint": "Segui anche i post dei tuoi gruppi di birdwatching su BAND (band.us). Incolla un token di accesso personale (BAND Developers → My Apps → Connect BAND account), carica i gruppi e spunta quelli da seguire. I nuovi post vengono cercati per nomi di specie nella lingua scelta (nomi scientifici sempre); un uccello citato è trattato come un’osservazione nel luogo 🔔 scelto — un post non ha coordinate — e dà un’allerta quando il modello lo ritiene improbabile lì, come per ogni altra fonte.",
   "family.shownOf": "{n} di {m} specie della famiglia mostrate — le più probabili qui (la vista a tabella le elenca tutte)",
-  "points.loadLink": "Carica da link",
-  "points.linkPh": "Link di condivisione Google Drive o URL di file",
-  "points.linkHint": "Un file Google Drive condiviso come «chiunque abbia il link» (richiede la chiave API Google in Impostazioni → Punti mappa), o un link diretto a un file .kmz / .kml / .geojson che il sito lascia scaricare a un browser. L’elenco viene importato come un file.",
+  "points.linkPh": "…oppure incolla un link a un file .kmz / .kml / .geojson",
+  "points.linkHint": "Un link diretto che il sito lascia scaricare a un browser — un link raw di GitHub funziona; un link di condivisione Google Drive no (scarica il file e scéglilo).",
   "points.linkFetching": "Recupero dell’elenco dal link…",
-  "points.linkFail": "Impossibile recuperare l’elenco da quel link — il file è condiviso come «chiunque abbia il link»?",
-  "points.driveKey": "Chiave API Google (link Drive)",
-  "points.driveKeyHint": "Solo per Punti → Carica da link con un link di condivisione Google Drive: Drive consegna un file condiviso a una pagina web tramite la sua API, che richiede una chiave API (Google Cloud Console → API → Drive API → Credenziali; limitala a questo sito). I link diretti .kmz / .kml / .geojson non richiedono alcuna chiave.",
-  "points.driveNoKey": "Un link Google Drive richiede una chiave API Google — aggiungila in Impostazioni → Punti mappa."
+  "points.linkFail": "Impossibile recuperare un elenco da quel link.",
+  "points.chooseFile": "Scegli file…"
 }

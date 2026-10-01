@@ -7413,9 +7413,6 @@
                 "</div>" +
                 '<input type="file" id="points-kml-file" accept=".kmz,.kml,.geojson,.json" multiple style="display:none" />' +
                 '<p class="cu-hint" data-i18n="ctrl.exportPointsHint">Export the map points you’ve placed as a KML or GeoJSON file, or import points from one.</p>' +
-                '<label for="drive-api-key" data-i18n="points.driveKey">Google API key (Drive links)</label>' +
-                '<input type="text" id="drive-api-key" autocomplete="off" spellcheck="false" data-i18n-ph="sources.keyPh" placeholder="API key" />' +
-                '<p class="cu-hint" data-i18n="points.driveKeyHint">Only for Points → Load from link with a Google Drive share link: Drive serves a shared file to a web page through its API, which needs an API key (Google Cloud Console → APIs → Drive API → Credentials; restrict it to this site). Direct .kmz / .kml / .geojson links need no key.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label data-i18n="lists.title">Administer lists</label>' +
@@ -17078,43 +17075,21 @@
   // not on the button: ZIP magic → KMZ, a leading { or [ → GeoJSON, < → KML, and
   // anything else → a share link (the points panel's original job).
   var importBusy = false;
-  // A point list from a LINK: a Google Drive file shared as "anyone with the link", or any
-  // direct URL to a .kmz / .kml / .geojson the server lets a browser read. Drive's own share
-  // page cannot be fetched (403, no CORS header) but drive.usercontent.google.com serves the
-  // bytes with `access-control-allow-origin: *` (checked 2026-10-01) — no key, no sign-in.
-  // The bytes then take the ordinary single-file import path (list picker, field mapping).
-  function driveFileId(url) {
-    var u = String(url || "");
-    var m = u.match(/drive\.google\.com\/file\/d\/([\w-]{10,})/) || u.match(/drive(?:\.usercontent)?\.google\.com\/[^#]*[?&]id=([\w-]{10,})/);
-    return m ? m[1] : "";
-  }
-  // Drive refuses a browser's cross-site fetch of the download URL (403 on `Sec-Fetch-Site:
-  // cross-site`, however the file is shared — measured 2026-10-01; curl without that header gets
-  // the bytes), so a shared file is read through the Drive API, which answers browsers with CORS
-  // and needs only an API key for a file shared as "anyone with the link": the key the owner
-  // ships (referrer-restricted, Drive API only) or one the user pastes in Settings.
-  var DRIVE_API_KEY_BUILTIN = "";
-  function driveApiKey() { return String(window.GeoState.get("driveApiKey", "") || "").trim() || DRIVE_API_KEY_BUILTIN; }
+  // A point list from a direct LINK — a .kmz / .kml / .geojson the host lets a browser fetch
+  // (GitHub raw links do; Google Drive share links do not: Drive answers every cross-site
+  // browser request with 403, measured 2026-10-01). The bytes take the single-file import path.
   function importPointsUrl(url) {
     url = String(url || "").trim(); if (!url) return;
-    var id = driveFileId(url), name = "", nameP = Promise.resolve("");
-    if (id) {
-      var key = driveApiKey();
-      if (!key) { setStatus(t("points.driveNoKey")); return; }
-      var base = "https://www.googleapis.com/drive/v3/files/" + encodeURIComponent(id);
-      nameP = fetch(base + "?fields=name&key=" + encodeURIComponent(key)).then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) { return (j && j.name) || ""; }).catch(function () { return ""; });
-      url = base + "?alt=media&key=" + encodeURIComponent(key);
-    } else {
-      try { var u = new URL(url); if (!/^https?:$/.test(u.protocol)) throw new Error("scheme"); name = decodeURIComponent(u.pathname.split("/").pop() || ""); }
-      catch (e) { setStatus(t("points.linkFail")); return; }
-    }
+    var name = "";
+    try { var u = new URL(url); if (!/^https?:$/.test(u.protocol)) throw new Error("scheme"); name = decodeURIComponent(u.pathname.split("/").pop() || ""); }
+    catch (e) { setStatus(t("points.linkFail")); return; }
     if (importBusy) { setStatus(t("kml.busy")); return; }
     setStatus(t("points.linkFetching"));
-    Promise.all([fetch(url, { mode: "cors", credentials: "omit" }), nameP])
-      .then(function (rn) { var r = rn[0]; name = name || rn[1]; if (!r.ok) throw new Error("http " + r.status); return r.blob(); })
+    fetch(url, { mode: "cors", credentials: "omit" })
+      .then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.blob(); })
       .then(function (b) {
         if (/text\/html/i.test(b.type || "")) throw new Error("html");   // a web page, not a list
-        importPointsFile([new File([b], name || (id ? "drive-" + id.slice(0, 8) : "points"), { type: b.type || "" })], false);
+        importPointsFile([new File([b], name || "points", { type: b.type || "" })], false);
       })
       .catch(function () { setStatus(t("points.linkFail")); });
   }
@@ -17853,7 +17828,6 @@
         (mpSaveableAny() ? '<button type="button" id="mp-save-pts" class="btn' +
           (mpHasUnsaved() ? " mp-save-unsaved" : "") + '">' + escapeHtml(t("points.save")) + "</button>" : "") +
         '<button type="button" id="mp-import-share" class="btn btn-light" title="' + escapeHtml(tLabel("share.importFile")) + '" data-i18n="points.loadFile">' + escapeHtml(t("points.loadFile")) + "</button>" +
-        '<button type="button" id="mp-import-link" class="btn btn-light" title="' + escapeHtml(t("points.linkHint")) + '" data-i18n="points.loadLink">' + escapeHtml(t("points.loadLink")) + "</button>" +
         '<input type="file" id="share-file-input" accept=".kmz,.kml,.geojson,.json,.share,.mcshare,.txt" multiple style="display:none" />' +
       "</div>" +
       '<div id="mp-backup-line" class="mp-backup-line"></div>' +
@@ -17868,29 +17842,26 @@
           ? '<p class="dd-empty">' + escapeHtml(t("points.listTrimmed", { n: unionPts.length, total: unionTotal })) + "</p>"
           : "") + "</div>";
     // Wire interactions
-    var importLinkBtn = panel.querySelector("#mp-import-link");
-    if (importLinkBtn) importLinkBtn.addEventListener("click", function (e) {
-      e.stopPropagation();
-      var r = importLinkBtn.getBoundingClientRect();
-      closeDropdowns();
-      var el = openAnchoredMenu("detrow-menu mp-link-menu");
-      el.innerHTML = '<div class="detrow-menu-hdr detrow-menu-name">' + escapeHtml(t("points.loadLink")) + "</div>" +
-        '<div class="mp-link-row"><input type="url" id="mp-link-url" autocomplete="off" spellcheck="false" placeholder="' + escapeHtml(t("points.linkPh")) + '" />' +
-        '<button type="button" id="mp-link-go" class="btn">' + escapeHtml(t("points.load").replace(/^\S+\s*/, "")) + "</button></div>" +
-        '<p class="cu-hint">' + escapeHtml(t("points.linkHint")) + "</p>";
-      var inp = el.querySelector("#mp-link-url");
-      function go() { var u = inp.value.trim(); if (!u) return; closeAnchoredMenu(); importPointsUrl(u); }
-      el.querySelector("#mp-link-go").addEventListener("click", function (ev) { ev.stopPropagation(); go(); });
-      inp.addEventListener("keydown", function (ev) { if (ev.key === "Enter") { ev.preventDefault(); go(); } });
-      positionAnchoredMenu(el, Math.round(r.left), Math.round(r.bottom + 4));
-      inp.focus();
-    });
     var importShareBtn = panel.querySelector("#mp-import-share"), shareFileInput = panel.querySelector("#share-file-input");
     if (importShareBtn && shareFileInput) {
+      // One popover for both ways in: the file picker, or a direct link to a .kmz / .kml /
+      // .geojson (a GitHub raw link, say) — the bytes take the same import path either way.
       importShareBtn.addEventListener("click", function (e) {
         e.stopPropagation();
-        shareFileInput.click();
+        var r = importShareBtn.getBoundingClientRect();
         closeDropdowns();   // the import's progress goes to the status line this panel covers
+        var el = openAnchoredMenu("detrow-menu mp-link-menu");
+        el.innerHTML = '<div class="detrow-menu-hdr detrow-menu-name">' + escapeHtml(t("points.loadFile")) + "</div>" +
+          '<button type="button" id="mp-pick-file" class="detrow-menu-item">' + escapeHtml(t("points.chooseFile")) + "</button>" +
+          '<div class="mp-link-row"><input type="url" id="mp-link-url" autocomplete="off" spellcheck="false" placeholder="' + escapeHtml(t("points.linkPh")) + '" />' +
+          '<button type="button" id="mp-link-go" class="btn">' + escapeHtml(t("points.load").replace(/^\S+\s*/, "")) + "</button></div>" +
+          '<p class="cu-hint">' + escapeHtml(t("points.linkHint")) + "</p>";
+        var inp = el.querySelector("#mp-link-url");
+        function go() { var u = inp.value.trim(); if (!u) return; closeAnchoredMenu(); importPointsUrl(u); }
+        el.querySelector("#mp-pick-file").addEventListener("click", function (ev) { ev.stopPropagation(); closeAnchoredMenu(); shareFileInput.click(); });
+        el.querySelector("#mp-link-go").addEventListener("click", function (ev) { ev.stopPropagation(); go(); });
+        inp.addEventListener("keydown", function (ev) { if (ev.key === "Enter") { ev.preventDefault(); go(); } });
+        positionAnchoredMenu(el, Math.round(r.left), Math.round(r.bottom + 4));
       });
       shareFileInput.addEventListener("change", function (e) {
         importPointsFile(e.target.files, true);
@@ -19932,8 +19903,6 @@
         });
       });
     }
-    var dKey = document.getElementById("drive-api-key");
-    if (dKey) { dKey.value = window.GeoState.get("driveApiKey", "") || ""; dKey.addEventListener("change", function () { window.GeoState.save({ driveApiKey: this.value.trim() }); }); }
     wireNumSetting("max-points", detMaxPoints, 50, 100000, 50000, function (v) { window.GeoState.save({ maxMapPoints: v }); }, relayerDet);
     var dedupEl = document.getElementById("dedup-toggle");
     if (dedupEl) {

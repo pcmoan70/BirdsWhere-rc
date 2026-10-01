@@ -1533,12 +1533,9 @@
   "rarity.whyBand": "Liik, mida mainitakse mõne sinu BAND-i grupi postituses.",
   "rarity.bandHint": "Jälgi ka oma linnuvaatlusgruppide postitusi BAND-is (band.us). Kleebi isiklik pääsutõend (BAND Developers → My Apps → Connect BAND account), laadi grupid ja märgi need, mida jälgida. Uusi postitusi otsitakse valitud keele liiginimede järgi (teaduslikud nimed alati); mainitud lindu käsitletakse vaatlusena valitud 🔔-kohas — postitusel pole koordinaate — ja teavitatakse, kui mudel peab seda seal ebatõenäoliseks, nagu iga muu allika puhul.",
   "family.shownOf": "Näidatakse {n} sugukonna {m} liigist — siin kõige tõenäolisemad (tabelivaade näitab kõiki)",
-  "points.loadLink": "Laadi lingilt",
-  "points.linkPh": "Google Drive’i jagamislink või faili URL",
-  "points.linkHint": "Google Drive’i fail, mis on jagatud kui „kõik, kellel on link“ (vajab Google API võtit menüüs Seaded → Kaardipunktid), või otselink .kmz-/.kml-/.geojson-failile, mida sait laseb brauseril alla laadida. Nimekiri imporditakse nagu fail.",
+  "points.linkPh": "…või kleebi link .kmz-/.kml-/.geojson-failile",
+  "points.linkHint": "Otselink, mida sait laseb brauseril alla laadida — GitHubi raw-link töötab; Google Drive’i jagamislink mitte (laadi fail alla ja vali see).",
   "points.linkFetching": "Nimekirja laadimine lingilt…",
-  "points.linkFail": "Nimekirja ei õnnestunud sellelt lingilt laadida — kas fail on jagatud kui „kõik, kellel on link“?",
-  "points.driveKey": "Google API võti (Drive’i lingid)",
-  "points.driveKeyHint": "Ainult valikule Punktid → Laadi lingilt Google Drive’i jagamislingiga: Drive annab jagatud faili veebilehele oma API kaudu, mis nõuab API võtit (Google Cloud Console → API-d → Drive API → Mandaadid; piira see selle saidiga). Otselingid .kmz/.kml/.geojson failidele võtit ei vaja.",
-  "points.driveNoKey": "Google Drive’i link vajab Google API võtit — lisa see menüüs Seaded → Kaardipunktid."
+  "points.linkFail": "Sellelt lingilt ei õnnestunud nimekirja laadida.",
+  "points.chooseFile": "Vali fail…"
 }

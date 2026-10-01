@@ -1533,12 +1533,9 @@
   "rarity.whyBand": "En art nævnt i et opslag i en af dine BAND-grupper.",
   "rarity.bandHint": "Følg også opslagene i dine fuglegrupper på BAND (band.us). Indsæt et personligt adgangstoken (BAND Developers → My Apps → Connect BAND account), hent grupperne og sæt flueben ved dem, du vil følge. Nye opslag gennemsøges for artsnavne på det valgte sprog (videnskabelige navne altid); en nævnt fugl behandles som en observation på det valgte 🔔-sted — et opslag har ingen koordinater — og udløser en alarm, når modellen finder den usandsynlig dér, som fra alle andre kilder.",
   "family.shownOf": "{n} af {m} arter i familien vist — de mest sandsynlige her (tabelvisningen viser alle)",
-  "points.loadLink": "Indlæs fra link",
-  "points.linkPh": "Google Drive-delingslink eller fil-URL",
-  "points.linkHint": "En Google Drive-fil delt som »alle med linket« (kræver Google API-nøglen under Indstillinger → Kortpunkter), eller et direkte link til en .kmz-/.kml-/.geojson-fil, som webstedet lader en browser hente. Listen importeres som en fil.",
+  "points.linkPh": "…eller indsæt et link til en .kmz-/.kml-/.geojson-fil",
+  "points.linkHint": "Et direkte link, som webstedet lader en browser hente — et GitHub-rålink virker; et Google Drive-delingslink gør det ikke (download filen og vælg den).",
   "points.linkFetching": "Henter listen fra linket…",
-  "points.linkFail": "Kunne ikke hente listen fra linket — er filen delt som »alle med linket«?",
-  "points.driveKey": "Google API-nøgle (Drive-links)",
-  "points.driveKeyHint": "Kun til Punkter → Indlæs fra link med et Google Drive-delingslink: Drive leverer en delt fil til en webside via sit API, som kræver en API-nøgle (Google Cloud Console → API’er → Drive API → Legitimationsoplysninger; begræns den til dette websted). Direkte .kmz-/.kml-/.geojson-links kræver ingen nøgle.",
-  "points.driveNoKey": "Et Google Drive-link kræver en Google API-nøgle — tilføj den under Indstillinger → Kortpunkter."
+  "points.linkFail": "Kunne ikke hente en liste fra det link.",
+  "points.chooseFile": "Vælg fil…"
 }

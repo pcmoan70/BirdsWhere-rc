@@ -655,12 +655,11 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
 - **Import / export** — points import and export as **KML, KMZ and GeoJSON**. Export everything from
   Settings → *Map points*; download a **single list or trip** from the ↓ beside its × — in the Points
   menu and in the lists window (press-and-hold or right-click the Points button) — choosing the format
-  there. **Load from link** (Points menu) imports a list from a URL: a **Google Drive file shared as
-  "anyone with the link"** or any direct link to a .kmz / .kml / .geojson the site lets a browser
-  read; the bytes then take the same import path as a file. Drive refuses a web page's direct
-  download (it answers a cross-site fetch with 403 whatever the sharing), so a Drive link is read
-  through the **Drive API**, which needs a **Google API key** (Settings → Map points; Google Cloud
-  Console → Drive API → Credentials, restricted to the site). Direct links need no key. Import from either the Settings
+  there. *Load from file* also takes a **direct link** to a .kmz / .kml / .geojson the host lets a
+  browser fetch (a GitHub raw link, say) — the popover has the file picker and a link field; the
+  bytes then take the same import path. Google Drive share links cannot be fetched by a web page
+  (Drive refuses cross-site browser requests), so download such a file and choose it instead.
+  Import from either the Settings
   *Import* button or *Load from file* in the Points menu — both
   read all three formats (and share links), and both take **several files at once**: each file becomes
   its own list, named after the file, and the field mapping is asked once and applied to all of them.

@@ -1533,12 +1533,9 @@
   "rarity.whyBand": "Rūšis, paminėta vienos iš jūsų BAND grupių įraše.",
   "rarity.bandHint": "Taip pat stebėkite savo paukščių stebėtojų grupių įrašus BAND (band.us). Įklijuokite asmeninį prieigos raktą (BAND Developers → My Apps → Connect BAND account), įkelkite grupes ir pažymėkite tas, kurias norite sekti. Naujuose įrašuose ieškoma rūšių pavadinimų pasirinkta kalba (moksliniai pavadinimai visada); paminėtas paukštis laikomas stebėjimu pasirinktoje 🔔 vietoje — įrašas neturi koordinačių — ir įspėjama, kai modelis laiko jį ten mažai tikėtinu, kaip ir iš bet kurio kito šaltinio.",
   "family.shownOf": "Rodoma {n} iš {m} šeimos rūšių — labiausiai tikėtinos čia (lentelės rodinys rodo visas)",
-  "points.loadLink": "Įkelti iš nuorodos",
-  "points.linkPh": "„Google“ disko bendrinimo nuoroda arba failo URL",
-  "points.linkHint": "„Google“ disko failas, bendrinamas kaip „visi, turintys nuorodą“ (reikia „Google“ API rakto skiltyje Nustatymai → Žemėlapio taškai), arba tiesioginė nuoroda į .kmz / .kml / .geojson failą, kurį svetainė leidžia naršyklei atsisiųsti. Sąrašas importuojamas kaip failas.",
+  "points.linkPh": "…arba įklijuokite nuorodą į .kmz / .kml / .geojson failą",
+  "points.linkHint": "Tiesioginė nuoroda, kurią svetainė leidžia naršyklei atsisiųsti — „GitHub“ raw nuoroda veikia; „Google“ disko bendrinimo nuoroda ne (atsisiųskite failą ir pasirinkite jį).",
   "points.linkFetching": "Sąrašas gaunamas iš nuorodos…",
-  "points.linkFail": "Nepavyko gauti sąrašo iš šios nuorodos — ar failas bendrinamas kaip „visi, turintys nuorodą“?",
-  "points.driveKey": "„Google“ API raktas („Drive“ nuorodos)",
-  "points.driveKeyHint": "Tik parinkčiai Taškai → Įkelti iš nuorodos su „Google“ disko bendrinimo nuoroda: „Drive“ pateikia bendrinamą failą tinklalapiui per savo API, kuriai reikia API rakto („Google Cloud Console“ → API → „Drive API“ → Kredencialai; apribokite jį šia svetaine). Tiesioginėms .kmz / .kml / .geojson nuorodoms rakto nereikia.",
-  "points.driveNoKey": "„Google“ disko nuorodai reikia „Google“ API rakto — pridėkite jį skiltyje Nustatymai → Žemėlapio taškai."
+  "points.linkFail": "Iš šios nuorodos nepavyko gauti sąrašo.",
+  "points.chooseFile": "Pasirinkti failą…"
 }
