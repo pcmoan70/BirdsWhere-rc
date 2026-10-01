@@ -953,8 +953,7 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
   5 %** contributes nothing, so a species cannot earn a place in the ranking on a 3 % resemblance
   or a single stray misidentification. A look-alike under both floors scores **0 and is not listed
   at all** — alongside the existing rule that drops anything the model puts at 0 % for your point.
-  (Barn Owl in Sydney went from 15 look-alikes to 10: the Tawny Frogmouth and the Laughing
-  Kookaburra are gone, the owls all stayed.) If nothing survives, the popup says so.
+  If nothing survives, the popup says so.
   Clicking a row opens a **compare card** (focal bird vs look-alike): a **plumage-colour deviation chart**
   (one diverging strip per sex, ♂ above ♀ — collapsing to a single ♂♀ strip when the sexes match; each colour scored `200·(base − look-alike)/(base + look-alike)`
   so the bar rises when the base bird has relatively more of that colour and drops when the look-alike does —
@@ -963,7 +962,8 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
   (habitat, trophic niche, lifestyle, migration) — matching traits tinted green, differing ones amber — and
   both birds' 48-week presence curves on **one shared-scale chart** so
   their seasons line up directly.
-- **Photo cards by default** — the Confusion species entry shows the same ranked look-alikes as **photo
+- **Photo cards by default** — the popup shrink-wraps to the squarest grid for its cards (6 → 3 × 2,
+  9 → 3 × 3) so it covers as little of the map as possible; the Confusion species entry shows the same ranked look-alikes as **photo
   cards**: the species itself first (marked by a thicker green frame), then left to right by Score, wrapping
   onto further rows (two per row on narrow phones). Each card carries the Wikipedia/Commons lead photo
   with its credit, the name, the scientific name and **Match · misID · Here · Score** as small bars;

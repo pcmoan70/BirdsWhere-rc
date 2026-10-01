@@ -11734,6 +11734,21 @@
     placeAnchClose(el);
     enableMenuKeys(el, closeAnchoredMenu);
   }
+  // Photo-card popups shrink-wrap to the squarest grid for their card count — 6 cards → 3 × 2,
+  // 7–8 → 4 × 2, 9 → 3 × 3, 10–12 → 4 × 3 — instead of filling 900 px and stranding one or two
+  // cards on a last row (owner, 2026-10-01). Cards are 150 px wide and about 1.73× as tall.
+  function fitCardGrid(el, n) {
+    var cw = 150, gap = 8, pad = 24;                                              // card · strip gap · strip + menu padding
+    var maxCols = Math.max(1, Math.floor((Math.min(window.innerWidth * 0.97, 900) - pad) / (cw + gap)));
+    var sq = Math.sqrt(n * 1.73), best = null;
+    [Math.floor(sq), Math.ceil(sq)].forEach(function (c) {                        // the two column counts nearest a square…
+      c = Math.max(1, Math.min(maxCols, c));
+      var rows = Math.ceil(n / c), cols = Math.ceil(n / rows);                    // …each tightened to the fewest columns for its rows
+      var waste = cols * rows - n, skew = Math.abs(cols * (cw + gap) - rows * 1.73 * (cw + gap));
+      if (!best || waste < best.waste || (waste === best.waste && skew < best.skew)) best = { cols: cols, waste: waste, skew: skew };
+    });
+    el.style.width = (best.cols * cw + (best.cols - 1) * gap + pad) + "px";       // fewest empty cells first, then the squarer one
+  }
   function centerPhotoPopup(el) {
     el.style.maxHeight = "min(88vh, 900px)";
     el.style.overflow = "auto";
@@ -11895,7 +11910,7 @@
         '<div class="spg-credit"></div>' +
       "</div>";
     }).join("");
-    el.appendChild(strip);
+    el.appendChild(strip); fitCardGrid(el, strip.children.length);   // shrink-wrap to the squarest grid (6 cards → 3 × 2)
     centerPhotoPopup(el);
     wirePhotoCards(el, strip);
     wireYearProbTips(el);                                    // hold Here / Season / Yr peak → the year curve
@@ -12413,7 +12428,7 @@
     }
     var strip = document.createElement("div"); strip.className = "cfi-strip";
     strip.innerHTML = card(lbl, null, true) + arr.map(function (w) { return card(w.m, w, false); }).join("");
-    el.appendChild(strip);
+    el.appendChild(strip); fitCardGrid(el, strip.children.length);   // shrink-wrap to the squarest grid (6 cards → 3 × 2)
     var legend = document.createElement("div"); legend.className = "conf-legend";
     legend.textContent = t("confusion.legend", { match: L.match, misid: L.misid, here: L.here, score: L.score });
     el.appendChild(legend);

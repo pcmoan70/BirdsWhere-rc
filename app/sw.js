@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1945";
+var VERSION = "v1946";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Confusion species: every description of the model is now current \u2014 the About page paragraph, the menu tip and the column tips (all languages).",
+  "\u2022 Confusion species and Family photo cards: the popup now shrink-wraps to the squarest grid for its cards (6 \u2192 3 \u00d7 2, 8 \u2192 4 \u00d7 2, 9 \u2192 3 \u00d7 3) instead of a wide strip with a stray card on the last row.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
