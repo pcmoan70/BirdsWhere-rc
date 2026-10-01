@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1950";
+var VERSION = "v1951";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Points \u2192 Load from link: import a point list from a Google Drive share link (file shared as \u201canyone with the link\u201d) or any direct .kmz / .kml / .geojson URL.",
+  "\u2022 Points \u2192 Load from link: import a point list from a Google Drive share link (needs a Google API key, Settings \u2192 Map points) or any direct .kmz / .kml / .geojson URL. Fix: a language pack changed by an update could be loaded stale from the browser cache, leaving new texts in English.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
@@ -481,8 +481,11 @@ function shellCacheFirst(req) {
     return cache.match(req).then(function (hit) {
       if (hit) return hit;   // served from cache — not re-downloaded
       // A shell asset that wasn't precached (e.g. added after install): fetch
-      // once and store it so the next load is cache-served too.
-      return fetch(req).then(function (res) {
+      // once and store it so the next load is cache-served too. Bypass the browser's
+      // HTTP cache: a lazy file (a language pack) changed by this version would otherwise
+      // be filled from the 10-minute-old copy the previous version loaded, and the new
+      // strings would read in English until the next update (seen 2026-10-01, v1950).
+      return fetch(reload(req.url)).then(function (res) {
         if (res && res.ok) cache.put(req, res.clone());
         return res;
       }).catch(function () {
