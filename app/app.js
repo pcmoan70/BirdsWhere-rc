@@ -24592,7 +24592,15 @@
       var lb = document.getElementById("photo-lightbox");
       if ((Date.now() - lbHoldAt < 900 || (lb && Date.now() - lb._openedAt < 900)) && e.target.closest && e.target.closest(".spg-img img, #photo-lightbox")) { e.stopPropagation(); e.preventDefault(); }
     }, true);
-    document.addEventListener("contextmenu", function (e) { if (e.target.closest && e.target.closest(".spg-img img") && (lbHoldT || Date.now() - lbHoldAt < 800)) e.preventDefault(); }, true);
+    // Right-click on a desktop, and the long-press that Android turns into a contextmenu
+    // event (which used to cancel the pointer hold before it fired): both open the picture
+    // full screen instead of the browser's own image menu (owner, 2026-10-01).
+    document.addEventListener("contextmenu", function (e) {
+      var img = e.target.closest && e.target.closest(".spg-img img"); if (!img) return;
+      e.preventDefault(); e.stopPropagation();
+      if (lbHoldT) { clearTimeout(lbHoldT); lbHoldT = null; }
+      if (!document.getElementById("photo-lightbox") || Date.now() - lbHoldAt > 300) { lbHoldAt = Date.now(); holdFeedback(img.parentNode); openPhotoLightbox(img); }
+    }, true);
   })();
   function spImgThumb(thumb) {
     return spImgAtWidth(thumb.split("?")[0].replace(/^https:\/\/thumb\.wikimedia\.org\//, "https://upload.wikimedia.org/"), SP_IMG_W);

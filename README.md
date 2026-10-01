@@ -152,6 +152,7 @@ holding a button:
 | the **Settings ⚙** gear | the full **Settings** panel (a *tap* gives the quick panel instead) |
 | the **⤓ offline-maps** button | the offline-areas manager |
 | the **Points** button | the point-lists admin |
+| any **species photo** (confusion / family cards, the Images layout) | the picture **full screen** with its credit (right-click on a desktop, long press on a phone) |
 | the **funnel / ×** | the all-filters pane |
 | the **collapsed legend pill** | pan/zoom to frame **all fetched points** |
 | the **rarity bell 🔔** | poll eBird's notable sightings at all 🔔 locations right now |

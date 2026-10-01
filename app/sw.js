@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1974";
+var VERSION = "v1975";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 /owl_network (the Finnskogen owl-observer network) now opens without a trailing slash too \u2014 the app's service worker used to answer that address with the app itself.",
-  "\u2022 Observer lists can be imported from a .csv / .txt file (Lists \u2192 Observer lists \u2192 Import\u2026)."
+  "\u2022 Species pictures: a right-click (desktop) or a long press (phone) on any card photo \u2014 confusion species, family, the Images layout \u2014 now reliably opens the full-screen picture instead of the browser's own image menu."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

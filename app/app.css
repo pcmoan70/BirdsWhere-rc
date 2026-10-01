@@ -2917,6 +2917,7 @@ button.dd-name:hover { text-decoration: underline; }
 .obs-info-pop .oip-copy .btn-ico { width: var(--ico-m); height: var(--ico-m); }
 .obs-info-pop .oip-copy.done { color: var(--brand, #2e8b74); border-color: var(--brand, #2e8b74); }
 .dl-row .obs-info { margin-left: 4px; }
+.spg-img img { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }   /* iOS: the hold opens our full-screen picture, not the Save-image sheet */
 .obs-info-pop .oip-row { display: flex; gap: 8px; margin-top: 5px; }
 .obs-info-pop .oip-lbl { flex: 0 0 auto; min-width: 62px; color: var(--ink-muted); }
 .obs-info-pop .oip-val { flex: 1 1 auto; white-space: pre-wrap; word-break: break-word; }
