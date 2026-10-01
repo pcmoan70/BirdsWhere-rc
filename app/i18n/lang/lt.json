@@ -1447,7 +1447,7 @@
   "det.sortDate": "Rūšiuota pagal datą (naujausios viršuje) — bakstelėkite pakeisti",
   "det.sortCount": "Rūšiuota pagal stebėjimų skaičių (daugiausia viršuje) — bakstelėkite pakeisti",
   "det.sortDist": "Rikiuota pagal atstumą (artimiausi viršuje) — bakstelėkite norėdami pakeisti",
-  "kml.reading": "Skaitoma {name} …",
+  "kml.reading": "Įkeliama {name}…",
   "points.download": "Atsisiųsti į failą",
   "points.downloadAs": "Atsisiųsti „{name}“ formatu",
   "points.downloaded": "Atsisiųsta {n} taškų iš „{name}“.",
@@ -1537,5 +1537,6 @@
   "points.linkHint": "Tiesioginė nuoroda, kurią svetainė leidžia naršyklei atsisiųsti — „GitHub“ raw nuoroda veikia; „Google“ disko bendrinimo nuoroda ne (atsisiųskite failą ir pasirinkite jį).",
   "points.linkFetching": "Sąrašas gaunamas iš nuorodos…",
   "points.linkFail": "Iš šios nuorodos nepavyko gauti sąrašo.",
-  "points.chooseFile": "Pasirinkti failą…"
+  "points.chooseFile": "Pasirinkti failą…",
+  "kml.importing": "Taškai pridedami į „{name}“…"
 }

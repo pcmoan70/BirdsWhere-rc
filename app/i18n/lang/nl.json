@@ -1447,7 +1447,7 @@
   "det.sortDate": "Gesorteerd op datum (recentste bovenaan) — tik om te wijzigen",
   "det.sortCount": "Gesorteerd op aantal waarnemingen (meeste bovenaan) — tik om te wijzigen",
   "det.sortDist": "Gesorteerd op afstand (dichtstbijzijnde bovenaan) — tik om te wijzigen",
-  "kml.reading": "{name} wordt gelezen …",
+  "kml.reading": "{name} wordt geladen…",
   "points.download": "Downloaden naar bestand",
   "points.downloadAs": "‘{name}’ downloaden als",
   "points.downloaded": "{n} punten uit ‘{name}’ gedownload.",
@@ -1537,5 +1537,6 @@
   "points.linkHint": "Een directe link die de site aan een browser levert — een GitHub-raw-link werkt; een Google Drive-deellink niet (download het bestand en kies het).",
   "points.linkFetching": "Lijst wordt via de link opgehaald…",
   "points.linkFail": "Kon geen lijst via die link ophalen.",
-  "points.chooseFile": "Bestand kiezen…"
+  "points.chooseFile": "Bestand kiezen…",
+  "kml.importing": "Punten worden aan ‘{name}’ toegevoegd…"
 }

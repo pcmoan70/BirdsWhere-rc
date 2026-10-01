@@ -1447,7 +1447,7 @@
   "det.sortDate": "Sortert etter dato (nyeste øverst) — trykk for å endre",
   "det.sortCount": "Sortert etter antall observasjoner (flest øverst) — trykk for å endre",
   "det.sortDist": "Sortert etter avstand (nærmeste øverst) — trykk for å endre",
-  "kml.reading": "Leser {name} …",
+  "kml.reading": "Laster inn {name} …",
   "points.download": "Last ned til fil",
   "points.downloadAs": "Last ned «{name}» som",
   "points.downloaded": "Lastet ned {n} punkter fra «{name}».",
@@ -1537,5 +1537,6 @@
   "points.linkHint": "En direkte lenke som nettstedet lar en nettleser hente — en GitHub-rålenke virker; en Google Drive-delingslenke gjør det ikke (last ned fila og velg den).",
   "points.linkFetching": "Henter lista fra lenken…",
   "points.linkFail": "Kunne ikke hente ei liste fra den lenken.",
-  "points.chooseFile": "Velg fil…"
+  "points.chooseFile": "Velg fil…",
+  "kml.importing": "Legger punktene inn i «{name}» …"
 }

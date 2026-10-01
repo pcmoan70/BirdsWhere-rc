@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1953";
+var VERSION = "v1954";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Lists window: one column instead of two \u2014 a protected list shows a lock (hover for the note), an unprotected one the red \u00d7. Protection is now switched under \u270e Edit list.",
+  "\u2022 Loading a point list now shows a visible \u201cLoading <file>\u2026\u201d box that follows the reading, parsing and adding of the points, instead of a status line hidden under the panel.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

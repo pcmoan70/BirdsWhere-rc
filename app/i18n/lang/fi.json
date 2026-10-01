@@ -1447,7 +1447,7 @@
   "det.sortDate": "Järjestetty päivämäärän mukaan (uusimmat ylhäällä) — vaihda napauttamalla",
   "det.sortCount": "Järjestetty havaintojen määrän mukaan (eniten ylhäällä) — vaihda napauttamalla",
   "det.sortDist": "Järjestetty etäisyyden mukaan (lähin ylhäällä) — vaihda napauttamalla",
-  "kml.reading": "Luetaan {name} …",
+  "kml.reading": "Ladataan {name}…",
   "points.download": "Lataa tiedostoon",
   "points.downloadAs": "Lataa ”{name}” muodossa",
   "points.downloaded": "Ladattiin {n} pistettä listasta ”{name}”.",
@@ -1537,5 +1537,6 @@
   "points.linkHint": "Suora linkki, jonka sivusto sallii selaimen hakea — GitHubin raw-linkki toimii; Google Drive -jakolinkki ei (lataa tiedosto ja valitse se).",
   "points.linkFetching": "Haetaan listaa linkistä…",
   "points.linkFail": "Listaa ei voitu hakea tästä linkistä.",
-  "points.chooseFile": "Valitse tiedosto…"
+  "points.chooseFile": "Valitse tiedosto…",
+  "kml.importing": "Lisätään pisteet listaan ”{name}”…"
 }

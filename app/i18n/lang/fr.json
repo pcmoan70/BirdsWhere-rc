@@ -1447,7 +1447,7 @@
   "det.sortDate": "Trié par date (plus récentes en haut) — touchez pour changer",
   "det.sortCount": "Trié par nombre d’observations (plus en haut) — touchez pour changer",
   "det.sortDist": "Trié par distance (le plus proche en haut) — appuyez pour changer",
-  "kml.reading": "Lecture de {name} …",
+  "kml.reading": "Chargement de {name}…",
   "points.download": "Télécharger dans un fichier",
   "points.downloadAs": "Télécharger « {name} » au format",
   "points.downloaded": "{n} points téléchargés depuis « {name} ».",
@@ -1537,5 +1537,6 @@
   "points.linkHint": "Un lien direct que le site laisse un navigateur récupérer — un lien raw GitHub fonctionne ; un lien de partage Google Drive non (téléchargez le fichier et choisissez-le).",
   "points.linkFetching": "Récupération de la liste depuis le lien…",
   "points.linkFail": "Impossible de récupérer une liste depuis ce lien.",
-  "points.chooseFile": "Choisir un fichier…"
+  "points.chooseFile": "Choisir un fichier…",
+  "kml.importing": "Ajout des points à « {name} »…"
 }

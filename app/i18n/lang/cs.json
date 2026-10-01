@@ -1447,7 +1447,7 @@
   "det.sortDate": "Řazeno podle data (nejnovější nahoře) — klepnutím změníte",
   "det.sortCount": "Řazeno podle počtu pozorování (nejvíce nahoře) — klepnutím změníte",
   "det.sortDist": "Seřazeno podle vzdálenosti (nejbližší nahoře) — klepnutím změníte",
-  "kml.reading": "Načítání {name} …",
+  "kml.reading": "Načítání {name}…",
   "points.download": "Stáhnout do souboru",
   "points.downloadAs": "Stáhnout „{name}“ jako",
   "points.downloaded": "Staženo {n} bodů ze seznamu „{name}“.",
@@ -1537,5 +1537,6 @@
   "points.linkHint": "Přímý odkaz, který web dovolí prohlížeči stáhnout — raw odkaz z GitHubu funguje; odkaz pro sdílení z Google Drive ne (stáhněte soubor a vyberte ho).",
   "points.linkFetching": "Načítání seznamu z odkazu…",
   "points.linkFail": "Z tohoto odkazu se nepodařilo načíst žádný seznam.",
-  "points.chooseFile": "Vybrat soubor…"
+  "points.chooseFile": "Vybrat soubor…",
+  "kml.importing": "Přidávání bodů do „{name}“…"
 }

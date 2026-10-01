@@ -1447,7 +1447,7 @@
   "det.sortDate": "Nach Datum sortiert (neueste oben) — zum Ändern tippen",
   "det.sortCount": "Nach Anzahl der Beobachtungen sortiert (meiste oben) — zum Ändern tippen",
   "det.sortDist": "Nach Entfernung sortiert (nächste oben) — zum Ändern tippen",
-  "kml.reading": "{name} wird gelesen …",
+  "kml.reading": "{name} wird geladen …",
   "points.download": "In eine Datei herunterladen",
   "points.downloadAs": "„{name}“ herunterladen als",
   "points.downloaded": "{n} Punkte aus „{name}“ heruntergeladen.",
@@ -1537,5 +1537,6 @@
   "points.linkHint": "Ein direkter Link, den die Website einem Browser ausliefert — ein GitHub-Raw-Link geht; ein Google-Drive-Freigabelink nicht (Datei herunterladen und auswählen).",
   "points.linkFetching": "Liste wird vom Link geladen…",
   "points.linkFail": "Von diesem Link konnte keine Liste geladen werden.",
-  "points.chooseFile": "Datei wählen…"
+  "points.chooseFile": "Datei wählen…",
+  "kml.importing": "Punkte werden zu „{name}“ hinzugefügt …"
 }

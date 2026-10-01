@@ -1447,7 +1447,7 @@
   "det.sortDate": "Sorteeritud kuupäeva järgi (uuemad üleval) — muutmiseks puuduta",
   "det.sortCount": "Sorteeritud vaatluste arvu järgi (enim üleval) — muutmiseks puuduta",
   "det.sortDist": "Sorditud kauguse järgi (lähim üleval) — muutmiseks koputa",
-  "kml.reading": "Loen {name} …",
+  "kml.reading": "Laaditakse {name} …",
   "points.download": "Laadi faili",
   "points.downloadAs": "Laadi „{name}“ alla vormingus",
   "points.downloaded": "Laaditi alla {n} punkti loendist „{name}“.",
@@ -1537,5 +1537,6 @@
   "points.linkHint": "Otselink, mida sait laseb brauseril alla laadida — GitHubi raw-link töötab; Google Drive’i jagamislink mitte (laadi fail alla ja vali see).",
   "points.linkFetching": "Nimekirja laadimine lingilt…",
   "points.linkFail": "Sellelt lingilt ei õnnestunud nimekirja laadida.",
-  "points.chooseFile": "Vali fail…"
+  "points.chooseFile": "Vali fail…",
+  "kml.importing": "Punktide lisamine nimekirja „{name}“ …"
 }

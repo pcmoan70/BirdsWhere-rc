@@ -17083,14 +17083,14 @@
     try { var u = new URL(url); if (!/^https?:$/.test(u.protocol)) throw new Error("scheme"); name = decodeURIComponent(u.pathname.split("/").pop() || ""); }
     catch (e) { setStatus(t("points.linkFail")); return; }
     if (importBusy) { setStatus(t("kml.busy")); return; }
-    setStatus(t("points.linkFetching"));
+    setStatus(t("points.linkFetching")); mpState.mpLoading(t("points.linkFetching"));
     fetch(url, { mode: "cors", credentials: "omit" })
       .then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.blob(); })
       .then(function (b) {
         if (/text\/html/i.test(b.type || "")) throw new Error("html");   // a web page, not a list
         importPointsFile([new File([b], name || "points", { type: b.type || "" })], false);
       })
-      .catch(function () { setStatus(t("points.linkFail")); });
+      .catch(function () { mpState.mpLoading(null); setStatus(t("points.linkFail")); });
   }
   function importPointsFile(files, allowShare) {
     var f = (files && files.length != null) ? files[0] : files;
@@ -17098,9 +17098,10 @@
     if (files && files.length > 1) {
       if (importBusy) { setStatus(t("kml.busy")); return; }
       importBusy = true;
+      mpState.mpLoading(t("kml.reading", { name: files[0].name }));
       Promise.resolve(startMultiImport(Array.prototype.slice.call(files)))
         .then(function () { importBusy = false; },
-              function () { importBusy = false; setStatus(t("kml.parseErr")); });
+              function () { importBusy = false; mpState.mpLoading(null); setStatus(t("kml.parseErr")); });
       return;
     }
     // One import at a time. A big file freezes the main thread for seconds, so the app
@@ -17109,26 +17110,26 @@
     if (importBusy) { setStatus(t("kml.busy")); return; }
     importBusy = true;
     var done = function () { importBusy = false; };
-    setStatus(t("kml.reading", { name: f.name }));
+    setStatus(t("kml.reading", { name: f.name })); mpState.mpLoading(t("kml.reading", { name: f.name }));
     var rd = new FileReader();
-    rd.onerror = function () { done(); setStatus(t("kml.parseErr")); };
+    rd.onerror = function () { done(); mpState.mpLoading(null); setStatus(t("kml.parseErr")); };
     rd.onload = function () {
       var buf = rd.result;
       var h = new Uint8Array(buf, 0, Math.min(4, buf.byteLength || 0));
       var isZip = h.length >= 4 && h[0] === 0x50 && h[1] === 0x4B && h[2] === 0x03 && h[3] === 0x04;
       var doneKml = function (kml) {
-        Promise.resolve(startKmlImport(kml, f.name)).then(done, function () { done(); setStatus(t("kml.parseErr")); });
+        Promise.resolve(startKmlImport(kml, f.name)).then(done, function () { done(); mpState.mpLoading(null); setStatus(t("kml.parseErr")); });
       };
       if (isZip) {
         setStatus(t("kml.unpacking", { name: f.name }));
-        extractKmlFromKmz(buf).then(doneKml).catch(function () { done(); setStatus(t("kml.parseErr")); });
+        extractKmlFromKmz(buf).then(doneKml).catch(function () { done(); mpState.mpLoading(null); setStatus(t("kml.parseErr")); });
         return;
       }
       var txt = new TextDecoder().decode(new Uint8Array(buf)).replace(/^\uFEFF/, "").trim();
       var c0 = txt.charAt(0);
-      if (c0 === "{" || c0 === "[") { startGeoJsonImport(txt, f.name); done(); }
+      if (c0 === "{" || c0 === "[") { startGeoJsonImport(txt, f.name); mpState.mpLoading(null); done(); }
       else if (c0 === "<") doneKml(txt);
-      else if (allowShare) { importShared(txt); done(); }
+      else if (allowShare) { mpState.mpLoading(null); importShared(txt); done(); }
       else doneKml(txt);
     };
     rd.readAsArrayBuffer(f);
