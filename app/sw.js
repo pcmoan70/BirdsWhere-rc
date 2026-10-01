@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1977";
+var VERSION = "v1978";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 One kind of saved list: fetched observations you Save, old saved trips and observation files you load all live in the Points menu as point lists \u2014 tick, filter by year, delete \u2014 and their records show like fetched observations (observer, note, place, source link).",
-  "\u2022 Species pictures: right-click / long press on a card photo opens it full screen."
+  "\u2022 Point lists with species: the list's tag chips (years, months, categories) and its funnel filter now apply to the plotted species dots too, not only to plain pins.",
+  "\u2022 One kind of saved list: saved fetches, old trips and loaded observation files all live in the Points menu as point lists."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -17154,9 +17154,14 @@
     // 2. Inject the current shown lists' detection points, grouped by species key.
     mpState.mpCollections().forEach(function (c) {
       if (!mpState.shownColls()[c.name]) return;
-      var col = collColor(c);
+      var col = collColor(c), lf = mpState.listFilter(c.name);
       (c.points || []).forEach(function (p) {
         if (!p || !p.spKey || !isFinite(p.lat) || !isFinite(p.lon)) return;
+        // The list's OWN filters — the tag chips (years, months, categories) and the list's
+        // funnel (date range / observers) — used to reach only the plain pins; the species
+        // points were injected whatever the chips said (owner, 2026-10-01: "the map points
+        // are not filtered like for fetched data").
+        if (!mpVisible(p) || !mpState.listOwnFilterPasses(p, lf)) return;
         // The whole record rides along (observer, note, place, flags …) so a list made from an
         // observation file — a .share person list, a KMZ with ExtendedData — reads like a fetch.
         var row = { lat: +p.lat, lon: +p.lon, date: p.date || "", url: p.url || "", count: p.count, act: p.act || "", src: p.src || "list",

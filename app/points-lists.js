@@ -1973,7 +1973,7 @@ window.AppPoints = (function () {
   return {
     init: init,
     initMpSetStore: initMpSetStore, persistMpSets: persistMpSets, mpFilterRefresh: mpFilterRefresh,
-    listFilter: listFilter, setListFilter: setListFilter, listFilterActive: listFilterActive,
+    listFilter: listFilter, setListFilter: setListFilter, listFilterActive: listFilterActive, listOwnFilterPasses: listOwnFilterPasses,
     listObservers: listObservers, listDateSpan: listDateSpan,
     // ---- points, lists, collections ----
     loadMapPoints: loadMapPoints, saveMapPoints: saveMapPoints, saveChecked: saveChecked,
