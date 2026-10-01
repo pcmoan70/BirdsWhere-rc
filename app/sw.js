@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1956";
+var VERSION = "v1957";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Points panel: an \u201cAll\u201d chip in front of the tag filters selects every tag with one tap, or clears them all when every tag is on.",
-  "\u2022 Loading a point list shows a visible \u201cLoading <file>\u2026\u201d box through reading, parsing and adding.",
+  "\u2022 Map dots that nearly overlap: a click now opens the merged window with every record within about 12 screen pixels at the current zoom (never under 50 m), so dots a few hundred metres apart at a wide zoom are reached together.",
+  "\u2022 Points panel: tag chips flip at once and the filter is applied one second after the last tap; an \u201cAll\u201d chip selects or clears every tag.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

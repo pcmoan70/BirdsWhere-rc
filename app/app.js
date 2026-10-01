@@ -13289,14 +13289,22 @@
     try { window.AppSites.fanSpotsAt(ll.lat, ll.lng); } catch (e) {}
     // A rarity ★ passes its group key so that group always shows in the window,
     // even when the star sits away from the group's stored coordinates.
-    openDetListModal({ lat: ll.lat, lon: ll.lng, meters: 50, rarityKey: rarityKey || null }, rarityFrame);
+    openDetListModal({ lat: ll.lat, lon: ll.lng, meters: detClickMeters(ll.lat), rarityKey: rarityKey || null }, rarityFrame);
+  }
+  // Records "at" a clicked dot: everything within ~12 px at the current zoom, never under 50 m
+  // (owner, 2026-10-01: dots that overlap on screen because they sit a few hundred metres
+  // apart at a wide zoom were unclickable one by one — now the merged window takes them all).
+  function detClickMeters(lat) {
+    var z = map ? map.getZoom() : 15;
+    var mpp = 156543.03 * Math.cos((lat || 0) * Math.PI / 180) / Math.pow(2, z);   // metres per pixel at this zoom + latitude
+    return Math.max(50, Math.round(12 * mpp));
   }
   // Hover tooltip: the distinct species plotted within ~50 m of the point, each
   // with ×N individuals (summed over the nearby records that carry a count) and
   // (n d) days since the most recent of those records.
   var detHoverTip = null;
   function showDetHover(latlng, rarityEdge, metersOverride) {
-    var near = collectVisibleDetections({ lat: latlng.lat, lon: latlng.lng, meters: metersOverride > 0 ? metersOverride : 50 });
+    var near = collectVisibleDetections({ lat: latlng.lat, lon: latlng.lng, meters: metersOverride > 0 ? metersOverride : detClickMeters(latlng.lat) });
     if (!near.length) return;
     // Break the spot's records into DATE sections (newest first); under each date
     // header list the species seen that day with ×N individuals and 👥observer
@@ -16887,6 +16895,7 @@
   }
   // One list's own filter: a date range and a set of observers, matched fuzzily. Drawn in the
   // shared .detrow-menu shape, like every other menu here.
+  var mpChipTimer = null;   // the tag-chip row's "apply 1 s after the last click" timer
   function openListFilterMenu(anchor, name) {
     var br = anchor.getBoundingClientRect();
     var f = mpState.listFilter(name) || { from: "", to: "", obs: [] };
@@ -17955,23 +17964,31 @@
         refreshMpPanel();
       });
     });
+    // Tag chips: the chip flips at once, the filter is applied ONE SECOND after the last click
+    // (owner, 2026-10-01: picking many tags redrew a big list after every tap). The All chip
+    // flips every chip and reaches the same timer.
     panel.querySelectorAll(".mp-chip").forEach(function (b) {
       b.addEventListener("click", function () {
+        var chips = panel.querySelectorAll(".mp-chip");
         if (this.getAttribute("data-all")) {   // every tag ↔ none
           var every = mpAllTags().concat(mpState.mapPoints().some(function (p) { return !p.tags || !p.tags.length; }) ? [""] : []);
           var on = every.every(function (tg) { return mpState.mpFilter().indexOf(tg) >= 0; });
           mpState.setMpFilter(on ? [] : every);
-          saveMapPoints(); mpState.mpFilterRefresh(this);
-          if (typeof refreshMpPanel === "function") refreshMpPanel();   // every chip changes state, not just the clicked one
-          return;
+          chips.forEach(function (c) { c.classList.toggle("is-active", !on); });
+        } else {
+          var tag = this.getAttribute("data-tag");
+          var i = mpState.mpFilter().indexOf(tag);
+          if (i >= 0) mpState.mpFilter().splice(i, 1); else mpState.mpFilter().push(tag);
+          this.classList.toggle("is-active", i < 0);
+          var allC = panel.querySelector(".mp-chip-all");
+          if (allC) allC.classList.toggle("is-active", Array.prototype.every.call(chips, function (c) { return c.getAttribute("data-all") || c.classList.contains("is-active"); }));
         }
-        var tag = this.getAttribute("data-tag");
-        var i = mpState.mpFilter().indexOf(tag);
-        if (i >= 0) mpState.mpFilter().splice(i, 1); else mpState.mpFilter().push(tag);
         saveMapPoints();
+        clearTimeout(mpChipTimer);
+        var el = this;
         // The chip blinks until the map has caught up (mpFilterRefresh), instead of the
         // click looking ignored while a large list redraws.
-        mpState.mpFilterRefresh(this);
+        mpChipTimer = setTimeout(function () { mpChipTimer = null; mpState.mpFilterRefresh(el); }, 1000);
       });
     });
     panel.querySelectorAll(".mp-row-note").forEach(function (b) {
