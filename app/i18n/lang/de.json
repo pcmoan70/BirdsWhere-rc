@@ -1535,7 +1535,10 @@
   "family.shownOf": "{n} von {m} Arten der Familie gezeigt — die hier wahrscheinlichsten (die Tabellenansicht zeigt alle)",
   "points.loadLink": "Aus Link laden",
   "points.linkPh": "Google-Drive-Freigabelink oder Datei-URL",
-  "points.linkHint": "Eine Google-Drive-Datei, freigegeben für „Jeder mit dem Link“, oder ein direkter Link zu einer .kmz-/.kml-/.geojson-Datei, die die Website einem Browser ausliefert. Die Liste wird wie eine Datei importiert.",
+  "points.linkHint": "Eine Google-Drive-Datei, freigegeben für „Jeder mit dem Link“ (braucht den Google-API-Schlüssel unter Einstellungen → Kartenpunkte), oder ein direkter Link zu einer .kmz-/.kml-/.geojson-Datei, die die Website einem Browser ausliefert. Die Liste wird wie eine Datei importiert.",
   "points.linkFetching": "Liste wird vom Link geladen…",
-  "points.linkFail": "Die Liste konnte nicht vom Link geladen werden — ist die Datei für „Jeder mit dem Link“ freigegeben?"
+  "points.linkFail": "Die Liste konnte nicht vom Link geladen werden — ist die Datei für „Jeder mit dem Link“ freigegeben?",
+  "points.driveKey": "Google-API-Schlüssel (Drive-Links)",
+  "points.driveKeyHint": "Nur für Punkte → Aus Link laden mit einem Google-Drive-Freigabelink: Drive liefert eine freigegebene Datei einer Webseite über seine API, die einen API-Schlüssel braucht (Google Cloud Console → APIs → Drive API → Anmeldedaten; auf diese Website beschränken). Direkte .kmz-/.kml-/.geojson-Links brauchen keinen Schlüssel.",
+  "points.driveNoKey": "Ein Google-Drive-Link braucht einen Google-API-Schlüssel — unter Einstellungen → Kartenpunkte eintragen."
 }

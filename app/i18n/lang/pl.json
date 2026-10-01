@@ -1535,7 +1535,10 @@
   "family.shownOf": "Pokazano {n} z {m} gatunków rodziny — najbardziej prawdopodobne tutaj (widok tabeli pokazuje wszystkie)",
   "points.loadLink": "Wczytaj z linku",
   "points.linkPh": "Link udostępniania Google Drive lub URL pliku",
-  "points.linkHint": "Plik Google Drive udostępniony jako „każdy, kto ma link”, albo bezpośredni link do pliku .kmz / .kml / .geojson, który witryna pozwala pobrać przeglądarce. Lista jest importowana jak plik.",
+  "points.linkHint": "Plik Google Drive udostępniony jako „każdy, kto ma link” (wymaga klucza API Google w Ustawienia → Punkty mapy), albo bezpośredni link do pliku .kmz / .kml / .geojson, który witryna pozwala pobrać przeglądarce. Lista jest importowana jak plik.",
   "points.linkFetching": "Pobieranie listy z linku…",
-  "points.linkFail": "Nie udało się pobrać listy z tego linku — czy plik jest udostępniony jako „każdy, kto ma link”?"
+  "points.linkFail": "Nie udało się pobrać listy z tego linku — czy plik jest udostępniony jako „każdy, kto ma link”?",
+  "points.driveKey": "Klucz API Google (linki Drive)",
+  "points.driveKeyHint": "Tylko dla Punkty → Wczytaj z linku z linkiem udostępniania Google Drive: Drive dostarcza udostępniony plik stronie internetowej przez swoje API, które wymaga klucza API (Google Cloud Console → Interfejsy API → Drive API → Dane logowania; ogranicz go do tej witryny). Bezpośrednie linki .kmz / .kml / .geojson nie wymagają klucza.",
+  "points.driveNoKey": "Link Google Drive wymaga klucza API Google — dodaj go w Ustawienia → Punkty mapy."
 }

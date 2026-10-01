@@ -1535,7 +1535,10 @@
   "family.shownOf": "{n} van {m} soorten in de familie getoond — de waarschijnlijkste hier (de tabelweergave toont ze allemaal)",
   "points.loadLink": "Laden via link",
   "points.linkPh": "Google Drive-deellink of bestands-URL",
-  "points.linkHint": "Een Google Drive-bestand gedeeld als ‘iedereen met de link’, of een directe link naar een .kmz-/.kml-/.geojson-bestand dat de site aan een browser levert. De lijst wordt als bestand geïmporteerd.",
+  "points.linkHint": "Een Google Drive-bestand gedeeld als ‘iedereen met de link’ (vereist de Google API-sleutel onder Instellingen → Kaartpunten), of een directe link naar een .kmz-/.kml-/.geojson-bestand dat de site aan een browser levert. De lijst wordt als bestand geïmporteerd.",
   "points.linkFetching": "Lijst wordt via de link opgehaald…",
-  "points.linkFail": "Kon de lijst niet via die link ophalen — is het bestand gedeeld als ‘iedereen met de link’?"
+  "points.linkFail": "Kon de lijst niet via die link ophalen — is het bestand gedeeld als ‘iedereen met de link’?",
+  "points.driveKey": "Google API-sleutel (Drive-links)",
+  "points.driveKeyHint": "Alleen voor Punten → Laden via link met een Google Drive-deellink: Drive levert een gedeeld bestand aan een webpagina via zijn API, die een API-sleutel vereist (Google Cloud Console → API’s → Drive API → Inloggegevens; beperk hem tot deze site). Directe .kmz-/.kml-/.geojson-links hebben geen sleutel nodig.",
+  "points.driveNoKey": "Een Google Drive-link vereist een Google API-sleutel — voeg die toe onder Instellingen → Kaartpunten."
 }

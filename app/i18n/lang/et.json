@@ -1535,7 +1535,10 @@
   "family.shownOf": "Näidatakse {n} sugukonna {m} liigist — siin kõige tõenäolisemad (tabelivaade näitab kõiki)",
   "points.loadLink": "Laadi lingilt",
   "points.linkPh": "Google Drive’i jagamislink või faili URL",
-  "points.linkHint": "Google Drive’i fail, mis on jagatud kui „kõik, kellel on link“, või otselink .kmz-/.kml-/.geojson-failile, mida sait laseb brauseril alla laadida. Nimekiri imporditakse nagu fail.",
+  "points.linkHint": "Google Drive’i fail, mis on jagatud kui „kõik, kellel on link“ (vajab Google API võtit menüüs Seaded → Kaardipunktid), või otselink .kmz-/.kml-/.geojson-failile, mida sait laseb brauseril alla laadida. Nimekiri imporditakse nagu fail.",
   "points.linkFetching": "Nimekirja laadimine lingilt…",
-  "points.linkFail": "Nimekirja ei õnnestunud sellelt lingilt laadida — kas fail on jagatud kui „kõik, kellel on link“?"
+  "points.linkFail": "Nimekirja ei õnnestunud sellelt lingilt laadida — kas fail on jagatud kui „kõik, kellel on link“?",
+  "points.driveKey": "Google API võti (Drive’i lingid)",
+  "points.driveKeyHint": "Ainult valikule Punktid → Laadi lingilt Google Drive’i jagamislingiga: Drive annab jagatud faili veebilehele oma API kaudu, mis nõuab API võtit (Google Cloud Console → API-d → Drive API → Mandaadid; piira see selle saidiga). Otselingid .kmz/.kml/.geojson failidele võtit ei vaja.",
+  "points.driveNoKey": "Google Drive’i link vajab Google API võtit — lisa see menüüs Seaded → Kaardipunktid."
 }

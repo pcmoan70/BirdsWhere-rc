@@ -1535,7 +1535,10 @@
   "family.shownOf": "{n} des {m} espèces de la famille affichées — les plus probables ici (la vue tableau les montre toutes)",
   "points.loadLink": "Charger depuis un lien",
   "points.linkPh": "Lien de partage Google Drive ou URL de fichier",
-  "points.linkHint": "Un fichier Google Drive partagé en « toute personne disposant du lien », ou un lien direct vers un fichier .kmz / .kml / .geojson que le site laisse un navigateur récupérer. La liste est importée comme un fichier.",
+  "points.linkHint": "Un fichier Google Drive partagé en « toute personne disposant du lien » (exige la clé API Google dans Réglages → Points de carte), ou un lien direct vers un fichier .kmz / .kml / .geojson que le site laisse un navigateur récupérer. La liste est importée comme un fichier.",
   "points.linkFetching": "Récupération de la liste depuis le lien…",
-  "points.linkFail": "Impossible de récupérer la liste depuis ce lien — le fichier est-il partagé en « toute personne disposant du lien » ?"
+  "points.linkFail": "Impossible de récupérer la liste depuis ce lien — le fichier est-il partagé en « toute personne disposant du lien » ?",
+  "points.driveKey": "Clé API Google (liens Drive)",
+  "points.driveKeyHint": "Seulement pour Points → Charger depuis un lien avec un lien de partage Google Drive : Drive sert un fichier partagé à une page web via son API, qui exige une clé API (Google Cloud Console → API → Drive API → Identifiants ; restreignez-la à ce site). Les liens directs .kmz / .kml / .geojson n’ont pas besoin de clé.",
+  "points.driveNoKey": "Un lien Google Drive exige une clé API Google — ajoutez-la dans Réglages → Points de carte."
 }

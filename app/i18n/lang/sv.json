@@ -1535,7 +1535,10 @@
   "family.shownOf": "{n} av {m} arter i familjen visas — de mest sannolika här (tabellvyn visar alla)",
   "points.loadLink": "Läs in från länk",
   "points.linkPh": "Google Drive-delningslänk eller fil-URL",
-  "points.linkHint": "En Google Drive-fil delad som ”alla med länken”, eller en direktlänk till en .kmz-/.kml-/.geojson-fil som webbplatsen låter en webbläsare hämta. Listan importeras som en fil.",
+  "points.linkHint": "En Google Drive-fil delad som ”alla med länken” (kräver Google API-nyckeln under Inställningar → Kartpunkter), eller en direktlänk till en .kmz-/.kml-/.geojson-fil som webbplatsen låter en webbläsare hämta. Listan importeras som en fil.",
   "points.linkFetching": "Hämtar listan från länken…",
-  "points.linkFail": "Kunde inte hämta listan från länken — är filen delad som ”alla med länken”?"
+  "points.linkFail": "Kunde inte hämta listan från länken — är filen delad som ”alla med länken”?",
+  "points.driveKey": "Google API-nyckel (Drive-länkar)",
+  "points.driveKeyHint": "Bara för Punkter → Läs in från länk med en Google Drive-delningslänk: Drive levererar en delad fil till en webbsida via sitt API, som kräver en API-nyckel (Google Cloud Console → API:er → Drive API → Autentiseringsuppgifter; begränsa den till den här webbplatsen). Direkta .kmz-/.kml-/.geojson-länkar behöver ingen nyckel.",
+  "points.driveNoKey": "En Google Drive-länk kräver en Google API-nyckel — lägg till den under Inställningar → Kartpunkter."
 }

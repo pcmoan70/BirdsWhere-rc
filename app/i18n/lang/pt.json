@@ -1535,7 +1535,10 @@
   "family.shownOf": "{n} de {m} espécies da família mostradas — as mais prováveis aqui (a vista de tabela mostra todas)",
   "points.loadLink": "Carregar de ligação",
   "points.linkPh": "Ligação de partilha do Google Drive ou URL de ficheiro",
-  "points.linkHint": "Um ficheiro do Google Drive partilhado como «qualquer pessoa com a ligação», ou uma ligação direta a um ficheiro .kmz / .kml / .geojson que o site deixe um navegador obter. A lista é importada como um ficheiro.",
+  "points.linkHint": "Um ficheiro do Google Drive partilhado como «qualquer pessoa com a ligação» (precisa da chave de API Google em Definições → Pontos do mapa), ou uma ligação direta a um ficheiro .kmz / .kml / .geojson que o site deixe um navegador obter. A lista é importada como um ficheiro.",
   "points.linkFetching": "A obter a lista da ligação…",
-  "points.linkFail": "Não foi possível obter a lista dessa ligação — o ficheiro está partilhado como «qualquer pessoa com a ligação»?"
+  "points.linkFail": "Não foi possível obter a lista dessa ligação — o ficheiro está partilhado como «qualquer pessoa com a ligação»?",
+  "points.driveKey": "Chave de API Google (ligações do Drive)",
+  "points.driveKeyHint": "Só para Pontos → Carregar de ligação com uma ligação de partilha do Google Drive: o Drive entrega um ficheiro partilhado a uma página web através da sua API, que exige uma chave de API (Google Cloud Console → APIs → Drive API → Credenciais; restrinja-a a este site). Ligações diretas .kmz / .kml / .geojson não precisam de chave.",
+  "points.driveNoKey": "Uma ligação do Google Drive precisa de uma chave de API Google — adicione-a em Definições → Pontos do mapa."
 }

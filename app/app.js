@@ -7413,6 +7413,9 @@
                 "</div>" +
                 '<input type="file" id="points-kml-file" accept=".kmz,.kml,.geojson,.json" multiple style="display:none" />' +
                 '<p class="cu-hint" data-i18n="ctrl.exportPointsHint">Export the map points you’ve placed as a KML or GeoJSON file, or import points from one.</p>' +
+                '<label for="drive-api-key" data-i18n="points.driveKey">Google API key (Drive links)</label>' +
+                '<input type="text" id="drive-api-key" autocomplete="off" spellcheck="false" data-i18n-ph="sources.keyPh" placeholder="API key" />' +
+                '<p class="cu-hint" data-i18n="points.driveKeyHint">Only for Points → Load from link with a Google Drive share link: Drive serves a shared file to a web page through its API, which needs an API key (Google Cloud Console → APIs → Drive API → Credentials; restrict it to this site). Direct .kmz / .kml / .geojson links need no key.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label data-i18n="lists.title">Administer lists</label>' +
@@ -17085,22 +17088,32 @@
     var m = u.match(/drive\.google\.com\/file\/d\/([\w-]{10,})/) || u.match(/drive(?:\.usercontent)?\.google\.com\/[^#]*[?&]id=([\w-]{10,})/);
     return m ? m[1] : "";
   }
+  // Drive refuses a browser's cross-site fetch of the download URL (403 on `Sec-Fetch-Site:
+  // cross-site`, however the file is shared — measured 2026-10-01; curl without that header gets
+  // the bytes), so a shared file is read through the Drive API, which answers browsers with CORS
+  // and needs only an API key for a file shared as "anyone with the link": the key the owner
+  // ships (referrer-restricted, Drive API only) or one the user pastes in Settings.
+  var DRIVE_API_KEY_BUILTIN = "";
+  function driveApiKey() { return String(window.GeoState.get("driveApiKey", "") || "").trim() || DRIVE_API_KEY_BUILTIN; }
   function importPointsUrl(url) {
     url = String(url || "").trim(); if (!url) return;
-    var id = driveFileId(url), name = "";
-    if (id) url = "https://drive.usercontent.google.com/download?id=" + encodeURIComponent(id) + "&export=download";
-    else {
+    var id = driveFileId(url), name = "", nameP = Promise.resolve("");
+    if (id) {
+      var key = driveApiKey();
+      if (!key) { setStatus(t("points.driveNoKey")); return; }
+      var base = "https://www.googleapis.com/drive/v3/files/" + encodeURIComponent(id);
+      nameP = fetch(base + "?fields=name&key=" + encodeURIComponent(key)).then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) { return (j && j.name) || ""; }).catch(function () { return ""; });
+      url = base + "?alt=media&key=" + encodeURIComponent(key);
+    } else {
       try { var u = new URL(url); if (!/^https?:$/.test(u.protocol)) throw new Error("scheme"); name = decodeURIComponent(u.pathname.split("/").pop() || ""); }
       catch (e) { setStatus(t("points.linkFail")); return; }
     }
     if (importBusy) { setStatus(t("kml.busy")); return; }
     setStatus(t("points.linkFetching"));
-    fetch(url, { mode: "cors", credentials: "omit" })
-      .then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.blob(); })
+    Promise.all([fetch(url, { mode: "cors", credentials: "omit" }), nameP])
+      .then(function (rn) { var r = rn[0]; name = name || rn[1]; if (!r.ok) throw new Error("http " + r.status); return r.blob(); })
       .then(function (b) {
-        // Drive answers an unshared or over-size file with an HTML page, not the list: let the
-        // parser's own error say so rather than importing a web page as KML.
-        if (/text\/html/i.test(b.type || "")) throw new Error("html");
+        if (/text\/html/i.test(b.type || "")) throw new Error("html");   // a web page, not a list
         importPointsFile([new File([b], name || (id ? "drive-" + id.slice(0, 8) : "points"), { type: b.type || "" })], false);
       })
       .catch(function () { setStatus(t("points.linkFail")); });
@@ -19919,6 +19932,8 @@
         });
       });
     }
+    var dKey = document.getElementById("drive-api-key");
+    if (dKey) { dKey.value = window.GeoState.get("driveApiKey", "") || ""; dKey.addEventListener("change", function () { window.GeoState.save({ driveApiKey: this.value.trim() }); }); }
     wireNumSetting("max-points", detMaxPoints, 50, 100000, 50000, function (v) { window.GeoState.save({ maxMapPoints: v }); }, relayerDet);
     var dedupEl = document.getElementById("dedup-toggle");
     if (dedupEl) {

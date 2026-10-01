@@ -1535,7 +1535,10 @@
   "family.shownOf": "{n} av {m} arter i familien vist — de mest sannsynlige her (tabellvisningen viser alle)",
   "points.loadLink": "Last inn fra lenke",
   "points.linkPh": "Google Drive-delingslenke eller fil-URL",
-  "points.linkHint": "En Google Drive-fil delt som «alle med lenken», eller en direkte lenke til en .kmz-/.kml-/.geojson-fil som nettstedet lar en nettleser hente. Lista importeres som en fil.",
+  "points.linkHint": "En Google Drive-fil delt som «alle med lenken» (trenger Google API-nøkkelen under Innstillinger → Kartpunkter), eller en direkte lenke til en .kmz-/.kml-/.geojson-fil som nettstedet lar en nettleser hente. Lista importeres som en fil.",
   "points.linkFetching": "Henter lista fra lenken…",
-  "points.linkFail": "Kunne ikke hente lista fra lenken — er fila delt som «alle med lenken»?"
+  "points.linkFail": "Kunne ikke hente lista fra lenken — er fila delt som «alle med lenken»?",
+  "points.driveKey": "Google API-nøkkel (Drive-lenker)",
+  "points.driveKeyHint": "Bare for Punkter → Last inn fra lenke med en Google Drive-delingslenke: Drive leverer en delt fil til en nettside via API-et sitt, som krever en API-nøkkel (Google Cloud Console → APIer → Drive API → Legitimasjon; begrens den til dette nettstedet). Direkte .kmz-/.kml-/.geojson-lenker trenger ingen nøkkel.",
+  "points.driveNoKey": "En Google Drive-lenke trenger en Google API-nøkkel — legg den inn under Innstillinger → Kartpunkter."
 }
