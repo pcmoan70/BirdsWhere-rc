@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1970";
+var VERSION = "v1971";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Big imported lists no longer feel frozen while species names are being looked up: each arriving name now renames the legend in place instead of rebuilding the legend and the day histogram every two seconds."
+  "\u2022 New standalone page /owl_network: the network of people who observe owls together in the Finnskogen area (drag, zoom, filters)."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
@@ -414,7 +414,7 @@ self.addEventListener("fetch", function (event) {
   if (sameOrigin) {
     // Static, crawlable pages (about/…, robots.txt, sitemap.xml) are plain web pages, not
     // the app shell: never answer them with the cached index.html — leave them to the network.
-    if (/\/about\//.test(url.pathname) || /\/(robots\.txt|sitemap\.xml|google[0-9a-f]+\.html)$/.test(url.pathname)) return;
+    if (/\/(about|owl_network)\//.test(url.pathname) || /\/(robots\.txt|sitemap\.xml|google[0-9a-f]+\.html)$/.test(url.pathname)) return;   // owl_network/: the Finnskogen observer graph, a standalone page
     // (The Migration Aloft radar moved to its own repo/site — no /aloft/ path here now.)
     if (/\.(onnx|csv|wasm|mjs)$/.test(url.pathname) ||
         /\/vendor\//.test(url.pathname) ||
