@@ -928,11 +928,27 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
   as the species table's Probability, Season and Yr-peak columns, so the family reads like a
   seasonal cross-section of its members. Photos for the whole family are looked up in a few batched
   requests and cached on the device.
-- **Confusion species** — the species you're most likely to *actually mistake this bird for*. Each
-  candidate carries a precomputed *confusability* weight (**Match**), and the popup shows, per row:
-  **Match**, **misID** (each partner's share of this bird's real human confusions, summing to ~100 %),
-  **Here** (the model's probability at your location) and **Score** = `(0.25·Match + 0.75·misID) ×
-  Here` — so the look-alikes people genuinely confuse *and* that occur where you are rank first.
+- **Confusion species** — the species you're most likely to *actually mistake this bird for*. The
+  popup shows, per row: **Match**, **misID**, **Here** (the model's probability at your location) and
+  **Score** = `(0.25·Match + 0.75·misID) × Here` — so the look-alikes people genuinely confuse *and*
+  that occur where you are rank first. Match and misID are both **location-free**; geography enters
+  exactly once, as Here.
+  - **Match** is the **misID model**'s probability (0–100) that birders would confuse the two at equal
+    exposure. It is a gradient-boosted model (`tools/misid-model.py`) trained on ~20,000 real
+    iNaturalist confusions, with monotone inputs: the birds' names as BioCLIP 2's text tower embeds
+    them (cosine and rank, the strongest signal), AVONET shape and size, ecological niche, genus /
+    family and HBW plumage-colour similarity. It has **no range, season or co-occurrence input**, and
+    its training target is the confusion share *corrected for co-occurrence* (below), so it cannot
+    learn "these two get confused because they live together". Held-out families: recall@10 0.62
+    against the raw iNat lists, 0.92 among candidates that actually co-occur, and it keeps 60 % of
+    the look-alikes that never meet in the top 10 (a geography-aware model keeps 44 %).
+  - **misID** is each partner's share of this bird's real iNaturalist misidentifications, **divided by
+    how often the two are in the same place at the same time of year** (the app's own geomodel, 2°
+    grid × 12 weeks: `tools/gen-cooccurrence.py`; share ∝ co-occurrence^0.16 was the fitted
+    elasticity). It reads "how often they are confused when both are around". Shares are
+    renormalised over the listed partners (sum ≈ 100 %).
+  - The app ships only each species' **11 best partners** by the location-free score; the full
+    ranked lists stay on the data disk (`confusion_full.csv`).
   Each input must be **significant** before it counts: a **Match below 10 %** or a **misID below
   5 %** contributes nothing, so a species cannot earn a place in the ranking on a 3 % resemblance
   or a single stray misidentification. A look-alike under both floors scores **0 and is not listed

@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1942";
+var VERSION = "v1943";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Rarity alerts can watch your BAND groups: Settings \u2192 Rarity alerts \u2192 BAND groups \u2014 paste a personal access token, load your groups, tick the birding ones. Species named in new posts (in the group\u2019s language, or by scientific name) are checked at the group\u2019s \ud83d\udd14 location like any other sighting.",
+  "\u2022 Confusion species, rebuilt: Match is now a model trained on 20,000 real iNaturalist confusions (names as BioCLIP 2 reads them, shape, size, niche, colour \u2014 no geography), misID is corrected for how often the two birds share a place and season, and each species ships its 11 best look-alikes (the file is half the size). Hover the column headers for what each number means.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
