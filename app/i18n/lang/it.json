@@ -1496,6 +1496,7 @@
   "kml.readingN": "Lettura di {name} — file {i} di {n}…",
   "kml.perFile": "{n} file — un elenco per file, con il nome del file",
   "kml.importedN": "Importati {n} punti in {lists} elenchi.",
+  "share.importedLists": "Importate {n} liste di osservazioni",
   "kml.someFailed": "{n} file non leggibili sono stati ignorati.",
   "points.more": "Altre azioni",
   "points.navDesc": "Aprire tutto l’elenco come segnaposti in Google Maps",

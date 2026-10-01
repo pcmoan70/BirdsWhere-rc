@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1981";
+var VERSION = "v1982";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Saved lists remember their habitat probabilities: each record's probability (its date and place) is computed once, written onto the list, and reused on every later open \u2014 the legend order and the Prob column of a person list are there without re-inference."
+  "\u2022 Load from file takes several .share observation lists at once (and mixed with KMZ files): each becomes its own saved list, no prompt per file \u2014 it used to answer \u201cNo placemarks with coordinates found\u201d."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

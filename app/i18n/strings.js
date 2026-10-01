@@ -267,6 +267,7 @@ window.GeoI18N = (function () {
         "kml.readingN": "Reading {name} — file {i} of {n}…",
         "kml.perFile": "{n} files — one list per file, named after the file",
         "kml.importedN": "Imported {n} points into {lists} lists.",
+        "share.importedLists": "Imported {n} observation lists",
         "kml.someFailed": "{n} file(s) could not be read and were skipped.",
         "kml.nFields": "{n} fields",
         "points.download": "Download to a file",

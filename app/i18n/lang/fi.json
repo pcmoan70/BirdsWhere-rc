@@ -1496,6 +1496,7 @@
   "kml.readingN": "Luetaan {name} — tiedosto {i}/{n}…",
   "kml.perFile": "{n} tiedostoa — yksi lista per tiedosto, nimetty tiedoston mukaan",
   "kml.importedN": "Tuotiin {n} pistettä {lists} listaan.",
+  "share.importedLists": "Tuotu {n} havaintolistaa",
   "kml.someFailed": "{n} tiedostoa ei voitu lukea, ne ohitettiin.",
   "points.more": "Lisää toimintoja",
   "points.navDesc": "Avaa koko lista neuloina Google Mapsissa",

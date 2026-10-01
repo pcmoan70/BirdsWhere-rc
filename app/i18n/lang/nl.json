@@ -1496,6 +1496,7 @@
   "kml.readingN": "{name} wordt gelezen — bestand {i} van {n}…",
   "kml.perFile": "{n} bestanden — één lijst per bestand, genoemd naar het bestand",
   "kml.importedN": "{n} punten geïmporteerd in {lists} lijsten.",
+  "share.importedLists": "{n} waarnemingslijsten geïmporteerd",
   "kml.someFailed": "{n} bestand(en) konden niet worden gelezen en zijn overgeslagen.",
   "points.more": "Meer acties",
   "points.navDesc": "De hele lijst als spelden in Google Maps openen",

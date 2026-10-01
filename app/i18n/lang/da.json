@@ -1496,6 +1496,7 @@
   "kml.readingN": "Læser {name} — fil {i} af {n}…",
   "kml.perFile": "{n} filer — én liste pr. fil, navngivet efter filen",
   "kml.importedN": "Importerede {n} punkter til {lists} lister.",
+  "share.importedLists": "Importerede {n} observationslister",
   "kml.someFailed": "{n} fil(er) kunne ikke læses og blev sprunget over.",
   "points.more": "Flere handlinger",
   "points.navDesc": "Åbn hele listen som nåle i Google Maps",

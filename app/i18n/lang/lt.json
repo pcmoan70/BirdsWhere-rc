@@ -1496,6 +1496,7 @@
   "kml.readingN": "Skaitoma {name} — failas {i} iš {n}…",
   "kml.perFile": "{n} failai — po vienas sąrašas kiekvienam failui, pavadintas failo vardu",
   "kml.importedN": "Importuota {n} taškų į {lists} sąrašus.",
+  "share.importedLists": "Importuota stebėjimų sąrašų: {n}",
   "kml.someFailed": "{n} failo (-ų) nepavyko nuskaityti, jie praleisti.",
   "points.more": "Daugiau veiksmų",
   "points.navDesc": "Atverti visą sąrašą kaip smeigtukus Google Maps",

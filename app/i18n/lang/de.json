@@ -1496,6 +1496,7 @@
   "kml.readingN": "{name} wird gelesen — Datei {i} von {n}…",
   "kml.perFile": "{n} Dateien — eine Liste pro Datei, benannt nach der Datei",
   "kml.importedN": "{n} Punkte in {lists} Listen importiert.",
+  "share.importedLists": "{n} Beobachtungslisten importiert",
   "kml.someFailed": "{n} Datei(en) konnten nicht gelesen werden und wurden übersprungen.",
   "points.more": "Weitere Aktionen",
   "points.navDesc": "Die ganze Liste als Nadeln in Google Maps öffnen",

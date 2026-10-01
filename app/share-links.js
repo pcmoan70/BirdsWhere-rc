@@ -591,7 +591,7 @@ window.AppShare = (function () {
   // a detection set is then saved as a point list rather than plotted once (see detSetToPoints).
   function importShared(str, opts) {
     opts = opts || {};
-    decodeShare(str).then(function (raw) {
+    return decodeShare(str).then(function (raw) {
       // Whole-map share: detections + user points in one payload.
       if (raw && raw.t === "m") {
         var detObj = raw.d ? expandShared(raw.d) : null;
@@ -646,14 +646,14 @@ window.AppShare = (function () {
         if (opts.asList) {
           var lnm = String(obj.name || String(opts.fileName || "").replace(/\.[^.]+$/, "") || t("share.defaultName"));
           var updL = !!sharedCollByName(lnm);   // the same list again → replace its points in place
-          modalConfirm(t(updL ? "share.updatePrompt" : "share.importPrompt", { name: lnm, n: n })).then(function (ok) {
-            if (!ok) return;
+          var doList = function () {
             applySharedContext(obj.detections, obj.group);   // the sender's species group + family colours
             var r = importPointsColl(lnm, detSetToPoints(obj.detections));
             saveMapPoints(); saveShownState(); renderMapPoints();
             fitSharedLatLngs(r.ll); setStatus(t(r.updated ? "share.updated" : "share.imported", { name: r.name }));
-          });
-          return;
+          };
+          if (opts.quiet) { doList(); return; }   // a batch of files: the picker was the confirmation
+          return modalConfirm(t(updL ? "share.updatePrompt" : "share.importPrompt", { name: lnm, n: n })).then(function (ok) { if (ok) doList(); });
         }
         modalConfirm(t("share.importPrompt", { name: nm, n: n })).then(function (ok) {
           if (!ok) return;

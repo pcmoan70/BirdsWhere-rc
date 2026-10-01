@@ -1496,6 +1496,7 @@
   "kml.readingN": "Čtu {name} — soubor {i} z {n}…",
   "kml.perFile": "{n} souborů — jeden seznam na soubor, pojmenovaný podle souboru",
   "kml.importedN": "Importováno {n} bodů do {lists} seznamů.",
+  "share.importedLists": "Importováno {n} seznamů pozorování",
   "kml.someFailed": "{n} soubor(ů) se nepodařilo přečíst a byly přeskočeny.",
   "points.more": "Další akce",
   "points.navDesc": "Otevřít celý seznam jako špendlíky v Google Maps",

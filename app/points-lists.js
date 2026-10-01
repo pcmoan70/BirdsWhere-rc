@@ -779,13 +779,23 @@ window.AppPoints = (function () {
     }
   }
   async function startMultiImport(files) {
-    var items = [], failed = [];
+    var items = [], failed = [], shares = [];
     var taken = mpCollections.map(function (c) { return c.name; });
     for (var i = 0; i < files.length; i++) {
       var f = files[i];
       loadStatus(t("kml.readingN", { i: i + 1, n: files.length, name: f.name }));
       try {
-        var parsed = await parsePointsBuf(await readFileBuf(f));
+        var buf = await readFileBuf(f);
+        // A BirdsWhere .share observation list among the files (several person lists at
+        // once, owner 2026-10-02): it is not a placemark file — "No place markers with
+        // coordinates found" was the whole batch's answer. It goes through the share
+        // import, saved as a point list like a single .share, without a prompt per file.
+        var h = new Uint8Array(buf, 0, Math.min(2, buf.byteLength || 0)), c0 = h.length ? String.fromCharCode(h[0]) : "";
+        if ((c0 === "0" || c0 === "1") && !(h.length > 1 && h[1] === 0x4B)) {
+          shares.push({ name: f.name, txt: new TextDecoder().decode(new Uint8Array(buf)).replace(/^\uFEFF/, "").trim() });
+          continue;
+        }
+        var parsed = await parsePointsBuf(buf);
         if (parsed.marks.length) {
           var nm = uniqueListName(listNameFromFile(f.name) || f.name, taken);
           taken.push(nm);
@@ -794,7 +804,16 @@ window.AppPoints = (function () {
         else failed.push(f.name);
       } catch (e) { failed.push(f.name); }
     }
-    if (!items.length) { mpLoading(null); setStatus(t("kml.none")); return; }
+    for (var si = 0; si < shares.length; si++) {
+      loadStatus(t("kml.readingN", { i: si + 1, n: shares.length, name: shares[si].name }));
+      try { await window.AppShare.importShared(shares[si].txt, { asList: true, fileName: shares[si].name, quiet: true }); }
+      catch (e) { failed.push(shares[si].name); }
+    }
+    if (!items.length) {
+      mpLoading(null);
+      setStatus(shares.length && failed.length < shares.length ? t("share.importedLists", { n: shares.length - failed.length }) : t("kml.none"));
+      return;
+    }
     // One staged import holding every file: the union of fields/folders drives the
     // pickers (so a field present in only one file is still offerable), and the union
     // of marks drives the count and the "note looks like HTML" default.

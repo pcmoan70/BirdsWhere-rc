@@ -1496,6 +1496,7 @@
   "kml.readingN": "Loen {name} — fail {i}/{n}…",
   "kml.perFile": "{n} faili — üks loend faili kohta, faili järgi nimetatud",
   "kml.importedN": "Imporditi {n} punkti {lists} loendisse.",
+  "share.importedLists": "Imporditud {n} vaatlusnimekirja",
   "kml.someFailed": "{n} faili ei õnnestunud lugeda, need jäeti vahele.",
   "points.more": "Rohkem tegevusi",
   "points.navDesc": "Ava kogu loend nööpnõeltena Google Mapsis",

@@ -1496,6 +1496,7 @@
   "kml.readingN": "Czytanie {name} — plik {i} z {n}…",
   "kml.perFile": "{n} plików — jedna lista na plik, nazwana jak plik",
   "kml.importedN": "Zaimportowano {n} punktów do {lists} list.",
+  "share.importedLists": "Zaimportowano list obserwacji: {n}",
   "kml.someFailed": "Nie udało się odczytać {n} plik(ów) — pominięto je.",
   "points.more": "Więcej działań",
   "points.navDesc": "Otwórz całą listę jako pinezki w Google Maps",
