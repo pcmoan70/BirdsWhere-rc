@@ -80,7 +80,7 @@
   var TAX_URL = "taxonomy-base.csv";        // species_code + English name + class (split from taxonomy.csv)
   var TAX_NAMES_BASE = "i18n/names/";       // per-language name packs, line-aligned to taxonomy-base.csv rows
   var CONFUSION_URL = "confusion.csv";      // per-bird look-alike (confusion) partner codes; fetched on first use
-  var CONFUSION_REV = 15;                     // bump when confusion.csv changes — busts the runtime (cache-first) copy
+  var CONFUSION_REV = 16;                     // bump when confusion.csv changes — busts the runtime (cache-first) copy
   var TRAITS_URL = "species-traits.json";   // per-species characteristics (AVONET morphology/ecology + HBW colour)
   var TRAITS_REV = 2;                        // bump when species-traits.json changes
 
@@ -11972,7 +11972,7 @@
           var line = lines[i]; if (!line) continue;
           var c = line.indexOf(","); if (c < 0) continue;
           var parts = line.slice(c + 1).split(" ").filter(Boolean).map(function (pp) {
-            var a = pp.split(":");                             // "code:MATCH:MISID" (MATCH 0-100, MISID = iNat confusion count)
+            var a = pp.split(":");                             // "code:MATCH[:MISID]" (MATCH 0-100; MISID = % share of the species' iNat confusions, absent below the 5 % floor)
             return { c: a[0], w: (+a[1] || 0) / 100, mid: +a[2] || 0 };
           });
           if (parts.length) m[line.slice(0, c)] = parts;

@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1940";
+var VERSION = "v1941";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Panning with the Images or By-observation layout open no longer rebuilds the whole species panel (filter bar and headers stay); the per-pan row scans for expanded records and the name search are skipped when there is nothing to do.",
+  "\u2022 Confusion species: the look-alike table is 13 % smaller to download \u2014 misID shares under the 5 % floor are no longer stored (they counted as nothing already).",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
