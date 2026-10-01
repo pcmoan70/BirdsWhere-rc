@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1969";
+var VERSION = "v1970";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Imported observation lists: a non-model species whose class is unknown is no longer renamed after a model species that merely shares its epithet (a plant showed as Brown Rat).",
-  "\u2022 The \u24d8 note window shows free-text status flags (e.g. a person list's \u201cnamed in the notes\u201d)."
+  "\u2022 Big imported lists no longer feel frozen while species names are being looked up: each arriving name now renames the legend in place instead of rebuilding the legend and the day histogram every two seconds."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

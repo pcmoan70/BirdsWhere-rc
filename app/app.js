@@ -10636,7 +10636,7 @@
       // Then drop anything the packs can now answer — a dictionary lookup instead of a request.
       var k = Object.keys(nhPending)[0];
       while (k && harvestedName(nhPending[k])) { delete nhPending[k]; k = Object.keys(nhPending)[0]; }
-      if (!k) { saveNameHarvest(); return; }
+      if (!k) { saveNameHarvest(); if (nhAsked) { nhAsked = 0; try { updateDetLegend(); } catch (e) {} } return; }   // queue drained → one full legend rebuild (sort order)
       var sci = nhPending[k]; delete nhPending[k];
       nhAsked++;
       fetch("https://api.inaturalist.org/v1/taxa?per_page=5&all_names=true&q=" + encodeURIComponent(sci))
@@ -10673,9 +10673,21 @@
     nhRefreshTimer = setTimeout(function () {
       nhRefreshTimer = null;
       saveNameHarvest();
-      try { updateDetLegend(); } catch (e) {}
+      try { refreshLegendNamesInPlace(); } catch (e) {}
       try { refreshNamesInPlace(); } catch (e) {}
-    }, 2000);
+    }, 4000);
+  }
+  // A harvested name changes TEXT only, so the legend is renamed in place. It used to be
+  // rebuilt (updateDetLegend = legend + header histogram, ~600 ms on a 2,462-species
+  // imported person list) every 2 s for the whole harvest — 2,200 lookups, 40 minutes of a
+  // page that felt frozen (measured 2026-10-01). The full rebuild (sort order) runs once,
+  // when the harvest queue is empty.
+  function refreshLegendNamesInPlace() {
+    var leg = document.getElementById("det-legend") || document.querySelector(".det-legend"); if (!leg) return;
+    Array.prototype.forEach.call(leg.querySelectorAll("div[data-key]"), function (row) {
+      var e = dEntry(row.getAttribute("data-key")), nmEl = row.querySelector(".det-nm"); if (!e || !nmEl) return;
+      var nm = detName(e); if (nm && nmEl.textContent !== nm) { nmEl.textContent = nm; nmEl.title = nm; }
+    });
   }
   // Rewrite the names already on screen — table rows and gallery cards — without
   // rebuilding anything. A name is text; nothing else about the list has changed.
@@ -10790,12 +10802,13 @@
       chain.then(function () {
         if (changed) {
           saveVernacCache();   // unlimited — no cap; lives in the general cache (IDB)
-          try { updateDetLegend(); } catch (e) {}
+          try { refreshLegendNamesInPlace(); } catch (e) {}
           // In place, for the same reason as nhRefresh: refreshCurrentView() re-runs the
           // whole list render (and its fetch) to change some text.
           try { refreshNamesInPlace(); } catch (e) {}
         }
         if (Object.keys(vernacPending).length) scheduleVernacFetch();
+        else if (changed) try { updateDetLegend(); } catch (e) {}   // last batch → one full rebuild (sort order)
       });
     }, 400);
   }
@@ -16476,6 +16489,8 @@
       '<input type="range" min="0" max="100" step="1" class="aff-prob-max" value="' + hi + '" /></div>' +
       '<div class="sp-prob-vals"><span class="aff-prob-lo">' + lo + '%</span> – <span class="aff-prob-hi">' + hi + "%</span></div>";
   }
+  // ?perf=1: time each section of the all-filters pane (a 2,462-species import took >10 s to open it, 2026-10-01)
+  function affT(name, fn) { return perfOn ? perfWrap("aff:" + name, fn)() : fn(); }
   function allFiltersBodyHtml() {
     var head = '<div class="aff-head"><b class="aff-title">' + escapeHtml(t("filters.title")) + "</b>" +
       ((detHasFilter() || speciesFilterActive()) ? '<button type="button" class="aff-clear-all btn btn-light">' + escapeHtml(t("det.clearFilters")) + "</button>" : "") +
@@ -16496,11 +16511,11 @@
     var listApplied = selKeys.length > 0 || exKeys.length > 0;
     var secLists = affSection("lists", t("filters.lists"), listApplied,
       listApplied ? t("filters.nSelected", { n: selKeys.length || exKeys.length }) : t("filters.any"),
-      spListsPickerHtml(selKeys, true));
+      affT("spListsPickerHtml", function () { return spListsPickerHtml(selKeys, true); }));
 
     // Status (★/◉/year/life) — reuse the tri-state mode panel
     var modeActive = !!(detStarFilter || detRareFilter || detYearFilter || detLifeFilter);
-    var secMode = affSection("mode", t("filters.status"), modeActive, statusSummary(), detModePanelHtml());
+    var secMode = affSection("mode", t("filters.status"), modeActive, statusSummary(), affT("detModePanelHtml", function () { return detModePanelHtml(); }));
 
     // "New" — only detections first fetched after the baseline (re-fetch to reveal arrivals)
     var todayCk = '<label class="det-obs-row' + (detNewFilter ? "" : " aff-disabled") + '"><input type="checkbox" class="aff-today-cb"' + (detTodayFilter ? " checked" : "") + (detNewFilter ? "" : " disabled") + "> " + escapeHtml(t("filters.today")) + "</label>";
@@ -16537,14 +16552,14 @@
     var dateSum = rg ? ((rg.from || "…") + "–" + (rg.to || "…"))
       : daysBackActive() ? detDaysLabel()
       : detMonths().length ? detMonths().map(histMonthShort).join(" ") : t("filters.allTime");
-    var secDate = affSection("date", t("det.recency"), dateActive, dateSum, detDaysPanelHtml());
+    var secDate = affSection("date", t("det.recency"), dateActive, dateSum, affT("detDaysPanelHtml", function () { return detDaysPanelHtml(); }));
 
     // Location — a checklist of the plotted places (mirrors the observer panel)
-    var locBody = detLocPanelHtml();
+    var locBody = affT("detLocPanelHtml", function () { return detLocPanelHtml(); });
     var secLoc = locBody ? affSection("loc", t("filters.locations"), !!detLocFilter, locFilterLabel(), locBody) : "";
 
     // Observer — reuse the observer panel
-    var secObs = affSection("obs", t("obs.people"), !!detObsFilter, obsFilterLabel(), detObsPanelHtml());
+    var secObs = affSection("obs", t("obs.people"), !!detObsFilter, obsFilterLabel(), affT("detObsPanelHtml", function () { return detObsPanelHtml(); }));
 
     // Source
     var present = detSourcesPresent();
@@ -16749,8 +16764,8 @@
     } });
     m.overlay.classList.add("aff-right");   // desktop CSS docks the pane at the right edge
     allFiltersPane = m;
-    m.box.innerHTML = allFiltersBodyHtml();
-    wireAllFiltersPane(m.box);
+    m.box.innerHTML = affT("allFiltersBodyHtml", allFiltersBodyHtml);
+    affT("wireAllFiltersPane", function () { wireAllFiltersPane(m.box); });
   }
   // Wire the legend's filter-clear × : a plain click clears all filters; a long-press
   // (or right-click) opens the "all filters" pane instead.
