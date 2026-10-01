@@ -21445,6 +21445,10 @@
   function parseCoordText(s) {
     s = (s || "").trim();
     if (!s) return null;
+    // UTM with the latitude band: "33V 357344 6731644" (also "33 V 357344E 6731644N", a comma
+    // between). Band letters C–M are the southern hemisphere, N–X the northern (owner, 2026-10-01).
+    var u = /^(\d{1,2})\s*([C-HJ-NP-X])\s*[,;]?\s*(\d{5,7}(?:\.\d+)?)\s*E?\s*[,;]?\s+(\d{6,8}(?:\.\d+)?)\s*N?$/i.exec(s);
+    if (u) return utmToLatLon(+u[1], u[2].toUpperCase() >= "N", +u[3], +u[4]);
     var m = /[?&#](?:lat|latitude)=(-?\d+(?:\.\d+)?)(?:[^\d-]|-(?!\d))*?(?:lon|lng|longitude)=(-?\d+(?:\.\d+)?)/i.exec(s) ||
             /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/.exec(s) || /^geo:(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/i.exec(s);
     if (m) return coordPair([+m[1]], null, [+m[2]], null);
@@ -21474,6 +21478,24 @@
     }
     if (comps.length !== 2) return null;
     return coordPair(comps[0].n, comps[0].h, comps[1].n, comps[1].h);
+  }
+  // UTM (WGS84) → {lat, lon}; the standard transverse-Mercator series (Krüger), good to the cm.
+  function utmToLatLon(zone, northern, E, N) {
+    if (!(zone >= 1 && zone <= 60) || !isFinite(E) || !isFinite(N)) return null;
+    var a = 6378137, f = 1 / 298.257223563, k0 = 0.9996, e2 = f * (2 - f), e = Math.sqrt(e2), ep2 = e2 / (1 - e2);
+    var x = E - 500000, y = northern ? N : N - 10000000, lon0 = ((zone - 1) * 6 - 180 + 3) * Math.PI / 180;
+    var M = y / k0, mu = M / (a * (1 - e2 / 4 - 3 * e2 * e2 / 64 - 5 * e2 * e2 * e2 / 256));
+    var e1 = (1 - Math.sqrt(1 - e2)) / (1 + Math.sqrt(1 - e2));
+    var phi1 = mu + (3 * e1 / 2 - 27 * Math.pow(e1, 3) / 32) * Math.sin(2 * mu) + (21 * e1 * e1 / 16 - 55 * Math.pow(e1, 4) / 32) * Math.sin(4 * mu)
+             + (151 * Math.pow(e1, 3) / 96) * Math.sin(6 * mu) + (1097 * Math.pow(e1, 4) / 512) * Math.sin(8 * mu);
+    var sp = Math.sin(phi1), cp = Math.cos(phi1), tp = Math.tan(phi1);
+    var N1 = a / Math.sqrt(1 - e2 * sp * sp), T1 = tp * tp, C1 = ep2 * cp * cp, R1 = a * (1 - e2) / Math.pow(1 - e2 * sp * sp, 1.5), D = x / (N1 * k0);
+    var lat = phi1 - (N1 * tp / R1) * (D * D / 2 - (5 + 3 * T1 + 10 * C1 - 4 * C1 * C1 - 9 * ep2) * Math.pow(D, 4) / 24
+              + (61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 - 252 * ep2 - 3 * C1 * C1) * Math.pow(D, 6) / 720);
+    var lon = lon0 + (D - (1 + 2 * T1 + C1) * Math.pow(D, 3) / 6 + (5 - 2 * C1 + 28 * T1 - 3 * C1 * C1 + 8 * ep2 + 24 * T1 * T1) * Math.pow(D, 5) / 120) / cp;
+    lat *= 180 / Math.PI; lon *= 180 / Math.PI;
+    if (!(lat >= -80 && lat <= 84) || !(lon >= -180 && lon <= 180)) return null;
+    return { lat: +lat.toFixed(6), lon: +lon.toFixed(6) };
   }
   function coordPair(n1, h1, n2, h2) {
     function val(n, h) {

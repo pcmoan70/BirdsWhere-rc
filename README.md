@@ -137,7 +137,7 @@ with several on, the legends stack as separate cards you can individually **mini
 
 **Place search (🔍)** — type two or more letters to find a place name (OpenStreetMap's Nominatim,
 biased to the current view; recent searches are listed under the empty box). The box also takes
-**coordinates** in any common form — decimal `59.9139, 10.7522` (decimal commas too), degrees-minutes-seconds
+**coordinates** in any common form — decimal `59.9139, 10.7522` (decimal commas too), degrees-minutes-seconds UTM with the zone band is accepted as well (33V 357344 6731644).
 `59°54'50"N 10°45'08"E`, `N59.91 E10.75`, or a pasted Google Maps / BirdsWhere `?lat=&lon=` / `geo:` link —
 shown as one **📍** result; **Enter** flies straight there and drops the pin.
 
