@@ -567,6 +567,7 @@ window.GeoI18N = (function () {
         "confusion.colHere": "Here",
         "confusion.colCombined": "Score",
         "confusion.colMisid": "misID",
+        "photo.holdBig": "Press and hold for the full-size picture",
         "confusion.tipMatch": "Match: the misID model's estimate (0–100) that birders would confuse these two at equal exposure — learned from 20,000 real iNaturalist confusions, from the birds' names as BioCLIP 2 reads them, shape and size (AVONET), ecological niche, genus and plumage colour. Where the two birds live is deliberately left out: that comes in once, as Here.",
         "confusion.tipMisid": "misID: this look-alike's share (%) of the base bird's real iNaturalist misidentifications, corrected for how often the two birds are in the same place at the same time of year — so it reads “how often they are confused when both are around”. “—” means iNaturalist has no confusion data for the pair.",
         "confusion.tipHere": "The AI model's probability that this look-alike occurs at the exact location and week you're viewing — so species that aren't around here drop down the list.",

@@ -1540,5 +1540,6 @@
   "points.chooseFile": "Vybrat soubor…",
   "kml.importing": "Přidávání bodů do „{name}“…",
   "points.tagsAll": "Vše",
-  "points.tagsAllHint": "Vybrat všechny štítky — nebo žádný, když jsou vybrány všechny"
+  "points.tagsAllHint": "Vybrat všechny štítky — nebo žádný, když jsou vybrány všechny",
+  "photo.holdBig": "Podržte pro obrázek v plné velikosti"
 }

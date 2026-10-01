@@ -1540,5 +1540,6 @@
   "points.chooseFile": "Välj fil…",
   "kml.importing": "Lägger in punkterna i ”{name}” …",
   "points.tagsAll": "Alla",
-  "points.tagsAllHint": "Välj alla taggar – eller inga när alla är valda"
+  "points.tagsAllHint": "Välj alla taggar – eller inga när alla är valda",
+  "photo.holdBig": "Tryck och håll för bilden i full storlek"
 }

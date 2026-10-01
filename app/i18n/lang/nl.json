@@ -1540,5 +1540,6 @@
   "points.chooseFile": "Bestand kiezen…",
   "kml.importing": "Punten worden aan ‘{name}’ toegevoegd…",
   "points.tagsAll": "Alle",
-  "points.tagsAllHint": "Alle tags selecteren — of geen, als ze allemaal geselecteerd zijn"
+  "points.tagsAllHint": "Alle tags selecteren — of geen, als ze allemaal geselecteerd zijn",
+  "photo.holdBig": "Ingedrukt houden voor de foto op volle grootte"
 }

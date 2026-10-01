@@ -1540,5 +1540,6 @@
   "points.chooseFile": "Wybierz plik…",
   "kml.importing": "Dodawanie punktów do „{name}”…",
   "points.tagsAll": "Wszystkie",
-  "points.tagsAllHint": "Zaznacz wszystkie tagi — albo żaden, gdy wszystkie są zaznaczone"
+  "points.tagsAllHint": "Zaznacz wszystkie tagi — albo żaden, gdy wszystkie są zaznaczone",
+  "photo.holdBig": "Przytrzymaj, aby zobaczyć zdjęcie w pełnym rozmiarze"
 }

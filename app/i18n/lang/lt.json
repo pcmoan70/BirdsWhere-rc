@@ -1540,5 +1540,6 @@
   "points.chooseFile": "Pasirinkti failą…",
   "kml.importing": "Taškai pridedami į „{name}“…",
   "points.tagsAll": "Visos",
-  "points.tagsAllHint": "Pasirinkti visas žymas — arba nė vienos, kai pasirinktos visos"
+  "points.tagsAllHint": "Pasirinkti visas žymas — arba nė vienos, kai pasirinktos visos",
+  "photo.holdBig": "Palaikykite nuspaudę, kad pamatytumėte viso dydžio nuotrauką"
 }

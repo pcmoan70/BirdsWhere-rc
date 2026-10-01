@@ -1540,5 +1540,6 @@
   "points.chooseFile": "Valitse tiedosto…",
   "kml.importing": "Lisätään pisteet listaan ”{name}”…",
   "points.tagsAll": "Kaikki",
-  "points.tagsAllHint": "Valitse kaikki tunnisteet – tai ei mitään, kun kaikki on valittu"
+  "points.tagsAllHint": "Valitse kaikki tunnisteet – tai ei mitään, kun kaikki on valittu",
+  "photo.holdBig": "Paina pitkään nähdäksesi kuvan täysikokoisena"
 }

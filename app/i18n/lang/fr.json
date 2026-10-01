@@ -1540,5 +1540,6 @@
   "points.chooseFile": "Choisir un fichier…",
   "kml.importing": "Ajout des points à « {name} »…",
   "points.tagsAll": "Toutes",
-  "points.tagsAllHint": "Sélectionner toutes les étiquettes — ou aucune quand toutes le sont"
+  "points.tagsAllHint": "Sélectionner toutes les étiquettes — ou aucune quand toutes le sont",
+  "photo.holdBig": "Appui long pour l’image en taille réelle"
 }

@@ -24449,6 +24449,49 @@
   // 960 rather than 500: a gallery card is ~300 CSS px, i.e. ~900 device px on a 3× phone.
   var SP_IMG_W = 960, SP_IMG_W_FALLBACK = 500;
   function spImgAtWidth(u, w) { return String(u || "").replace(/\/\d+px-/, "/" + w + "px-"); }
+  // Press-and-hold on ANY card photo (confusion species, family, the species list's Images
+  // layout) opens the same picture full screen (owner, 2026-10-01): a 1600 px rendition of the
+  // card's thumbnail (falling back to the thumbnail itself), the card's credit line under it,
+  // a tap or Escape closes. Delegated once on the document; the emulated click that follows a
+  // touch hold is swallowed so the card underneath does not open as well.
+  var PHOTO_BIG_W = 1600, lbHoldT = null, lbHoldAt = 0, lbStart = null;
+  function openPhotoLightbox(img) {
+    closePhotoLightbox();
+    var box = document.createElement("div"); box.id = "photo-lightbox"; box.setAttribute("role", "dialog");
+    var big = document.createElement("img"); big.alt = img.alt || ""; big.decoding = "async";
+    var src = img.currentSrc || img.src, bigSrc = spImgAtWidth(src, PHOTO_BIG_W);
+    big.addEventListener("error", function () { if (big.src !== src) big.src = src; });   // no 1600 px rendition → the card's own picture
+    big.src = bigSrc;
+    box.appendChild(big);
+    var cr = img.parentNode && img.parentNode.parentNode && img.parentNode.parentNode.querySelector(".spg-credit");
+    var cap = document.createElement("div"); cap.className = "lb-credit";
+    cap.innerHTML = (img.alt ? "<b>" + escapeHtml(img.alt) + "</b> " : "") + (cr ? cr.innerHTML : "");
+    box.appendChild(cap);
+    var x = document.createElement("button"); x.type = "button"; x.className = "lb-close"; x.textContent = "×"; x.setAttribute("aria-label", t("btn.close"));
+    box.appendChild(x);
+    box.addEventListener("click", function (e) { if (e.target.closest("a")) return; e.stopPropagation(); closePhotoLightbox(); });
+    document.body.appendChild(box);
+    document.addEventListener("keydown", lbKey);
+  }
+  function lbKey(e) { if (e.key === "Escape") { closePhotoLightbox(); e.stopPropagation(); } }
+  function closePhotoLightbox() {
+    var b = document.getElementById("photo-lightbox");
+    if (b && b.parentNode) b.parentNode.removeChild(b);
+    document.removeEventListener("keydown", lbKey);
+  }
+  (function wirePhotoHold() {
+    function cancel() { clearTimeout(lbHoldT); lbHoldT = null; lbStart = null; }
+    document.addEventListener("pointerdown", function (e) {
+      var img = e.target.closest && e.target.closest(".spg-img img");
+      if (!img || e.button > 0) return;
+      cancel(); lbStart = { x: e.clientX, y: e.clientY };
+      lbHoldT = setTimeout(function () { lbHoldT = null; lbHoldAt = Date.now(); holdFeedback(img.parentNode); openPhotoLightbox(img); }, holdDelay());
+    }, true);
+    document.addEventListener("pointermove", function (e) { if (lbHoldT && lbStart && (Math.abs(e.clientX - lbStart.x) > 8 || Math.abs(e.clientY - lbStart.y) > 8)) cancel(); }, true);
+    document.addEventListener("pointerup", cancel, true); document.addEventListener("pointercancel", cancel, true);
+    document.addEventListener("click", function (e) { if (Date.now() - lbHoldAt < 800 && e.target.closest && e.target.closest(".spg-img img")) { e.stopPropagation(); e.preventDefault(); } }, true);
+    document.addEventListener("contextmenu", function (e) { if (e.target.closest && e.target.closest(".spg-img img") && (lbHoldT || Date.now() - lbHoldAt < 800)) e.preventDefault(); }, true);
+  })();
   function spImgThumb(thumb) {
     return spImgAtWidth(thumb.split("?")[0].replace(/^https:\/\/thumb\.wikimedia\.org\//, "https://upload.wikimedia.org/"), SP_IMG_W);
   }
@@ -24970,7 +25013,7 @@
       // portal (Artsobservasjoner serves GBIF's media and sends no
       // access-control-allow-origin), where an anonymous request fails to load at all.
       if (/^https:\/\/upload\.wikimedia\.org\//i.test(String(r.t || ""))) img.crossOrigin = "anonymous";
-      img.src = r.t;
+      img.src = r.t; img.title = t("photo.holdBig");   // press-and-hold → the full-size picture (photoLightbox)
       img.addEventListener("error", function () {
         // A width this file has no thumbnail for → try the narrower standard width once
         // before giving up, so one odd file (or a future ladder change) can't blank the card.

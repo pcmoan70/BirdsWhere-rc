@@ -964,6 +964,8 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
   or a single stray misidentification. A look-alike under both floors scores **0 and is not listed
   at all** — alongside the existing rule that drops anything the model puts at 0 % for your point.
   If nothing survives, the popup says so.
+  **Press-and-hold any card photo** (here, in the Family view and in the species list's Images layout)
+  to see the same picture **full screen** with its credit; tap to close.
   Clicking a row opens a **compare card** (focal bird vs look-alike): a **plumage-colour deviation chart**
   (one diverging strip per sex, ♂ above ♀ — collapsing to a single ♂♀ strip when the sexes match; each colour scored `200·(base − look-alike)/(base + look-alike)`
   so the bar rises when the base bird has relatively more of that colour and drops when the look-alike does —
