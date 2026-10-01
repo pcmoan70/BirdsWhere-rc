@@ -17075,6 +17075,36 @@
   // not on the button: ZIP magic → KMZ, a leading { or [ → GeoJSON, < → KML, and
   // anything else → a share link (the points panel's original job).
   var importBusy = false;
+  // A point list from a LINK: a Google Drive file shared as "anyone with the link", or any
+  // direct URL to a .kmz / .kml / .geojson the server lets a browser read. Drive's own share
+  // page cannot be fetched (403, no CORS header) but drive.usercontent.google.com serves the
+  // bytes with `access-control-allow-origin: *` (checked 2026-10-01) — no key, no sign-in.
+  // The bytes then take the ordinary single-file import path (list picker, field mapping).
+  function driveFileId(url) {
+    var u = String(url || "");
+    var m = u.match(/drive\.google\.com\/file\/d\/([\w-]{10,})/) || u.match(/drive(?:\.usercontent)?\.google\.com\/[^#]*[?&]id=([\w-]{10,})/);
+    return m ? m[1] : "";
+  }
+  function importPointsUrl(url) {
+    url = String(url || "").trim(); if (!url) return;
+    var id = driveFileId(url), name = "";
+    if (id) url = "https://drive.usercontent.google.com/download?id=" + encodeURIComponent(id) + "&export=download";
+    else {
+      try { var u = new URL(url); if (!/^https?:$/.test(u.protocol)) throw new Error("scheme"); name = decodeURIComponent(u.pathname.split("/").pop() || ""); }
+      catch (e) { setStatus(t("points.linkFail")); return; }
+    }
+    if (importBusy) { setStatus(t("kml.busy")); return; }
+    setStatus(t("points.linkFetching"));
+    fetch(url, { mode: "cors", credentials: "omit" })
+      .then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.blob(); })
+      .then(function (b) {
+        // Drive answers an unshared or over-size file with an HTML page, not the list: let the
+        // parser's own error say so rather than importing a web page as KML.
+        if (/text\/html/i.test(b.type || "")) throw new Error("html");
+        importPointsFile([new File([b], name || (id ? "drive-" + id.slice(0, 8) : "points"), { type: b.type || "" })], false);
+      })
+      .catch(function () { setStatus(t("points.linkFail")); });
+  }
   function importPointsFile(files, allowShare) {
     var f = (files && files.length != null) ? files[0] : files;
     if (!f) return;
@@ -17810,6 +17840,7 @@
         (mpSaveableAny() ? '<button type="button" id="mp-save-pts" class="btn' +
           (mpHasUnsaved() ? " mp-save-unsaved" : "") + '">' + escapeHtml(t("points.save")) + "</button>" : "") +
         '<button type="button" id="mp-import-share" class="btn btn-light" title="' + escapeHtml(tLabel("share.importFile")) + '" data-i18n="points.loadFile">' + escapeHtml(t("points.loadFile")) + "</button>" +
+        '<button type="button" id="mp-import-link" class="btn btn-light" title="' + escapeHtml(t("points.linkHint")) + '" data-i18n="points.loadLink">' + escapeHtml(t("points.loadLink")) + "</button>" +
         '<input type="file" id="share-file-input" accept=".kmz,.kml,.geojson,.json,.share,.mcshare,.txt" multiple style="display:none" />' +
       "</div>" +
       '<div id="mp-backup-line" class="mp-backup-line"></div>' +
@@ -17824,6 +17855,23 @@
           ? '<p class="dd-empty">' + escapeHtml(t("points.listTrimmed", { n: unionPts.length, total: unionTotal })) + "</p>"
           : "") + "</div>";
     // Wire interactions
+    var importLinkBtn = panel.querySelector("#mp-import-link");
+    if (importLinkBtn) importLinkBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var r = importLinkBtn.getBoundingClientRect();
+      closeDropdowns();
+      var el = openAnchoredMenu("detrow-menu mp-link-menu");
+      el.innerHTML = '<div class="detrow-menu-hdr detrow-menu-name">' + escapeHtml(t("points.loadLink")) + "</div>" +
+        '<div class="mp-link-row"><input type="url" id="mp-link-url" autocomplete="off" spellcheck="false" placeholder="' + escapeHtml(t("points.linkPh")) + '" />' +
+        '<button type="button" id="mp-link-go" class="btn">' + escapeHtml(t("points.load").replace(/^\S+\s*/, "")) + "</button></div>" +
+        '<p class="cu-hint">' + escapeHtml(t("points.linkHint")) + "</p>";
+      var inp = el.querySelector("#mp-link-url");
+      function go() { var u = inp.value.trim(); if (!u) return; closeAnchoredMenu(); importPointsUrl(u); }
+      el.querySelector("#mp-link-go").addEventListener("click", function (ev) { ev.stopPropagation(); go(); });
+      inp.addEventListener("keydown", function (ev) { if (ev.key === "Enter") { ev.preventDefault(); go(); } });
+      positionAnchoredMenu(el, Math.round(r.left), Math.round(r.bottom + 4));
+      inp.focus();
+    });
     var importShareBtn = panel.querySelector("#mp-import-share"), shareFileInput = panel.querySelector("#share-file-input");
     if (importShareBtn && shareFileInput) {
       importShareBtn.addEventListener("click", function (e) {

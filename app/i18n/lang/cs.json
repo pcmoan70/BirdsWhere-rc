@@ -1532,5 +1532,10 @@
   "rarity.bandAlert": "Příspěvek BAND",
   "rarity.whyBand": "Druh zmíněný v příspěvku jedné z vašich skupin BAND.",
   "rarity.bandHint": "Sledujte také příspěvky svých ornitologických skupin na BAND (band.us). Vložte osobní přístupový token (BAND Developers → My Apps → Connect BAND account), načtěte skupiny a zaškrtněte ty, které chcete sledovat. Nové příspěvky se prohledávají na názvy druhů ve zvoleném jazyce (vědecké názvy vždy); zmíněný pták se bere jako pozorování na zvoleném místě 🔔 — příspěvek nemá souřadnice — a upozorní, když ho tam model považuje za nepravděpodobného, stejně jako u každého jiného zdroje.",
-  "family.shownOf": "Zobrazeno {n} z {m} druhů čeledi — zde nejpravděpodobnější (tabulkové zobrazení ukáže všechny)"
+  "family.shownOf": "Zobrazeno {n} z {m} druhů čeledi — zde nejpravděpodobnější (tabulkové zobrazení ukáže všechny)",
+  "points.loadLink": "Načíst z odkazu",
+  "points.linkPh": "Odkaz pro sdílení z Google Drive nebo URL souboru",
+  "points.linkHint": "Soubor na Google Drive sdílený jako „kdokoli s odkazem“, nebo přímý odkaz na soubor .kmz / .kml / .geojson, který web dovolí prohlížeči stáhnout. Seznam se importuje jako soubor.",
+  "points.linkFetching": "Načítání seznamu z odkazu…",
+  "points.linkFail": "Seznam se z tohoto odkazu nepodařilo načíst — je soubor sdílený jako „kdokoli s odkazem“?"
 }

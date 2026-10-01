@@ -1532,5 +1532,10 @@
   "rarity.bandAlert": "BAND-innlegg",
   "rarity.whyBand": "En art nevnt i et innlegg i en av BAND-gruppene dine.",
   "rarity.bandHint": "Følg også innleggene i fuglegruppene dine på BAND (band.us). Lim inn et personlig tilgangstoken (BAND Developers → My Apps → Connect BAND account), hent gruppene og huk av dem du vil følge. Nye innlegg gjennomsøkes etter artsnavn på valgt språk (vitenskapelige navn alltid); en nevnt fugl behandles som en observasjon på valgt 🔔-sted — et innlegg har ingen koordinater — og varsles når modellen finner den usannsynlig der, som fra alle andre kilder.",
-  "family.shownOf": "{n} av {m} arter i familien vist — de mest sannsynlige her (tabellvisningen viser alle)"
+  "family.shownOf": "{n} av {m} arter i familien vist — de mest sannsynlige her (tabellvisningen viser alle)",
+  "points.loadLink": "Last inn fra lenke",
+  "points.linkPh": "Google Drive-delingslenke eller fil-URL",
+  "points.linkHint": "En Google Drive-fil delt som «alle med lenken», eller en direkte lenke til en .kmz-/.kml-/.geojson-fil som nettstedet lar en nettleser hente. Lista importeres som en fil.",
+  "points.linkFetching": "Henter lista fra lenken…",
+  "points.linkFail": "Kunne ikke hente lista fra lenken — er fila delt som «alle med lenken»?"
 }

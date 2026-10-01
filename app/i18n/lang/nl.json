@@ -1532,5 +1532,10 @@
   "rarity.bandAlert": "BAND-bericht",
   "rarity.whyBand": "Een soort die in een bericht van een van je BAND-groepen wordt genoemd.",
   "rarity.bandHint": "Volg ook de berichten van je vogelgroepen op BAND (band.us). Plak een persoonlijk toegangstoken (BAND Developers → My Apps → Connect BAND account), laad je groepen en vink aan welke je wilt volgen. Nieuwe berichten worden doorzocht op soortnamen in de gekozen taal (wetenschappelijke namen altijd); een genoemde vogel geldt als waarneming op de gekozen 🔔-locatie — een bericht heeft geen coördinaten — en geeft een melding wanneer het model hem daar onwaarschijnlijk vindt, zoals bij elke andere bron.",
-  "family.shownOf": "{n} van {m} soorten in de familie getoond — de waarschijnlijkste hier (de tabelweergave toont ze allemaal)"
+  "family.shownOf": "{n} van {m} soorten in de familie getoond — de waarschijnlijkste hier (de tabelweergave toont ze allemaal)",
+  "points.loadLink": "Laden via link",
+  "points.linkPh": "Google Drive-deellink of bestands-URL",
+  "points.linkHint": "Een Google Drive-bestand gedeeld als ‘iedereen met de link’, of een directe link naar een .kmz-/.kml-/.geojson-bestand dat de site aan een browser levert. De lijst wordt als bestand geïmporteerd.",
+  "points.linkFetching": "Lijst wordt via de link opgehaald…",
+  "points.linkFail": "Kon de lijst niet via die link ophalen — is het bestand gedeeld als ‘iedereen met de link’?"
 }

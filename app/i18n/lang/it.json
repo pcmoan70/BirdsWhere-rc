@@ -1532,5 +1532,10 @@
   "rarity.bandAlert": "Post BAND",
   "rarity.whyBand": "Una specie citata in un post di uno dei tuoi gruppi BAND.",
   "rarity.bandHint": "Segui anche i post dei tuoi gruppi di birdwatching su BAND (band.us). Incolla un token di accesso personale (BAND Developers → My Apps → Connect BAND account), carica i gruppi e spunta quelli da seguire. I nuovi post vengono cercati per nomi di specie nella lingua scelta (nomi scientifici sempre); un uccello citato è trattato come un’osservazione nel luogo 🔔 scelto — un post non ha coordinate — e dà un’allerta quando il modello lo ritiene improbabile lì, come per ogni altra fonte.",
-  "family.shownOf": "{n} di {m} specie della famiglia mostrate — le più probabili qui (la vista a tabella le elenca tutte)"
+  "family.shownOf": "{n} di {m} specie della famiglia mostrate — le più probabili qui (la vista a tabella le elenca tutte)",
+  "points.loadLink": "Carica da link",
+  "points.linkPh": "Link di condivisione Google Drive o URL di file",
+  "points.linkHint": "Un file Google Drive condiviso come «chiunque abbia il link», o un link diretto a un file .kmz / .kml / .geojson che il sito lascia scaricare a un browser. L’elenco viene importato come un file.",
+  "points.linkFetching": "Recupero dell’elenco dal link…",
+  "points.linkFail": "Impossibile recuperare l’elenco da quel link — il file è condiviso come «chiunque abbia il link»?"
 }

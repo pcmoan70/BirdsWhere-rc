@@ -655,7 +655,11 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
 - **Import / export** — points import and export as **KML, KMZ and GeoJSON**. Export everything from
   Settings → *Map points*; download a **single list or trip** from the ↓ beside its × — in the Points
   menu and in the lists window (press-and-hold or right-click the Points button) — choosing the format
-  there. Import from either the Settings *Import* button or *Load from file* in the Points menu — both
+  there. **Load from link** (Points menu) imports a list from a URL: a **Google Drive file shared as
+  "anyone with the link"** (the share link is turned into Drive's direct download, which allows a
+  browser fetch — no key, no sign-in) or any direct link to a .kmz / .kml / .geojson the site lets a
+  browser read; the bytes then take the same import path as a file. Import from either the Settings
+  *Import* button or *Load from file* in the Points menu — both
   read all three formats (and share links), and both take **several files at once**: each file becomes
   its own list, named after the file, and the field mapping is asked once and applied to all of them.
   A single file pre-fills the new list's name from its own file name too. A name already in use gets
@@ -921,7 +925,9 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
 - **Family** — every model species in the same family, ranked by the model's probability at your
   point. Also opens by clicking a scientific name anywhere. Two views, switched by the **Text /
   Images** button top right (the choice is remembered): a compact *table* (common name only,
-  **scientific name on hover**) or *picture cards*, which carry the photo with its credit, both
+  **scientific name on hover**, every member) or *picture cards* capped at **10** — the species plus
+  the 9 most likely here, in the same compact grid as the confusion popup, with a line saying how
+  many the family has. The cards carry the photo with its credit, both
   names and three small bars — **Here** (the probability this week), **Season** (this week as a
   share of the species' own yearly peak, with ↑ arriving · ● peak · ↓ leaving · · off-season) and
   **Yr peak** (how likely the species' best week of the year gets at this point). The same numbers

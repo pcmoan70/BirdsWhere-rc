@@ -1532,5 +1532,10 @@
   "rarity.bandAlert": "BAND-i postitus",
   "rarity.whyBand": "Liik, mida mainitakse mõne sinu BAND-i grupi postituses.",
   "rarity.bandHint": "Jälgi ka oma linnuvaatlusgruppide postitusi BAND-is (band.us). Kleebi isiklik pääsutõend (BAND Developers → My Apps → Connect BAND account), laadi grupid ja märgi need, mida jälgida. Uusi postitusi otsitakse valitud keele liiginimede järgi (teaduslikud nimed alati); mainitud lindu käsitletakse vaatlusena valitud 🔔-kohas — postitusel pole koordinaate — ja teavitatakse, kui mudel peab seda seal ebatõenäoliseks, nagu iga muu allika puhul.",
-  "family.shownOf": "Näidatakse {n} sugukonna {m} liigist — siin kõige tõenäolisemad (tabelivaade näitab kõiki)"
+  "family.shownOf": "Näidatakse {n} sugukonna {m} liigist — siin kõige tõenäolisemad (tabelivaade näitab kõiki)",
+  "points.loadLink": "Laadi lingilt",
+  "points.linkPh": "Google Drive’i jagamislink või faili URL",
+  "points.linkHint": "Google Drive’i fail, mis on jagatud kui „kõik, kellel on link“, või otselink .kmz-/.kml-/.geojson-failile, mida sait laseb brauseril alla laadida. Nimekiri imporditakse nagu fail.",
+  "points.linkFetching": "Nimekirja laadimine lingilt…",
+  "points.linkFail": "Nimekirja ei õnnestunud sellelt lingilt laadida — kas fail on jagatud kui „kõik, kellel on link“?"
 }

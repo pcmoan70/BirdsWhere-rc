@@ -1532,5 +1532,10 @@
   "rarity.bandAlert": "BAND-julkaisu",
   "rarity.whyBand": "Laji, joka mainitaan jonkin BAND-ryhmäsi julkaisussa.",
   "rarity.bandHint": "Seuraa myös lintuharrastusryhmiesi julkaisuja BANDissa (band.us). Liitä henkilökohtainen käyttöoikeustunnus (BAND Developers → My Apps → Connect BAND account), hae ryhmät ja rastita seurattavat. Uusista julkaisuista etsitään lajinimiä valitulla kielellä (tieteelliset nimet aina); mainittu lintu käsitellään havaintona valitussa 🔔-paikassa — julkaisulla ei ole koordinaatteja — ja siitä hälytetään, kun malli pitää sitä siellä epätodennäköisenä, kuten muistakin lähteistä.",
-  "family.shownOf": "{n}/{m} heimon lajia näytetään — todennäköisimmät täällä (taulukkonäkymä näyttää kaikki)"
+  "family.shownOf": "{n}/{m} heimon lajia näytetään — todennäköisimmät täällä (taulukkonäkymä näyttää kaikki)",
+  "points.loadLink": "Lataa linkistä",
+  "points.linkPh": "Google Drive -jakolinkki tai tiedoston URL",
+  "points.linkHint": "Google Drive -tiedosto, joka on jaettu ”kaikille, joilla on linkki”, tai suora linkki .kmz-/.kml-/.geojson-tiedostoon, jonka sivusto sallii selaimen hakea. Lista tuodaan kuten tiedosto.",
+  "points.linkFetching": "Haetaan listaa linkistä…",
+  "points.linkFail": "Listaa ei voitu hakea linkistä — onko tiedosto jaettu ”kaikille, joilla on linkki”?"
 }

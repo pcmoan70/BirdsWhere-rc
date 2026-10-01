@@ -1532,5 +1532,10 @@
   "rarity.bandAlert": "Publication BAND",
   "rarity.whyBand": "Une espèce citée dans une publication d’un de vos groupes BAND.",
   "rarity.bandHint": "Surveillez aussi les publications de vos groupes ornithologiques sur BAND (band.us). Collez un jeton d’accès personnel (BAND Developers → My Apps → Connect BAND account), chargez vos groupes et cochez ceux à suivre. Les nouvelles publications sont parcourues à la recherche de noms d’espèces dans la langue choisie (noms scientifiques toujours) ; un oiseau cité est traité comme une observation au lieu 🔔 choisi — une publication n’a pas de coordonnées — et donne une alerte quand le modèle l’y juge improbable, comme pour toute autre source.",
-  "family.shownOf": "{n} des {m} espèces de la famille affichées — les plus probables ici (la vue tableau les montre toutes)"
+  "family.shownOf": "{n} des {m} espèces de la famille affichées — les plus probables ici (la vue tableau les montre toutes)",
+  "points.loadLink": "Charger depuis un lien",
+  "points.linkPh": "Lien de partage Google Drive ou URL de fichier",
+  "points.linkHint": "Un fichier Google Drive partagé en « toute personne disposant du lien », ou un lien direct vers un fichier .kmz / .kml / .geojson que le site laisse un navigateur récupérer. La liste est importée comme un fichier.",
+  "points.linkFetching": "Récupération de la liste depuis le lien…",
+  "points.linkFail": "Impossible de récupérer la liste depuis ce lien — le fichier est-il partagé en « toute personne disposant du lien » ?"
 }

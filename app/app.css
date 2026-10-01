@@ -4775,3 +4775,8 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 /* Result line under "Compact imported lists" — the status line above the map is behind
    the Settings panel, so the outcome has to be readable where the button is. */
 .compact-result { margin-top: 6px; font-weight: 600; opacity: 1; }
+/* Points → Load from link: one URL field + Load, under the button. */
+.mp-link-menu { width: min(96vw, 420px); }
+.mp-link-row { display: flex; gap: 6px; padding: 4px 8px; }
+.mp-link-row input { flex: 1 1 auto; min-width: 0; }
+.mp-link-menu .cu-hint { padding: 0 8px 6px; margin: 0; }
