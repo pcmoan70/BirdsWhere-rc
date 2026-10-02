@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1994";
+var VERSION = "v1995";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Points menu: Move to folder\u2026 now offers the existing folders to pick from (plus No folder and New folder\u2026) instead of asking you to type the name."
+  "\u2022 Points menu folders: \u22ef, right-click or press-and-hold a folder header for its menu \u2014 rename, download the whole folder (KMZ / KML / GeoJSON), remove the folder keeping its lists, or delete it with its lists.",
+  "\u2022 Moving lists and folder actions keep the Points panel open so you can go on editing."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -18057,6 +18057,55 @@
     // Saved lists + detection sets as tick-to-show overlays, each with a swatch:
     // a per-list colour for point-lists, a 🗂 for detection sets (their dots keep
     // their own per-species colours on the map).
+    // A list action from the ⋯ / folder menus must leave the Points panel OPEN: opening the
+    // anchored menu closes the dropdown it sits in, and the user wants to go on editing
+    // (owner, 2026-10-02: "when moving lists etc do not close the point list popup").
+    function keepMpPanelOpen() {
+      var pnl = document.getElementById("mp-panel");
+      if (pnl && pnl.style.display === "none") { pnl.style.display = "block"; try { refreshMpPanel(); } catch (e) {} }
+    }
+    function folderLists(f) { return mpSortedColls().filter(function (c) { return String(c.folder || "") === f; }); }
+    function openFolderMenu(f, x, y) {
+      var lists = folderLists(f); if (!lists.length) return;
+      closeAnchoredMenu();
+      var el = openAnchoredMenu("detrow-menu mp-folder-menu");
+      var hdr = document.createElement("div"); hdr.className = "detrow-menu-hdr"; hdr.textContent = f + " (" + lists.length + ")"; el.appendChild(hdr);
+      el.appendChild(drmBtn(t("points.folderRename"), function () {
+        closeAnchoredMenu();
+        modalPrompt(t("points.folderRenamePrompt"), f).then(function (v) {
+          v = (v == null) ? "" : String(v).trim(); if (!v || v === f) return;
+          lists.forEach(function (c) { c.folder = v; });
+          var st = window.GeoState.get("mapPointsFolders", {}) || {}; if (f in st) { st[v] = st[f]; delete st[f]; window.GeoState.save({ mapPointsFolders: st }); }
+          saveMapPoints(); refreshMpPanel(); keepMpPanelOpen();
+        });
+      }, "edit"));
+      ["kmz", "kml", "geojson"].forEach(function (fmt) {
+        el.appendChild(drmBtn(t("points.folderDownload", { fmt: fmt === "geojson" ? "GeoJSON" : fmt.toUpperCase() }), function () {
+          closeAnchoredMenu();
+          var all = lists.map(function (c) { return { name: c.name, points: (c.points || []).slice() }; }), n = 0;
+          all.forEach(function (l) { n += l.points.length; });
+          if (!n) { setStatus(t("points.exportEmpty")); return; }
+          exportPointsAs(fmt, f, all, []);
+          setStatus(t("points.downloaded", { n: n, name: f }));
+        }, "download"));
+      });
+      el.appendChild(drmBtn(t("points.folderDissolve"), function () {
+        closeAnchoredMenu();
+        lists.forEach(function (c) { delete c.folder; delete c.order; });
+        saveMapPoints(); refreshMpPanel(); keepMpPanelOpen();
+      }, "block"));
+      el.appendChild(drmBtn(t("points.folderDelete"), function () {
+        closeAnchoredMenu();
+        modalConfirm(t("points.folderDeletePrompt", { name: f, n: lists.length })).then(function (ok) {
+          if (!ok) return;
+          var kept = 0, gone = 0;
+          lists.forEach(function (c) { if (isCollProtected(c.name)) { kept++; return; } delete mpState.shownColls()[c.name]; deleteCollection(c.name); gone++; });
+          saveShownState(); refreshMpPanel(); keepMpPanelOpen();
+          setStatus(t("points.folderDeleted", { n: gone, p: kept }));
+        });
+      }, "block"));
+      positionAnchoredMenu(el, x, y);
+    }
     function mpSortedColls() {
       return mpState.mpCollections().slice().sort(function (a, b) {
         var fa = String(a.folder || ""), fb = String(b.folder || "");
@@ -18074,7 +18123,7 @@
       grp.forEach(function (x, i) { x.order = i; });
       var i = grp.indexOf(c), j = i + dir; if (j < 0 || j >= grp.length) return;
       grp[i].order = j; grp[j].order = i;
-      saveMapPoints(); refreshMpPanel();
+      saveMapPoints(); refreshMpPanel(); keepMpPanelOpen();
     }
     function mpCollRowHtml(type, name, count, swatch, checked, delTip, isProt, isRoute) {
       // Protected point-lists show a 🔒 instead of the delete × (manage protection
@@ -18131,7 +18180,8 @@
       var g = groups[f], allOn = g.every(function (x) { return !!mpState.shownColls()[x.c.name]; }), anyOn = g.some(function (x) { return !!mpState.shownColls()[x.c.name]; });
       collItems.push('<details class="mp-folder"' + (folderOpen[f] === false ? "" : " open") + ' data-folder="' + escapeHtml(f) + '">' +
         '<summary class="mp-folder-head"><input type="checkbox" class="mp-folder-cb" data-folder="' + escapeHtml(f) + '"' + (allOn ? " checked" : "") + (anyOn && !allOn ? ' data-partial="1"' : "") + ' title="' + escapeHtml(t("points.folderTick")) + '">' +
-        '<span class="mp-sw-ico mp-sw-folder">' + ico("folder") + '</span><span class="mp-coll-name">' + escapeHtml(f) + ' <span class="mp-coll-n">(' + g.length + ")</span></span></summary>" +
+        '<span class="mp-sw-ico mp-sw-folder">' + ico("folder") + '</span><span class="mp-coll-name">' + escapeHtml(f) + ' <span class="mp-coll-n">(' + g.length + ")</span></span>" +
+        '<button type="button" class="mp-folder-more ico-btn" data-folder="' + escapeHtml(f) + '" title="' + escapeHtml(t("points.folderMenu")) + '" aria-label="' + escapeHtml(t("points.folderMenu")) + '">\u22EF</button></summary>' +
         g.map(function (x) { return x.html; }).join("") + "</details>");
     });
     (groups[""] || []).forEach(function (x) { collItems.push(x.html); });
@@ -18406,7 +18456,7 @@
       root.querySelectorAll(".mp-coll-up, .mp-coll-down").forEach(function (b) {
         b.addEventListener("click", function (e) {
           e.preventDefault(); var name = this.getAttribute("data-name"), dir = this.classList.contains("mp-coll-up") ? -1 : 1;
-          closeAnchoredMenu(); mpMoveColl(name, dir);
+          closeAnchoredMenu(); mpMoveColl(name, dir); keepMpPanelOpen();   // also when the list was already at the end
         });
       });
       root.querySelectorAll(".mp-coll-folder").forEach(function (b) {
@@ -18414,7 +18464,7 @@
           e.preventDefault(); var name = this.getAttribute("data-name"), x0 = e.clientX, y0 = e.clientY;
           var c = mpState.mpCollections().filter(function (x) { return x.name === name; })[0];
           closeAnchoredMenu(); if (!c) return;
-          var put = function (v) { v = String(v || "").trim(); if (v) c.folder = v; else delete c.folder; delete c.order; saveMapPoints(); refreshMpPanel(); };
+          var put = function (v) { v = String(v || "").trim(); if (v) c.folder = v; else delete c.folder; delete c.order; saveMapPoints(); refreshMpPanel(); keepMpPanelOpen(); };
           // A chooser, not a prompt: the existing folders as rows (the current one marked),
           // "No folder", and "New folder…" for a name that does not exist yet (owner, 2026-10-02).
           var have = []; mpState.mpCollections().forEach(function (x) { if (x.folder && have.indexOf(x.folder) < 0) have.push(x.folder); });
@@ -18439,6 +18489,22 @@
           mpState.mpCollections().forEach(function (c) { if (String(c.folder || "") === f) { if (on) mpState.shownColls()[c.name] = true; else delete mpState.shownColls()[c.name]; } });
           saveShownState(); renderMapPoints();
         });
+      });
+      // Folder menu: ⋯, right-click or press-and-hold on the folder header (owner, 2026-10-02:
+      // "rightclick on foldername = allow editing name, delete folder, save folder, etc.").
+      root.querySelectorAll(".mp-folder-more").forEach(function (b) {
+        b.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); var r = this.getBoundingClientRect(); openFolderMenu(this.getAttribute("data-folder"), r.left, r.bottom + 4); });
+      });
+      root.querySelectorAll(".mp-folder-head").forEach(function (h) {
+        var f = h.parentNode.getAttribute("data-folder"), lpT = null, fired = false;
+        h.addEventListener("contextmenu", function (e) { e.preventDefault(); e.stopPropagation(); openFolderMenu(f, e.clientX, e.clientY); });
+        h.addEventListener("touchstart", function (e) {
+          fired = false; var tp = e.touches && e.touches[0]; var x = tp ? tp.clientX : 0, y = tp ? tp.clientY : 0;
+          clearTimeout(lpT); lpT = setTimeout(function () { fired = true; holdFeedback(h); openFolderMenu(f, x, y); }, holdDelay());
+        }, { passive: true });
+        var lpEnd = function () { clearTimeout(lpT); };
+        h.addEventListener("touchend", lpEnd); h.addEventListener("touchmove", lpEnd); h.addEventListener("touchcancel", lpEnd);
+        h.addEventListener("click", function (e) { if (fired) { fired = false; e.preventDefault(); e.stopPropagation(); } }, true);   // the hold's release must not fold the folder
       });
       root.querySelectorAll(".mp-folder").forEach(function (d) {
         d.addEventListener("toggle", function () {
