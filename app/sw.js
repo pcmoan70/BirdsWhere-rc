@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1986";
+var VERSION = "v1987";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Imported KMZ/KML/GeoJSON lists built from GBIF or Artsobservasjoner now show like fetched data: every record with a species (model species or not) gets a legend row, the translated name, the species menu, the source badge and a link to the original record, grouped by date \u00b7 observer \u00b7 place. Lists imported earlier pick this up without re-import."
+  "\u2022 If the app ever fails to start, the error page now carries a Reload-to-update button and applies a newer version by itself when one is waiting \u2014 instead of re-serving the broken copy.",
+  "\u2022 Imported KMZ/KML lists built from GBIF or Artsobservasjoner show like fetched data (legend, translated names, species menu, source link)."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

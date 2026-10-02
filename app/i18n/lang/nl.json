@@ -629,6 +629,7 @@
   "status.loadingDet": "Waarnemingen laden…",
   "app.title": "BirdsWhere",
   "app.loading": "Model, labels & soortnamen laden…",
+  "app.failedReload": "Herladen om bij te werken",
   "app.failed": "Laden mislukt: {msg}",
   "ctrl.language": "Taal",
   "lang.system": "(Systeem)",

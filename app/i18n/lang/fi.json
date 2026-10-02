@@ -629,6 +629,7 @@
   "status.loadingDet": "Ladataan havaintoja…",
   "app.title": "BirdsWhere",
   "app.loading": "Ladataan mallia, otsikoita ja lajinimiä…",
+  "app.failedReload": "Lataa uudelleen ja päivitä",
   "app.failed": "Lataus epäonnistui: {msg}",
   "ctrl.language": "Kieli",
   "lang.system": "(Järjestelmä)",

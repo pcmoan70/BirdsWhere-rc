@@ -205,6 +205,7 @@
   "offline.tooMany": "Det är {n} rutor — en stor nedladdning. Fortsätta?",
   "app.title": "BirdsWhere",
   "app.loading": "Laddar modell, etiketter & artnamn…",
+  "app.failedReload": "Ladda om för att uppdatera",
   "app.failed": "Kunde inte ladda: {msg}",
   "ctrl.language": "Språk",
   "lang.system": "(System)",

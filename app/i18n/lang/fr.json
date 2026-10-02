@@ -630,6 +630,7 @@
   "status.loadingDet": "Chargement des détections…",
   "app.title": "BirdsWhere",
   "app.loading": "Chargement du modèle, des étiquettes et des noms d'espèces…",
+  "app.failedReload": "Recharger pour mettre à jour",
   "app.failed": "Échec du chargement : {msg}",
   "ctrl.language": "Langue",
   "lang.system": "(Système)",

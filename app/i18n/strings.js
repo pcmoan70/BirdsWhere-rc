@@ -113,6 +113,7 @@ window.GeoI18N = (function () {
     en: {
         "app.title": "BirdsWhere",
         "app.loading": "Loading model, labels & species names…",
+        "app.failedReload": "Reload to update",
         "app.failed": "Failed to load: {msg}",
         "ctrl.language": "Language",
         "lang.system": "(System)",

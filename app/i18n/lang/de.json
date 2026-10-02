@@ -629,6 +629,7 @@
   "status.loadingDet": "Lade Nachweise…",
   "app.title": "BirdsWhere",
   "app.loading": "Lade Modell, Bezeichnungen & Artnamen…",
+  "app.failedReload": "Neu laden und aktualisieren",
   "app.failed": "Laden fehlgeschlagen: {msg}",
   "ctrl.language": "Sprache",
   "lang.system": "(System)",

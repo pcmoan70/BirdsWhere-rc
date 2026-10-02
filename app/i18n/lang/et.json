@@ -629,6 +629,7 @@
   "status.loadingDet": "Laadin leide…",
   "app.title": "BirdsWhere",
   "app.loading": "Mudeli, siltide ja liiginimede laadimine…",
+  "app.failedReload": "Laadi uuesti ja uuenda",
   "app.failed": "Laadimine ebaõnnestus: {msg}",
   "ctrl.language": "Keel",
   "lang.system": "(Süsteem)",

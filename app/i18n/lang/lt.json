@@ -629,6 +629,7 @@
   "status.loadingDet": "Įkeliami aptikimai…",
   "app.title": "BirdsWhere",
   "app.loading": "Įkeliamas modelis, žymės ir rūšių pavadinimai…",
+  "app.failedReload": "Įkelti iš naujo ir atnaujinti",
   "app.failed": "Nepavyko įkelti: {msg}",
   "ctrl.language": "Kalba",
   "lang.system": "(Sistema)",

@@ -629,6 +629,7 @@
   "status.loadingDet": "Načítám detekce…",
   "app.title": "BirdsWhere",
   "app.loading": "Načítání modelu, štítků a názvů druhů…",
+  "app.failedReload": "Načíst znovu a aktualizovat",
   "app.failed": "Načtení selhalo: {msg}",
   "ctrl.language": "Jazyk",
   "lang.system": "(Systém)",

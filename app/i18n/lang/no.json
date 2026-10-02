@@ -629,6 +629,7 @@
   "status.loadingDet": "Laster funn…",
   "app.title": "BirdsWhere",
   "app.loading": "Laster modell, etiketter og artsnavn…",
+  "app.failedReload": "Last på nytt for å oppdatere",
   "app.failed": "Kunne ikke laste: {msg}",
   "ctrl.language": "Språk",
   "lang.system": "(System)",

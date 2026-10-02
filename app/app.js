@@ -8127,9 +8127,17 @@
     } catch (e) {
       document.getElementById("app-loading").style.display = "";   // may have been hidden before the failure
       document.getElementById("app-loading").innerHTML =
-        '<span style="color:red">' + t("app.failed", { msg: e.message }) + '</span>';
+        '<span style="color:red">' + t("app.failed", { msg: e.message }) + '</span>' +
+        '<div style="margin-top:12px"><button type="button" id="boot-fail-update" class="btn">' + escapeHtml(t("app.failedReload")) + "</button></div>";
       console.error(e);
       hideBootSplash();   // the splash must not cover the error message
+      // A shell that cannot boot is the one case where the app must update ITSELF: the
+      // Settings "Reload to update" button is unreachable, and a plain reload re-serves the
+      // same broken cached shell (v1985 → v1986, 2026-10-02). Offer the button at once and,
+      // when a newer version is known to be waiting on the server, apply it after a moment.
+      var bfu = document.getElementById("boot-fail-update");
+      if (bfu) bfu.addEventListener("click", function () { bfu.disabled = true; if (window.SWUpdate) window.SWUpdate.apply(); else window.location.reload(); });
+      setTimeout(function () { if (window.SWUpdate && (window.SWUpdate.pending || window.SWUpdate.worker)) window.SWUpdate.apply(); }, 4000);
     }
   }
   // The static boot splash from index.html (shown from the first paint, pulsing

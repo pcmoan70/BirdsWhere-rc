@@ -629,6 +629,7 @@
   "status.loadingDet": "Wczytywanie wykryć…",
   "app.title": "BirdsWhere",
   "app.loading": "Wczytywanie modelu, etykiet i nazw gatunków…",
+  "app.failedReload": "Odśwież, aby zaktualizować",
   "app.failed": "Nie udało się wczytać: {msg}",
   "ctrl.language": "Język",
   "lang.system": "(System)",
