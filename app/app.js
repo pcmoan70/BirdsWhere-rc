@@ -6001,13 +6001,22 @@
   // merge (union the pins) or overwrite (replace with the imported list).
   // `interactive` false (background Drive sync) skips the prompt and always
   // unions — a sync must never silently drop a device's pins.
+  // A list's own fields travel with it — folder, order, shared, protection … — not only its
+  // name and points (owner, 2026-10-02: "when syncing to gdrive preserve the folder structure").
+  // Local metadata is kept; whatever the local copy lacks is taken from the incoming one.
+  function withMeta(c) {
+    var o = { name: c.name, points: (c.points || []).slice() };
+    Object.keys(c).forEach(function (k) { if (k !== "points" && k !== "name" && c[k] != null) o[k] = c[k]; });
+    return o;
+  }
   function mergePointSets(localSets, incSets, interactive) {
-    var out = (Array.isArray(localSets) ? localSets : []).map(function (c) { return { name: c.name, points: (c.points || []).slice() }; });
+    var out = (Array.isArray(localSets) ? localSets : []).map(withMeta);
     var byName = Object.create(null); out.forEach(function (c) { byName[c.name] = c; });
     (Array.isArray(incSets) ? incSets : []).forEach(function (inc) {
       if (!inc || !inc.name) return;
       var cur = byName[inc.name];
-      if (!cur) { var added = { name: inc.name, points: (inc.points || []).slice() }; out.push(added); byName[inc.name] = added; return; }
+      if (!cur) { var added = withMeta(inc); out.push(added); byName[inc.name] = added; return; }
+      Object.keys(inc).forEach(function (k) { if (k !== "points" && k !== "name" && cur[k] == null && inc[k] != null) cur[k] = inc[k]; });
       if (!interactive || confirm(t("sync.listMergePrompt", { name: inc.name }))) cur.points = mergePins(cur.points, inc.points);
       else cur.points = (inc.points || []).slice();
     });
