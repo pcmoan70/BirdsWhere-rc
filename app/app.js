@@ -14042,7 +14042,8 @@
     if (map) {
       var vb = map.getBounds();
       rows = rows.filter(function (r) { return isFinite(+r.lat) && isFinite(+r.lon) && vb.contains([+r.lat, +r.lon]); });
-      try { setStatusFor(t("sp.inView", { n: rows.length }), 2000); } catch (e) {}
+      var nSp = Object.create(null); rows.forEach(function (r) { nSp[r.key] = 1; });
+      announceInView(Object.keys(nSp).length);   // SPECIES in view (rows.length is records — it read "1 species" for one species' many records)
     }
     rec.style.display = "";
     rec.innerHTML = rows.length ? buildSpObsHtml(rows) : '<div class="dl-empty">' + escapeHtml(t("detlist.empty")) + "</div>";
@@ -14152,7 +14153,18 @@
       if ((tr.style.display === "none") === show) tr.style.display = show ? "" : "none";
       if (show) shown++;
     });
-    try { setStatusFor(t("sp.inView", { n: shown }), 2000); } catch (e) {}
+    // Not while a per-point fetch is still landing (the table then holds the prediction
+    // list with one or two observed rows — "1 species" flashed up mid-way); the count is
+    // announced once the pass has settled.
+    if (!(currentSpView && tbody && !tbody._sightingsAgg)) announceInView(shown);
+  }
+  // The "In map view: N species" line, debounced: filter passes run several times in a row
+  // (chips, pane, list injection, probabilities) and each intermediate count used to show
+  // (owner, 2026-10-02: "typically wrong … show it when done"). Only the last one is shown.
+  var inViewAnnT = null;
+  function announceInView(nSpecies) {
+    clearTimeout(inViewAnnT);
+    inViewAnnT = setTimeout(function () { try { setStatusFor(t("sp.inView", { n: nSpecies }), 2000); } catch (e) {} }, 700);
   }
   function goToMapView() {
     if (!viewToggleAvail()) return;
