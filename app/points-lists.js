@@ -24,7 +24,7 @@ window.AppPoints = (function () {
   var clearSpider, detRenderer, detStarMarker, downloadCsv, escapeHtml, haversineKm, ico,
       copyPointToList, deleteListPoint, listPointPasses, looksLikeHtml, makePopupBtn, modalPrompt, mpTipHtml, openExternal, openPointEditor,
       refreshMpPanel, renderMpAdmin, setStatus, showDetRowMenu, syncListDetections,
-      pulseFunnels, tagDisplay, updateDetSetOverlays, updateMpBadge, updateSpDistances, t;
+      pulseFunnels, tagDisplay, labelForSci, updateDetSetOverlays, updateMpBadge, updateSpDistances, t;
   // … and accessors for app state that is replaced at runtime (the map and the
   // clicked-spot marker are built later; the spider layer is app.js's).
   var getMap, getMarker, getSpiderHidden, setSpiderLayer;
@@ -40,6 +40,7 @@ window.AppPoints = (function () {
     syncListDetections = ctx.syncListDetections; updateDetSetOverlays = ctx.updateDetSetOverlays;
     pulseFunnels = ctx.pulseFunnels || function () {};
     tagDisplay = ctx.tagDisplay || function (x) { return x; };
+    labelForSci = ctx.labelForSci || function () { return null; };   // scientific name → model label (app.js owns the index)
     updateMpBadge = ctx.updateMpBadge; updateSpDistances = ctx.updateSpDistances; t = ctx.t;
     getMap = ctx.getMap; getMarker = ctx.getMarker;
     getSpiderHidden = ctx.getSpiderHidden; setSpiderLayer = ctx.setSpiderLayer;

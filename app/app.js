@@ -16942,7 +16942,7 @@
     mpTipHtml: mpTipHtml, listPointPasses: listPointPasses, openExternal: openExternal, openPointEditor: openPointEditor,
     copyPointToList: copyPointToList, deleteListPoint: deleteListPoint,
     refreshMpPanel: refreshMpPanel, renderMpAdmin: renderMpAdmin, setStatus: setStatus,
-    showDetRowMenu: showDetRowMenu, syncListDetections: syncListDetections,
+    showDetRowMenu: showDetRowMenu, syncListDetections: syncListDetections, labelForSci: labelForSci,
     updateDetSetOverlays: updateDetSetOverlays, updateMpBadge: updateMpBadge,
     pulseFunnels: pulseFunnels, tagDisplay: tagDisplay,
     updateSpDistances: updateSpDistances, t: t,
