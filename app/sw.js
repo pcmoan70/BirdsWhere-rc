@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1987";
+var VERSION = "v1988";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 If the app ever fails to start, the error page now carries a Reload-to-update button and applies a newer version by itself when one is waiting \u2014 instead of re-serving the broken copy.",
+  "\u2022 Repairs devices stuck on the copy that would not start (\u201clabelForSci is not defined\u201d): this version takes over there by itself. Everyone else updates as usual.",
   "\u2022 Imported KMZ/KML lists built from GBIF or Artsobservasjoner show like fetched data (legend, translated names, species menu, source link)."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
@@ -322,6 +322,15 @@ self.addEventListener("install", function (event) {
         return caches.open(SHELL_CACHE).then(function (c) {
           return c.put(DL_KEY, new Response(String(tally.n)));
         });
+      }).then(function () {
+        // RESCUE (2026-10-02): a device whose cached shell is one that cannot boot (v1985,
+        // whose points module threw "labelForSci is not defined") can never press the
+        // Settings update button, and a plain reload re-serves that shell. For THOSE caches
+        // only, this version activates at once so the next load gets working code. Every
+        // other device keeps the normal wait-for-the-user rule below.
+        return caches.keys().then(function (ks) {
+          if (ks.some(function (k) { return /shell-v198[56]$/.test(k); })) return self.skipWaiting();
+        }).catch(function () {});
       });
     })
     // NOTE: deliberately NO self.skipWaiting() here. A newly deployed version
