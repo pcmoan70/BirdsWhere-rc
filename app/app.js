@@ -7148,8 +7148,10 @@
     });
     // Hydrate saved trips from IndexedDB (and migrate any still in the localStorage
     // blob) before anything reads them. Never block startup on a storage hiccup.
+    try { if (window.bootPhase) window.bootPhase("lists"); } catch (e) {}
     try { await initDetSetStore(); } catch (e) {}
     try { if (window.AppPoints && window.AppPoints.initMpSetStore) await window.AppPoints.initMpSetStore(); } catch (e) {}   // named point lists → IndexedDB (same pattern as trips)
+    try { if (window.bootPhase) window.bootPhase("obs"); } catch (e) {}
     try { await loadPersistedSightings(); } catch (e) {}   // so a reopen reuses the last downloads instead of refetching
     try { hydrateHotspotStore(); hydrateVernacCache(); hydrateNameHarvest(); } catch (e) {}   // fire-and-forget: the general cache's IDB stores (hotspots, iNat names)
     ensurePersistentStorage();   // keep offline-map tiles + saved data from being evicted
@@ -7847,6 +7849,7 @@
     }
 
     try {
+      try { if (window.bootPhase) window.bootPhase("model"); } catch (e) {}
       await Promise.all([initWorker(), loadLabels(), loadTaxonomy()]);
       // Species names for the restored language(s) — needs taxCodesOrder from loadTaxonomy.
       await Promise.all([ensureLangNames(langTaxCol), ensureLangNames(secondTaxCol), ensureExtraNames(lang)]);
@@ -8056,6 +8059,7 @@
       populateSecondLangSelect();
       updateAnalysisControls();
       applyI18n();
+      try { if (window.bootPhase) window.bootPhase("map"); } catch (e) {}
       initMap();
       initMapHelpTips();
       bindControls();
