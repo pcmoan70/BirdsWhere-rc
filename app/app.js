@@ -18057,6 +18057,25 @@
     // Saved lists + detection sets as tick-to-show overlays, each with a swatch:
     // a per-list colour for point-lists, a 🗂 for detection sets (their dots keep
     // their own per-species colours on the map).
+    function mpSortedColls() {
+      return mpState.mpCollections().slice().sort(function (a, b) {
+        var fa = String(a.folder || ""), fb = String(b.folder || "");
+        if (fa !== fb) return fa.localeCompare(fb);
+        var oa = (a.order == null) ? 1e9 : +a.order, ob = (b.order == null) ? 1e9 : +b.order;
+        if (oa !== ob) return oa - ob;
+        return a.name.localeCompare(b.name);
+      });
+    }
+    // Move a list one step within its folder: the folder's lists get explicit orders
+    // (their current positions) the first time, then the two neighbours swap.
+    function mpMoveColl(name, dir) {
+      var all = mpSortedColls(), c = all.filter(function (x) { return x.name === name; })[0]; if (!c) return;
+      var f = String(c.folder || ""), grp = all.filter(function (x) { return String(x.folder || "") === f; });
+      grp.forEach(function (x, i) { x.order = i; });
+      var i = grp.indexOf(c), j = i + dir; if (j < 0 || j >= grp.length) return;
+      grp[i].order = j; grp[j].order = i;
+      saveMapPoints(); refreshMpPanel();
+    }
     function mpCollRowHtml(type, name, count, swatch, checked, delTip, isProt, isRoute) {
       // Protected point-lists show a 🔒 instead of the delete × (manage protection
       // in the lists-admin popup — press-and-hold the Points button).
@@ -18097,9 +18116,25 @@
         filtBtn + moreBtn +
         "</div>";
     }
-    var collItems = mpState.mpCollections().slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (c) {
-      return mpCollRowHtml("p", c.name, (c.points && c.points.length) || 0, "", !!mpState.shownColls()[c.name], t("points.deleteColl"), isCollProtected(c.name), isRouteColl(c));
+    // Lists in the user's own order, grouped in folders (owner, 2026-10-02): a list carries
+    // `folder` (name, "" = loose) and `order` (set by Move up / Move down); folders come
+    // first, each a collapsible <details> with a tick for all its lists, loose lists after.
+    var folderOpen = window.GeoState.get("mapPointsFolders", {}) || {};
+    var groups = Object.create(null), groupNames = [];
+    mpSortedColls().forEach(function (c) {
+      var f = String(c.folder || "");
+      if (!(f in groups)) { groups[f] = []; groupNames.push(f); }
+      groups[f].push({ c: c, html: mpCollRowHtml("p", c.name, (c.points && c.points.length) || 0, "", !!mpState.shownColls()[c.name], t("points.deleteColl"), isCollProtected(c.name), isRouteColl(c)) });
     });
+    var collItems = [];
+    groupNames.filter(Boolean).sort(function (a, b) { return a.localeCompare(b); }).forEach(function (f) {
+      var g = groups[f], allOn = g.every(function (x) { return !!mpState.shownColls()[x.c.name]; }), anyOn = g.some(function (x) { return !!mpState.shownColls()[x.c.name]; });
+      collItems.push('<details class="mp-folder"' + (folderOpen[f] === false ? "" : " open") + ' data-folder="' + escapeHtml(f) + '">' +
+        '<summary class="mp-folder-head"><input type="checkbox" class="mp-folder-cb" data-folder="' + escapeHtml(f) + '"' + (allOn ? " checked" : "") + (anyOn && !allOn ? ' data-partial="1"' : "") + ' title="' + escapeHtml(t("points.folderTick")) + '">' +
+        '<span class="mp-sw-ico mp-sw-folder">' + ico("folder") + '</span><span class="mp-coll-name">' + escapeHtml(f) + ' <span class="mp-coll-n">(' + g.length + ")</span></span></summary>" +
+        g.map(function (x) { return x.html; }).join("") + "</details>");
+    });
+    (groups[""] || []).forEach(function (x) { collItems.push(x.html); });
     var dsItems = detSets().slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (s) {
       var n = 0; Object.keys(s.detections || {}).forEach(function (k) { n += ((s.detections[k] || {}).rows || []).length; });
       return mpCollRowHtml("d", s.name, n, '<span class="mp-sw-set">' + ico("folder") + "</span>", !!mpState.shownDetSets()[s.name], t("dset.delete"));
@@ -18368,6 +18403,40 @@
         });
       });
     });
+      root.querySelectorAll(".mp-coll-up, .mp-coll-down").forEach(function (b) {
+        b.addEventListener("click", function (e) {
+          e.preventDefault(); var name = this.getAttribute("data-name"), dir = this.classList.contains("mp-coll-up") ? -1 : 1;
+          closeAnchoredMenu(); mpMoveColl(name, dir);
+        });
+      });
+      root.querySelectorAll(".mp-coll-folder").forEach(function (b) {
+        b.addEventListener("click", function (e) {
+          e.preventDefault(); var name = this.getAttribute("data-name");
+          var c = mpState.mpCollections().filter(function (x) { return x.name === name; })[0];
+          closeAnchoredMenu(); if (!c) return;
+          var have = []; mpState.mpCollections().forEach(function (x) { if (x.folder && have.indexOf(x.folder) < 0) have.push(x.folder); });
+          modalPrompt(t("points.folderPrompt") + (have.length ? "\n" + have.sort().join(" · ") : ""), c.folder || "").then(function (v) {
+            if (v == null) return;
+            v = String(v).trim(); if (v) c.folder = v; else delete c.folder;
+            delete c.order; saveMapPoints(); refreshMpPanel();
+          });
+        });
+      });
+      // Folder header: tick / untick every list in it; remember open / closed per folder.
+      root.querySelectorAll(".mp-folder-cb").forEach(function (cb) {
+        if (cb.getAttribute("data-partial")) cb.indeterminate = true;
+        cb.addEventListener("click", function (e) { e.stopPropagation(); });
+        cb.addEventListener("change", function () {
+          var f = this.getAttribute("data-folder"), on = this.checked;
+          mpState.mpCollections().forEach(function (c) { if (String(c.folder || "") === f) { if (on) mpState.shownColls()[c.name] = true; else delete mpState.shownColls()[c.name]; } });
+          saveShownState(); renderMapPoints();
+        });
+      });
+      root.querySelectorAll(".mp-folder").forEach(function (d) {
+        d.addEventListener("toggle", function () {
+          var st = window.GeoState.get("mapPointsFolders", {}) || {}; st[this.getAttribute("data-folder")] = this.open; window.GeoState.save({ mapPointsFolders: st });
+        });
+      });
       root.querySelectorAll(".mp-coll-nosync").forEach(function (b) {
       b.addEventListener("click", function (e) {
         e.preventDefault();
@@ -18413,6 +18482,11 @@
       if (type === "p") html += row("mp-coll-edit", ico("edit"), t("points.editList"), t("points.editDesc"),
                                     'data-name="' + escapeHtml(name) + '"');
       if (count) html += row("mp-coll-dl", ico("download"), t("points.download"), t("points.downloadDesc"));
+      if (type === "p") {
+        html += row("mp-coll-up", "\u25B2", t("points.moveUp"), t("points.moveDesc"), 'data-name="' + escapeHtml(name) + '"');
+        html += row("mp-coll-down", "\u25BC", t("points.moveDown"), t("points.moveDesc"), 'data-name="' + escapeHtml(name) + '"');
+        html += row("mp-coll-folder", ico("folder"), t("points.moveFolder"), t("points.moveFolderDesc"), 'data-name="' + escapeHtml(name) + '"');
+      }
       if (type === "p") {
         var noSync = !!(mpState.mpCollections().filter(function (x) { return x.name === name; })[0] || {}).noSync;
         html += row("mp-coll-nosync", ico(noSync ? "block" : "cloud"),

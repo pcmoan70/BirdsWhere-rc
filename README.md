@@ -648,7 +648,9 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   exclusions included; the filter is applied one second after the last tap and remembered on the
   device — a one-button Distance ⇄ Name sort toggle, and the merged points sorted by distance. Each saved
   list is one row — **tick · name · funnel · ⋯** — and the **⋯** opens a menu where every action is a
-  labelled row that says what it does: navigate, share link, edit list, download, delete (a protected
+  labelled row that says what it does: navigate, share link, edit list, download, **Move up / Move
+  down** (your own order), **Move to folder…** (lists can be grouped in folders; a folder header folds
+  away and its tick shows or hides every list in it), delete (a protected
   list shows the lock there instead of delete). **Press-and-hold or
   right-click** that button for the **Edit & protect lists** admin: rename a list, set its
   colour/tags for every point and tick **Protect from deletion** there (a protected list then shows a
