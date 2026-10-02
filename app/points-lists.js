@@ -52,6 +52,7 @@ window.AppPoints = (function () {
   // cheaply on edit/filter changes without touching the rest of the map.
   var mapPoints = [];
   var mpFilter = [];
+  var mpExclude = [];   // tags whose points are HIDDEN (the chip's third state: coloured, crossed out) — owner 2026-10-02
   var mpShown = true;   // master visibility toggle — hides all markers but keeps the data
   var mpLayer = null;
   // Named collections — saveable/retrievable point lists (e.g. "Owl nests",
@@ -335,6 +336,7 @@ window.AppPoints = (function () {
     loadListFilters();   // also when IndexedDB never hydrated (initMpSetStore bailed)
     mapPoints = (window.GeoState.get("mapPoints", []) || []).filter(function (p) { return p && isFinite(p.lat) && isFinite(p.lon); });
     mpFilter = (window.GeoState.get("mapPointsFilter", []) || []).map(normTag).filter(function (t, i, a) { return a.indexOf(t) === i; });
+    mpExclude = (window.GeoState.get("mapPointsExclude", []) || []).map(normTag).filter(function (t, i, a) { return a.indexOf(t) === i; });
     // With IndexedDB as the store the lists are already hydrated (initMpSetStore) and
     // the blob no longer carries them — reading it here would wipe them.
     if (!mpIdbReady) mpCollections = (window.GeoState.get("mapPointSets", []) || []).filter(function (c) { return c && c.name; });
@@ -1520,8 +1522,13 @@ window.AppPoints = (function () {
     // listPointPasses in app.js. A pin is judged only on the fields it HAS, so a list
     // imported before those fields existed is never hidden by them.
     if (listPointPasses && !listPointPasses(p)) return false;
-    if (!mpFilter.length) return true;
     var tags = p.tags || [];
+    // An EXCLUDED tag hides its points whatever else is ticked ("" = the untagged ones).
+    if (mpExclude.length) {
+      if (!tags.length) { if (mpExclude.indexOf("") >= 0) return false; }
+      else for (var x = 0; x < tags.length; x++) if (mpExclude.indexOf(tags[x]) >= 0) return false;
+    }
+    if (!mpFilter.length) return true;
     if (!tags.length) return mpFilter.indexOf("") >= 0;
     for (var i = 0; i < tags.length; i++) if (mpFilter.indexOf(tags[i]) >= 0) return true;
     return false;
@@ -2028,6 +2035,7 @@ window.AppPoints = (function () {
     setMapPoints: function (v) { mapPoints = v; },
     mpFilter: function () { return mpFilter; }, normTag: normTag,
     setMpFilter: function (v) { mpFilter = v; },
+    mpExclude: function () { return mpExclude; }, setMpExclude: function (v) { mpExclude = v; },
     mpShown: function () { return mpShown; },
     setMpShown: function (v) { mpShown = v; },
     mpLayer: function () { return mpLayer; },

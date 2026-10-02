@@ -1547,6 +1547,7 @@
   "points.chooseFile": "Vali fail…",
   "kml.importing": "Punktide lisamine nimekirja „{name}“ …",
   "points.tagsAll": "Kõik",
+  "points.chipHint": "Klõps vahetab: mõjuta → näita ainult neid → peida need (läbikriipsutatud)",
   "points.tagsAllHint": "Vali kõik sildid — või mitte ühtegi, kui kõik on valitud",
   "photo.holdBig": "Hoia all, et näha pilti täissuuruses"
 }

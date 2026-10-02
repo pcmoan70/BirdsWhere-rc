@@ -1547,6 +1547,7 @@
   "points.chooseFile": "Pasirinkti failą…",
   "kml.importing": "Taškai pridedami į „{name}“…",
   "points.tagsAll": "Visos",
+  "points.chipHint": "Spustelėjimas keičia: be poveikio → rodyti tik šiuos → slėpti šiuos (perbraukta)",
   "points.tagsAllHint": "Pasirinkti visas žymas — arba nė vienos, kai pasirinktos visos",
   "photo.holdBig": "Palaikykite nuspaudę, kad pamatytumėte viso dydžio nuotrauką"
 }

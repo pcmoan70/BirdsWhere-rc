@@ -1547,6 +1547,7 @@
   "points.chooseFile": "Bestand kiezen…",
   "kml.importing": "Punten worden aan ‘{name}’ toegevoegd…",
   "points.tagsAll": "Alle",
+  "points.chipHint": "Klik om te wisselen: geen effect → alleen deze tonen → deze verbergen (doorgestreept)",
   "points.tagsAllHint": "Alle tags selecteren — of geen, als ze allemaal geselecteerd zijn",
   "photo.holdBig": "Ingedrukt houden voor de foto op volle grootte"
 }

@@ -17942,13 +17942,17 @@
       if (ra[1] !== rb[1]) return ra[1] - rb[1];
       return tagDisplay(a).localeCompare(tagDisplay(b));
     });
+    // Three states per chip (owner, 2026-10-02): plain = no say, coloured = included,
+    // coloured and crossed out = EXCLUDED (its points hidden whatever else is ticked).
+    var chipCls = function (tag) {
+      if (mpState.mpExclude().indexOf(tag) >= 0) return " is-excluded";
+      return mpState.mpFilter().indexOf(tag) >= 0 ? " is-active" : "";
+    };
     var chipsHtml = allTags.map(function (tag) {
-      var active = mpState.mpFilter().indexOf(tag) >= 0;
-      return '<button type="button" class="mp-chip' + (active ? " is-active" : "") + '" data-tag="' + escapeHtml(tag) + '" style="--mp-c:' + mpHashColor(tag) + '">' + escapeHtml(tagDisplay(tag)) + ' <span class="mp-chip-n">(' + (tagCount[tag] || 0) + ")</span></button>";
+      return '<button type="button" class="mp-chip' + chipCls(tag) + '" data-tag="' + escapeHtml(tag) + '" style="--mp-c:' + mpHashColor(tag) + '" title="' + escapeHtml(t("points.chipHint")) + '">' + escapeHtml(tagDisplay(tag)) + ' <span class="mp-chip-n">(' + (tagCount[tag] || 0) + ")</span></button>";
     }).join("");
     if (hasUntagged) {
-      var actNoTag = mpState.mpFilter().indexOf("") >= 0;
-      chipsHtml += '<button type="button" class="mp-chip' + (actNoTag ? " is-active" : "") + '" data-tag="">' + escapeHtml(t("points.notag")) + ' <span class="mp-chip-n">(' + untaggedN + ")</span></button>";
+      chipsHtml += '<button type="button" class="mp-chip' + chipCls("") + '" data-tag="" title="' + escapeHtml(t("points.chipHint")) + '">' + escapeHtml(t("points.notag")) + ' <span class="mp-chip-n">(' + untaggedN + ")</span></button>";
     }
     // "All" in front: one click selects every tag (then untick the few to exclude), the next
     // clears them all (owner, 2026-10-01). Only worth showing with two or more chips.
@@ -18169,16 +18173,18 @@
     panel.querySelectorAll(".mp-chip").forEach(function (b) {
       b.addEventListener("click", function () {
         var chips = panel.querySelectorAll(".mp-chip");
-        if (this.getAttribute("data-all")) {   // every tag ↔ none
+        if (this.getAttribute("data-all")) {   // every tag ↔ none (and no exclusions either way)
           var every = mpAllTags().concat(mpState.mapPoints().some(function (p) { return !p.tags || !p.tags.length; }) ? [""] : []);
           var on = every.every(function (tg) { return mpState.mpFilter().indexOf(tg) >= 0; });
-          mpState.setMpFilter(on ? [] : every);
-          chips.forEach(function (c) { c.classList.toggle("is-active", !on); });
+          mpState.setMpFilter(on ? [] : every); mpState.setMpExclude([]);
+          chips.forEach(function (c) { c.classList.toggle("is-active", !on); c.classList.remove("is-excluded"); });
         } else {
+          // The cycle: no say → included → excluded → no say.
           var tag = this.getAttribute("data-tag");
-          var i = mpState.mpFilter().indexOf(tag);
-          if (i >= 0) mpState.mpFilter().splice(i, 1); else mpState.mpFilter().push(tag);
-          this.classList.toggle("is-active", i < 0);
+          var fi = mpState.mpFilter().indexOf(tag), xi = mpState.mpExclude().indexOf(tag);
+          if (xi >= 0) { mpState.mpExclude().splice(xi, 1); this.classList.remove("is-excluded"); }
+          else if (fi >= 0) { mpState.mpFilter().splice(fi, 1); mpState.mpExclude().push(tag); this.classList.remove("is-active"); this.classList.add("is-excluded"); }
+          else { mpState.mpFilter().push(tag); this.classList.add("is-active"); }
           var allC = panel.querySelector(".mp-chip-all");
           if (allC) allC.classList.toggle("is-active", Array.prototype.every.call(chips, function (c) { return c.getAttribute("data-all") || c.classList.contains("is-active"); }));
         }
@@ -18186,7 +18192,7 @@
         // alone (owner, 2026-10-01); it is not part of the Drive sync. NOTHING heavy on the
         // click itself: the full save serialises every stored point (the lag felt with 35k
         // points), so the redraw waits for the timer. The chip blinks until the map caught up.
-        window.GeoState.save({ mapPointsFilter: mpState.mpFilter().slice() });
+        window.GeoState.save({ mapPointsFilter: mpState.mpFilter().slice(), mapPointsExclude: mpState.mpExclude().slice() });
         clearTimeout(mpChipTimer);
         var el = this;
         mpChipTimer = setTimeout(function () { mpChipTimer = null; mpState.mpFilterRefresh(el); }, 1000);

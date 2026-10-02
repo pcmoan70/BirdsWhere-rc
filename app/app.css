@@ -2093,6 +2093,7 @@ button.dd-name:hover { text-decoration: underline; }
   color: var(--ink, inherit); line-height: 1.4;
 }
 .mp-chip.is-active { background: var(--mp-c, var(--brand, #0b3a3a)); color: #fff; border-color: var(--mp-c, var(--brand, #0b3a3a)); }
+.mp-chip.is-excluded { background: var(--mp-c, var(--brand, #0b3a3a)); color: #fff; border-color: var(--mp-c, var(--brand, #0b3a3a)); text-decoration: line-through; text-decoration-thickness: 2px; opacity: .7; }   /* third state: these points are hidden */
 .mp-list { max-height: 32vh; overflow-y: auto; }
 .mp-list .dd-empty { font-size: var(--fs-s); color: var(--ink-muted, #5b6f69); padding: 8px 10px; margin: 0; }
 .mp-row { display: flex; align-items: center; gap: 6px; }

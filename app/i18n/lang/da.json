@@ -1547,6 +1547,7 @@
   "points.chooseFile": "Vælg fil…",
   "kml.importing": "Tilføjer punkterne til »{name}« …",
   "points.tagsAll": "Alle",
+  "points.chipHint": "Klik for at skifte: ingen virkning → vis kun disse → skjul disse (gennemstreget)",
   "points.tagsAllHint": "Vælg alle tags – eller ingen, når alle er valgt",
   "photo.holdBig": "Tryk og hold for billedet i fuld størrelse"
 }

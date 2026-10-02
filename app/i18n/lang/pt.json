@@ -1547,6 +1547,7 @@
   "points.chooseFile": "Escolher ficheiro…",
   "kml.importing": "A adicionar os pontos a «{name}»…",
   "points.tagsAll": "Todas",
+  "points.chipHint": "Clique para alternar: sem efeito → mostrar só estes → ocultar estes (riscado)",
   "points.tagsAllHint": "Selecionar todas as etiquetas — ou nenhuma quando todas estão selecionadas",
   "photo.holdBig": "Mantenha premido para a imagem em tamanho real"
 }

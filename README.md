@@ -642,8 +642,11 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   rendered as HTML), a copyable-coordinates pill, and a *Save to list* picker. The **Points**
   header button (badge = number of lists) opens a panel of tick-to-show lists, per-tag filter
   chips — ordered counts · months and season · mention categories · other words · species names,
-  each with the number of shown points carrying it, plus an **All** chip that selects every tag or
-  clears them all; the filter is applied one second after the last tap — a one-button Distance ⇄ Name sort toggle, and the merged points sorted by distance. Each saved
+  each with the number of shown points carrying it. A chip cycles through three states: no say →
+  **included** (coloured; only tagged points show) → **excluded** (coloured, crossed out; its points
+  are hidden whatever else is ticked) → no say. An **All** chip selects every tag or clears them all,
+  exclusions included; the filter is applied one second after the last tap and remembered on the
+  device — a one-button Distance ⇄ Name sort toggle, and the merged points sorted by distance. Each saved
   list is one row — **tick · name · funnel · ⋯** — and the **⋯** opens a menu where every action is a
   labelled row that says what it does: navigate, share link, edit list, download, delete (a protected
   list shows the lock there instead of delete). **Press-and-hold or

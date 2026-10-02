@@ -1547,6 +1547,7 @@
   "points.chooseFile": "Wybierz plik…",
   "kml.importing": "Dodawanie punktów do „{name}”…",
   "points.tagsAll": "Wszystkie",
+  "points.chipHint": "Kliknij, aby przełączać: bez wpływu → pokaż tylko te → ukryj te (przekreślone)",
   "points.tagsAllHint": "Zaznacz wszystkie tagi — albo żaden, gdy wszystkie są zaznaczone",
   "photo.holdBig": "Przytrzymaj, aby zobaczyć zdjęcie w pełnym rozmiarze"
 }
