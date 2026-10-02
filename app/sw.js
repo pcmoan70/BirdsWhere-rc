@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1988";
+var VERSION = "v1989";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Repairs devices stuck on the copy that would not start (\u201clabelForSci is not defined\u201d): this version takes over there by itself. Everyone else updates as usual.",
-  "\u2022 Imported KMZ/KML lists built from GBIF or Artsobservasjoner show like fetched data (legend, translated names, species menu, source link)."
+  "\u2022 Much faster with big imported lists: the habitat probability is now computed once per species (its latest record) for the legend, table and Images views; the per-record values are computed only when the observation list is opened. The point prediction no longer waits behind that work."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

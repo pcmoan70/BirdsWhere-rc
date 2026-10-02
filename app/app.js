@@ -14023,6 +14023,7 @@
     updateRecencyNote();
   }
   function renderPlottedObsPage() {
+    maybeComputeDetProbs("rows");   // the observation list: every record it shows gets its own checklist probability
     var rec = document.getElementById("sp-records"); if (!rec) return;
     spPageIsObs = true;
     var tbl = document.getElementById("species-list-table"); if (tbl) tbl.style.display = "none";
@@ -15850,7 +15851,15 @@
     });
     if (changed) saveMapPoints();
   }
-  function computeDetProbs(sig) {
+  // scope "species" (the default, run whenever the plotted set changes): ONE inference per
+  // species — its latest observation's cell + week — enough for the legend order, the ◉
+  // cue and the Images / table views. scope "rows": every record on screen in the
+  // observation list, grouped by checklist (cell + week), started when that view opens
+  // (owner, 2026-10-02: the per-row pass over 100k-record person lists kept the worker busy
+  // for minutes and the point prediction — "Forutsier arter ved …" — queued behind it).
+  var detProbScope = "";
+  function computeDetProbs(sig, scope) {
+    scope = scope || "species";
     var keys = Object.keys(detPlot);
     var idxOf = Object.create(null);
     keys.forEach(function (k) { var lbl = labelsByKey[detPlot[k].key || k]; idxOf[k] = (lbl && lbl.index != null) ? lbl.index : -1; });
@@ -15863,7 +15872,7 @@
         detProb[k] = (mn === Infinity) ? -1 : mn;       // legend / list order (rarest = lowest)
         detProbMax[k] = (mx === -Infinity) ? -1 : mx;   // ◉ rare
       });
-      detProbSig = sig; detProbBusy = false;
+      detProbSig = sig; detProbScope = scope; detProbBusy = false;
       try { persistListProbs(keys); } catch (e) {}       // saved lists remember their rows' probabilities
       try { harvestLocalRarities(keys); } catch (e) {}   // low-probability detections → the rarity list
       try { maybeShowRarityTicker(); } catch (e) {}      // a fetch was waiting on these probabilities
@@ -15897,10 +15906,13 @@
     var need = Object.create(null), meta = [];
     keys.forEach(function (k) {
       var idx = idxOf[k]; if (idx < 0) return;
-      (detPlot[k].rows || []).forEach(function (r) {
+      var rows = detPlot[k].rows || [], last = null;
+      if (scope !== "rows") rows.forEach(function (r) { if (valid(r) && (!last || String(r.date || "") > String(last.date || ""))) last = r; });   // the species' latest record
+      rows.forEach(function (r) {
         if (!valid(r)) return;
         var wk = obsWeekOf(r), cell = snapCell(+r.lat, +r.lon), nk = wk + "|" + cell.key, ck = idx + "|" + nk;
         if (ck in obsProbCache) { r._prob = obsProbCache[ck]; return; }
+        if (scope !== "rows" ? r !== last : !detRowPasses(r)) return;   // species scope: only the latest record; rows scope: only what the list shows
         var s = need[nk] || (need[nk] = { lat: cell.lat, lon: cell.lon, week: wk, idxs: Object.create(null) });
         s.idxs[idx] = 1; meta.push({ r: r, ck: ck });
       });
@@ -15920,11 +15932,12 @@
       }, function () { detProbBusy = false; });
     })();
   }
-  function maybeComputeDetProbs() {
+  function maybeComputeDetProbs(scope) {
+    scope = scope || "species";
     if (!worker || detProbBusy) return;
-    if (detPlotSig() === detProbSig) return;   // already computed for this exact plotted set
+    if (detPlotSig() === detProbSig && (scope !== "rows" || detProbScope === "rows")) return;   // already computed for this exact plotted set (and depth)
     detProbBusy = true;
-    computeDetProbs(detPlotSig());
+    computeDetProbs(detPlotSig(), scope);
   }
   // Per-day histogram of the plotted observations in the header's flexible middle.
   // Shown only when there's room (CSS hides it under 860 px — typically mobile);
@@ -24578,6 +24591,7 @@
     hideLocHoverMap();   // the hovered place name is about to be re-rendered away
     hideSpgTip();
     wireYearProbTips(document.getElementById("species-panel"));   // once; delegated, so re-renders need nothing
+    if (spLayout === "observation") maybeComputeDetProbs("rows");   // per-checklist probabilities only for the observation list
     if (spLayout === "table" || spLayout === "gallery") {
       // The gallery is the table's rows as picture cards: run the table pipeline (filters,
       // distances, sort) so the cards follow the same order, then swap the presentation.
