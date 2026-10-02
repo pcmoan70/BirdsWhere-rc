@@ -17188,8 +17188,32 @@
     if (!sci && !p.spKey) return true;
     return false;
   }
+  // Re-injection is skipped outright when nothing that decides it changed: the ticked lists
+  // (and their sizes), the tag chips, the list funnels. The pane filters (date, observer …)
+  // are NOT part of it — list rows get them at draw time like fetched rows — so a filter
+  // change costs what it costs for fetched data, not a rebuild of 100k rows (owner,
+  // 2026-10-02: "The filtering is very very slow on imported point lists"). Row objects are
+  // kept per point (WeakMap, never persisted), and rows are pushed straight into the
+  // species' array — dedup only against FETCHED rows of the same species.
+  var _listSyncSig = "", _listSyncN = 0, _listRowOf = (typeof WeakMap === "function") ? new WeakMap() : null;
+  function listSyncSig() {
+    var parts = [mpState.mpFilter().join("\u0001"), mpState.mpExclude().join("\u0001")];
+    mpState.mpCollections().forEach(function (c) {
+      if (!mpState.shownColls()[c.name]) return;
+      var lf = mpState.listFilter(c.name);
+      parts.push(c.name + "#" + ((c.points || []).length) + "#" + (lf ? JSON.stringify(lf) : ""));
+    });
+    return parts.join("\u0002");
+  }
+  function countListRows() {
+    var n = 0, ks = Object.keys(detPlot);
+    for (var i = 0; i < ks.length; i++) { var rows = detPlot[ks[i]].rows || []; for (var j = 0; j < rows.length; j++) if (rows[j]._list) n++; }
+    return n;
+  }
   function syncListDetections() {
     if (!map || typeof detPlot === "undefined") return;
+    var sig = listSyncSig();
+    if (sig === _listSyncSig && countListRows() === _listSyncN) { if (perfOn) console.log("SYNC list rows: unchanged (" + _listSyncN + ")"); return; }
     var changed = false, dropped = 0, injected = 0, skipped = 0;
     // 1. Drop previously-injected list rows; remove species left with no rows
     //    (i.e. list-only species whose list is no longer shown).
@@ -17198,42 +17222,52 @@
       e.rows = (e.rows || []).filter(function (r) { return !r._list; });
       if (e.rows.length !== before) { changed = true; dropped += before - e.rows.length; }
       // A list-only species loses all its rows here and is re-injected just below — its legend
-      // SELECTION must survive that round trip. Deleting it made every renderMapPoints (a pan,
-      // a chip, a tick) silently undo a tap on a list species' name (owner, 2026-10-01:
-      // "clicking species name in legend still does not trigger filtering"). A stale key for a
-      // species that truly left is harmless: detSelectionActive only counts keys in detPlot.
+      // SELECTION must survive that round trip (owner, 2026-10-01). A stale key for a species
+      // that truly left is harmless: detSelectionActive only counts keys in detPlot.
       if (!e.rows.length) { if (e.group) { map.removeLayer(e.group); } delete detPlot[k]; }
     });
-    // 2. Inject the current shown lists' detection points, grouped by species key.
+    // 2. Inject the current shown lists' records, grouped by species key.
+    var fetchedIds = Object.create(null);   // species key → Set of its fetched rows' ids (built lazily)
+    function rid(r) { return r.lat + "," + r.lon + "|" + (r.date || "") + "|" + (r.url || "") + "|" + (r.src || ""); }
     mpState.mpCollections().forEach(function (c) {
       if (!mpState.shownColls()[c.name]) return;
-      var col = collColor(c), lf = mpState.listFilter(c.name);
-      (c.points || []).forEach(function (p) {
+      var col = collColor(c), lf = mpState.listFilter(c.name), pts = c.points || [];
+      for (var i = 0; i < pts.length; i++) {
+        var p = pts[i]; if (!p) continue;
         var key = mpState.detKeyOf(p);   // stored key, model species by sci, or an "x:" extra (old KMZ lists too)
-        if (!p || !key || !isFinite(p.lat) || !isFinite(p.lon)) return;
-        // The list's OWN filters — the tag chips (years, months, categories) and the list's
-        // funnel (date range / observers) — used to reach only the plain pins; the species
-        // points were injected whatever the chips said (owner, 2026-10-01: "the map points
-        // are not filtered like for fetched data").
-        if (!mpVisible(p) || !mpState.listOwnFilterPasses(p, lf)) { skipped++; return; }
+        if (!key || !isFinite(p.lat) || !isFinite(p.lon)) continue;
+        if (!mpState.mpTagPasses(p) || !mpState.listOwnFilterPasses(p, lf)) { skipped++; continue; }
         // The whole record rides along (observer, note, place, flags …) so a list made from an
         // observation file — a .share person list, a KMZ with ExtendedData — reads like a fetch.
-        var row = { lat: +p.lat, lon: +p.lon, date: p.date || "", url: p.url || "", count: p.count, act: p.act || "", src: p.src || "list",
-          observer: p.observer || "", note: p.note || "", place: p.place || "", flags: p.flags || "", origin: p.origin || "",
-          placeCoarse: !!p.placeCoarse, posFuzzM: +p.posFuzzM || 0, _list: true, listColor: col, _listName: c.name, _mpId: p.id };
+        var row = _listRowOf && _listRowOf.get(p);
+        if (!row) {
+          row = { lat: +p.lat, lon: +p.lon, date: p.date || "", url: p.url || "", count: p.count, act: p.act || "", src: p.src || "list",
+            observer: p.observer || "", note: p.note || "", place: p.place || "", flags: p.flags || "", origin: p.origin || "",
+            placeCoarse: !!p.placeCoarse, posFuzzM: +p.posFuzzM || 0, _list: true, listColor: col, _listName: c.name, _mpId: p.id };
+          if (p.prob != null && +p.prob >= 0) { row._prob = +p.prob; seedObsProb(key, row); }   // probability stored on the list point → no inference again
+          if (_listRowOf) _listRowOf.set(p, row);
+        } else { row.listColor = col; row._listName = c.name; }
         var e = detPlot[key];
         if (!e) e = detPlot[key] = { key: key, name: (key.indexOf("x:") === 0 ? (p.sci || p.name) : p.name) || key, color: p.spColor || "#888", rows: [], group: null, cls: p.spCls || (taxByCode[key] && taxByCode[key].class_name) || "" };
-        if (p.prob != null && +p.prob >= 0) { row._prob = +p.prob; seedObsProb(key, row); }   // probability stored on the list point (computed on an earlier run) → no inference again
-        e.rows = mergeDetRows(e.rows, [row]);
+        else if (e.rows.length) {
+          // The species also has FETCHED rows → skip a list row that duplicates one of them.
+          var ids = fetchedIds[key];
+          if (!ids) { ids = fetchedIds[key] = Object.create(null); for (var q = 0; q < e.rows.length; q++) if (!e.rows[q]._list) ids[rid(e.rows[q])] = 1; }
+          if (ids[rid(row)]) { skipped++; continue; }
+        }
+        if (row._ts == null) row._ts = Date.now();
+        e.rows.push(row);
         changed = true; injected++;
-      });
+      }
     });
+    _listSyncSig = sig; _listSyncN = injected;
     if (perfOn) console.log("SYNC list rows: dropped " + dropped + ", injected " + injected + ", skipped by list filters " + skipped + ", changed " + changed);
     if (!changed) return;   // no list rows added/removed → fetched layers already current
     recolorDetections();
     rebuildDetLayers();
     updateDetLegend();
   }
+
   // Detection sets shown as overlays — one map layer-group per ticked set, kept
   // in sync with shownDetSets. Each set's stored dots are drawn in their colour.
   // ---- opening a KML / KMZ / GeoJSON from OUTSIDE the app -------------------------------

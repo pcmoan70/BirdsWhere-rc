@@ -1549,6 +1549,12 @@ window.AppPoints = (function () {
     // listPointPasses in app.js. A pin is judged only on the fields it HAS, so a list
     // imported before those fields existed is never hidden by them.
     if (listPointPasses && !listPointPasses(p)) return false;
+    return mpTagPasses(p);
+  }
+  // The tag-chip part alone (include / exclude), for the species records a list injects
+  // into the map: THEIR date / observer filters are applied where fetched rows get them
+  // (detRowPasses at draw time), so a pane filter change never re-injects a list.
+  function mpTagPasses(p) {
     var tags = p.tags || [];
     // An EXCLUDED tag hides its points whatever else is ticked ("" = the untagged ones).
     if (mpExclude.length) {
@@ -2061,7 +2067,7 @@ window.AppPoints = (function () {
     mapPoints: function () { return mapPoints; },
     setMapPoints: function (v) { mapPoints = v; },
     mpFilter: function () { return mpFilter; }, normTag: normTag,
-    setMpFilter: function (v) { mpFilter = v; }, detKeyOf: detKeyOf,
+    setMpFilter: function (v) { mpFilter = v; }, detKeyOf: detKeyOf, mpTagPasses: mpTagPasses,
     mpExclude: function () { return mpExclude; }, setMpExclude: function (v) { mpExclude = v; },
     mpShown: function () { return mpShown; },
     setMpShown: function (v) { mpShown = v; },
