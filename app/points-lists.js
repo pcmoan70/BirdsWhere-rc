@@ -1051,6 +1051,19 @@ window.AppPoints = (function () {
     renderMapPoints();
     return { points: npts, stripped: stripped, before: before, after: after, recovered: recovered };
   }
+  // The key a list point plots under: its stored model key, else the model species its
+  // scientific name resolves to, else an "x:<sci>" extra — the same keys fetched data uses.
+  // So EVERY record with a species, model or not, goes through the detection pipeline:
+  // legend row, translated name, species menu, source link, ⓘ (owner, 2026-10-02: "the popup
+  // windows for imported lists … should look the same as fetched data").
+  function detKeyOf(p) {
+    if (!p) return "";
+    if (p.spKey) return p.spKey;
+    var sci = String(p.sci || "").trim(); if (!sci) return "";
+    var l = labelForSci(sci);
+    return l ? l.key : "x:" + sci;
+  }
+  var SRC_OF = { ao: "Artsobs", gbif_sql: "GBIF", gbif_api: "GBIF", parquet: "GBIF", artsobservasjoner: "Artsobs", artportalen: "Artportalen" };
   function applyKmlFields(pt, data) {
     if (!data) return;
     Object.keys(FIELD_ALIASES).forEach(function (field) {
@@ -1070,8 +1083,21 @@ window.AppPoints = (function () {
     if (!pt.url) {
       var u = data.url || data.link || data.references || data.occurrenceURL;
       if (!u && data.gbifID) u = "https://www.gbif.org/occurrence/" + String(data.gbifID).trim();
+      // The builders' `id`: a GBIF occurrence id, or "AO<n>" = an Artsobservasjoner sighting.
+      var rid = String(data.id || "").trim();
+      if (!u && /^AO\d+$/.test(rid)) u = "https://mobil.artsobservasjoner.no/sighting/" + rid.slice(2);
+      else if (!u && /^\d{5,}$/.test(rid)) u = "https://www.gbif.org/occurrence/" + rid;
       if (u) pt.url = String(u).trim();
     }
+    // Source badge + class, so the injected record reads like a fetch (Artsobs / GBIF, Aves …).
+    if (!pt.src) {
+      var sk = String(data.src || "").trim().toLowerCase(), ds = String(data.dataset || data.datasetName || "").trim().toLowerCase();
+      pt.src = SRC_OF[sk] || SRC_OF[ds] || (/artsobs/.test(ds) ? "Artsobs" : (data.gbifID || /^\d{5,}$/.test(String(data.id || "")) ? "GBIF" : ""));
+      if (!pt.src) delete pt.src;
+    }
+    var cl = String(data["class"] || data.klass || data.taxonClass || "").trim();
+    if (cl && !pt.spCls) pt.spCls = cl;
+    if (!pt.spKey && pt.sci) { var lk = labelForSci(pt.sci); if (lk) pt.spKey = lk.key; }
     // Tags may travel as a field too ("a; b" or "a, b"), alongside whatever the dialog mapped.
     var tg = data.tags || data.tag;
     if (tg) {
@@ -1964,7 +1990,7 @@ window.AppPoints = (function () {
     shownLists.forEach(function (c) {
       var want = nLeft > 0 ? Math.max(1, Math.floor(left / nLeft)) : 0;
       var have = 0;
-      (c.points || []).forEach(function (p) { if (p && !p.spKey && isFinite(p.lat) && isFinite(p.lon)) have++; });
+      (c.points || []).forEach(function (p) { if (p && !detKeyOf(p) && isFinite(p.lat) && isFinite(p.lon)) have++; });
       var give = Math.min(want, have);
       share[c.name] = (budget === Infinity) ? Infinity : give;
       left -= give; nLeft--;
@@ -1976,7 +2002,7 @@ window.AppPoints = (function () {
       var quota = share[c.name], used = 0;
       (c.points || []).forEach(function (p) {
         if (!p || !isFinite(p.lat) || !isFinite(p.lon)) return;
-        if (p.spKey) return;   // detection point → detPlot pipeline (handled below)
+        if (detKeyOf(p)) return;   // a record with a species → detPlot pipeline (handled below)
         // The view test goes FIRST because it is the cheapest by far: four number
         // comparisons against the filters' string folding and date arithmetic.
         if (bb && (p.lat < bb[0] || p.lat > bb[2] || p.lon < bb[1] || p.lon > bb[3])) return;
@@ -2034,7 +2060,7 @@ window.AppPoints = (function () {
     mapPoints: function () { return mapPoints; },
     setMapPoints: function (v) { mapPoints = v; },
     mpFilter: function () { return mpFilter; }, normTag: normTag,
-    setMpFilter: function (v) { mpFilter = v; },
+    setMpFilter: function (v) { mpFilter = v; }, detKeyOf: detKeyOf,
     mpExclude: function () { return mpExclude; }, setMpExclude: function (v) { mpExclude = v; },
     mpShown: function () { return mpShown; },
     setMpShown: function (v) { mpShown = v; },

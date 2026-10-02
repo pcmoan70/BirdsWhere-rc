@@ -17188,7 +17188,8 @@
       if (!mpState.shownColls()[c.name]) return;
       var col = collColor(c), lf = mpState.listFilter(c.name);
       (c.points || []).forEach(function (p) {
-        if (!p || !p.spKey || !isFinite(p.lat) || !isFinite(p.lon)) return;
+        var key = mpState.detKeyOf(p);   // stored key, model species by sci, or an "x:" extra (old KMZ lists too)
+        if (!p || !key || !isFinite(p.lat) || !isFinite(p.lon)) return;
         // The list's OWN filters — the tag chips (years, months, categories) and the list's
         // funnel (date range / observers) — used to reach only the plain pins; the species
         // points were injected whatever the chips said (owner, 2026-10-01: "the map points
@@ -17199,9 +17200,9 @@
         var row = { lat: +p.lat, lon: +p.lon, date: p.date || "", url: p.url || "", count: p.count, act: p.act || "", src: p.src || "list",
           observer: p.observer || "", note: p.note || "", place: p.place || "", flags: p.flags || "", origin: p.origin || "",
           placeCoarse: !!p.placeCoarse, posFuzzM: +p.posFuzzM || 0, _list: true, listColor: col, _listName: c.name, _mpId: p.id };
-        var e = detPlot[p.spKey];
-        if (!e) e = detPlot[p.spKey] = { key: p.spKey, name: p.name || p.spKey, color: p.spColor || "#888", rows: [], group: null, cls: p.spCls || (taxByCode[p.spKey] && taxByCode[p.spKey].class_name) || "" };
-        if (p.prob != null && +p.prob >= 0) { row._prob = +p.prob; seedObsProb(p.spKey, row); }   // probability stored on the list point (computed on an earlier run) → no inference again
+        var e = detPlot[key];
+        if (!e) e = detPlot[key] = { key: key, name: (key.indexOf("x:") === 0 ? (p.sci || p.name) : p.name) || key, color: p.spColor || "#888", rows: [], group: null, cls: p.spCls || (taxByCode[key] && taxByCode[key].class_name) || "" };
+        if (p.prob != null && +p.prob >= 0) { row._prob = +p.prob; seedObsProb(key, row); }   // probability stored on the list point (computed on an earlier run) → no inference again
         e.rows = mergeDetRows(e.rows, [row]);
         changed = true; injected++;
       });
