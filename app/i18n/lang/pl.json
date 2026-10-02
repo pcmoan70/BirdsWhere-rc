@@ -1523,6 +1523,8 @@
   "points.moveFolder": "Przenieś do folderu…",
   "points.moveFolderDesc": "Umieść listę w folderze; pusta nazwa ją wyjmuje",
   "points.folderPrompt": "Nazwa folderu (pusta = bez folderu)",
+  "points.noFolder": "Bez folderu",
+  "points.newFolder": "Nowy folder…",
   "points.folderTick": "Pokaż lub ukryj wszystkie listy w folderze",
   "points.syncOnDesc": "Podróżuje z kopią zapasową na inne urządzenia. Wyłącz dla danych referencyjnych, które możesz zaimportować ponownie.",
   "points.syncOff": "Ta lista nie jest synchronizowana",

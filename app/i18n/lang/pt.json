@@ -1523,6 +1523,8 @@
   "points.moveFolder": "Mover para pasta…",
   "points.moveFolderDesc": "Coloca a lista numa pasta; um nome vazio tira-a de lá",
   "points.folderPrompt": "Nome da pasta (vazio = sem pasta)",
+  "points.noFolder": "Sem pasta",
+  "points.newFolder": "Nova pasta…",
   "points.folderTick": "Mostrar ou ocultar todas as listas da pasta",
   "points.syncOnDesc": "Viaja com a cópia de segurança para os seus outros dispositivos. Desligue para dados de referência que possa reimportar.",
   "points.syncOff": "Esta lista não é sincronizada",

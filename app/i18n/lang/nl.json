@@ -1523,6 +1523,8 @@
   "points.moveFolder": "Naar map verplaatsen…",
   "points.moveFolderDesc": "Zet de lijst in een map; een lege naam haalt hem eruit",
   "points.folderPrompt": "Mapnaam (leeg = geen map)",
+  "points.noFolder": "Geen map",
+  "points.newFolder": "Nieuwe map…",
   "points.folderTick": "Alle lijsten in deze map tonen of verbergen",
   "points.syncOnDesc": "Hij reist met de back-up mee naar je andere apparaten. Zet uit voor referentiegegevens die je opnieuw kunt importeren.",
   "points.syncOff": "Deze lijst wordt niet gesynchroniseerd",

@@ -1523,6 +1523,8 @@
   "points.moveFolder": "Siirrä kansioon…",
   "points.moveFolderDesc": "Laita lista kansioon; tyhjä nimi poistaa sen kansiosta",
   "points.folderPrompt": "Kansion nimi (tyhjä = ei kansiota)",
+  "points.noFolder": "Ei kansiota",
+  "points.newFolder": "Uusi kansio…",
   "points.folderTick": "Näytä tai piilota kansion kaikki listat",
   "points.syncOnDesc": "Se kulkee varmuuskopion mukana muihin laitteisiisi. Kytke pois viitetiedoille, jotka voit tuoda uudelleen.",
   "points.syncOff": "Ei synkronoida tätä listaa",

@@ -1523,6 +1523,8 @@
   "points.moveFolder": "Flytta till mapp…",
   "points.moveFolderDesc": "Lägg listan i en mapp; tomt namn tar den ur",
   "points.folderPrompt": "Mappnamn (tomt = ingen mapp)",
+  "points.noFolder": "Ingen mapp",
+  "points.newFolder": "Ny mapp…",
   "points.folderTick": "Visa eller dölj alla listor i mappen",
   "points.syncOnDesc": "Den följer med säkerhetskopian till dina andra enheter. Stäng av för referensdata du kan importera igen.",
   "points.syncOff": "Synkar inte denna lista",

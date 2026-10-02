@@ -1523,6 +1523,8 @@
   "points.moveFolder": "Mover a carpeta…",
   "points.moveFolderDesc": "Pone la lista en una carpeta; un nombre vacío la saca",
   "points.folderPrompt": "Nombre de la carpeta (vacío = sin carpeta)",
+  "points.noFolder": "Sin carpeta",
+  "points.newFolder": "Nueva carpeta…",
   "points.folderTick": "Mostrar u ocultar todas las listas de la carpeta",
   "points.syncOnDesc": "Viaja con la copia de seguridad a tus otros dispositivos. Desactívalo para datos de referencia que puedas reimportar.",
   "points.syncOff": "Esta lista no se sincroniza",

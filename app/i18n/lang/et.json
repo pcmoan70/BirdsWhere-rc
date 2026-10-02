@@ -1523,6 +1523,8 @@
   "points.moveFolder": "Teisalda kausta…",
   "points.moveFolderDesc": "Pane nimekiri kausta; tühi nimi võtab selle välja",
   "points.folderPrompt": "Kausta nimi (tühi = kaustata)",
+  "points.noFolder": "Kaustata",
+  "points.newFolder": "Uus kaust…",
   "points.folderTick": "Näita või peida kõik kausta nimekirjad",
   "points.syncOnDesc": "See rändab varukoopiaga teie teistesse seadmetesse. Lülita välja viiteandmete puhul, mida saad uuesti importida.",
   "points.syncOff": "Seda loendit ei sünkroonita",

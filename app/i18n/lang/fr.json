@@ -1523,6 +1523,8 @@
   "points.moveFolder": "Déplacer vers un dossier…",
   "points.moveFolderDesc": "Placer la liste dans un dossier ; un nom vide l’en retire",
   "points.folderPrompt": "Nom du dossier (vide = aucun dossier)",
+  "points.noFolder": "Aucun dossier",
+  "points.newFolder": "Nouveau dossier…",
   "points.folderTick": "Afficher ou masquer toutes les listes du dossier",
   "points.syncOnDesc": "Elle voyage avec la sauvegarde vers vos autres appareils. Désactivez pour des données de référence réimportables.",
   "points.syncOff": "Cette liste n’est pas synchronisée",

@@ -1523,6 +1523,8 @@
   "points.moveFolder": "Perkelti į aplanką…",
   "points.moveFolderDesc": "Įdėti sąrašą į aplanką; tuščias pavadinimas jį išima",
   "points.folderPrompt": "Aplanko pavadinimas (tuščias = be aplanko)",
+  "points.noFolder": "Be aplanko",
+  "points.newFolder": "Naujas aplankas…",
   "points.folderTick": "Rodyti arba slėpti visus aplanko sąrašus",
   "points.syncOnDesc": "Jis keliauja su atsargine kopija į kitus jūsų įrenginius. Išjunkite nuorodų duomenims, kuriuos galite importuoti iš naujo.",
   "points.syncOff": "Šis sąrašas nesinchronizuojamas",

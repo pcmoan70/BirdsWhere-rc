@@ -1523,6 +1523,8 @@
   "points.moveFolder": "Přesunout do složky…",
   "points.moveFolderDesc": "Vložit seznam do složky; prázdný název ho vyjme",
   "points.folderPrompt": "Název složky (prázdný = bez složky)",
+  "points.noFolder": "Bez složky",
+  "points.newFolder": "Nová složka…",
   "points.folderTick": "Zobrazit nebo skrýt všechny seznamy ve složce",
   "points.syncOnDesc": "Cestuje se zálohou do vašich dalších zařízení. Vypněte u referenčních dat, která můžete znovu importovat.",
   "points.syncOff": "Tento seznam se nesynchronizuje",

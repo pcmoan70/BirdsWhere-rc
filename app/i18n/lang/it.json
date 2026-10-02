@@ -1523,6 +1523,8 @@
   "points.moveFolder": "Sposta in cartella…",
   "points.moveFolderDesc": "Mette la lista in una cartella; un nome vuoto la toglie",
   "points.folderPrompt": "Nome cartella (vuoto = nessuna cartella)",
+  "points.noFolder": "Nessuna cartella",
+  "points.newFolder": "Nuova cartella…",
   "points.folderTick": "Mostra o nascondi tutte le liste della cartella",
   "points.syncOnDesc": "Viaggia con il backup verso gli altri dispositivi. Disattiva per dati di riferimento che puoi reimportare.",
   "points.syncOff": "Questo elenco non viene sincronizzato",

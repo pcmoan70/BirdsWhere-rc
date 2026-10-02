@@ -283,6 +283,8 @@ window.GeoI18N = (function () {
         "points.moveFolder": "Move to folder\u2026",
         "points.moveFolderDesc": "Put the list in a folder; an empty name takes it out",
         "points.folderPrompt": "Folder name (empty = no folder)",
+        "points.noFolder": "No folder",
+        "points.newFolder": "New folder\u2026",
         "points.folderTick": "Show or hide every list in this folder",
         "points.syncOnDesc": "It travels to your other devices with the backup. Turn off for reference data you can re-import.",
         "points.syncOff": "Not syncing this list",

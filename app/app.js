@@ -18411,15 +18411,23 @@
       });
       root.querySelectorAll(".mp-coll-folder").forEach(function (b) {
         b.addEventListener("click", function (e) {
-          e.preventDefault(); var name = this.getAttribute("data-name");
+          e.preventDefault(); var name = this.getAttribute("data-name"), x0 = e.clientX, y0 = e.clientY;
           var c = mpState.mpCollections().filter(function (x) { return x.name === name; })[0];
           closeAnchoredMenu(); if (!c) return;
+          var put = function (v) { v = String(v || "").trim(); if (v) c.folder = v; else delete c.folder; delete c.order; saveMapPoints(); refreshMpPanel(); };
+          // A chooser, not a prompt: the existing folders as rows (the current one marked),
+          // "No folder", and "New folder…" for a name that does not exist yet (owner, 2026-10-02).
           var have = []; mpState.mpCollections().forEach(function (x) { if (x.folder && have.indexOf(x.folder) < 0) have.push(x.folder); });
-          modalPrompt(t("points.folderPrompt") + (have.length ? "\n" + have.sort().join(" · ") : ""), c.folder || "").then(function (v) {
-            if (v == null) return;
-            v = String(v).trim(); if (v) c.folder = v; else delete c.folder;
-            delete c.order; saveMapPoints(); refreshMpPanel();
-          });
+          have.sort(function (a, b) { return a.localeCompare(b); });
+          var el = openAnchoredMenu("detrow-menu mp-folder-menu");
+          var hdr = document.createElement("div"); hdr.className = "detrow-menu-hdr"; hdr.textContent = t("points.moveFolder"); el.appendChild(hdr);
+          have.forEach(function (f) { el.appendChild(drmBtn((f === c.folder ? "\u2713 " : "") + f, function () { closeAnchoredMenu(); put(f); }, "folder")); });
+          if (c.folder) el.appendChild(drmBtn(t("points.noFolder"), function () { closeAnchoredMenu(); put(""); }, "block"));
+          el.appendChild(drmBtn(t("points.newFolder"), function () {
+            closeAnchoredMenu();
+            modalPrompt(t("points.folderPrompt"), "").then(function (v) { if (v != null && String(v).trim()) put(v); });
+          }, "edit"));
+          positionAnchoredMenu(el, x0, y0);
         });
       });
       // Folder header: tick / untick every list in it; remember open / closed per folder.
