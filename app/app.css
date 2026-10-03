@@ -4807,3 +4807,10 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 #photo-lightbox .lb-credit a { color: #9cd; }
 #photo-lightbox .lb-close { position: absolute; top: 8px; right: 12px; background: rgba(255,255,255,.15); color: #fff; border: 0; border-radius: 50%; width: 40px; height: 40px; font-size: 26px; line-height: 40px; cursor: pointer; }
 .spg-img img { -webkit-touch-callout: none; }
+
+/* "Updated to vX" — shown once after an update that activated without the button (iOS). */
+#sw-updated-bar { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 99999; background: #0f1b24; color: #fff; padding: 10px 14px; border-radius: 10px; box-shadow: 0 4px 18px rgba(0,0,0,.35); font: 14px/1.3 system-ui, -apple-system, sans-serif; max-width: min(92vw, 360px); cursor: pointer; }
+#sw-updated-bar .swu-row { display: flex; gap: 12px; align-items: center; }
+#sw-updated-bar .swu-row b { flex: 1 1 auto; }
+#sw-updated-bar .swu-x { background: transparent; color: #fff; border: none; font-size: 20px; line-height: 1; cursor: pointer; padding: 0 2px; }
+#sw-updated-bar .swu-notes { margin-top: 8px; font-size: 12px; line-height: 1.4; color: #c7d2d0; white-space: pre-line; max-height: 38vh; overflow: auto; cursor: auto; }

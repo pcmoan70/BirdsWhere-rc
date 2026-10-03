@@ -49,6 +49,7 @@
   "ctrl.distWiki": "Mapa występowania (Wikipedia)",
   "ctrl.distViewHint": "Którą mapę najpierw otwiera Występowanie w menu gatunku. Każda przechodzi na drugą, gdy nie ma nic dla gatunku (Wikipedia także offline).",
   "settings.updateReady": "Zaktualizuj do {v}",
+  "settings.updatedTo": "Zaktualizowano do {v}",
   "settings.updateApplying": "Aktualizowanie…",
   "inat.colName": "Nazwa",
   "inat.starHint": "* = własne pliki nazw aplikacji na tym urządzeniu również obejmują ten język",

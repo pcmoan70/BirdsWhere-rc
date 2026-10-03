@@ -49,6 +49,7 @@
   "ctrl.distWiki": "Udbredelseskort (Wikipedia)",
   "ctrl.distViewHint": "Hvilket kort Udbredelse i artsmenuen åbner først. Hvert falder tilbage til det andet, når det intet har for arten (Wikipedia også offline).",
   "settings.updateReady": "Opdater til {v}",
+  "settings.updatedTo": "Opdateret til {v}",
   "settings.updateApplying": "Opdaterer…",
   "inat.colName": "Navn",
   "inat.starHint": "* = appens egne navnefiler på denne enhed dækker også dette sprog",

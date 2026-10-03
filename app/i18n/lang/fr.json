@@ -49,6 +49,7 @@
   "ctrl.distWiki": "Carte de répartition (Wikipédia)",
   "ctrl.distViewHint": "Quelle carte l'entrée Répartition du menu de l'espèce ouvre en premier. Chacune bascule sur l'autre quand elle n'a rien pour l'espèce (Wikipédia aussi hors ligne).",
   "settings.updateReady": "Mettre à jour vers {v}",
+  "settings.updatedTo": "Mis à jour vers {v}",
   "settings.updateApplying": "Mise à jour…",
   "inat.colName": "Nom",
   "inat.starHint": "* = les fichiers de noms propres à l’application sur cet appareil couvrent aussi cette langue",

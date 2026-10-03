@@ -49,6 +49,7 @@
   "ctrl.distWiki": "Levikukaart (Vikipeedia)",
   "ctrl.distViewHint": "Millise kaardi liigimenüü Levik esmalt avab. Kumbki läheb üle teisele, kui tal liigi kohta midagi pole (Vikipeedia ka võrguühenduseta).",
   "settings.updateReady": "Uuenda versioonile {v}",
+  "settings.updatedTo": "Uuendatud versioonile {v}",
   "settings.updateApplying": "Värskendamine…",
   "inat.colName": "Nimi",
   "inat.starHint": "* = ka rakenduse enda nimefailid selles seadmes katavad seda keelt",

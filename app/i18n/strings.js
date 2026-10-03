@@ -501,6 +501,7 @@ window.GeoI18N = (function () {
         "ctrl.distViewHint": "Which map the species menu’s Distribution opens first. Each falls back to the other when it has nothing for the species (Wikipedia also when offline).",
         "ctrl.experimentalHint": "Off (default). On: unlocks less-polished extras — currently the GBIF occurrence-density, Natura 2000 and WDPA · Protected Planet map overlays, the AI-model year chart in the Best-sites cards, the Radar (Migration Aloft) link in the point popup, plus the NBN Atlas link in the species menu; more may appear here over time.",
         "settings.updateReady": "Update to {v}",
+        "settings.updatedTo": "Updated to {v}",
         "settings.updateApplying": "Updating…",
         "ctrl.savedloc": "Saved locations",
         "ph.savedloc": "No saved locations yet",

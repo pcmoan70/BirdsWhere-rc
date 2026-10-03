@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1996";
+var VERSION = "v1997";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Google Drive sync keeps your list folders and ordering (and the other list settings) \u2014 the merge used to carry only names and points."
+  "\u2022 iPhone / Home-Screen app: when an update installs itself in the background (iOS closes the page, so the usual Update button never shows), the app now tells you once after the start \u2014 \u201cUpdated to v\u2026\u201d with what changed.",
+  "\u2022 Google Drive sync keeps your list folders and ordering."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

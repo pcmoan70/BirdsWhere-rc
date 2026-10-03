@@ -49,6 +49,7 @@
   "ctrl.distWiki": "Paplitimo žemėlapis (Vikipedija)",
   "ctrl.distViewHint": "Kurį žemėlapį rūšies meniu Paplitimas atveria pirmiausia. Kiekvienas pereina prie kito, kai rūšiai nieko neturi (Vikipedija – ir be ryšio).",
   "settings.updateReady": "Atnaujinti į {v}",
+  "settings.updatedTo": "Atnaujinta į {v}",
   "settings.updateApplying": "Atnaujinama…",
   "inat.colName": "Pavadinimas",
   "inat.starHint": "* = šią kalbą taip pat apima programėlės pavadinimų failai šiame įrenginyje",

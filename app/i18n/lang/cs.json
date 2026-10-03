@@ -49,6 +49,7 @@
   "ctrl.distWiki": "Mapa rozšíření (Wikipedie)",
   "ctrl.distViewHint": "Kterou mapu otevře Rozšíření v nabídce druhu jako první. Každá přejde na druhou, pokud pro daný druh nic nemá (Wikipedie také offline).",
   "settings.updateReady": "Aktualizovat na {v}",
+  "settings.updatedTo": "Aktualizováno na {v}",
   "settings.updateApplying": "Aktualizace…",
   "inat.colName": "Název",
   "inat.starHint": "* = i vlastní soubory názvů aplikace v tomto zařízení pokrývají tento jazyk",

@@ -49,6 +49,7 @@
   "ctrl.distWiki": "Verspreidingskaart (Wikipedia)",
   "ctrl.distViewHint": "Welke kaart Verspreiding in het soortmenu eerst opent. Elk valt terug op de andere als het niets voor de soort heeft (Wikipedia ook offline).",
   "settings.updateReady": "Bijwerken naar {v}",
+  "settings.updatedTo": "Bijgewerkt naar {v}",
   "settings.updateApplying": "Bijwerken…",
   "inat.colName": "Naam",
   "inat.starHint": "* = de eigen naambestanden van de app op dit apparaat dekken deze taal ook",

@@ -49,6 +49,7 @@
   "ctrl.distWiki": "Levinneisyyskartta (Wikipedia)",
   "ctrl.distViewHint": "Kumman kartan lajivalikon Levinneisyys avaa ensin. Kumpikin siirtyy toiseen, kun sillä ei ole mitään lajille (Wikipedia myös ilman yhteyttä).",
   "settings.updateReady": "Päivitä versioon {v}",
+  "settings.updatedTo": "Päivitetty versioon {v}",
   "settings.updateApplying": "Päivitetään…",
   "inat.colName": "Nimi",
   "inat.starHint": "* = myös sovelluksen omat nimitiedostot tällä laitteella kattavat tämän kielen",

@@ -49,6 +49,7 @@
   "ctrl.distWiki": "Verbreitungskarte (Wikipedia)",
   "ctrl.distViewHint": "Welche Karte „Verbreitung“ im Artenmenü zuerst öffnet. Jede weicht auf die andere aus, wenn sie für die Art nichts hat (Wikipedia auch offline).",
   "settings.updateReady": "Auf {v} aktualisieren",
+  "settings.updatedTo": "Aktualisiert auf {v}",
   "settings.updateApplying": "Wird aktualisiert…",
   "inat.colName": "Name",
   "inat.starHint": "* = auch die eigenen Namensdateien der App auf diesem Gerät decken diese Sprache ab",

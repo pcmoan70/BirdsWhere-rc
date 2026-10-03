@@ -49,6 +49,7 @@
   "ctrl.distWiki": "Mapa de distribuição (Wikipédia)",
   "ctrl.distViewHint": "Que mapa a entrada Distribuição do menu da espécie abre primeiro. Cada um recorre ao outro quando não tem nada para a espécie (Wikipédia também sem ligação).",
   "settings.updateReady": "Atualizar para {v}",
+  "settings.updatedTo": "Atualizado para {v}",
   "settings.updateApplying": "A atualizar…",
   "inat.colName": "Nome",
   "inat.starHint": "* = os ficheiros de nomes da própria app neste dispositivo também cobrem este idioma",

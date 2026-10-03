@@ -19917,6 +19917,26 @@
       }
       SW.onchange = refreshUpdateBtn;
       refreshUpdateBtn();
+      // After an update that happened WITHOUT the button — iOS Safari / a Home-Screen app
+      // kills the page in the background, so the waiting worker activates on the next
+      // launch and the user never saw "Update to vX" nor its notes (owner, 2026-10-03:
+      // "On an iphone users are not seeing update messages"). Compare the running version
+      // with the one last seen on this device and show the notes once, dismissable.
+      if (SW.info) SW.info().then(function (d) {
+        if (!d || !d.version) return;
+        var last = window.GeoState.get("lastSeenVersion", "") || "";
+        window.GeoState.save({ lastSeenVersion: d.version });
+        if (!last || last === d.version || document.getElementById("sw-updated-bar")) return;
+        var bar = document.createElement("div"); bar.id = "sw-updated-bar";
+        var lines = (Array.isArray(d.notes) ? d.notes : String(d.notes || "").split("\n")).filter(Boolean).slice(0, 6);
+        bar.innerHTML = '<div class="swu-row"><b>' + escapeHtml(t("settings.updatedTo", { v: d.version })) + '</b><button type="button" class="swu-x" aria-label="' + escapeHtml(t("btn.close")) + '">×</button></div>' +
+          (lines.length ? '<div class="swu-notes">' + escapeHtml(lines.join("\n")) + "</div>" : "");
+        var close = function () { if (bar.parentNode) bar.parentNode.removeChild(bar); };
+        bar.querySelector(".swu-x").addEventListener("click", close);
+        bar.addEventListener("click", function (e) { if (!e.target.closest(".swu-notes")) close(); });
+        document.body.appendChild(bar);
+        setTimeout(close, 45000);
+      }).catch(function () {});
       if (upBtn) upBtn.addEventListener("click", function () {
         upBtn.disabled = true; upBtn.textContent = t("settings.updateApplying");
         SW.apply();   // skipWaiting → controllerchange reloads the page

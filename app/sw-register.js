@@ -110,6 +110,10 @@ if ("serviceWorker" in navigator) {
       document.body.appendChild(bar);
     }
     SWUpdate.showBanner = function () { if (SWUpdate.worker) showUpdateBar(SWUpdate.worker); };
+    // The RUNNING worker's version + notes (app.js shows "Updated to vX" once after a
+    // silent activation — iOS kills a backgrounded page, so the waiting worker takes over
+    // on the next launch before any button could be pressed; 2026-10-03).
+    SWUpdate.info = function () { return workerInfo(navigator.serviceWorker.controller); };
 
     // A new version has installed and is WAITING. Record it + tell the app (so the
     // Settings "Reload to update" button activates). Only pop the banner when the
