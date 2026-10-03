@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2001";
+var VERSION = "v2002";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Routes: the \u2630 button on the route bar lists the stops; drag a stop up or down (or use \u25B2 \u25BC) to change the order \u2014 the numbered pins on the map follow. Works for the route you are entering and for a shown saved route."
+  "\u2022 Routes: dashed lines with arrows now join the stops on the map, showing the travel direction; they follow when you reorder the stops.",
+  "\u2022 The route bar\u2019s \u2630 lists the stops \u2014 drag them up or down to reorder."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

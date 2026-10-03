@@ -1285,6 +1285,18 @@ window.AppPoints = (function () {
       m.bindPopup(pop, { className: "route-pop-popup" });
       routeLayer.addLayer(m);
     });
+    // Travel direction (owner, 2026-10-04): a line from each stop to the next with an arrow
+    // at its middle, turned to the segment's screen bearing (constant across zooms in the
+    // Web-Mercator view, so one render suffices).
+    var stops = activeRoute();
+    for (var i = 1; i < stops.length; i++) {
+      var a = stops[i - 1], b = stops[i];
+      routeLayer.addLayer(L.polyline([[a.lat, a.lon], [b.lat, b.lon]], { color: "#2e8b74", weight: 3, opacity: 0.75, dashArray: "6 6", interactive: false }));
+      var pa = getMap().latLngToLayerPoint([a.lat, a.lon]), pb = getMap().latLngToLayerPoint([b.lat, b.lon]);
+      var deg = Math.atan2(pb.y - pa.y, pb.x - pa.x) * 180 / Math.PI;
+      var arrow = L.divIcon({ className: "route-arrow-icon", html: '<div class="route-arrow" style="transform:rotate(' + deg.toFixed(1) + 'deg)">\u27A4</div>', iconSize: [22, 22], iconAnchor: [11, 11] });
+      routeLayer.addLayer(L.marker([(a.lat + b.lat) / 2, (a.lon + b.lon) / 2], { icon: arrow, keyboard: false, interactive: false, zIndexOffset: 700 }));
+    }
   }
   function removeFromRoute(i) {
     if (i < 0 || i >= routePoints.length) return;
