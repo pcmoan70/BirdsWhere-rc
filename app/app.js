@@ -17541,7 +17541,8 @@
         var pts = pointsForRow(type, name), fmt = this.getAttribute("data-fmt");
         closeAnchoredMenu();
         if (!pts.length) { setStatus(t("points.exportEmpty")); return; }
-        exportPointsAs(fmt, name, [{ name: name, points: pts }], []);
+        var rc0 = mpState.mpCollections().filter(function (x) { return x.name === name; })[0];
+        exportPointsAs(fmt, name, [{ name: name, points: pts, route: !!(rc0 && mpState.isRouteColl(rc0)) }], []);
         setStatus(t("points.downloaded", { n: pts.length, name: name }));
       });
     });
@@ -18496,6 +18497,7 @@
       root.querySelectorAll(".mp-coll-del").forEach(function (b) {
       b.addEventListener("click", function (e) {
         e.preventDefault();
+        closeAnchoredMenu();   // the ⋯ menu (z 8000) sat on top of the confirm on a phone (owner, 2026-10-04)
         var type = this.getAttribute("data-type"), name = this.getAttribute("data-name");
         if (type === "p" && isCollProtected(name)) { setStatus(t("lists.protectedMsg", { name: name })); return; }
         modalConfirm(t(type === "d" ? "dset.deletePrompt" : "points.deleteCollPrompt", { name: name })).then(function (ok) {

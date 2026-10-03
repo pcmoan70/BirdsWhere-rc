@@ -1905,9 +1905,10 @@ button.dd-name:hover { text-decoration: underline; }
 
 /* In-page prompt/confirm modal (full-screen-safe, unlike window.prompt) */
 .ui-modal-overlay {
-  /* Above the modals (5000) and floating menus (6000): a blocking confirm/prompt
-     must sit on top of whatever window spawned it (offline-maps, Saved sets, …). */
-  position: fixed; inset: 0; z-index: 7000; display: flex; align-items: center; justify-content: center;
+  /* Above the modals (5000), the floating menus (6000) AND the anchored menus (8000): a
+     blocking confirm/prompt must sit on top of whatever spawned it — a list's ⋯ menu
+     covered the delete confirm on a phone (2026-10-04). */
+  position: fixed; inset: 0; z-index: 8500; display: flex; align-items: center; justify-content: center;
   background: rgba(0,0,0,.45); padding: 16px;
 }
 .ui-modal {

@@ -478,9 +478,10 @@ window.AppPoints = (function () {
       if (p.spColor) props.spColor = p.spColor;
       if (p.date) props.date = p.date;
       if (listName) props.list = listName;
+      if (p.source === "route" || p._route) props.route = true;   // a route stop stays one through a download + load (owner, 2026-10-04)
       return { type: "Feature", properties: props, geometry: { type: "Point", coordinates: [+(+p.lon).toFixed(6), +(+p.lat).toFixed(6)] } };
     }
-    colls.forEach(function (c) { (c.points || []).forEach(function (p) { if (isFinite(+p.lat) && isFinite(+p.lon)) feats.push(feat(p, c.name)); }); });
+    colls.forEach(function (c) { var rt = isRouteColl(c); (c.points || []).forEach(function (p) { if (isFinite(+p.lat) && isFinite(+p.lon)) feats.push(feat(rt ? Object.assign({}, p, { _route: true }) : p, c.name)); }); });
     loose.forEach(function (p) { if (isFinite(+p.lat) && isFinite(+p.lon)) feats.push(feat(p, "")); });
     return JSON.stringify({ type: "FeatureCollection", features: feats }, null, 2);
   }
@@ -1099,6 +1100,7 @@ window.AppPoints = (function () {
     var cl = String(data["class"] || data.klass || data.taxonClass || "").trim();
     if (cl && !pt.spCls) pt.spCls = cl;
     if (!pt.spKey && pt.sci) { var lk = labelForSci(pt.sci); if (lk) pt.spKey = lk.key; }
+    if (/^(1|true|yes)$/i.test(String(data.route || "").trim())) pt.source = "route";   // the stop of a downloaded route
     // Tags may travel as a field too ("a; b" or "a, b"), alongside whatever the dialog mapped.
     var tg = data.tags || data.tag;
     if (tg) {
@@ -1167,6 +1169,7 @@ window.AppPoints = (function () {
       var c = mpCollections.filter(function (x) { return x.name === listName; })[0];
       if (!c) { c = { name: listName, points: [] }; mpCollections.push(c); }
       c.points = c.points.concat(pts);
+      if (pts.length && pts.every(function (p) { return p.source === "route"; })) c.route = true;   // a loaded route is a route: numbered stops, arrows, Navigate
       internPoints([c]);   // a fresh import is the other place equal strings arrive unshared
       if (show !== false) shownColls[listName] = true;   // a batch of files is saved UNTICKED (owner, 2026-10-02): tick what you want to see
       return pts.length;
@@ -1454,6 +1457,7 @@ window.AppPoints = (function () {
     var marks = pts.map(function (p) {
       return "<Placemark><name>" + xml(p.name || "Point") + "</name>" +
         (p.desc ? "<description>" + xml(p.desc) + "</description>" : "") +
+        (p.source === "route" || p._route ? '<ExtendedData><Data name="route"><value>1</value></Data></ExtendedData>' : "") +
         "<styleUrl>#" + styleFor(p.color, p.star, p.rare) + "</styleUrl>" +
         "<Point><coordinates>" + (+p.lon).toFixed(6) + "," + (+p.lat).toFixed(6) + ",0</coordinates></Point></Placemark>";
     });
