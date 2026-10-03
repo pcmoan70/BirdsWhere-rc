@@ -209,6 +209,7 @@ window.AppShare = (function () {
       if (p.color) o.color = p.color;   // keep the point's on-screen colour so a share looks the same
       if (p.date) o.date = p.date;
       if (p.count != null && p.count !== "") o.count = p.count;
+      if (p.source === "route") o.source = "route";   // a route stop stays a route stop
       return o;
     });
   }
@@ -221,11 +222,15 @@ window.AppShare = (function () {
   // Only the points currently ON SCREEN are shared, not the whole list.
   function sharePointList(name) {
     var c = mpState.mpCollections().filter(function (x) { return x.name === name; })[0]; if (!c) return;
-    var col = collColor(c);
-    var vis = (c.points || []).filter(function (p) { return p && inMapView(p.lat, p.lon); });
+    var col = collColor(c), isRoute = mpState.isRouteColl ? mpState.isRouteColl(c) : !!c.route;
+    // A ROUTE travels whole and in order (owner, 2026-10-04: a synced route "lost the
+    // navigation direction"): never sliced to the viewport, and flagged so the recipient
+    // gets a route (numbered stops, nav bar, arrows), not a plain list.
+    var vis = (c.points || []).filter(function (p) { return p && (isRoute || inMapView(p.lat, p.lon)); });
     if (!vis.length) { setStatus(t("share.noneVisible")); return; }
     var pts = packPoints(vis.map(function (p) { return Object.assign({}, p, { color: p.color || col || mpColorFor(p) }); }));
-    doShare({ v: 1, type: "points", name: name, points: pts }, name);
+    var payload = { v: 1, type: "points", name: name, points: pts }; if (isRoute) payload.route = 1;
+    doShare(payload, name);
   }
   // Per-source record-URL prefixes, so a link is stored as just its ID tail (the
   // prefix is re-added on decode) — keeps the "verify" links compact.
@@ -635,7 +640,12 @@ window.AppShare = (function () {
         var upd = !!sharedCollByName(nm);   // re-import → update that copy in place
         modalConfirm(t(upd ? "share.updatePrompt" : "share.importPrompt", { name: nm, n: pts.length })).then(function (ok) {
           if (!ok) return;
-          var r = importPointsColl(nm, pts); saveMapPoints(); saveShownState(); renderMapPoints();
+          var r = importPointsColl(nm, pts);
+          if (obj.route) {   // keep it a route: the flag on the list, the source on every stop (order as sent)
+            var rc = mpState.mpCollections().filter(function (x) { return x.name === r.name; })[0];
+            if (rc) { rc.route = true; (rc.points || []).forEach(function (p) { p.source = "route"; }); }
+          }
+          saveMapPoints(); saveShownState(); renderMapPoints();
           fitSharedLatLngs(r.ll); setStatus(t(r.updated ? "share.updated" : "share.imported", { name: r.name }));
         });
         return;

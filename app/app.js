@@ -6009,7 +6009,7 @@
     Object.keys(c).forEach(function (k) { if (k !== "points" && k !== "name" && c[k] != null) o[k] = c[k]; });
     return o;
   }
-  function mergePointSets(localSets, incSets, interactive) {
+  function mergePointSets(localSets, incSets, interactive, incomingWins) {
     var out = (Array.isArray(localSets) ? localSets : []).map(withMeta);
     var byName = Object.create(null); out.forEach(function (c) { byName[c.name] = c; });
     (Array.isArray(incSets) ? incSets : []).forEach(function (inc) {
@@ -6017,7 +6017,12 @@
       var cur = byName[inc.name];
       if (!cur) { var added = withMeta(inc); out.push(added); byName[inc.name] = added; return; }
       Object.keys(inc).forEach(function (k) { if (k !== "points" && k !== "name" && cur[k] == null && inc[k] != null) cur[k] = inc[k]; });
-      if (!interactive || confirm(t("sync.listMergePrompt", { name: inc.name }))) cur.points = mergePins(cur.points, inc.points);
+      // A ROUTE's order is its content (owner, 2026-10-04): when the incoming copy is the
+      // newer one, its stop order wins (local-only stops append); otherwise the local order
+      // stays. A plain list keeps the local-first union as before.
+      var isRoute = !!(inc.route || cur.route) || ((inc.points || []).length > 0 && (inc.points || []).every(function (p) { return p && p.source === "route"; }));
+      if (isRoute) cur.route = true;
+      if (!interactive || confirm(t("sync.listMergePrompt", { name: inc.name }))) cur.points = (isRoute && incomingWins) ? mergePins(inc.points, cur.points) : mergePins(cur.points, inc.points);
       else cur.points = (inc.points || []).slice();
     });
     return out;
@@ -6177,7 +6182,7 @@
     // Map points: merge rather than overwrite. Loose pins from both sides are
     // unioned into the working set; named lists are merged/overwritten by name.
     var mergedLoose = mergePins(loosePointsOf(local), loosePointsOf(incoming));
-    var mergedSets = mergePointSets(local.mapPointSets, incoming.mapPointSets, opts.interactive);
+    var mergedSets = mergePointSets(local.mapPointSets, incoming.mapPointSets, opts.interactive, !!opts.incomingWins);
     // Plotted detections (dots/stars) and the starred-species list: union both
     // sides so syncing merges pins instead of one device overwriting the other.
     var localDetN = detRowCount(local.mapDetections);
