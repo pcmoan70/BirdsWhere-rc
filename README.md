@@ -626,7 +626,9 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   / observer filters beside it. Each row's **🎯** flies the map to the record; tapping the row opens its
   species menu. The header carries the place-name title (led by a copy-coordinates button) plus **Save**
   (as a point list), **Navigate** (Google Maps) and **＋➤ Add to route** (drops this spot into the route
-  bar). With the *2nd name* option on, rows append the secondary-language name in parentheses.
+  bar; its **☰** lists the stops, where a stop can be dragged up or down, or moved with ▲ ▼, and the
+  numbered pins follow — for the route being entered or a shown saved route). With the *2nd name*
+  option on, rows append the secondary-language name in parentheses.
 - Distance-sorting of the plotted detections lives in the species list's sortable **Dist** column
   (and the legend's **📍** distance sort), which measures from the **map pin** when one is placed
   (else the fetched point) and re-measures the moment you move it. While **GPS-follow (tracking)**

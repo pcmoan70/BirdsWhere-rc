@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2000";
+var VERSION = "v2001";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Loading a point file now shows an hourglass with \u201cLoading <file>\u2026\u201d, and stays up while a big observation list is added \u2014 the page no longer looks idle during the work.",
-  "\u2022 Drag a point file onto the page to load it (one is shown, several are saved as lists)."
+  "\u2022 Routes: the \u2630 button on the route bar lists the stops; drag a stop up or down (or use \u25B2 \u25BC) to change the order \u2014 the numbered pins on the map follow. Works for the route you are entering and for a shown saved route."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

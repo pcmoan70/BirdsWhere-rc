@@ -1334,18 +1334,84 @@ window.AppPoints = (function () {
   // A floating pill (shown only while the basket has stops) with the count, a
   // Navigate button and a Clear ×.
   var routeChipEl = null;
+  // The route's stops as a draggable list (owner, 2026-10-04): drag a row (its ⋮⋮ handle, or
+  // the row itself on touch) up or down, or use ▲ ▼; the numbered pins are redrawn in the
+  // new order. Edits the live basket (the route being entered); a single shown saved route
+  // can be reordered too (its list is saved), several shown routes are listed read-only.
+  var routeStopsEl = null;
+  function routeStopsTarget() {
+    if (routePoints.length) return { pts: routePoints, save: function () { saveRoute(); }, basket: true };
+    var lists = mpCollections.filter(function (c) { return isRouteColl(c) && shownColls[c.name]; });
+    if (lists.length === 1) return { pts: lists[0].points, save: function () { saveMapPoints(); }, basket: false };
+    return null;
+  }
+  function closeRouteStops() { if (routeStopsEl && routeStopsEl.parentNode) routeStopsEl.parentNode.removeChild(routeStopsEl); routeStopsEl = null; }
+  function openRouteStops() {
+    closeRouteStops();
+    var tg = routeStopsTarget(), route = tg ? tg.pts : activeRoute();
+    if (!route.length) return;
+    var el = document.createElement("div"); el.id = "route-stops"; routeStopsEl = el;
+    var html = '<div class="rs-head"><b>' + escapeHtml(t("route.stopsTitle", { n: route.length })) + '</b><button type="button" class="rs-x" aria-label="' + escapeHtml(t("btn.close")) + '">×</button></div>' +
+      (tg ? '<div class="rs-hint">' + escapeHtml(t("route.reorderHint")) + "</div>" : "") + '<div class="rs-list">';
+    route.forEach(function (p, i) {
+      html += '<div class="rs-row" data-i="' + i + '">' + (tg ? '<span class="rs-grip" aria-hidden="true">\u22EE\u22EE</span>' : "") +
+        '<span class="rs-n">' + (i + 1) + '</span><span class="rs-name">' + escapeHtml(p.name || t("route.stop", { n: i + 1 })) + "</span>" +
+        (tg ? '<button type="button" class="rs-up" data-i="' + i + '" aria-label="\u25B2">\u25B2</button><button type="button" class="rs-down" data-i="' + i + '" aria-label="\u25BC">\u25BC</button>' : "") +
+        (tg && tg.basket ? '<button type="button" class="rs-del" data-i="' + i + '" aria-label="' + escapeHtml(t("route.remove")) + '" title="' + escapeHtml(t("route.remove")) + '">×</button>' : "") + "</div>";
+    });
+    el.innerHTML = html + "</div>";
+    document.body.appendChild(el);
+    el.querySelector(".rs-x").addEventListener("click", closeRouteStops);
+    if (!tg) return;
+    function commit(order) {   // order = the old indices in their new positions
+      var nw = order.map(function (i) { return route[i]; });
+      route.length = 0; Array.prototype.push.apply(route, nw);
+      tg.save(); renderRoutePoints(); updateRouteChip(); openRouteStops();
+    }
+    function domOrder() { return Array.prototype.map.call(el.querySelectorAll(".rs-row"), function (r) { return +r.getAttribute("data-i"); }); }
+    el.querySelectorAll(".rs-up, .rs-down").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var i = +this.getAttribute("data-i"), j = i + (this.classList.contains("rs-up") ? -1 : 1);
+        if (j < 0 || j >= route.length) return;
+        var order = route.map(function (_, k) { return k; }); order[i] = j; order[j] = i; commit(order);
+      });
+    });
+    el.querySelectorAll(".rs-del").forEach(function (b) {
+      b.addEventListener("click", function () { removeFromRoute(+this.getAttribute("data-i")); openRouteStops(); });
+    });
+    // Pointer drag (mouse and touch alike): the grabbed row follows the pointer through the
+    // list — rows swap places as it passes them — and the order is committed on release.
+    var list = el.querySelector(".rs-list"), drag = null;
+    list.addEventListener("pointerdown", function (e) {
+      var row = e.target.closest && e.target.closest(".rs-row"); if (!row || e.target.closest("button")) return;
+      if (e.pointerType === "mouse" && !e.target.closest(".rs-grip")) return;   // with a mouse only the handle grabs (text stays selectable)
+      e.preventDefault(); drag = row; row.classList.add("rs-dragging");
+      try { list.setPointerCapture(e.pointerId); } catch (x) {}
+    });
+    list.addEventListener("pointermove", function (e) {
+      if (!drag) return;
+      var over = document.elementFromPoint(e.clientX, e.clientY), r = over && over.closest && over.closest(".rs-row");
+      if (!r || r === drag || r.parentNode !== list) return;
+      var rb = r.getBoundingClientRect(), before = e.clientY < rb.top + rb.height / 2;
+      list.insertBefore(drag, before ? r : r.nextSibling);
+    });
+    var end = function () { if (!drag) return; drag.classList.remove("rs-dragging"); drag = null; commit(domOrder()); };
+    list.addEventListener("pointerup", end); list.addEventListener("pointercancel", end);
+  }
   function updateRouteChip() {
     if (!routeChipEl) { routeChipEl = document.createElement("div"); routeChipEl.id = "route-chip"; document.body.appendChild(routeChipEl); }
     var route = activeRoute(), fromBasket = routePoints.length > 0;
-    if (!route.length) { routeChipEl.style.display = "none"; return; }
+    if (!route.length) { routeChipEl.style.display = "none"; closeRouteStops(); return; }
     routeChipEl.style.display = "";
     routeChipEl.innerHTML =
       '<span class="route-chip-lbl">' + ico("nav") + "<span>" + escapeHtml(t("route.count", { n: route.length })) + "</span></span>" +
+      '<button type="button" class="route-stops" title="' + escapeHtml(t("route.stops")) + '" aria-label="' + escapeHtml(t("route.stops")) + '">\u2630</button>' +
       '<button type="button" class="route-go">' + escapeHtml(t("route.go")) + "</button>" +
       // "Save route" only applies to the live basket; a reloaded saved route is already saved.
       (fromBasket ? '<button type="button" class="route-save">' + escapeHtml(t("route.save")) + "</button>" : "") +
       '<button type="button" class="route-clear" aria-label="' + escapeHtml(t("route.clear")) + '" title="' + escapeHtml(t("route.clear")) + '">×</button>';
     routeChipEl.querySelector(".route-go").addEventListener("click", navigateRoute);
+    routeChipEl.querySelector(".route-stops").addEventListener("click", function () { if (routeStopsEl) closeRouteStops(); else openRouteStops(); });
     var sv = routeChipEl.querySelector(".route-save"); if (sv) sv.addEventListener("click", saveRouteAsList);
     routeChipEl.querySelector(".route-clear").addEventListener("click", clearOrHideRoute);
   }
