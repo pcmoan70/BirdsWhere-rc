@@ -1015,6 +1015,8 @@
   "points.title": "Kartenpunkte",
   "points.show": "Zeigen",
   "points.load": "⬆ Laden",
+  "drop.hint": "Punktdateien hier ablegen, um sie zu laden",
+  "drop.notPoints": "Das war keine Punktdatei (.kmz, .kml, .geojson, .share)",
   "points.loadFile": "Aus Datei laden",
   "points.export": "⬇ Speich.",
   "points.delete": "Löschen",

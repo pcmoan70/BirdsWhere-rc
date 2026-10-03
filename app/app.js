@@ -8104,6 +8104,7 @@
       // A KML / KMZ / GeoJSON opened from the OS: desktop "Open with" (launchQueue) or the
       // Android share sheet (?shared-file=N parked by the service worker).
       consumeLaunchFiles();
+      wireFileDrop();
       consumeSharedFiles();
       initInstall();
       initRarityAlerts();
@@ -17307,6 +17308,44 @@
   //     below. Safari/iOS supports neither, so there the file input remains the only way in.
   //
   // Both paths end in importPointsFile(), the same reader every in-app button uses.
+  // Drag a point file onto the page (owner, 2026-10-03): one file loads and shows its points
+  // like Load from file; several files are saved as lists without being shown (the batch rule
+  // of v1983). The Points panel opens either way so the new list is in view. Anything that
+  // is not a point file is ignored, and the browser must never navigate to the dropped file.
+  function wireFileDrop() {
+    var ov = null, depth = 0;
+    function isPointFile(f) { return /\.(kml|kmz|geojson|json|share|csv|txt)$/i.test(f && f.name || ""); }
+    function showOv() {
+      if (ov) return;
+      ov = document.createElement("div"); ov.id = "drop-overlay"; ov.textContent = t("drop.hint");
+      document.body.appendChild(ov);
+    }
+    function hideOv() { if (ov && ov.parentNode) ov.parentNode.removeChild(ov); ov = null; depth = 0; }
+    document.addEventListener("dragenter", function (e) {
+      if (!e.dataTransfer || Array.prototype.indexOf.call(e.dataTransfer.types || [], "Files") < 0) return;
+      e.preventDefault(); depth++; showOv();
+    });
+    document.addEventListener("dragover", function (e) {
+      if (!e.dataTransfer || Array.prototype.indexOf.call(e.dataTransfer.types || [], "Files") < 0) return;
+      e.preventDefault(); e.dataTransfer.dropEffect = "copy";
+    });
+    document.addEventListener("dragleave", function (e) { if (--depth <= 0) hideOv(); });
+    document.addEventListener("drop", function (e) {
+      if (!e.dataTransfer) return;
+      e.preventDefault(); hideOv();
+      var files = Array.prototype.slice.call(e.dataTransfer.files || []).filter(isPointFile);
+      if (!files.length) { setStatus(t("drop.notPoints")); return; }
+      importPointsFile(files, true);   // one → shown; several → saved unticked (startMultiImport)
+      // Open the Points panel once the import (and its field dialog / name prompt) is done —
+      // the dialog is a modal that closes the dropdowns, so opening it first was undone.
+      var tries = 0, iv = setInterval(function () {
+        if (importBusy || document.querySelector(".kml-modal-box") || document.querySelector(".ui-modal")) { if (++tries > 1200) clearInterval(iv); return; }
+        clearInterval(iv);
+        var pnl = document.getElementById("mp-panel");
+        if (pnl) { closeDropdowns(); pnl.style.display = "block"; try { refreshMpPanel(); } catch (x) {} }
+      }, 250);
+    });
+  }
   function consumeLaunchFiles() {
     if (!("launchQueue" in window) || !window.launchQueue.setConsumer) return;
     try {

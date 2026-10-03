@@ -1015,6 +1015,8 @@
   "points.title": "Kaardipunktid",
   "points.show": "Näita",
   "points.load": "⬆ Lae",
+  "drop.hint": "Lohista punktifailid siia laadimiseks",
+  "drop.notPoints": "See ei olnud punktifail (.kmz, .kml, .geojson, .share)",
   "points.loadFile": "Laadi failist",
   "points.export": "⬇ Salv.",
   "points.delete": "Kustuta",

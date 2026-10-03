@@ -1015,6 +1015,8 @@
   "points.title": "Karttapisteet",
   "points.show": "Näytä",
   "points.load": "⬆ Lataa",
+  "drop.hint": "Pudota pistetiedostot tähän ladataksesi ne",
+  "drop.notPoints": "Se ei ollut pistetiedosto (.kmz, .kml, .geojson, .share)",
   "points.loadFile": "Lataa tiedostosta",
   "points.export": "⬇ Tall.",
   "points.delete": "Poista",

@@ -1015,6 +1015,8 @@
   "points.title": "Body na mapě",
   "points.show": "Zobr.",
   "points.load": "⬆ Načíst",
+  "drop.hint": "Přetáhněte sem soubory bodů pro načtení",
+  "drop.notPoints": "To nebyl soubor bodů (.kmz, .kml, .geojson, .share)",
   "points.loadFile": "Načíst ze souboru",
   "points.export": "⬇ Uložit",
   "points.delete": "Smazat",

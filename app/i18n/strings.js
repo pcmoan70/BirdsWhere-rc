@@ -943,6 +943,8 @@ window.GeoI18N = (function () {
         "points.title": "Map points",
         "points.show": "Show",
         "points.load": "⬆ Load",
+        "drop.hint": "Drop point files to load them",
+        "drop.notPoints": "That was not a point file (.kmz, .kml, .geojson, .share)",
         "points.loadFile": "Load from file",
         "points.chooseFile": "Choose file…",
         "points.linkPh": "…or paste a link to a .kmz / .kml / .geojson file",

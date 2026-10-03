@@ -1015,6 +1015,8 @@
   "points.title": "Kaartpunten",
   "points.show": "Toon",
   "points.load": "⬆ Laden",
+  "drop.hint": "Sleep puntbestanden hierheen om ze te laden",
+  "drop.notPoints": "Dat was geen puntbestand (.kmz, .kml, .geojson, .share)",
   "points.loadFile": "Laden uit bestand",
   "points.export": "⬇ Opsl.",
   "points.delete": "Wissen",

@@ -683,7 +683,8 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   lists on the first start. Google Drive share links cannot be fetched by a web page
   (Drive refuses cross-site browser requests), so download such a file and choose it instead.
   Import from either the Settings
-  *Import* button or *Load from file* in the Points menu — both
+  *Import* button or *Load from file* in the Points menu — or simply **drag the file onto the page**
+  (one file is shown; several at once are saved as lists without being shown) — both
   read all three formats (and share links), and both take **several files at once**: each file becomes
   its own list, named after the file, and the field mapping is asked once and applied to all of them.
   A single file pre-fills the new list's name from its own file name too. A name already in use gets

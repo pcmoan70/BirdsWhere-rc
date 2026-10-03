@@ -1015,6 +1015,8 @@
   "points.title": "Kartpunkter",
   "points.show": "Vis",
   "points.load": "⬆ Last",
+  "drop.hint": "Slipp punktfiler her for å laste dem",
+  "drop.notPoints": "Det var ikke en punktfil (.kmz, .kml, .geojson, .share)",
   "points.loadFile": "Last inn fra fil",
   "points.export": "⬇ Lagre",
   "points.delete": "Slett",

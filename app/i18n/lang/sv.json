@@ -770,6 +770,8 @@
   "points.title": "Kartpunkter",
   "points.show": "Visa",
   "points.load": "⬆ Läs",
+  "drop.hint": "Släpp punktfiler här för att läsa in dem",
+  "drop.notPoints": "Det var ingen punktfil (.kmz, .kml, .geojson, .share)",
   "points.loadFile": "Läs in från fil",
   "points.export": "⬇ Spara",
   "points.delete": "Radera",

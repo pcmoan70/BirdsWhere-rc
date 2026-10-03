@@ -1015,6 +1015,8 @@
   "points.title": "Žemėlapio taškai",
   "points.show": "Rodyti",
   "points.load": "⬆ Įkelti",
+  "drop.hint": "Numeskite taškų failus, kad juos įkeltumėte",
+  "drop.notPoints": "Tai nebuvo taškų failas (.kmz, .kml, .geojson, .share)",
   "points.loadFile": "Įkelti iš failo",
   "points.export": "⬇ Saugoti",
   "points.delete": "Trinti",

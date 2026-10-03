@@ -4814,3 +4814,6 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 #sw-updated-bar .swu-row b { flex: 1 1 auto; }
 #sw-updated-bar .swu-x { background: transparent; color: #fff; border: none; font-size: 20px; line-height: 1; cursor: pointer; padding: 0 2px; }
 #sw-updated-bar .swu-notes { margin-top: 8px; font-size: 12px; line-height: 1.4; color: #c7d2d0; white-space: pre-line; max-height: 38vh; overflow: auto; cursor: auto; }
+
+/* Drag-and-drop target for point files */
+#drop-overlay { position: fixed; inset: 0; z-index: 99998; display: flex; align-items: center; justify-content: center; background: rgba(46,139,116,.28); border: 4px dashed var(--brand, #2e8b74); color: #fff; font: 600 20px/1.3 system-ui, sans-serif; text-shadow: 0 1px 4px rgba(0,0,0,.5); pointer-events: none; }

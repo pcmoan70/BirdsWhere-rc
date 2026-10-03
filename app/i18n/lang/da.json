@@ -1015,6 +1015,8 @@
   "points.title": "Kortpunkter",
   "points.show": "Vis",
   "points.load": "⬆ Indlæs",
+  "drop.hint": "Slip punktfiler her for at indlæse dem",
+  "drop.notPoints": "Det var ikke en punktfil (.kmz, .kml, .geojson, .share)",
   "points.loadFile": "Indlæs fra fil",
   "points.export": "⬇ Gem",
   "points.delete": "Slet",

@@ -1015,6 +1015,8 @@
   "points.title": "Punti mappa",
   "points.show": "Mostra",
   "points.load": "⬆ Carica",
+  "drop.hint": "Rilascia file di punti per caricarli",
+  "drop.notPoints": "Non era un file di punti (.kmz, .kml, .geojson, .share)",
   "points.loadFile": "Carica da file",
   "points.export": "⬇ Salva",
   "points.delete": "Elimina",

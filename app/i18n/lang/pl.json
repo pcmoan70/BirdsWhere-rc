@@ -1015,6 +1015,8 @@
   "points.title": "Punkty na mapie",
   "points.show": "Pokaż",
   "points.load": "⬆ Wczytaj",
+  "drop.hint": "Upuść pliki punktów, aby je wczytać",
+  "drop.notPoints": "To nie był plik punktów (.kmz, .kml, .geojson, .share)",
   "points.loadFile": "Wczytaj z pliku",
   "points.export": "⬇ Zapisz",
   "points.delete": "Usuń",
