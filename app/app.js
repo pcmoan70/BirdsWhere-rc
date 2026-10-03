@@ -17672,6 +17672,8 @@
       '<div class="mp-actions">' +
         '<button type="button" id="mp-save" class="btn">' + esc(t("points.save")) + '</button>' +
         (isEdit ? '<button type="button" id="mp-del" class="btn btn-light">' + esc(t("btn.delete")) + '</button>' : "") +
+        // ＋➤ straight from a user point's own popup (owner, 2026-10-04): the stop takes the name as typed
+        '<button type="button" id="mp-route" class="btn btn-light ico-btn mp-route-btn" title="' + esc(t("route.add")) + '" aria-label="' + esc(t("route.add")) + '">' + ico("navplus") + '</button>' +
       '</div>' +
     '</div>';
   }
@@ -17718,6 +17720,11 @@
     if (map) map.once("popupclose", function () { document.removeEventListener("keydown", editorKey, true); });
     var cc = document.querySelector(".mp-coords-copy");
     if (cc) cc.addEventListener("click", function () { copyCoords(this.getAttribute("data-lat"), this.getAttribute("data-lon")); });
+    var rb = document.getElementById("mp-route");
+    if (rb) rb.addEventListener("click", function () {
+      var nm = ((document.getElementById("mp-name") || {}).value || p.name || "").trim();
+      addToRoute(+p.lat, +p.lon, nm); if (map) map.closePopup();
+    });
     var save = document.getElementById("mp-save"); if (!save) return;
     save.addEventListener("click", function () {
       var name = (document.getElementById("mp-name").value || "").trim();

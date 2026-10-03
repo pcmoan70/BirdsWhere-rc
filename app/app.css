@@ -4836,3 +4836,6 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 
 /* Drag-and-drop target for point files */
 #drop-overlay { position: fixed; inset: 0; z-index: 99998; display: flex; align-items: center; justify-content: center; background: rgba(46,139,116,.28); border: 4px dashed var(--brand, #2e8b74); color: #fff; font: 600 20px/1.3 system-ui, sans-serif; text-shadow: 0 1px 4px rgba(0,0,0,.5); pointer-events: none; }
+
+.mp-actions .mp-route-btn { margin-left: auto; padding: 4px 8px; display: inline-flex; align-items: center; }
+.mp-actions .mp-route-btn .btn-ico { width: var(--ico-m); height: var(--ico-m); }

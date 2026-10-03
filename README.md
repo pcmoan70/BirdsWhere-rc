@@ -642,7 +642,8 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
 
 - **Map points** — right-click (desktop) or long-press (touch) the map to drop a pin and open
   the **point editor**: name, tags, a per-point colour (or automatic), a note (optionally
-  rendered as HTML), a copyable-coordinates pill, and a *Save to list* picker. The **Points**
+  rendered as HTML), a copyable-coordinates pill, a *Save to list* picker and a ＋➤ button that
+  adds the point to the route. The **Points**
   header button (badge = number of lists) opens a panel of tick-to-show lists, per-tag filter
   chips — ordered counts · months and season · mention categories · other words · species names,
   each with the number of shown points carrying it. A chip cycles through three states: no say →

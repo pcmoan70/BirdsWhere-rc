@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2004";
+var VERSION = "v2005";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 A downloaded route (KMZ, KML or GeoJSON) loads back as a route \u2014 numbered stops in order, direction arrows, Navigate \u2014 instead of a plain point list.",
-  "\u2022 The delete confirmation is no longer hidden behind a list\u2019s \u22ef menu."
+  "\u2022 Your own map points: the point popup has an \u2795\u27A4 button that adds the point to the route.",
+  "\u2022 Downloaded routes load back as routes; the delete confirmation no longer hides behind a list\u2019s menu."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
