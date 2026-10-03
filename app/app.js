@@ -21867,9 +21867,52 @@
   // ("59°54'50\"N 10°45'08\"E" · "59 54.83 N, 10 45.13 E" · "59 54 50 10 45 08") and pasted
   // links (…@59.91,10.75… · ?lat=59.91&lon=10.75 · geo:59.91,10.75). Latitude is taken first
   // unless N/S/E/W letters say otherwise, or only the swapped order is in range.
+  // Plus codes (Open Location Code, "9F7V2JX8+QF"). A FULL code decodes on its own; a SHORT one
+  // ("2JX8+QF", 2/4/6 leading characters dropped) is recovered against a reference — the
+  // locality after it ("2JX8+QF Elverum", geocoded in the search box), else the map centre
+  // (owner, 2026-10-03).
+  var OLC_ALPHA = "23456789CFGHJMPQRVWX";
+  var OLC_FULL_RX = /^([23456789CFGHJMPQRVWX]{8})\+([23456789CFGHJMPQRVWX]{2,7})$/i;
+  var OLC_SHORT_RX = /^([23456789CFGHJMPQRVWX]{2}|[23456789CFGHJMPQRVWX]{4}|[23456789CFGHJMPQRVWX]{6})\+([23456789CFGHJMPQRVWX]{2,7})(?:\s+(.+))?$/i;
+  function olcDecode(code) {
+    var c = String(code || "").toUpperCase().replace(/\+/g, ""), lat = -90, lon = -180, latRes = 400, lonRes = 400, i;
+    for (i = 0; i + 1 < Math.min(10, c.length); i += 2) {
+      latRes /= 20; lonRes /= 20;
+      lat += OLC_ALPHA.indexOf(c[i]) * latRes; lon += OLC_ALPHA.indexOf(c[i + 1]) * lonRes;
+    }
+    for (i = 10; i < c.length; i++) {
+      latRes /= 5; lonRes /= 4;
+      var v = OLC_ALPHA.indexOf(c[i]); lat += Math.floor(v / 4) * latRes; lon += (v % 4) * lonRes;
+    }
+    return { lat: lat + latRes / 2, lon: lon + lonRes / 2 };
+  }
+  function olcEncode10(lat, lon) {   // the 10-digit code (8 + 2) of a point
+    lat = Math.max(-90, Math.min(89.999999, lat)); lon = ((lon + 180) % 360 + 360) % 360 - 180;
+    var la = lat + 90, lo = lon + 180, out = "", res = 20;
+    for (var i = 0; i < 5; i++) {
+      var di = Math.floor(la / res), dj = Math.floor(lo / res);
+      out += OLC_ALPHA[Math.min(19, di)] + OLC_ALPHA[Math.min(19, dj)];
+      la -= di * res; lo -= dj * res; res /= 20;
+    }
+    return out.slice(0, 8) + "+" + out.slice(8);
+  }
+  function olcRecover(shortCode, refLat, refLon) {
+    var m = OLC_SHORT_RX.exec(String(shortCode || "").trim()); if (!m) return null;
+    var pad = 8 - m[1].length, res = Math.pow(20, 2 - pad / 2), half = res / 2;   // 6 chars dropped → 0.05°, 4 → 1°, 2 → 20°
+    var full = olcEncode10(refLat, refLon).replace("+", "").slice(0, pad) + m[1].toUpperCase() + "+" + m[2].toUpperCase();
+    var xy = olcDecode(full);
+    if (xy.lat < refLat - half && xy.lat + res < 90) xy.lat += res; else if (xy.lat > refLat + half && xy.lat - res > -90) xy.lat -= res;
+    if (xy.lon < refLon - half) xy.lon += res; else if (xy.lon > refLon + half) xy.lon -= res;
+    return xy;
+  }
   function parseCoordText(s) {
     s = (s || "").trim();
     if (!s) return null;
+    var pc = OLC_FULL_RX.exec(s);
+    if (pc) return olcDecode(s);
+    var ps = OLC_SHORT_RX.exec(s);
+    if (ps && !ps[3]) { var ctr = (typeof map !== "undefined" && map) ? map.getCenter() : null; return ctr ? olcRecover(s, ctr.lat, ctr.lng) : null; }
+    if (ps) return null;   // a short code WITH a locality: the search box geocodes the locality first
     // UTM with the latitude band: "33V 357344 6731644" (also "33 V 357344E 6731644N", a comma
     // between). Band letters C–M are the southern hemisphere, N–X the northern (owner, 2026-10-01).
     var u = /^(\d{1,2})\s*([C-HJ-NP-X])\s*[,;]?\s*(\d{5,7}(?:\.\d+)?)\s*E?\s*[,;]?\s+(\d{6,8}(?:\.\d+)?)\s*N?$/i.exec(s);
@@ -21956,8 +21999,21 @@
     var run = function () {
       var q = inp.value.trim();
       if (q.length < 2) { showRecent(); return; }   // empty/short → offer the recent searches
-      var xy = parseCoordText(q);   // "59.9139, 10.7522" / DMS / a pasted map link → one direct result, no geocoder
+      var xy = parseCoordText(q);   // "59.9139, 10.7522" / DMS / UTM / a full plus code / a pasted map link → one direct result, no geocoder
       if (xy) { selIdx = -1; renderPlaceResults(res, [{ lat: xy.lat, lon: xy.lon, display_name: "📍 " + fmtCoordPair(xy) }]); return; }
+      var ps = OLC_SHORT_RX.exec(q);
+      if (ps && ps[3]) {   // "2JX8+QF Elverum": the locality fixes the area, the short code the spot inside it
+        var myS = ++reqTok;
+        fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=" + encodeURIComponent(lang) + "&q=" + encodeURIComponent(ps[3]), { headers: { Accept: "application/json" } })
+          .then(function (r) { return r.ok ? r.json() : []; })
+          .then(function (list) {
+            if (myS !== reqTok) return;
+            var ref = Array.isArray(list) && list[0]; if (!ref) { res.style.display = "none"; return; }
+            var rxy = olcRecover(ps[1] + "+" + ps[2], +ref.lat, +ref.lon);
+            selIdx = -1; renderPlaceResults(res, [{ lat: rxy.lat, lon: rxy.lon, display_name: "📍 " + ps[1].toUpperCase() + "+" + ps[2].toUpperCase() + " · " + String(ref.display_name || ps[3]).split(",")[0] }]);
+          }).catch(function () { if (myS === reqTok) res.style.display = "none"; });
+        return;
+      }
       var b = map.getBounds();
       var vb = [b.getWest(), b.getNorth(), b.getEast(), b.getSouth()].map(function (n) { return n.toFixed(6); }).join(",");
       // bounded=0: the viewbox only BIASES ranking toward the current area — matches
