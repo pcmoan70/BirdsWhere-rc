@@ -1871,6 +1871,7 @@ window.AppPoints = (function () {
       '<span class="mp-card-acts">' +
         '<button type="button" class="mp-card-edit ico-btn" title="' + escapeHtml(t("points.editPoint")) + '" aria-label="' + escapeHtml(t("points.editPoint")) + '">' + ico("edit") + "</button>" +
         '<button type="button" class="mp-card-copy ico-btn" title="' + escapeHtml(t("points.copyTo")) + '" aria-label="' + escapeHtml(t("points.copyTo")) + '">' + ico("copy") + "</button>" +
+        '<button type="button" class="mp-card-route ico-btn" title="' + escapeHtml(t("route.add")) + '" aria-label="' + escapeHtml(t("route.add")) + '">' + ico("navplus") + "</button>" +   // ＋➤ on the icon line (owner, 2026-10-04)
         '<button type="button" class="mp-card-del" title="' + escapeHtml(t("points.deleteOne")) + '" aria-label="' + escapeHtml(t("points.deleteOne")) + '">\u00d7</button>' +
       "</span></div>";
   }
@@ -1937,6 +1938,15 @@ window.AppPoints = (function () {
           e.stopPropagation();
           var o = items[+this.closest(".mp-stack-it").getAttribute("data-i")];
           if (o && copyPointToList) copyPointToList(this, o.p);
+        });
+      });
+      el.querySelectorAll(".mp-card-route").forEach(function (b) {
+        b.addEventListener("click", function (e) {
+          e.stopPropagation();
+          var o = items[+this.closest(".mp-stack-it").getAttribute("data-i")];
+          if (!o) return;
+          addToRoute(+o.p.lat, +o.p.lon, o.p.name || "");
+          try { getMap().closePopup(pop); } catch (x) {}
         });
       });
       el.querySelectorAll(".mp-card-del").forEach(function (b) {
