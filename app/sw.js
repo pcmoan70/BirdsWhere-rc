@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v1999";
+var VERSION = "v2000";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Drag a point file (.kmz, .kml, .geojson, .share) onto the page to load it: one file is shown on the map, several are saved as lists without being shown; the Points panel opens either way."
+  "\u2022 Loading a point file now shows an hourglass with \u201cLoading <file>\u2026\u201d, and stays up while a big observation list is added \u2014 the page no longer looks idle during the work.",
+  "\u2022 Drag a point file onto the page to load it (one is shown, several are saved as lists)."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -657,7 +657,7 @@ window.AppPoints = (function () {
     if (!text) { if (el && el.parentNode) el.parentNode.removeChild(el); return; }
     if (!el) {
       el = document.createElement("div"); el.id = "mp-loading"; el.className = "kml-modal mp-loading";
-      el.innerHTML = '<div class="kml-modal-box spg-wait"><div class="spinner"></div><span id="mp-loading-txt"></span></div>';
+      el.innerHTML = '<div class="kml-modal-box mp-loading-box"><div class="mp-hourglass" aria-hidden="true">\u231B</div><span id="mp-loading-txt"></span></div>';
       document.body.appendChild(el);
     }
     el.querySelector("#mp-loading-txt").textContent = text;

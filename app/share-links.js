@@ -646,16 +646,26 @@ window.AppShare = (function () {
         if (opts.asList) {
           var lnm = String(obj.name || String(opts.fileName || "").replace(/\.[^.]+$/, "") || t("share.defaultName"));
           var updL = !!sharedCollByName(lnm);   // the same list again → replace its points in place
+          // The import of a big list blocks the page for seconds: say so (the hourglass overlay,
+          // owner 2026-10-03 "nothing seems to happen for a long time") and let it paint first.
           var doList = function () {
-            applySharedContext(obj.detections, obj.group);   // the sender's species group + family colours
-            var r = importPointsColl(lnm, detSetToPoints(obj.detections));
-            if (opts.quiet) delete mpState.shownColls()[r.name];   // several files at once: saved, not shown (owner, 2026-10-02)
-            saveMapPoints(); saveShownState(); renderMapPoints();
-            if (!opts.quiet) fitSharedLatLngs(r.ll);
-            setStatus(t(r.updated ? "share.updated" : "share.imported", { name: r.name }));
+            mpState.mpLoading(t("kml.importing", { name: lnm }));
+            return new Promise(function (resolve) {
+              setTimeout(function () {
+                try {
+                  applySharedContext(obj.detections, obj.group);   // the sender's species group + family colours
+                  var r = importPointsColl(lnm, detSetToPoints(obj.detections));
+                  if (opts.quiet) delete mpState.shownColls()[r.name];   // several files at once: saved, not shown (owner, 2026-10-02)
+                  saveMapPoints(); saveShownState(); renderMapPoints();
+                  if (!opts.quiet) fitSharedLatLngs(r.ll);
+                  setStatus(t(r.updated ? "share.updated" : "share.imported", { name: r.name }));
+                } finally { if (!opts.quiet) mpState.mpLoading(null); resolve(); }
+              }, 30);
+            });
           };
-          if (opts.quiet) { doList(); return; }   // a batch of files: the picker was the confirmation
-          return modalConfirm(t(updL ? "share.updatePrompt" : "share.importPrompt", { name: lnm, n: n })).then(function (ok) { if (ok) doList(); });
+          if (opts.quiet) return doList();   // a batch of files: the picker was the confirmation
+          mpState.mpLoading(null);           // the question must not sit under the overlay
+          return modalConfirm(t(updL ? "share.updatePrompt" : "share.importPrompt", { name: lnm, n: n })).then(function (ok) { if (ok) return doList(); });
         }
         modalConfirm(t("share.importPrompt", { name: nm, n: n })).then(function (ok) {
           if (!ok) return;
@@ -669,7 +679,7 @@ window.AppShare = (function () {
         return;
       }
       setStatus(t("share.badLink"));
-    }).catch(function () { setStatus(t("share.badLink")); });
+    }).catch(function () { try { mpState.mpLoading(null); } catch (e) {} setStatus(t("share.badLink")); });
   }
   function maybeImportShared() {
     var enc = "";

@@ -17444,7 +17444,7 @@
       var c0 = txt.charAt(0);
       if (c0 === "{" || c0 === "[") { startGeoJsonImport(txt, f.name); mpState.mpLoading(null); done(); }
       else if (c0 === "<") doneKml(txt);
-      else if (allowShare) { mpState.mpLoading(null); importShared(txt, { asList: true, fileName: f.name }); done(); }   // a .share file → a saved point list
+      else if (allowShare) { importShared(txt, { asList: true, fileName: f.name }); done(); }   // a .share file → a saved point list (the overlay is its job now: decode → prompt → import)
       else doneKml(txt);
     };
     rd.readAsArrayBuffer(f);

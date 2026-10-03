@@ -4797,7 +4797,9 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .mp-link-menu .cu-hint { padding: 0 8px 6px; margin: 0; }
 /* "Loading <file>…" while a point list is read / parsed / added (above every panel). */
 .mp-loading { z-index: 9000; }
-.mp-loading .kml-modal-box { width: auto; max-width: 94vw; padding: 14px 22px; }
+.mp-loading .kml-modal-box { width: auto; max-width: 94vw; padding: 16px 26px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; font-size: var(--fs-b); }
+.mp-hourglass { font-size: 44px; line-height: 1; animation: mp-hg 1.8s ease-in-out infinite; }
+@keyframes mp-hg { 0%, 35% { transform: rotate(0); } 65%, 100% { transform: rotate(180deg); } }
 .mp-chip-all { font-weight: 600; }
 .mp-chip-n { opacity: .7; font-size: .9em; }
 /* Press-and-hold on a card photo → the picture full screen. */
