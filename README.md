@@ -1220,7 +1220,8 @@ the one thing left out by default — they are much the largest thing the app ho
   detections survive across visits. Small settings live in **localStorage**; bulky per-list data
   (saved sets, detections) lives in **IndexedDB** to avoid the ~5 MB cap. Saved point lists load **lazily**: at start only
   the ticked lists are read; the others follow in the background (or at once when ticked or
-  opened), so many large lists no longer slow the start.
+  opened), so many large lists no longer slow the start. Long lists (species table, observation
+  list, legend) show their first rows at once and fill in the rest in the background.
 - **Languages** — the **UI is fully translated into 15 languages** (en, sv, de, es, fr, nl, it, pt,
   pl, cs, no, da, fi, et, lt); other languages fall back to English UI text while still showing
   localised species names. **Species common names are available in ~45 languages**, loaded as

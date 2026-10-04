@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2010";
+var VERSION = "v2011";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The List button no longer freezes the app when nothing is fetched: the species table appears at once and long tables are drawn as you scroll.",
-  "\u2022 Faster start: saved lists that are not ticked load in the background, or at once when you tick or open one.",
+  "\u2022 Long lists appear at once: the observation list and the map legend show their first rows immediately and fill in the rest in the background; more is drawn as you scroll.",
+  "\u2022 Opening the list with a large imported list ticked is many times faster (the closed Points menu and the day histogram are no longer rebuilt on every step).",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
