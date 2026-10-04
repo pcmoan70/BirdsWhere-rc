@@ -85,5 +85,18 @@ window.AppIDB = (function () {
     });
   }
 
-  return { available: available, open: open, get: get, put: put, del: del, getAll: getAll };
+  // Every key in the store, WITHOUT the values (the lists run to megabytes each).
+  function keys() {
+    return open().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var st = db.transaction(STORE, "readonly").objectStore(STORE);
+        if (st.getAllKeys) { var r = st.getAllKeys(); r.onsuccess = function () { resolve(r.result || []); }; r.onerror = function () { reject(r.error); }; return; }
+        var out = [], c = st.openKeyCursor ? st.openKeyCursor() : st.openCursor();
+        c.onsuccess = function () { var x = c.result; if (x) { out.push(x.key); x.continue(); } else resolve(out); };
+        c.onerror = function () { reject(c.error); };
+      });
+    });
+  }
+
+  return { available: available, open: open, get: get, put: put, del: del, getAll: getAll, keys: keys };
 })();

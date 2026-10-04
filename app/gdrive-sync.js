@@ -508,6 +508,8 @@ window.GDriveSync = (function () {
   // checklists, fetched } truthy = include. Omitted → full two-way (default).
   async function sync(options) {
     if (!connected || syncing || !clientId() || !navigator.onLine) return;
+    await window.AppPoints.whenAllLoaded();   // lists load lazily: a sync must see them whole
+    if (window.AppPoints.anyLazy()) return;   // one could not be read → never merge / upload a partial set
     var dir = (options && options.direction) || "two";
     // Fetched observation dots are excluded unless asked for: re-fetchable, bulky, and
     // not something the user made. Anything already on Drive is left as it is.
@@ -684,6 +686,8 @@ window.GDriveSync = (function () {
         await ensureToken();
         var data = await downloadFile(id);
         if (!data) throw new Error("backup could not be read");
+        await window.AppPoints.whenAllLoaded();
+        if (window.AppPoints.anyLazy()) throw new Error("lists could not be read");
         window.AppData.applyRemote(data, { incomingWins: true, interactive: false });
         try { if (window.AppData.flushWrites) await window.AppData.flushWrites(); } catch (e) {}   // durable before we call it restored
         lastSyncAt = Date.now(); lastError = "";

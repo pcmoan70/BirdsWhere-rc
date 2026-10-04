@@ -4521,7 +4521,7 @@
     if (!mpState.mpCollections().length) { el.innerHTML = '<p class="dd-empty">' + escapeHtml(t("points.empty")) + "</p>"; return; }
     var rows = [];
     mpState.mpCollections().slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (c) {
-      var prot = isCollProtected(c.name), n = (c.points && c.points.length) || 0;
+      var prot = isCollProtected(c.name), n = mpState.collCount(c);
       var cid = "coll:" + c.name, open = !!listsExpanded[cid] && n > 0;
       rows.push('<tr class="lists-row"><td class="dset-name">' +
         '<button type="button" class="lists-toggle" data-id="' + escapeHtml(cid) + '"' + (n ? "" : " disabled") + ">" +
@@ -5894,7 +5894,7 @@
   // fetched observations are not points at all.
   function storedPointCount() {
     var n = 0;
-    try { (mpState.mpCollections() || []).forEach(function (c) { n += ((c && c.points) || []).length; }); } catch (e) {}
+    try { (mpState.mpCollections() || []).forEach(function (c) { n += mpState.collCount(c); }); } catch (e) {}
     return n;
   }
   // Called by the sync transport when a push (or a restore) has put this device and
@@ -5955,7 +5955,10 @@
     }
   }
   function exportAppData() {
-    downloadCsv("BirdsWhere_backup_" + new Date().toISOString().slice(0, 10) + ".json", JSON.stringify(buildPayload(), null, 2), "application/json;charset=utf-8;");
+    mpState.whenAllLoaded().then(function () {   // lists load lazily: a backup must hold them whole
+      if (mpState.anyLazy()) return;
+      downloadCsv("BirdsWhere_backup_" + new Date().toISOString().slice(0, 10) + ".json", JSON.stringify(buildPayload(), null, 2), "application/json;charset=utf-8;");
+    });
   }
   function mergeChecklists(local, incoming) {
     var out = {}; Object.keys(local || {}).forEach(function (k) { out[k] = local[k]; });
@@ -6407,6 +6410,7 @@
   }
   function importAppData(jsonText) {
     var data; try { data = JSON.parse(jsonText); } catch (e) { throw new Error("Invalid JSON"); }
+    if (mpState.anyLazy && mpState.anyLazy()) throw new Error("lists still loading");   // never merge into half-loaded lists
     return applyRemote(data, { incomingWins: true, interactive: true });
   }
 
@@ -8192,11 +8196,13 @@
   // export snapshot (buildPayload) rides in the URL fragment — compressed, never sent
   // to any server — and the new origin merges it after a confirmation (below).
   function moveToNewHome() {
+    mpState.whenAllLoaded().then(function () {
     var payload; try { payload = window.AppData.buildPayload(); } catch (e) { location.href = NEW_HOME; return; }
-    window.AppShare.encodeShare(payload).then(function (enc) {
+    return window.AppShare.encodeShare(payload).then(function (enc) {
       if (enc.length > MIGRATE_MAX) { modalAlert(t("moved.tooBig")).then(function () { location.href = NEW_HOME; }); return; }
       location.href = NEW_HOME + "#migrate=" + enc;
     }, function () { location.href = NEW_HOME; });
+    });
   }
   function maybeImportMigrated() {
     var m = /^#migrate=(.+)$/.exec(location.hash || ""); if (!m) return;
@@ -8204,9 +8210,12 @@
     window.AppShare.decodeShare(m[1]).then(function (obj) {
       return modalConfirm(t("moved.confirm")).then(function (ok) {
         if (!ok) return;
+        return mpState.whenAllLoaded().then(function () {
+        if (mpState.anyLazy()) return;
         applyRemote(obj, { incomingWins: true, interactive: true });
         setStatus(t("moved.done"));
         setTimeout(function () { location.reload(); }, 1000);
+        });
       });
     }).catch(function (err) { setStatus(t("sync.importFailed", { msg: (err && err.message) || "" })); });
   }
@@ -14563,8 +14572,10 @@
         for (var i = 0; i < blobSets.length; i++) { var s = blobSets[i]; if (s && s.name) await window.AppIDB.put("set:" + s.name, s); }
         window.GeoState.save({ mapDetectionSets: undefined });   // confirmed in IDB → free the blob
       }
-      var all = await window.AppIDB.getAll();
-      detSetStore = Object.keys(all).filter(function (k) { return k.indexOf("set:") === 0; }).map(function (k) { return all[k]; }).filter(function (s) { return s && s.name; });
+      // Only the "set:" records — getAll() read every point list too (megabytes each), a
+      // second full read of the store at every start (2026-10-04).
+      var setKeys = (await window.AppIDB.keys()).filter(function (k) { return String(k).indexOf("set:") === 0; });
+      detSetStore = (await Promise.all(setKeys.map(function (k) { return window.AppIDB.get(k); }))).filter(function (s) { return s && s.name; });
       detSetsIdbReady = true;
     } catch (e) {
       detSetStore = (window.GeoState.get("mapDetectionSets", []) || []).filter(function (s) { return s && s.name; });
@@ -17056,7 +17067,7 @@
     hdr.textContent = title || t("detlist.saveTitle");
     el.appendChild(hdr);
     lists.forEach(function (c) {
-      var cn = (c.points && c.points.length) || 0;
+      var cn = mpState.collCount(c);
       el.appendChild(drmBtn(c.name + " (" + cn + ")", function () { closeAnchoredMenu(); then(c.name); }, "pin"));
     });
     el.appendChild(drmBtn(t("detmenu.newList"), function () {
@@ -18234,7 +18245,7 @@
     mpSortedColls().forEach(function (c) {
       var f = String(c.folder || "");
       if (!(f in groups)) { groups[f] = []; groupNames.push(f); }
-      groups[f].push({ c: c, html: mpCollRowHtml("p", c.name, (c.points && c.points.length) || 0, "", !!mpState.shownColls()[c.name], t("points.deleteColl"), isCollProtected(c.name), isRouteColl(c)) });
+      groups[f].push({ c: c, html: mpCollRowHtml("p", c.name, mpState.collCount(c), "", !!mpState.shownColls()[c.name], t("points.deleteColl"), isCollProtected(c.name), isRouteColl(c)) });
     });
     var collItems = [];
     groupNames.filter(Boolean).sort(function (a, b) { return a.localeCompare(b); }).forEach(function (f) {
@@ -18369,7 +18380,7 @@
       hdr.textContent = t("detlist.saveTitle");
       el.appendChild(hdr);
       lists.forEach(function (c) {
-        var n = (c.points && c.points.length) || 0;
+        var n = mpState.collCount(c);
         el.appendChild(drmBtn(c.name + " (" + n + ")", function () { closeAnchoredMenu(); then(c.name); }, "pin"));
       });
       el.appendChild(drmBtn(t("detmenu.newList"), function () {
@@ -20674,7 +20685,7 @@
     syncFile.addEventListener("change", function (e) {
       var f = e.target.files && e.target.files[0]; if (!f) return;
       var rd = new FileReader();
-      rd.onload = function () {
+      rd.onload = function () { mpState.whenAllLoaded().then(function () {
         try {
           var s = importAppData(rd.result);
           setStatus(t("sync.imported", { n: s.checklistsIncoming, total: s.checklistsTotal }));
@@ -20683,7 +20694,7 @@
           flushWrites().then(function () { setTimeout(function () { location.reload(); }, 800); });
         } catch (err) { setStatus(t("sync.importFailed", { msg: err.message || "" })); }
         e.target.value = "";
-      };
+      }); };
       rd.readAsText(f);
     });
 
