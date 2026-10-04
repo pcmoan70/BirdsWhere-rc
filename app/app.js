@@ -2501,6 +2501,37 @@
     if (spExpanded[key]) delete spExpanded[key]; else spExpanded[key] = 1;
     refreshSpExpansions();
   }
+  // Row windowing for the species table (owner, 2026-10-04: "clicking the list view button
+  // seems to hang the app"). The browser lays out a table as a whole, and a model-only list
+  // runs to 1,000+ rows: every forced layout during a build cost about a second on a phone,
+  // several times per open. Only the first spClipN rows that PASS the filters are laid out
+  // (the rest carry .sp-clip = display:none); a sentinel under the table reveals the next
+  // batch as it scrolls into reach. Counted over visible rows, so a filter or sort that
+  // leaves few rows always shows them. Row state the rest of the code reads (inline
+  // display, classes, data-*) is untouched.
+  var SP_CLIP_STEP = 150, spClipN = SP_CLIP_STEP, spClipIO = null;
+  function clipSpRows() {
+    var tbody = document.getElementById("sp-tbody"); if (!tbody) return;
+    var ch = tbody.children, seen = 0, hide = false;
+    for (var i = 0; i < ch.length; i++) {
+      var tr = ch[i], cl = tr.classList;
+      if (!cl.contains("sp-detail-row")) {   // a sub-row follows its species
+        if (tr.style.display !== "none" && !cl.contains("sp-hide-search")) seen++;
+        hide = seen > spClipN;
+      }
+      if (hide !== cl.contains("sp-clip")) cl.toggle("sp-clip", hide);
+    }
+    if (seen <= spClipN || typeof IntersectionObserver !== "function") return;
+    var tbl = document.getElementById("species-list-table"); if (!tbl || !tbl.parentNode) return;
+    var s = document.getElementById("sp-clip-more");
+    if (!s) { s = document.createElement("div"); s.id = "sp-clip-more"; s.style.height = "1px"; tbl.parentNode.insertBefore(s, tbl.nextSibling); }
+    if (!spClipIO) spClipIO = new IntersectionObserver(function (es) {
+      if (!es.some(function (e) { return e.isIntersecting; })) return;
+      spClipN += SP_CLIP_STEP * 2;
+      clipSpRows();
+    }, { rootMargin: "1200px" });
+    spClipIO.unobserve(s); spClipIO.observe(s);   // re-armed: still in reach after a batch → the next one follows
+  }
   function sortSpeciesList() {
     var tbody = document.getElementById("sp-tbody");
     if (!tbody) return;
@@ -2585,6 +2616,7 @@
     extras.forEach(function (tr) { frag.appendChild(tr); });   // uncovered species stay at the bottom
     tbody.appendChild(frag);
     refreshSpExpansions();   // re-insert expanded species' detail sub-rows, freshly sorted
+    clipSpRows();
   }
   function cycleSpeciesListSort(col) {
     if (!currentSpView || (currentSpView.mode !== "point" && currentSpView.mode !== "historic")) return;
@@ -2767,12 +2799,14 @@
     var q = spNameQuery.trim();
     if (!q) {   // no search: only rows still carrying the class need touching (every row was visited before)
       Array.prototype.forEach.call(tb.querySelectorAll("tr.sp-hide-search"), function (tr) { tr.classList.remove("sp-hide-search"); });
+      clipSpRows();
       return;
     }
     Array.prototype.forEach.call(tb.querySelectorAll("tr"), function (tr) {
       if (tr.classList.contains("sp-detail-row")) return;   // sub-rows follow their species
       tr.classList.toggle("sp-hide-search", !spRowMatchesName(tr, q));
     });
+    clipSpRows();
   }
   // When the date/recency window is hiding some fetched detections, spell that out
   // (what window is active + how many detections it's dropping) so a "short" list is
@@ -14177,6 +14211,7 @@
       if ((tr.style.display === "none") === show) tr.style.display = show ? "" : "none";
       if (show) shown++;
     });
+    clipSpRows();
     // Not while a per-point fetch is still landing (the table then holds the prediction
     // list with one or two observed rows — "1 species" flashed up mid-way); the count is
     // announced once the pass has settled.
@@ -15746,6 +15781,7 @@
       // Reveal only — the row itself is the expand target, so tapping it opens the
       // records. (Auto-expanding here could mark the row open with nothing under it
       // when the active filters leave no records to show.)
+      if (tr.classList.contains("sp-clip")) { spClipN = Array.prototype.indexOf.call(tbody.children, tr) + SP_CLIP_STEP; clipSpRows(); }   // beyond the laid-out batch → lay out down to it
       try { tr.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) { try { tr.scrollIntoView(); } catch (e2) {} }
       tr.classList.add("sp-flash");
       setTimeout(function () { tr.classList.remove("sp-flash"); }, 1600);
@@ -26404,7 +26440,7 @@
           (hist.months && hist.months.length ? " · " + t("hist.months") + " " + hist.months.slice().sort(function (a, b) { return a - b; }).map(histMonthShort).join(", ") : "") : ""));
       var tb0 = document.getElementById("sp-tbody");
       tb0._sightingsAgg = null; tb0._fetchAgg = null;   // a fresh list: no sightings yet (the previous point's must not leak in until this fetch lands)
-      tb0.innerHTML = results.map(function (r) {
+      var rowHtml = function (r) {
         var cmpCell = !hasCompare ? "<td></td>" : cmpAllPositive ? cmpBarCell(kind, r.cmpVal) : deltaCell(r.cmpVal);
         var name2Cell = '<td class="name2">' + (secondLang ? escapeHtml(secondName(r.label)) : "") + '</td>';
         var dKey = escapeHtml(r.label.key);
@@ -26419,7 +26455,20 @@
                '<td class="num sp-dist" data-key="' + dKey + '"></td>' +
                probBarCell(pct + "%", pct, probHueColor(pRange > 0 ? (r.prob - pLo) / pRange : 1)) +
                '<td class="season-cell sp-season" data-key="' + dKey + '"></td>' + cmpCell + '</tr>';
-      }).join("");
+      };
+      // The table can run to 1,000+ rows; building and parsing them in one go froze a phone
+      // for seconds on the first open (owner, 2026-10-04: "clicking the list view button
+      // seems to hang the app"). The first screenful goes in at once, the rest in slices
+      // with a breath in between, so the page shows and scrolls while the tail arrives.
+      var ROWS_FIRST = 60, ROWS_SLICE = 150;
+      if (!keepScroll) spClipN = SP_CLIP_STEP;   // a fresh list starts with one batch laid out (a rebuild in place keeps its depth)
+      tb0.innerHTML = results.slice(0, ROWS_FIRST).map(rowHtml).join("");
+      for (var ri = ROWS_FIRST; ri < results.length; ri += ROWS_SLICE) {
+        await new Promise(function (res) { setTimeout(res, 0); });
+        if (myGen !== spListGen) { releaseDot(); return; }   // a newer list took over
+        tb0.insertAdjacentHTML("beforeend", results.slice(ri, ri + ROWS_SLICE).map(rowHtml).join(""));
+        clipSpRows();
+      }
       obsProgress();   // animate the loading placeholders until counts arrive
       fillSeasonCells(lat, lon, myGen);   // async: fill the Season column from the 48-week cache
       if (speciesListSort.col) sortSpeciesList();   // apply name/prob/stat sort now (count sort re-applies once data loads)
@@ -26498,6 +26547,10 @@
         // Restored on app open — do NOT re-run the observation fetch (its dots are already
         // back on the map from saveDetections). Populate the list's counts locally from the
         // restored detections: applySightings merges detPlot even with an empty result.
+        // A breath between the table build and this second pass over every row, so the two
+        // halves are separate tasks and the page can paint / scroll in between.
+        await new Promise(function (res) { setTimeout(res, 0); });
+        if (myGen !== spListGen) { releaseDot(); return; }
         var tbNF = document.getElementById("sp-tbody");
         if (tbNF) {
           var tokNF = lat.toFixed(4) + "," + lon.toFixed(4);

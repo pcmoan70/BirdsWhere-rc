@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2009";
+var VERSION = "v2010";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Faster start: saved lists that are not ticked are no longer read while the app starts \u2014 they load in the background right after, or at once when you tick or open one.",
+  "\u2022 The List button no longer freezes the app when nothing is fetched: the species table appears at once and long tables are drawn as you scroll.",
+  "\u2022 Faster start: saved lists that are not ticked load in the background, or at once when you tick or open one.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

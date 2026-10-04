@@ -3559,6 +3559,8 @@ tr.row-list-only .prob-na { color: var(--ink-muted, #999); }
 /* Rows filtered out by the name search — !important so it wins over applyAgeFilter's
    inline display, letting the two filters compose (a row shows only if it passes both). */
 tr.sp-hide-search { display: none !important; }
+/* Row windowing (clipSpRows): rows past the laid-out batch, revealed as the list scrolls. */
+tr.sp-clip { display: none !important; }
 #sp-filters-wrap { margin: 0 0 8px; }
 #sp-filters-wrap:empty { margin: 0; }
 #sp-records .dl-row-menu { width: 100%; box-sizing: border-box; }
