@@ -408,6 +408,8 @@
   "det.needsLife": "Puudub elunimekirjast",
   "detmenu.removeFromList": "Eemalda nimekirjast",
   "detlist.save": "💾 Salvesta",
+  "detlist.saveWhich": "Milline liik salvestada?",
+  "detlist.saveAll": "Kõik ({n} kirjet)",
   "detlist.saveTitle": "Salvesta need punktinimekirjana",
   "detlist.savedToList": "Salvestati {n} punkti nimekirja „{name}”.",
   "points.saveDet": "💾 Salvesta leiud nimekirjana",

@@ -747,6 +747,8 @@
   "detlist.search": "Filtrera arter…",
   "detlist.selectMatch": "＋ Välj {n} på kartan",
   "detlist.save": "💾 Spara",
+  "detlist.saveWhich": "Vilken art ska sparas?",
+  "detlist.saveAll": "Alla ({n} fynd)",
   "detlist.saveTitle": "Spara dessa som en punktlista",
   "detlist.savedToList": "Sparade {n} punkter i ”{name}”.",
   "detlist.noMatch": "Inga arter matchar filtret.",

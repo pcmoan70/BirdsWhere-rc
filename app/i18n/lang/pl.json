@@ -408,6 +408,8 @@
   "det.needsLife": "Brak na liście życia",
   "detmenu.removeFromList": "Usuń z listy",
   "detlist.save": "💾 Zapisz",
+  "detlist.saveWhich": "Który gatunek zapisać?",
+  "detlist.saveAll": "Wszystkie ({n} rekordów)",
   "detlist.saveTitle": "Zapisz je jako listę punktów",
   "detlist.savedToList": "Zapisano {n} punktów na liście „{name}”.",
   "points.saveDet": "💾 Zapisz wykrycia jako listę",

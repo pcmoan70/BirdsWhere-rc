@@ -408,6 +408,8 @@
   "det.needsLife": "Nicht auf der Lebensliste",
   "detmenu.removeFromList": "Aus Liste entfernen",
   "detlist.save": "💾 Speichern",
+  "detlist.saveWhich": "Welche Art speichern?",
+  "detlist.saveAll": "Alle ({n} Nachweise)",
   "detlist.saveTitle": "Diese als Punktliste speichern",
   "detlist.savedToList": "{n} Punkte in „{name}“ gespeichert.",
   "points.saveDet": "💾 Funde als Liste speichern",

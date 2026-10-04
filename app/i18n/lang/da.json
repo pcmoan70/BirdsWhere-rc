@@ -408,6 +408,8 @@
   "det.needsLife": "Ikke på din livsliste",
   "detmenu.removeFromList": "Fjern fra listen",
   "detlist.save": "💾 Gem",
+  "detlist.saveWhich": "Hvilken art skal gemmes?",
+  "detlist.saveAll": "Alle ({n} fund)",
   "detlist.saveTitle": "Gem disse som en punktliste",
   "detlist.savedToList": "Gemte {n} punkter i ”{name}”.",
   "points.saveDet": "💾 Gem fund som liste",

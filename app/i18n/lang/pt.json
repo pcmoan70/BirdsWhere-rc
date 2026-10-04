@@ -408,6 +408,8 @@
   "det.needsLife": "Fora da tua lista de vida",
   "detmenu.removeFromList": "Remover da lista",
   "detlist.save": "💾 Guardar",
+  "detlist.saveWhich": "Que espécie guardar?",
+  "detlist.saveAll": "Todas ({n} registos)",
   "detlist.saveTitle": "Guardar como lista de pontos",
   "detlist.savedToList": "Guardados {n} pontos em “{name}”.",
   "points.saveDet": "💾 Guardar deteções como lista",

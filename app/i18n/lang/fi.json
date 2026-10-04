@@ -408,6 +408,8 @@
   "det.needsLife": "Ei elämänlistallasi",
   "detmenu.removeFromList": "Poista listalta",
   "detlist.save": "💾 Tallenna",
+  "detlist.saveWhich": "Mikä laji tallennetaan?",
+  "detlist.saveAll": "Kaikki ({n} havaintoa)",
   "detlist.saveTitle": "Tallenna nämä pistelistana",
   "detlist.savedToList": "Tallennettiin {n} pistettä listaan ”{name}”.",
   "points.saveDet": "💾 Tallenna havainnot listana",

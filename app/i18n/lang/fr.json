@@ -408,6 +408,8 @@
   "det.needsLife": "Absent de votre liste de vie",
   "detmenu.removeFromList": "Retirer de la liste",
   "detlist.save": "💾 Enregistrer",
+  "detlist.saveWhich": "Quelle espèce enregistrer ?",
+  "detlist.saveAll": "Toutes ({n} données)",
   "detlist.saveTitle": "Enregistrer ceux-ci comme liste de points",
   "detlist.savedToList": "{n} points enregistrés dans « {name} ».",
   "points.saveDet": "💾 Enregistrer les détections comme liste",

@@ -20576,8 +20576,23 @@
     var detlistSave = document.getElementById("detlist-save");
     if (detlistSave) detlistSave.addEventListener("click", function (e) {
       e.stopPropagation();
-      var r = this.getBoundingClientRect();
-      showDetSaveMenu(r.left, r.bottom + 4, detListLastRows);
+      var r = this.getBoundingClientRect(), rows = detListLastRows || [];
+      // Several species in the popup → choose WHICH one to save first (owner, 2026-10-04:
+      // "currently all the species are stored. One should save only one … at a time").
+      // "All" stays available as the last row, for the checklist-as-a-whole case.
+      var bySp = Object.create(null), order = [];
+      rows.forEach(function (d) { if (!bySp[d.key]) { bySp[d.key] = []; order.push(d.key); } bySp[d.key].push(d); });
+      if (order.length <= 1) { showDetSaveMenu(r.left, r.bottom + 4, rows); return; }
+      closeAnchoredMenu();
+      var el = openAnchoredMenu("detrow-menu");
+      var hdr = document.createElement("div"); hdr.className = "detrow-menu-hdr"; hdr.textContent = t("detlist.saveWhich"); el.appendChild(hdr);
+      order.map(function (k) { return { k: k, nm: detListName(k, bySp[k][0].name) }; })
+        .sort(function (a, b) { return a.nm.localeCompare(b.nm); })
+        .forEach(function (o) {
+          el.appendChild(drmBtn(o.nm + (bySp[o.k].length > 1 ? " (" + bySp[o.k].length + ")" : ""), function () { showDetSaveMenu(r.left, r.bottom + 4, bySp[o.k]); }, "pin"));
+        });
+      el.appendChild(drmBtn(t("detlist.saveAll", { n: rows.length }), function () { showDetSaveMenu(r.left, r.bottom + 4, rows); }, "save"));
+      positionAnchoredMenu(el, r.left, r.bottom + 4);
     });
     var detlistNav = document.getElementById("detlist-nav");
     if (detlistNav) detlistNav.addEventListener("click", function (e) {

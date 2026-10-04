@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2006";
+var VERSION = "v2007";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Your own map points: a \u2795\u27A4 Add-to-route icon sits on the point card\u2019s icon line (next to edit and copy) and in the point editor.",
-  "\u2022 Downloaded routes load back as routes; the delete confirmation no longer hides behind a list\u2019s menu."
+  "\u2022 Saving from an observation popup with several species now asks which species to save (or all of them) before the list is chosen.",
+  "\u2022 The /owl_network page no longer carries dates, coordinates or place names in its data \u2014 only years, species and names."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

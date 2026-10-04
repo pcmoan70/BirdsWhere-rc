@@ -408,6 +408,8 @@
   "det.needsLife": "Non nella tua life list",
   "detmenu.removeFromList": "Rimuovi dalla lista",
   "detlist.save": "💾 Salva",
+  "detlist.saveWhich": "Quale specie salvare?",
+  "detlist.saveAll": "Tutte ({n} record)",
   "detlist.saveTitle": "Salva questi come lista di punti",
   "detlist.savedToList": "Salvati {n} punti in “{name}”.",
   "points.saveDet": "💾 Salva i rilevamenti come lista",

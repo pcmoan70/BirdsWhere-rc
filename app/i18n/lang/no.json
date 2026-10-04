@@ -408,6 +408,8 @@
   "det.needsLife": "Mangler i livslisten",
   "detmenu.removeFromList": "Fjern fra listen",
   "detlist.save": "💾 Lagre",
+  "detlist.saveWhich": "Hvilken art skal lagres?",
+  "detlist.saveAll": "Alle ({n} funn)",
   "detlist.saveTitle": "Lagre disse som en punktliste",
   "detlist.savedToList": "Lagret {n} punkter i «{name}».",
   "points.saveDet": "💾 Lagre funn som liste",

@@ -922,6 +922,8 @@ window.GeoI18N = (function () {
         "detlist.search": "Filter species…",
         "detlist.selectMatch": "＋ Select {n} on map",
         "detlist.save": "💾 Save",
+        "detlist.saveWhich": "Which species to save?",
+        "detlist.saveAll": "All of them ({n} records)",
         "detlist.saveTitle": "Save these as a point-list",
         "detlist.savedToList": "Saved {n} points to “{name}”.",
         "detlist.noMatch": "No species match the filter.",

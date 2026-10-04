@@ -408,6 +408,8 @@
   "det.needsLife": "Není na životním seznamu",
   "detmenu.removeFromList": "Odebrat ze seznamu",
   "detlist.save": "💾 Uložit",
+  "detlist.saveWhich": "Který druh uložit?",
+  "detlist.saveAll": "Všechny ({n} záznamů)",
   "detlist.saveTitle": "Uložit jako seznam bodů",
   "detlist.savedToList": "Uloženo {n} bodů do „{name}“.",
   "points.saveDet": "💾 Uložit nálezy jako seznam",

@@ -408,6 +408,8 @@
   "det.needsLife": "Nėra gyvenimo sąraše",
   "detmenu.removeFromList": "Pašalinti iš sąrašo",
   "detlist.save": "💾 Išsaugoti",
+  "detlist.saveWhich": "Kurią rūšį išsaugoti?",
+  "detlist.saveAll": "Visas ({n} įrašų)",
   "detlist.saveTitle": "Išsaugoti šiuos kaip taškų sąrašą",
   "detlist.savedToList": "Išsaugoti {n} taškai į „{name}“.",
   "points.saveDet": "💾 Išsaugoti aptikimus kaip sąrašą",

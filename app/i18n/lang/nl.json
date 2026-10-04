@@ -408,6 +408,8 @@
   "det.needsLife": "Niet op je life-list",
   "detmenu.removeFromList": "Uit lijst verwijderen",
   "detlist.save": "💾 Opslaan",
+  "detlist.saveWhich": "Welke soort opslaan?",
+  "detlist.saveAll": "Allemaal ({n} waarnemingen)",
   "detlist.saveTitle": "Deze opslaan als puntenlijst",
   "detlist.savedToList": "{n} punten opgeslagen in “{name}”.",
   "points.saveDet": "💾 Waarnemingen opslaan als lijst",
