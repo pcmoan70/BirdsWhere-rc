@@ -14301,7 +14301,14 @@
     // one old point's result over them would replace what you just fetched, and when that
     // stale result is empty (a list restored without a fetch) plotAllSightings reports
     // "No located detections to plot" over a map that is full of them.
-    if (!mapFromMultiFetch && currentSpView && (currentSpView.mode === "point" || currentSpView.mode === "historic") &&
+    // …and never for a model-only list (List pressed with nothing fetched): it has no
+    // observations to plot, so the plot reported "No located detections to plot" — over a map
+    // showing list points — and registered the spot as a searched, empty square (owner,
+    // 2026-10-05).
+    // Same for a list whose fetch brought nothing back while other dots are on the map.
+    var rs = currentSpView && currentSpView._result;
+    var rsEmpty = !!rs && !Object.keys(rs.agg || {}).length && !Object.keys(rs.extras || {}).length && hasPlottedDetections();
+    if (!mapFromMultiFetch && currentSpView && !currentSpView._noFetch && !rsEmpty && (currentSpView.mode === "point" || currentSpView.mode === "historic") &&
         (currentSpView._plotGen === undefined || currentSpView._plotGen === detPlotGen)) plotAllSightings();
     updateViewToggle();
     try { maybeShowRarityTicker(); } catch (e) {}   // a fetch that settled behind the list can run its intro now
@@ -26455,6 +26462,7 @@
       ? { mode: "historic", lat: lat, lon: lon, from: hist.from, to: hist.to, range: hist.range, months: hist.months || [] }
       : { mode: "point", lat: lat, lon: lon };
     currentSpView._plotGen = detPlotGen;   // red × mid-fetch bumps this → partial plots stop
+    if (noFetch) currentSpView._noFetch = true;   // a model-only list: it holds no observations of its own (see goToMapView)
     // Harmonise the date window so historic records aren't dropped by the recency
     // filter: Historic sets the global date-range to the fetched range (and clears
     // recency); Recent clears the range so its own recency window applies. Either way
