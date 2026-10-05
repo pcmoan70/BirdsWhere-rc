@@ -12931,6 +12931,7 @@
       }
     }
     // 3) Lists & actions — your data (any keyed species).
+    var addPtPlaced = false;
     if (key) {
       head("menu.secActions");
       // Species selection filter (mirrors the observer menu): if this species IS part
@@ -12957,6 +12958,8 @@
       // Add this species to a saved species list (or create one) — the persistent
       // counterpart to the transient selection filter above. Works for any keyed species.
       el.appendChild(drmBtn(tLabel("spmenu.addList"), function () { drmRenderSpLists(el, d); }, "dotsplus"));
+      // "Add point to list" sits right under it (owner, 2026-10-05) — the two list actions together.
+      if (hasObs) { el.appendChild(drmBtn(tLabel("detmenu.addList"), function () { drmRenderLists(el, d); }, "dotsplus")); addPtPlaced = true; }
       // Each row is a toggle drawn with the app's own monochrome line icons (not the
       // colour emoji the list columns use); the active state reads via the icon's
       // full-strength (vs dimmed) rendering — see .drm-toggle .drm-ico-svg.
@@ -12968,15 +12971,15 @@
         function () { toggleLifeList(key); closeDetRowMenu(); redraw(); }));
     }
     // 4) This observation on the map — at the bottom, after the list actions: Show on map ·
-    //    Navigate here · Add to route · Add to point list.
-    if (hasObs) {
+    //    Navigate here · Add to route (· Add to point list, only when there is no Lists section above).
+    if (hasObs && (hasLoc || !addPtPlaced)) {
       var dv4 = document.createElement("div"); dv4.className = "detrow-menu-div"; el.appendChild(dv4);
       if (hasLoc) {
         if (!d.fromPin) el.appendChild(drmBtn(tLabel("detmenu.focusMap"), function () { focusPointOnMap(+d.lat, +d.lon); }, "pin"));   // green pin icon only (strip the 🎯 emoji); a map pin is already on the map
         el.appendChild(drmBtn(t("nav.here"), function () { closeDetRowMenu(); navigatePoints([{ lat: +d.lat, lon: +d.lon }]); }, "nav"));
         el.appendChild(drmBtn(tLabel("route.add"), function () { closeDetRowMenu(); addToRoute(+d.lat, +d.lon, name); }, "navplus"));
       }
-      el.appendChild(drmBtn(tLabel("detmenu.addList"), function () { drmRenderLists(el, d); }, "dotsplus"));   // green dots+ icon only (strip the 📍 emoji)
+      if (!addPtPlaced) el.appendChild(drmBtn(tLabel("detmenu.addList"), function () { drmRenderLists(el, d); }, "dotsplus"));   // green dots+ icon only (strip the 📍 emoji)
     }
   }
   function drmRenderLists(el, d) {

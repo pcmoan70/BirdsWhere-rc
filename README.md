@@ -940,10 +940,11 @@ Right-click / long-press / tap any species name for a menu **led by the species 
   **NBN Atlas (UK)** link.
 - **Lists & actions** — **Show only this species** (when it has observations plotted: isolates that
   species on the map + detections list, like a legend selection; tap again on the same species to show
-  everything), then state-showing **toggles**: **Interesting** (★), **Year list** and **Life
-  list** (each coloured when the species is in that set, greyed when not). Also **＋ Add to route**.
+  everything), **＋ Add to species list…** with **Add point to list…** directly under it (for a
+  record), then state-showing **toggles**: **Interesting** (★), **Year list** and **Life
+  list** (each coloured when the species is in that set, greyed when not).
 - **This observation** (bottom, when opened from a record with a location) — **Show on map**,
-  **Navigate here**, **Add to route** and **Add point to list…**.
+  **Navigate here** and **Add to route**.
 
 ---
 

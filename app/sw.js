@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2013";
+var VERSION = "v2014";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Google Drive sync: each point list is now its own .kmz file; migration_calendar.json only names them. Only changed lists are uploaded or downloaded, and a sync with nothing to change writes nothing.",
-  "\u2022 Update all your devices before syncing between them.",
+  "\u2022 Observation menu: \u201cAdd point to list\u201d now sits right under \u201cAdd to species list\u201d in Lists & actions.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
