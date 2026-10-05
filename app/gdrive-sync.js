@@ -107,9 +107,12 @@ window.GDriveSync = (function () {
   var BULK_KEYS = { mapPointSets: 1, mapDetections: 1, mapDetectionSets: 1, sightingsCache: 1, nameHarvest: 1, extraVernac: 1 };
   function stateDiffers(a, b) {
     if (!a || !b || typeof a !== "object" || typeof b !== "object") return true;
+    // Stamps every sync writes about itself are not a change to sync: `gdriveLastSync` made
+    // EVERY sync differ from the one before, so each one pushed a full new run.
+    var SELF = { updatedAt: 1, gdriveLastSync: 1, gdriveSyncPts: 1 };
     var keys = {}, k;
-    for (k in a) if (Object.prototype.hasOwnProperty.call(a, k) && k !== "updatedAt") keys[k] = 1;
-    for (k in b) if (Object.prototype.hasOwnProperty.call(b, k) && k !== "updatedAt") keys[k] = 1;
+    for (k in a) if (Object.prototype.hasOwnProperty.call(a, k) && !SELF[k]) keys[k] = 1;
+    for (k in b) if (Object.prototype.hasOwnProperty.call(b, k) && !SELF[k]) keys[k] = 1;
     var all = Object.keys(keys);
     var small = all.filter(function (x) { return !BULK_KEYS[x]; });
     var big = all.filter(function (x) { return BULK_KEYS[x]; });
@@ -375,7 +378,7 @@ window.GDriveSync = (function () {
       var runs = await listRunFolders();          // newest first, by createdTime
       for (var i = 0; i < runs.length; i++) {
         var f = await payloadIn(runs[i].id);
-        if (f) return f;
+        if (f) { f.folderId = runs[i].id; f.folderName = runs[i].name; return f; }
       }
     } catch (e) { /* fall through to the older layouts */ }
     var files = byNewest(await listOurFiles());
@@ -411,6 +414,88 @@ window.GDriveSync = (function () {
       try { txt = new TextDecoder().decode(new Uint8Array(buf)); } catch (e) { return null; }
     }
     try { return JSON.parse(txt); } catch (e) { return null; }
+  }
+
+  // ---- Point lists as files (2026-10-05) ------------------------------------------------
+  // The payload names each list's .kmz instead of holding its points (AppData.
+  // splitListsForDrive). Reading: a referenced list is downloaded from the payload's own run
+  // folder only when its points differ from what this device has (signature); writing: an
+  // unchanged list is copied inside Drive rather than uploaded again, a changed one is
+  // uploaded — all BEFORE the payload, so a payload never names a file that is not there.
+  async function listFolderFiles(folderId) {
+    var out = {}, token = "";
+    do {
+      var q = encodeURIComponent("trashed=false and '" + folderId + "' in parents");
+      var r = await driveFetch("https://www.googleapis.com/drive/v3/files?pageSize=1000&fields=nextPageToken,files(id,name)&q=" + q + (token ? "&pageToken=" + encodeURIComponent(token) : ""), {});
+      if (!r.ok) throw new Error("Drive folder listing failed (" + r.status + ")");
+      var j = await r.json();
+      (j.files || []).forEach(function (f) { if (!(f.name in out)) out[f.name] = f.id; });
+      token = j.nextPageToken || "";
+    } while (token);
+    return out;
+  }
+  async function parentOf(fileId) {
+    var r = await driveFetch("https://www.googleapis.com/drive/v3/files/" + fileId + "?fields=parents", {});
+    if (!r.ok) return "";
+    return ((await r.json()).parents || [])[0] || "";
+  }
+  // Fill the referenced lists of a downloaded payload with their points. Returns what the
+  // run holds ({ refs: name → {file, psig}, ids: file name → Drive id, raw: the list entries
+  // as they were written }) for the push that follows. Any file that cannot be read stops
+  // the sync: going on would merge a list as empty and then write it back that way.
+  async function hydrateLists(data, folderId) {
+    var out = { refs: {}, ids: null, raw: null };
+    var sets = data && data.state && data.state.mapPointSets;
+    if (!Array.isArray(sets)) return out;
+    var isRef = window.AppData.isListRef;
+    out.raw = sets.map(function (e) { if (!isRef(e)) return e; var c = {}; for (var k in e) c[k] = e[k]; return c; });
+    var need = sets.filter(isRef);
+    if (!need.length) return out;
+    if (!folderId) throw new Error("this backup names list files but has no folder");
+    out.ids = await listFolderFiles(folderId);
+    for (var i = 0; i < need.length; i++) {
+      var e = need[i];
+      out.refs[e.name] = { file: e.file, psig: e.psig };
+      phase("download", e.name, i + 1, need.length);
+      if (e.psig && window.AppData.localListSig(e.name) === e.psig) e.points = [];   // same points here already → nothing to fetch or merge
+      else {
+        var id = out.ids[e.file];
+        if (!id) throw new Error("list file missing on Drive: " + e.file);
+        var r = await driveFetch("https://www.googleapis.com/drive/v3/files/" + id + "?alt=media", {});
+        if (!r.ok) throw new Error("list file could not be read: " + e.file + " (" + r.status + ")");
+        e.points = await window.AppData.listFromKmz(await r.arrayBuffer());
+      }
+      delete e.file; delete e.psig; delete e.n;   // a merged list must not carry the reference fields
+    }
+    return out;
+  }
+  // Write this run's list files into its folder. `prev` = hydrateLists' result for the run
+  // being replaced (may be null), `prevFolderId` its folder.
+  async function writeListFiles(files, runId, prev, prevFolderId) {
+    if (!files.length) return;
+    var have = await listFolderFiles(runId);            // a second sync inside the same minute reuses the folder
+    var srcIds = prev && prev.ids;
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      phase("files", f.name, i + 1, files.length);
+      if (f.copy) {
+        if (!srcIds && prevFolderId) srcIds = await listFolderFiles(prevFolderId);
+        var src = srcIds && srcIds[f.copy];
+        if (src && prevFolderId !== runId) {
+          if (have[f.name]) { try { await driveFetch("https://www.googleapis.com/drive/v3/files/" + have[f.name], { method: "DELETE" }); } catch (e) {} }
+          var c = await driveFetch("https://www.googleapis.com/drive/v3/files/" + src + "/copy?fields=id", {
+            method: "POST", headers: { "Content-Type": "application/json; charset=UTF-8" },
+            body: JSON.stringify({ name: f.name, parents: [runId] })
+          });
+          if (c.ok) continue;
+        } else if (src && have[f.name]) continue;       // same folder, already there
+        if (!f.build) throw new Error("list file could not be carried over: " + f.name);
+      }
+      var blob = new Blob([await f.build()], { type: "application/vnd.google-earth.kmz" });
+      if (have[f.name]) await resumableUpload("PATCH", "https://www.googleapis.com/upload/drive/v3/files/" + have[f.name] + "?uploadType=resumable&fields=id", {}, blob, "application/vnd.google-earth.kmz");
+      else await resumableUpload("POST", "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id", { name: f.name, parents: [runId] }, blob, "application/vnd.google-earth.kmz");
+      blob = null;
+    }
   }
 
   // Resumable upload — handles ANY payload size. Simple multipart/media uploads
@@ -527,6 +612,17 @@ window.GDriveSync = (function () {
         phase("download", (meta.folderName || meta.name || "") + (meta.size ? " \u00b7 " + fmtBytes(+meta.size) : ""));
         remote = await downloadFile(meta.id);
       }
+      // Lists named by file: read the ones that differ from this device's (only when lists
+      // are part of this sync — otherwise the references are carried over untouched).
+      var prevLists = null, remoteCmp = remote ? remote.state : null;
+      if (remote && remote.state) {
+        if (inc.lists) {
+          prevLists = await hydrateLists(remote, meta.folderId);
+          if (prevLists.raw) { remoteCmp = {}; for (var rk in remote.state) remoteCmp[rk] = remote.state[rk]; remoteCmp.mapPointSets = prevLists.raw; }
+        } else if (Array.isArray(remote.state.mapPointSets)) {
+          prevLists = { refs: {}, ids: null, raw: remote.state.mapPointSets };
+        }
+      }
       phase("merge");
 
       // Scalar-settings direction (collections always union regardless). Two-way:
@@ -567,8 +663,10 @@ window.GDriveSync = (function () {
       // trigger a full resumable upload on every sync. Download is pull-only.
       var merged = window.AppData.buildPayload();
       window.AppData.overlayExcludedForPush(merged, remote, inc, localState);
+      // From here the payload names each list's file instead of holding its points.
+      var listFiles = window.AppData.splitListsForDrive(merged, prevLists && prevLists.refs);
       var needPush = dir !== "download" && (!remote ||
-        stateDiffers(merged.state, remote.state) ||
+        stateDiffers(merged.state, remoteCmp) ||
         (merged.ebirdKey && merged.ebirdKey !== (remote.ebirdKey || "")));
       if (needPush) {
         var str = JSON.stringify(merged);
@@ -578,6 +676,8 @@ window.GDriveSync = (function () {
         phase("write", fmtBytes(str.length));
         var pushLabel = str.length;
         var runId = await createRunFolder();
+        await writeListFiles(listFiles, runId, prevLists, meta && meta.folderId);   // the lists first: the payload below names them
+        phase("write", fmtBytes(str.length));
         var created = await createFile(str, runId);
         if (lastPushBytes && lastPushBytes < pushLabel)
           phase("write", fmtBytes(pushLabel) + " \u2192 " + fmtBytes(lastPushBytes));
@@ -688,6 +788,7 @@ window.GDriveSync = (function () {
         if (!data) throw new Error("backup could not be read");
         await window.AppPoints.whenAllLoaded();
         if (window.AppPoints.anyLazy()) throw new Error("lists could not be read");
+        await hydrateLists(data, await parentOf(id));   // its lists are .kmz files in the same run folder
         window.AppData.applyRemote(data, { incomingWins: true, interactive: false });
         try { if (window.AppData.flushWrites) await window.AppData.flushWrites(); } catch (e) {}   // durable before we call it restored
         lastSyncAt = Date.now(); lastError = "";

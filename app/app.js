@@ -6114,8 +6114,9 @@
     (Array.isArray(incSets) ? incSets : []).forEach(function (inc) {
       if (!inc || !inc.name) return;
       var cur = byName[inc.name];
-      if (!cur) { var added = withMeta(inc); out.push(added); byName[inc.name] = added; return; }
-      Object.keys(inc).forEach(function (k) { if (k !== "points" && k !== "name" && cur[k] == null && inc[k] != null) cur[k] = inc[k]; });
+      if (!cur) { var added = withMeta(inc); delete added.file; delete added.n; delete added.psig; out.push(added); byName[inc.name] = added; return; }
+      // (file / n / psig are a Drive payload's reference fields — an older build echoes them back; never a list's own)
+      Object.keys(inc).forEach(function (k) { if (k !== "points" && k !== "name" && k !== "file" && k !== "n" && k !== "psig" && cur[k] == null && inc[k] != null) cur[k] = inc[k]; });
       // A ROUTE's order is its content (owner, 2026-10-04): when the incoming copy is the
       // newer one, its stop order wins (local-only stops append); otherwise the local order
       // stays. A plain list keeps the local-first union as before.
@@ -6265,6 +6266,11 @@
   function applyRemote(data, opts) {
     opts = opts || {};
     if (!data || data.app !== "migration_calendar") throw new Error(t("sync.notBackup"));
+    // A list that is only a file reference (a Drive payload opened without its .kmz files)
+    // has no points to merge — and merging it would stamp its file fields onto a local list.
+    if (data.state && Array.isArray(data.state.mapPointSets) && data.state.mapPointSets.some(isListRef)) {
+      data.state.mapPointSets = data.state.mapPointSets.filter(function (e) { return !isListRef(e); });
+    }
     // Flush the live map (plotted dots/stars) to storage FIRST, so the merge
     // unions the points the user is currently looking at — not just the last
     // explicitly-saved snapshot. Without this a sync could drop on-screen dots.
@@ -6612,7 +6618,8 @@
       out.push({ name: safeFileName(name) + ".kmz", mime: "application/vnd.google-earth.kmz",
         build: function () { return mpState.buildKmz(mpState.buildPointsKml([{ name: name, points: points }], [])); } });
     }
-    try { (mpState.mpCollections() || []).forEach(function (c) { kmz("Points - " + c.name, c.points || []); }); } catch (e) {}
+    // Point lists are no longer written here: each is a DATA file of the sync now
+    // (splitListsForDrive below), not a convenience copy.
     try {
       (detSets() || []).forEach(function (set) {
         var pts = [];
@@ -6638,6 +6645,93 @@
     if (skipped.length) out._skipped = skipped;   // reported by the sync, not silently dropped
     return Promise.resolve(out);
   }
+  // ---- Point lists as standalone files on Drive (owner, 2026-10-05) -------------------
+  // "I want the syncing operation to read the standalone kmz files and avoid embedding the
+  // files in json (just keep file names there for load path)." Each synced list travels as
+  // its own "Points - <name>.kmz" in the run folder; migration_calendar.json keeps, per list,
+  // only its fields, the file name, the point count and a signature of the points. The .kmz
+  // is an ordinary KML (opens in Google Earth / My Maps) that ALSO carries the exact list
+  // as JSON in a document-level <ExtendedData> — the placemarks alone are lossy (no species
+  // key, date, observer, count, source link, probability, id), and that block is what the
+  // sync reads back. The Export / Import file (buildPayload) stays self-contained.
+  var LIST_DATA_OPEN = '<Data name="birdswhere-list"><value><![CDATA[', LIST_DATA_CLOSE = "]]></value></Data>";
+  // Key-order independent text of a value, so two devices sign the same list the same way.
+  // Fields starting with "_" are per-device caches (_dn, _ot, …): not signed, not written.
+  function canonStr(v) {
+    if (v === null || typeof v !== "object") return JSON.stringify(v === undefined ? null : v);
+    if (Array.isArray(v)) { var a = new Array(v.length); for (var i = 0; i < v.length; i++) a[i] = canonStr(v[i]); return "[" + a.join(",") + "]"; }
+    var ks = Object.keys(v).sort(), o = [];
+    for (var j = 0; j < ks.length; j++) { if (v[ks[j]] !== undefined && ks[j].charAt(0) !== "_") o.push(JSON.stringify(ks[j]) + ":" + canonStr(v[ks[j]])); }
+    return "{" + o.join(",") + "}";
+  }
+  // `ordered` (a route: its stop order IS its content) signs the sequence; any other list
+  // signs the SET of points, so two devices holding the same points in a different order —
+  // which is what a merge leaves behind — agree, and neither uploads the list again.
+  function listPointsSig(points, ordered) {
+    var parts = (points || []).map(canonStr); if (!ordered) parts.sort();
+    var s = parts.join("\n"), h1 = 0x811c9dc5, h2 = 5381;
+    for (var i = 0; i < s.length; i++) { var c = s.charCodeAt(i); h1 = Math.imul(h1 ^ c, 16777619); h2 = (Math.imul(h2, 33) + c) | 0; }
+    return (points || []).length + "-" + (h1 >>> 0).toString(36) + (h2 >>> 0).toString(36) + "-" + s.length;
+  }
+  function localListSig(name) {
+    var c = (mpState.mpCollections() || []).filter(function (x) { return x && x.name === name; })[0];
+    return c ? listPointsSig(c.points || [], mpState.isRouteColl(c)) : "";
+  }
+  async function listKmzBytes(c) {
+    var xml = function (x) { return String(x == null ? "" : x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); };
+    var pts = c.points || [], kml;
+    var data = "<ExtendedData>" + LIST_DATA_OPEN + JSON.stringify({ v: 1, name: c.name, points: pts }, function (k, val) { return k.charAt(0) === "_" ? undefined : val; }).replace(/]]>/g, "]]]]><![CDATA[>") + LIST_DATA_CLOSE + "</ExtendedData>";
+    if (pts.length > COPY_MAX_POINTS) {
+      // A very large list: bare placemarks (name + position) — the full KML with descriptions
+      // is hundreds of megabytes of string. The data block is complete either way.
+      var parts = ['<?xml version="1.0" encoding="UTF-8"?>', '<kml xmlns="http://www.opengis.net/kml/2.2">', "<Document>", "<name>" + xml(c.name) + "</name>", data, "<Folder><name>" + xml(c.name) + "</name>"];
+      pts.forEach(function (p) { parts.push("<Placemark><name>" + xml(p.name || "Point") + "</name><Point><coordinates>" + Number(p.lon).toFixed(6) + "," + Number(p.lat).toFixed(6) + ",0</coordinates></Point></Placemark>"); });
+      parts.push("</Folder>", "</Document>", "</kml>");
+      kml = parts.join("\n");
+    } else {
+      kml = mpState.buildPointsKml([{ name: c.name, points: pts }], []);
+      var at = kml.indexOf("<Document>");
+      kml = kml.slice(0, at + 10) + "\n" + data + kml.slice(at + 10);
+    }
+    return mpState.buildKmz(kml);
+  }
+  // The exact points of a list file written by listKmzBytes. Throws when the file is not one.
+  async function listFromKmz(buf) {
+    var kml = await mpState.extractKmlFromKmz(buf);
+    var a = kml.indexOf(LIST_DATA_OPEN); if (a < 0) throw new Error("not a BirdsWhere list file");
+    a += LIST_DATA_OPEN.length;
+    var b = kml.indexOf(LIST_DATA_CLOSE, a); if (b < 0) throw new Error("list file is cut short");
+    var obj = JSON.parse(kml.slice(a, b).split("]]]]><![CDATA[>").join("]]>"));
+    if (!obj || !Array.isArray(obj.points)) throw new Error("list file has no points");
+    return obj.points;
+  }
+  function isListRef(e) { return !!(e && e.file && !Array.isArray(e.points)); }
+  // Turn the payload's lists into references and return the files to write. `refs` = what
+  // the newest run on Drive holds ({ listName: { file, psig } }): a list whose points are
+  // unchanged is COPIED there (server side) instead of uploaded again. A list that is already
+  // a reference (the lists category was left out of this sync) is carried over the same way.
+  function splitListsForDrive(payload, refs) {
+    var sets = payload && payload.state && payload.state.mapPointSets, files = [];
+    if (!Array.isArray(sets)) return files;
+    refs = refs || {};
+    var taken = Object.create(null);
+    sets.forEach(function (c) { if (isListRef(c)) taken[c.file] = 1; });
+    payload.state.mapPointSets = sets.map(function (c) {
+      if (!c || !c.name) return c;
+      if (isListRef(c)) { files.push({ name: c.file, list: c.name, copy: c.file, build: null }); return c; }
+      var base = "Points - " + safeFileName(c.name), fname = base + ".kmz", k = 2;
+      var ref = refs[c.name], psig = listPointsSig(c.points || [], mpState.isRouteColl(c));
+      if (ref && ref.file && !taken[ref.file]) fname = ref.file;      // keep the name it already has on Drive
+      else while (taken[fname]) fname = base + " (" + (k++) + ").kmz";
+      taken[fname] = 1;
+      var stub = {};
+      Object.keys(c).sort().forEach(function (key) { if (key !== "points" && key !== "file" && key !== "n" && key !== "psig") stub[key] = c[key]; });
+      stub.file = fname; stub.n = (c.points || []).length; stub.psig = psig;
+      files.push({ name: fname, list: c.name, copy: (ref && ref.psig === psig) ? ref.file : null, build: function () { return listKmzBytes(c); } });
+      return stub;
+    });
+    return files;
+  }
   // Surface the data layer for the Google Drive sync module (gdrive-sync.js),
   // which lives outside this IIFE. It builds the payload and merges remote
   // copies through the exact same code path as the file Export/Import.
@@ -6651,7 +6745,9 @@
     setEbirdKey: setEbirdKey,
     SYNC_CATS: SYNC_CATS,
     filterIncomingForSync: filterIncomingForSync,
-    overlayExcludedForPush: overlayExcludedForPush
+    overlayExcludedForPush: overlayExcludedForPush,
+    splitListsForDrive: splitListsForDrive, listFromKmz: listFromKmz, localListSig: localListSig, isListRef: isListRef,
+    _listKmzBytes: listKmzBytes, _listPointsSig: listPointsSig
   };
 
   // Recent eBird observations of one species near a point. The app's species

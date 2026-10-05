@@ -1154,12 +1154,19 @@ only; no background sync). Collections always merge, so no direction can delete 
 device.
 
 Everything lands in a folder called **BirdsWhere** in your Drive, which you can open like any
-other. Alongside the sync file (`migration_calendar.json`, plus the ten most recent dated copies)
-each push writes **readable exports** of the same data: a `.kmz` for every point list and every
-saved trip, `Species lists.csv` (life, year, custom and starred lists) and `Checklists.csv`. Those
-are one-way — nothing reads them back, they are there so the data is usable in Google Earth, a
-spreadsheet or anywhere else. Backups written before v1875 live in Drive's hidden app-data area
-and are still read; the next push brings them into the folder.
+other; each sync that changes something writes a dated subfolder (the ten newest are kept).
+**Point lists are standalone files** (since v2013): every synced list is its own
+`Points - <name>.kmz` — an ordinary KML that opens in Google Earth / My Maps and also carries the
+exact list (species, date, observer, count, note, source link, ids) for the app to read back. The
+sync file `migration_calendar.json` holds settings and the small collections, and for each list
+only its name, folder, file name, point count and a signature. A sync downloads only the lists
+that differ from the device's own, uploads only the lists that changed, and copies the unchanged
+ones inside Drive; a sync with nothing to change writes nothing. Beside them are **readable
+exports**: a `.kmz` per saved trip, `Species lists.csv` and `Checklists.csv` — those are one-way.
+Backups written by earlier versions (lists inside the JSON, or in Drive's hidden app-data area)
+are still read; the next push rewrites them in the new layout. Update every device before
+syncing between them: an older version reads the new files' lists as empty until it updates
+(nothing is deleted). Settings → Export still writes one self-contained JSON.
 
 The sync carries your settings, lists, trips, checklists, starred/life/year lists, the species
 names harvested from iNaturalist and your own Drive client ID. The **fetched observations** are
