@@ -17063,7 +17063,8 @@
     var nameCnt = nameActive ? spNameMatchCount() : null;
     var nameCntTxt = nameCnt == null ? "" : t("filters.nMatches", { n: nameCnt });
     var nameBody = '<input type="search" class="aff-name sp-search" placeholder="' + escapeHtml(t("ph.filter")) + '" value="' + escapeHtml(spNameQuery) + '" autocomplete="off" autocorrect="off" spellcheck="false" />' +
-      '<span class="aff-name-cnt">' + escapeHtml(nameCntTxt) + "</span>";
+      '<span class="aff-name-cnt">' + escapeHtml(nameCntTxt) + "</span>" +
+      '<div class="aff-name-list">' + affNameListHtml(spNameQuery) + "</div>";
     var nameSum = !nameActive ? t("filters.any") : (spNameQuery + (nameCnt == null ? "" : "  ·  " + nameCntTxt));
     var secName = affSection("name", t("filters.name"), nameActive, nameSum, nameBody);
 
@@ -17121,6 +17122,27 @@
 
     // Order: "Show last" (date) at the top; Probability sits right under Status; the standalone Hidden checkbox at the very bottom.
     return head + '<div class="aff-body">' + secDate + secSort + secSel + secLists + secMode + secProb + secNew + secBfly + secCnt + secName + secText + secLoc + secObs + secSrc + secRegion + "</div>";
+  }
+  // The species matching the name search, each with a three-state box — empty → include
+  // (green +) → exclude (red −) → empty — on the same selection / exclusion sets the legend
+  // and the species lists use (cycleListTri). Shown only while there is a query.
+  var AFF_NAME_MAX = 60;
+  function affNameListHtml(q) {
+    q = String(q || "").trim(); if (!q) return "";
+    var pool = listPool(), hits = [];
+    Object.keys(pool).forEach(function (k) {
+      var nm = spKeyName(k);
+      if (detFuzzy(q, detSearchText({ key: k, name: nm }))) hits.push({ k: k, nm: nm });
+    });
+    if (!hits.length) return "";
+    hits.sort(function (a, b) { return a.nm.localeCompare(b.nm); });
+    var rows = hits.slice(0, AFF_NAME_MAX).map(function (h) {
+      var st = listTriState([h.k], pool), glyph = st === "include" ? "+" : st === "exclude" ? "\u2212" : "";
+      var lbl = labelsByKey[h.k], sci = lbl && lbl.sci ? lbl.sci : (h.k.indexOf("x:") === 0 ? h.k.slice(2) : "");
+      return '<div class="sp-list-row"><button type="button" class="sp-tri sp-tri-' + st + ' aff-nm-tri" data-key="' + escapeHtml(h.k) + '" title="' + escapeHtml(t("sp.triCycle")) + '" aria-label="' + escapeHtml(t("sp.triCycle")) + '">' + glyph + "</button>" +
+        ' <span class="sp-list-nm">' + escapeHtml(h.nm) + "</span>" + (sci && sci !== h.nm ? ' <i class="sp-list-n">' + escapeHtml(sci) + "</i>" : "") + "</div>";
+    }).join("");
+    return '<div class="aff-nm-rows">' + rows + "</div>" + (hits.length > AFF_NAME_MAX ? '<div class="aff-hint">' + escapeHtml(t("filters.textFirst", { n: AFF_NAME_MAX })) + "</div>" : "");
   }
   function affRegionHtml() {
     var opts = DET_REGIONS.map(function (n, i) { return '<option value="' + i + '"' + (i === detRegionPick ? " selected" : "") + ">" + escapeHtml(regionName(i)) + "</option>"; }).join("");
@@ -17266,15 +17288,30 @@
         saveLegendState(); detFiltersRefresh(); renderAllFiltersPane();
       });
     });
-    var nm = box.querySelector(".aff-name");
+    // Name search: runs 0.5 s after the last key press (owner, 2026-10-06) — every keystroke
+    // used to re-filter the map, legend and lists. The pane is not rebuilt while the box has
+    // focus, so the count and the matching-species list are updated in place.
+    var nm = box.querySelector(".aff-name"), nmT = null;
     if (nm) nm.addEventListener("input", function (e) {
       e.stopPropagation();
-      spNameQuery = this.value || "";
-      detMapSearch = spNameQuery.trim().toLowerCase();   // also narrow the map dots + legend (not just the species table)
-      detFiltersRefresh();
-      // Live match count (the pane isn't rebuilt while this input has focus, so update it in place).
-      var cntEl = box.querySelector(".aff-name-cnt");
-      if (cntEl) { var c = spNameMatchCount(); cntEl.textContent = c == null ? "" : t("filters.nMatches", { n: c }); }
+      var v = this.value || "";
+      clearTimeout(nmT);
+      nmT = setTimeout(function () {
+        spNameQuery = v;
+        detMapSearch = spNameQuery.trim().toLowerCase();   // also narrow the map dots + legend (not just the species table)
+        detFiltersRefresh();
+        var cntEl = box.querySelector(".aff-name-cnt");
+        if (cntEl) { var c = spNameMatchCount(); cntEl.textContent = c == null ? "" : t("filters.nMatches", { n: c }); }
+        var lst = box.querySelector(".aff-name-list"); if (lst) lst.innerHTML = affNameListHtml(spNameQuery);
+      }, 500);
+    });
+    var nmList = box.querySelector(".aff-name-list");
+    if (nmList) nmList.addEventListener("click", function (e) {
+      var b = e.target.closest && e.target.closest(".aff-nm-tri"); if (!b) return;
+      e.stopPropagation();
+      cycleListTri([b.getAttribute("data-key")]);
+      // …which re-renders the pane, except while the search box has focus — refresh the boxes here
+      if (nmList.isConnected) nmList.innerHTML = affNameListHtml(spNameQuery);
     });
     function affBounds() {
       var mn = box.querySelector(".aff-cmin").value, mx = box.querySelector(".aff-cmax").value;

@@ -338,8 +338,11 @@ the list fills with the model's own expectation for that place instead of coming
 at 1 % or better (and, where even that is empty, its best 25 anyway), with a line saying so. The
 **[!]** button switches back to observed-only; your own **[?]** setting is left as you had it. **Filtering** lives in the **filter pane** (funnel button next to the layout
 selector; it keeps its scroll position as you tick things). The **name search** there matches
-fuzzily against the displayed, English and scientific names, shows a live **match count**, and
-narrows the table, the legend *and* the map dots together. **Words in notes** searches the records'
+fuzzily against the displayed, English and scientific names and runs **half a second after the
+last key press**; it shows a **match count**, narrows the table, the legend *and* the map dots
+together, and lists the **matching species** under the box, each with a three-state box — tap for
+**include** (green +), again for **exclude** (red −), again for neither — on the same selection the
+legend and the species lists use. **Words in notes** searches the records'
 own text — note, place, activity, observer (and a plain pin's name, tags and note) — for fetched data
 and imported lists alike: type a word and press **Include** (or Enter) or **Exclude**; each becomes a
 chip (+ green, − red, × removes it). A record shows when it holds **any** include word and **none** of
