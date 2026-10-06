@@ -405,7 +405,7 @@
   "filters.textExclude": "Vyloučit",
   "filters.textPh": "slovo…",
   "filters.textHint": "Záznam se zobrazí, když poznámka, místo, aktivita nebo pozorovatel obsahuje některé slovo + a žádné slovo −. Ignoruje velikost písmen, diakritiku a jeden překlep. Enter = zahrnout.",
-  "filters.textCount": "{n} z {total} zobrazených pozorování odpovídá",
+  "filters.textCount": "{n} z {total} pozorování odpovídá (ostatní filtry použity)",
   "filters.textFirst": "zobrazeno {n} nejnovějších",
   "filters.any": "Libovolné",
   "filters.allTime": "Celé období",

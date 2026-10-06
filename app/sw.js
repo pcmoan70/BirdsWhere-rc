@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2016";
+var VERSION = "v2017";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Words in notes: while you type a word the filter pane shows how many of the shown observations contain it, and a scrollable list of their notes with the hit marked.",
-  "\u2022 Fixed: map dots and lists now follow the words filter too (only the legend did), and typo matching no longer catches unrelated words.",
+  "\u2022 Words in notes: the live count and hit list for a typed word now ignore the words you have already chosen \u2014 only the other filters narrow them.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

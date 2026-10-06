@@ -405,7 +405,7 @@
   "filters.textExclude": "Excluir",
   "filters.textPh": "palavra…",
   "filters.textHint": "Um registo aparece quando a nota, o local, a atividade ou o observador contém alguma palavra + e nenhuma palavra −. Tolera maiúsculas, acentos e um erro de escrita. Enter = incluir.",
-  "filters.textCount": "{n} de {total} observações mostradas correspondem",
+  "filters.textCount": "{n} de {total} observações correspondem (outros filtros aplicados)",
   "filters.textFirst": "a mostrar as {n} mais recentes",
   "filters.any": "Qualquer",
   "filters.allTime": "Sempre",

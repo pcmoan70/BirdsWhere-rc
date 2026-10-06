@@ -10243,7 +10243,14 @@
     var words = String(raw || "").split(/[\s,;]+/).map(textFold).filter(Boolean);
     if (!words.length) return "";
     var vb = null; try { if (map) vb = map.getBounds(); } catch (e) {}
-    var rows = collectVisibleDetections(null, false).filter(function (d) { return !vb || (isFinite(+d.lat) && isFinite(+d.lon) && vb.contains([+d.lat, +d.lon])); });
+    // Counted over what the OTHER filters keep — the chosen words themselves are set aside
+    // for the count (owner, 2026-10-06: "do not restrict search to the subsets of words
+    // already matched"). Memos are reset on both sides so neither pass reuses the other's.
+    var keepInc = detTextInc, keepExc = detTextExc, all;
+    detTextInc = []; detTextExc = []; invalidateFilterMemos();
+    try { all = collectVisibleDetections(null, false); }
+    finally { detTextInc = keepInc; detTextExc = keepExc; _textSig = detTextSig(); invalidateFilterMemos(); }
+    var rows = all.filter(function (d) { return !vb || (isFinite(+d.lat) && isFinite(+d.lon) && vb.contains([+d.lat, +d.lon])); });
     var hits = rows.filter(function (d) { return textAnyHit(words, textHay(d, [d.note, d.place, d.act, d.observer, d.flags])); });
     hits.sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); });
     var mark = function (txt) {   // mark the plain substring hits; a fuzzy hit is in the list unmarked

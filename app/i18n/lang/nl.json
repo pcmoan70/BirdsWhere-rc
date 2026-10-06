@@ -405,7 +405,7 @@
   "filters.textExclude": "Uitsluiten",
   "filters.textPh": "woord…",
   "filters.textHint": "Een waarneming wordt getoond als notitie, plaats, activiteit of waarnemer een +-woord en geen −-woord bevat. Hoofdletters, accenten en een tikfout worden genegeerd. Enter = opnemen.",
-  "filters.textCount": "{n} van {total} getoonde waarnemingen komen overeen",
+  "filters.textCount": "{n} van {total} waarnemingen komen overeen (andere filters toegepast)",
   "filters.textFirst": "de nieuwste {n} getoond",
   "filters.any": "Alle",
   "filters.allTime": "Alle tijden",

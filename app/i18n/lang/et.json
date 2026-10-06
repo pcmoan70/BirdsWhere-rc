@@ -405,7 +405,7 @@
   "filters.textExclude": "Välista",
   "filters.textPh": "sõna…",
   "filters.textHint": "Vaatlus kuvatakse, kui selle märge, koht, tegevus või vaatleja sisaldab mõnda +-sõna ega ühtegi −-sõna. Talub suurtähti, diakriitikuid ja ühte trükiviga. Enter = kaasa.",
-  "filters.textCount": "{n} kuvatud vaatlusest {total}-st sobib",
+  "filters.textCount": "{n} vaatlust {total}-st sobib (muud filtrid rakendatud)",
   "filters.textFirst": "näidatakse {n} uusimat",
   "filters.any": "Kõik",
   "filters.allTime": "Kogu aeg",

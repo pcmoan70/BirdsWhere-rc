@@ -405,7 +405,7 @@
   "filters.textExclude": "Utelat",
   "filters.textPh": "ord…",
   "filters.textHint": "Et funn vises når merknad, sted, aktivitet eller observatør inneholder et av +-ordene og ingen av −-ordene. Tåler store/små bokstaver, aksenter og en skrivefeil. Enter = ta med.",
-  "filters.textCount": "{n} av {total} viste funn treffer",
+  "filters.textCount": "{n} av {total} funn treffer (andre filtre brukt)",
   "filters.textFirst": "viser de {n} nyeste",
   "filters.any": "Alle",
   "filters.allTime": "Hele tiden",

@@ -405,7 +405,7 @@
   "filters.textExclude": "Atmesti",
   "filters.textPh": "žodis…",
   "filters.textHint": "Įrašas rodomas, kai jo pastaboje, vietoje, veikloje ar stebėtojo varde yra bent vienas + žodis ir nėra nė vieno − žodžio. Nepaiso didžiųjų raidžių, diakritikų ir vienos rašybos klaidos. Enter = įtraukti.",
-  "filters.textCount": "{n} iš {total} rodomų stebėjimų atitinka",
+  "filters.textCount": "{n} iš {total} stebėjimų atitinka (taikomi kiti filtrai)",
   "filters.textFirst": "rodoma {n} naujausių",
   "filters.any": "Bet koks",
   "filters.allTime": "Visą laiką",

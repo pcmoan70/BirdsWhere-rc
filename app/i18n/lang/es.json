@@ -405,7 +405,7 @@
   "filters.textExclude": "Excluir",
   "filters.textPh": "palabra…",
   "filters.textHint": "Un registro se muestra cuando su nota, lugar, actividad u observador contiene alguna palabra + y ninguna palabra −. Tolera mayúsculas, acentos y una errata. Intro = incluir.",
-  "filters.textCount": "{n} de {total} observaciones mostradas coinciden",
+  "filters.textCount": "{n} de {total} observaciones coinciden (otros filtros aplicados)",
   "filters.textFirst": "se muestran las {n} más recientes",
   "filters.any": "Cualquiera",
   "filters.allTime": "Todo el tiempo",
