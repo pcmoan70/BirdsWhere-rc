@@ -343,9 +343,12 @@ narrows the table, the legend *and* the map dots together. **Words in notes** se
 own text — note, place, activity, observer (and a plain pin's name, tags and note) — for fetched data
 and imported lists alike: type a word and press **Include** (or Enter) or **Exclude**; each becomes a
 chip (+ green, − red, × removes it). A record shows when it holds **any** include word and **none** of
-the exclude words. Matching ignores case and accents and forgives a typo (two from eight letters), and
-a word also matches the start of a longer one ("ugle" finds "uglekasse"). Remembered across visits;
-the black × clears it with the rest. Active funnels turn **orange only when
+the exclude words. Matching ignores case and accents and finds the word inside longer ones ("ugle" finds
+"slaguglekasse"); from five letters it also forgives a typo (two from eight letters) as long as the
+first letter is right. While you type, the section shows **how many of the observations shown now**
+(all other filters and the map view applied) contain the word, and a **scrollable list of their
+notes** with the hit marked (newest first, up to 300; tap one to go to it on the map) — the list
+appears only while a word is in the box. Remembered across visits; the black × clears it with the rest. Active funnels turn **orange only when
 the filters actually remove observations**, with a tiny green/red bar underneath showing the
 kept-vs-removed fraction. The **? button** beside the funnel (orange when on, remembered) also
 lists the species the model *predicts* here that have **no observations yet** — down to the list's

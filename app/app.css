@@ -2893,6 +2893,14 @@ button.dd-name:hover { text-decoration: underline; }
   background: color-mix(in srgb, #2e7d32 14%, transparent); color: var(--ink, #222); border: 1px solid color-mix(in srgb, #2e7d32 45%, transparent); }
 .aff-word.exc { background: color-mix(in srgb, #c62828 12%, transparent); border-color: color-mix(in srgb, #c62828 45%, transparent); text-decoration: line-through; }
 .aff-word-x { border: 0; background: none; color: inherit; cursor: pointer; font-size: 14px; line-height: 1; padding: 0 3px; text-decoration: none; }
+.aff-tl-count { margin-top: 6px; font-size: var(--fs-s); color: var(--ink-muted, #666); font-variant-numeric: tabular-nums; }
+.aff-tl-list { margin-top: 4px; max-height: 40vh; overflow-y: auto; border: 1px solid var(--border, #ddd); border-radius: 6px; background: var(--surface, #fff); }
+.aff-tl-row { display: block; padding: 5px 8px; border-bottom: 1px solid var(--border, #eee); cursor: pointer; font-size: var(--fs-s); line-height: 1.35; }
+.aff-tl-row:last-child { border-bottom: 0; }
+.aff-tl-row:hover { background: var(--surface-2, #f4f4f4); }
+.aff-tl-meta { display: block; font-size: var(--fs-xs, 11px); color: var(--ink-muted, #777); }
+.aff-tl-txt { display: block; overflow-wrap: anywhere; }
+.aff-tl-txt mark { background: #ffe58a; color: #222; padding: 0 1px; border-radius: 2px; }
 .aff-hint { margin-top: 4px; font-size: var(--fs-xs, 11px); color: var(--ink-muted, #777); }
 /* Sync-options dialog (which categories + direction). */
 .sync-opts-box { max-width: 360px; }

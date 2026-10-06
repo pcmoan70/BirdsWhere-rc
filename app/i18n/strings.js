@@ -840,6 +840,8 @@ window.GeoI18N = (function () {
         "filters.textExclude": "Exclude",
         "filters.textPh": "word…",
         "filters.textHint": "A record shows when its note, place, activity or observer contains any + word and none of the − words. Forgiving: case, accents and a typo are ignored. Enter = include.",
+        "filters.textCount": "{n} of {total} shown observations match",
+        "filters.textFirst": "showing the newest {n}",
         "filters.any": "Any",
         "filters.allTime": "All time",
         "filters.nSelected": "{n} selected",

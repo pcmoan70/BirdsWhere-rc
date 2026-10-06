@@ -405,6 +405,8 @@
   "filters.textExclude": "Jätä pois",
   "filters.textPh": "sana…",
   "filters.textHint": "Havainto näytetään, kun sen muistiinpano, paikka, toiminta tai havainnoija sisältää jonkin +-sanan eikä yhtään −-sanaa. Sallii kirjainkoon, aksentit ja kirjoitusvirheen. Enter = sisällytä.",
+  "filters.textCount": "{n}/{total} näytetystä havainnosta osuu",
+  "filters.textFirst": "näytetään {n} uusinta",
   "filters.any": "Mikä tahansa",
   "filters.allTime": "Koko ajalta",
   "filters.nSelected": "{n} valittu",

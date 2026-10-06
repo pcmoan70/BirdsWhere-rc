@@ -405,6 +405,8 @@
   "filters.textExclude": "Exclure",
   "filters.textPh": "mot…",
   "filters.textHint": "Une observation s’affiche quand sa note, son lieu, son activité ou son observateur contient un mot + et aucun mot −. Tolère majuscules, accents et une faute de frappe. Entrée = inclure.",
+  "filters.textCount": "{n} sur {total} observations affichées correspondent",
+  "filters.textFirst": "les {n} plus récentes affichées",
   "filters.any": "Toutes",
   "filters.allTime": "Toute période",
   "filters.nSelected": "{n} sélectionnées",

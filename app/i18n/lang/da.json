@@ -405,6 +405,8 @@
   "filters.textExclude": "Udelad",
   "filters.textPh": "ord…",
   "filters.textHint": "Et fund vises, når note, sted, aktivitet eller observatør indeholder et af +-ordene og ingen af −-ordene. Tåler store/små bogstaver, accenter og en tastefejl. Enter = medtag.",
+  "filters.textCount": "{n} af {total} viste fund rammer",
+  "filters.textFirst": "viser de {n} nyeste",
   "filters.any": "Alle",
   "filters.allTime": "Hele tiden",
   "filters.nSelected": "{n} valgt",

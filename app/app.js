@@ -10170,8 +10170,9 @@
   // should be able to add include words, and exclude words." A record is kept when its text
   // (note, place, activity, observer, flags — and a plain pin's name / tags) contains ANY
   // include word and NONE of the exclude words. Matching is case- and accent-insensitive and
-  // forgiving: a word matches as a substring, or a word in the text that starts within one
-  // typo of it (two from 8 letters) — "kassse" finds "kasse", "ugle" finds "Ugler".
+  // forgiving: a word matches as a substring, or — from 5 letters — any stretch of a word in
+  // the text that starts with the same letter and is within one typo of it (two from 8
+  // letters), so "kassse" finds "slaguglekasse" and "ugle" (substring) finds "Ugler".
   var detTextInc = [], detTextExc = [];
   function detTextActive() { return detTextInc.length > 0 || detTextExc.length > 0; }
   function textFold(x) {
@@ -10197,28 +10198,74 @@
   }
   function textWordHits(word, hay, toks) {
     if (hay.indexOf(word) >= 0) return true;
-    if (word.length < 4) return false;   // short words: exact substring only (fuzzy would match everything)
+    if (word.length < 5) return false;   // short words: exact substring only ("ugle" fuzzed onto "egle", "glesmyra")
     var max = word.length >= 8 ? 2 : 1, L = word.length;
     for (var i = 0; i < toks.length; i++) {
       var tk = toks[i]; if (tk.length < L - max) continue;
-      // the word against the token's start (a few lengths around it, so "ugle" ↔ "uglekasse")
-      for (var n = Math.max(1, L - max); n <= Math.min(tk.length, L + max); n++) {
-        if (editDistMax(word, tk.slice(0, n), max) <= max) return true;
+      // the word against every stretch of the token a few letters around its length — compounds
+      // put the word anywhere ("kassse" ↔ "slagugle·kasse"), so the window slides along the token
+      for (var st = 0; st <= tk.length - (L - max); st++) {
+        if (tk.charAt(st) !== word.charAt(0)) continue;   // the first letter must agree — "kasse" is not "masse" / "passer"
+        for (var n = Math.max(1, L - max); n <= Math.min(tk.length - st, L + max); n++) {
+          if (editDistMax(word, tk.substr(st, n), max) <= max) return true;
+        }
       }
     }
     return false;
   }
   var _textMemo = (typeof WeakMap === "function") ? new WeakMap() : null, _textSig = "";
+  var _hayMemo = (typeof WeakMap === "function") ? new WeakMap() : null;
+  function textHay(obj, parts) {   // the folded text + its words, made once per record
+    var h = _hayMemo && _hayMemo.get(obj);
+    if (h) return h;
+    var hay = textFold(parts.join(" \u0001 "));
+    h = { hay: hay, toks: hay.split(/[^0-9a-zåäöüéèçñ]+/).filter(Boolean) };
+    if (_hayMemo) _hayMemo.set(obj, h);
+    return h;
+  }
+  function textAnyHit(words, h) { return words.some(function (w) { return textWordHits(w, h.hay, h.toks); }); }
   function detTextSig() { return detTextInc.join("\u0001") + "\u0002" + detTextExc.join("\u0001"); }
   function textPasses(obj, parts) {
     if (!detTextActive()) return true;
     var m = _textMemo && _textMemo.get(obj);
     if (m && m.sig === _textSig) return m.ok;
-    var hay = textFold(parts.join(" \u0001 ")), toks = hay.split(/[^0-9a-zåäöüéèçñ]+/).filter(Boolean), ok = true;
-    if (detTextInc.length) ok = detTextInc.some(function (w) { return textWordHits(w, hay, toks); });
-    if (ok && detTextExc.length) ok = !detTextExc.some(function (w) { return textWordHits(w, hay, toks); });
+    var h = textHay(obj, parts), ok = true;
+    if (detTextInc.length) ok = textAnyHit(detTextInc, h);
+    if (ok && detTextExc.length) ok = !textAnyHit(detTextExc, h);
     if (_textMemo) _textMemo.set(obj, { sig: _textSig, ok: ok });
     return ok;
+  }
+  // While a word is being typed: how many of the observations shown NOW (every filter
+  // applied, the map view included) contain it, and a scrollable list of their notes with
+  // the hit marked. The list only appears with a word in the box (owner, 2026-10-06).
+  var TEXT_LIST_MAX = 300;
+  function textPreviewHtml(raw) {
+    var words = String(raw || "").split(/[\s,;]+/).map(textFold).filter(Boolean);
+    if (!words.length) return "";
+    var vb = null; try { if (map) vb = map.getBounds(); } catch (e) {}
+    var rows = collectVisibleDetections(null, false).filter(function (d) { return !vb || (isFinite(+d.lat) && isFinite(+d.lon) && vb.contains([+d.lat, +d.lon])); });
+    var hits = rows.filter(function (d) { return textAnyHit(words, textHay(d, [d.note, d.place, d.act, d.observer, d.flags])); });
+    hits.sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); });
+    var mark = function (txt) {   // mark the plain substring hits; a fuzzy hit is in the list unmarked
+      var out = escapeHtml(txt), f = textFold(txt);
+      if (f.length !== txt.length) return out;   // folding changed the length (æ → ae): positions no longer line up
+      var spans = [];
+      words.forEach(function (w) { var i = 0; while ((i = f.indexOf(w, i)) >= 0) { spans.push([i, i + w.length]); i += w.length; } });
+      if (!spans.length) return out;
+      spans.sort(function (a, b) { return a[0] - b[0]; });
+      var html = "", at = 0;
+      spans.forEach(function (sp) { if (sp[0] < at) return; html += escapeHtml(txt.slice(at, sp[0])) + "<mark>" + escapeHtml(txt.slice(sp[0], sp[1])) + "</mark>"; at = sp[1]; });
+      return html + escapeHtml(txt.slice(at));
+    };
+    var list = hits.slice(0, TEXT_LIST_MAX).map(function (d) {
+      var txt = [d.note, d.act, d.place, d.observer].filter(function (x) { return x && String(x).trim(); }).join(" · ");
+      return '<div class="aff-tl-row" role="button" data-lat="' + (+d.lat) + '" data-lon="' + (+d.lon) + '">' +
+        '<span class="aff-tl-meta">' + escapeHtml(fmtDate(d.date) || "") + " · " + escapeHtml(d.name || "") + "</span>" +
+        '<span class="aff-tl-txt">' + mark(String(txt)) + "</span></div>";
+    }).join("");
+    return '<div class="aff-tl-count">' + escapeHtml(t("filters.textCount", { n: hits.length, total: rows.length })) +
+      (hits.length > TEXT_LIST_MAX ? " · " + escapeHtml(t("filters.textFirst", { n: TEXT_LIST_MAX })) : "") + "</div>" +
+      (hits.length ? '<div class="aff-tl-list">' + list + "</div>" : "");
   }
   function detPassesText(r) { return !detTextActive() || textPasses(r, [r.note, r.place, r.act, r.observer, r.flags]); }
   function setDetText(inc, exc) {
@@ -11383,7 +11430,7 @@
       else if (detFocusKeys) { if (!detFocusKeys.has(k)) return; }   // list/family hover preview
       else if (!detIsVisible(k, selActive)) return;
       var spKey = (detPlot[k] && detPlot[k].key) || k;
-      (detPlot[k].rows || []).forEach(function (r) { if (detDatePasses(r.date) && detPassesNew(r)) fn(r, spKey); });
+      (detPlot[k].rows || []).forEach(function (r) { if (detDatePasses(r.date) && detPassesNew(r) && detPassesText(r)) fn(r, spKey); });
     });
   }
   function detDrawableCount() { var n = 0; eachDrawableRow(function () { n++; }); return n; }
@@ -11482,6 +11529,7 @@
         if (!detAreaPasses(r)) return;         // excluded fetched square (the list header's dropdown)
         if (!detPassesSrc(r)) return;          // data-source filter (click a source in the list)
         if (!detPassesNew(r)) return;          // "New" filter (only detections fetched after the baseline)
+        if (!detPassesText(r)) return;         // words in notes
         if (center) {
           if (Math.abs(r.lat - near.lat) > dLat || Math.abs(r.lon - near.lon) > dLon) return;   // bbox reject (cheap)
           if (map.distance(center, L.latLng(r.lat, r.lon)) > near.meters) return;
@@ -13791,6 +13839,7 @@
       if (!detAreaPasses(r)) return;            // excluded fetched square (the header's dropdown)
       if (!detPassesSrc(r)) return;             // data-source filter
       if (!detPassesNew(r)) return;             // "New" filter
+      if (!detPassesText(r)) return;            // words in notes
       var lk = (+r.lat).toFixed(4) + "," + (+r.lon).toFixed(4);
       var s = obsByLoc[lk] || (obsByLoc[lk] = Object.create(null));
       var o = (r.observer || "").trim(); if (o) s[o] = 1;
@@ -17020,6 +17069,7 @@
       '<button type="button" class="btn btn-light aff-text-add" data-exc="0">' + escapeHtml(t("filters.textInclude")) + "</button>" +
       '<button type="button" class="btn btn-light aff-text-add" data-exc="1">' + escapeHtml(t("filters.textExclude")) + "</button></div>" +
       (detTextActive() ? '<div class="aff-words">' + detTextInc.map(function (w) { return chip(w, false); }).join("") + detTextExc.map(function (w) { return chip(w, true); }).join("") + "</div>" : "") +
+      '<div class="aff-text-live"></div>' +
       '<div class="aff-hint">' + escapeHtml(t("filters.textHint")) + "</div>";
     var textSum = !detTextActive() ? t("filters.any") : detTextInc.map(function (w) { return "+" + w; }).concat(detTextExc.map(function (w) { return "−" + w; })).join(" ");
     var secText = affSection("text", t("filters.text"), detTextActive(), textSum, textBody);
@@ -17186,6 +17236,20 @@
       saveLegendState(); detFiltersRefresh(); renderAllFiltersPane();
     };
     box.querySelectorAll(".aff-text-add").forEach(function (b) { b.addEventListener("click", function (e) { e.stopPropagation(); txAdd(this.getAttribute("data-exc") === "1"); }); });
+    var txLive = box.querySelector(".aff-text-live"), txT = null;
+    if (txIn && txLive) {
+      txIn.addEventListener("input", function (e) {
+        e.stopPropagation(); clearTimeout(txT);
+        var v = this.value;
+        txT = setTimeout(function () { txLive.innerHTML = textPreviewHtml(v); }, 200);
+      });
+      txLive.addEventListener("click", function (e) {   // a hit row → that observation on the map
+        var row = e.target.closest && e.target.closest(".aff-tl-row"); if (!row) return;
+        e.stopPropagation();
+        var la = parseFloat(row.getAttribute("data-lat")), lo = parseFloat(row.getAttribute("data-lon"));
+        if (isFinite(la) && isFinite(lo)) focusPointOnMap(la, lo);
+      });
+    }
     if (txIn) txIn.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); txIn.blur(); txAdd(e.shiftKey); } });
     box.querySelectorAll(".aff-word-x").forEach(function (b) {
       b.addEventListener("click", function (e) {

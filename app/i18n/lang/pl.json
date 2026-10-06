@@ -405,6 +405,8 @@
   "filters.textExclude": "Wyklucz",
   "filters.textPh": "słowo…",
   "filters.textHint": "Obserwacja jest pokazywana, gdy notatka, miejsce, aktywność lub obserwator zawiera któreś słowo + i żadnego słowa −. Ignoruje wielkość liter, znaki diakrytyczne i jedną literówkę. Enter = uwzględnij.",
+  "filters.textCount": "{n} z {total} pokazanych obserwacji pasuje",
+  "filters.textFirst": "pokazano {n} najnowszych",
   "filters.any": "Dowolne",
   "filters.allTime": "Cały okres",
   "filters.nSelected": "Wybrano {n}",

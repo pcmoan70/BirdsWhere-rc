@@ -681,6 +681,8 @@
   "filters.textExclude": "Uteslut",
   "filters.textPh": "ord…",
   "filters.textHint": "Ett fynd visas när kommentar, plats, aktivitet eller observatör innehåller något +-ord och inget −-ord. Tål versaler, accenter och ett stavfel. Enter = ta med.",
+  "filters.textCount": "{n} av {total} visade fynd träffar",
+  "filters.textFirst": "visar de {n} senaste",
   "filters.any": "Alla",
   "filters.allTime": "Hela tiden",
   "filters.nSelected": "{n} valda",

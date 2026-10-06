@@ -405,6 +405,8 @@
   "filters.textExclude": "Ausschließen",
   "filters.textPh": "Wort…",
   "filters.textHint": "Ein Fund wird gezeigt, wenn Notiz, Ort, Aktivität oder Beobachter ein +-Wort und kein −-Wort enthält. Großschreibung, Akzente und ein Tippfehler werden toleriert. Enter = einschließen.",
+  "filters.textCount": "{n} von {total} angezeigten Beobachtungen passen",
+  "filters.textFirst": "die neuesten {n} gezeigt",
   "filters.any": "Beliebig",
   "filters.allTime": "Gesamter Zeitraum",
   "filters.nSelected": "{n} ausgewählt",

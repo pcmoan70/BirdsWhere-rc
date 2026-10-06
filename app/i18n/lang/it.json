@@ -405,6 +405,8 @@
   "filters.textExclude": "Escludi",
   "filters.textPh": "parola…",
   "filters.textHint": "Un record compare quando nota, luogo, attività o osservatore contengono una parola + e nessuna parola −. Tollera maiuscole, accenti e un refuso. Invio = includi.",
+  "filters.textCount": "{n} di {total} osservazioni mostrate corrispondono",
+  "filters.textFirst": "mostrate le {n} più recenti",
   "filters.any": "Qualsiasi",
   "filters.allTime": "Sempre",
   "filters.nSelected": "{n} selezionate",
