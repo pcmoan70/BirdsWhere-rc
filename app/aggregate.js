@@ -74,7 +74,7 @@ window.AppAggregate = (function () {
     return sciByLower;
   }
   // Drop the cached label index so the next ensureSciIndex() rebuilds it (call after model labels reload).
-  function resetSciIndex() { sciByLower = sciByEpithet = sciByGenus = comByLower = null; }
+  function resetSciIndex() { sciByLower = sciByEpithet = sciByGenus = comByLower = null; _sciResolve = Object.create(null); }
   function labelClassOf(l) { var tax = getTaxByCode(); return (l && tax[l.key] && tax[l.key].class_name) || ""; }
   // Last-resort scientific-name match for genus renames: the epithet. Returns a
   // model label when it's the only one with that epithet, or — when several
@@ -380,8 +380,33 @@ window.AppAggregate = (function () {
     return { agg: agg, extras: extras, dedupTotal: total };
   }
 
+  // One scientific name → the model species it means, old genus names included (owner,
+  // 2026-10-06: "dverglo" showed as "Charadrius dubius" — the model calls it Thinornis dubius —
+  // "make sure both scientific names are mapped to the same species"). Exact name first; then
+  // the epithet, with the family taken from the model species that share the record's OLD genus
+  // (Charadrius → Charadriidae), which decides between the six "dubius" in the model. Used for
+  // names that arrive without a family: imported lists, shared sets, point files. Cached.
+  var _sciResolve = Object.create(null);
+  function labelForAnySci(sciName, cls) {
+    var s = String(sciName || "").trim(); if (!s) return null;
+    var ck = s.toLowerCase() + "|" + String(cls || "").toLowerCase();
+    if (ck in _sciResolve) return _sciResolve[ck];
+    var idx = ensureSciIndex(), l = idx[s.toLowerCase()] || null;
+    if (!l) {
+      var g = s.toLowerCase().split(/\s+/)[0], fams = Object.create(null), nf = 0;
+      (sciByGenus && sciByGenus[g] || []).forEach(function (x) { var f = String(familyOfKey(x.l.key) || ""); if (f && !fams[f]) { fams[f] = 1; nf++; } });
+      var fam = nf === 1 ? Object.keys(fams)[0] : "";
+      l = labelBySciEpithet(s, cls, fam) || null;
+      if (l && fam && String(familyOfKey(l.key) || "").toLowerCase() !== fam.toLowerCase()) l = null;   // never across families
+      if (!l) l = labelBySciGenus(s, cls) || null;
+    }
+    _sciResolve[ck] = l;
+    return l;
+  }
+
   return {
     init: init,
+    labelForAnySci: labelForAnySci,
     aggregateRecords: aggregateRecords,
     ensureSciIndex: ensureSciIndex,
     resetSciIndex: resetSciIndex,

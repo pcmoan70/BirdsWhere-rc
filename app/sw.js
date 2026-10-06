@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2027";
+var VERSION = "v2028";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Filter pane, Species lists: the lists show straight away (no \u201cPick lists\u201d fold), with the \u270e edit button beside your own lists.",
+  "\u2022 Old scientific names in imported lists are now matched to the species: Charadrius dubius and Thinornis dubius are both \u201cdverglo\u201d (Little Ringed Plover), shown under your language\u2019s name.",
+  "\u2022 Filter pane: the \u201cTotal\u201d section is now called \u201cCounts\u201d.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

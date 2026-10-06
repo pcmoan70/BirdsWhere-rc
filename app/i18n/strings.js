@@ -843,6 +843,7 @@ window.GeoI18N = (function () {
         "filters.newHint": "Shows only detections fetched after turning this on — re-fetch a spot (or hit ↻ Reload) to reveal the new arrivals.",
         "filters.nSpecies": "{n} species",
         "filters.selChosen": "Chosen — tap to change or clear:",
+        "filters.counts": "Counts",
         "filters.name": "Name search",
         "filters.text": "Words in notes",
         "filters.textInclude": "Include",

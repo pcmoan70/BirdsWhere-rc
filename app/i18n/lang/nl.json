@@ -402,6 +402,7 @@
   "filters.newHint": "Toon alleen waarnemingen opgehaald na inschakelen — haal opnieuw op voor nieuwe.",
   "filters.nSpecies": "{n} soorten",
   "filters.selChosen": "Gekozen — tik om te wijzigen of te wissen:",
+  "filters.counts": "Aantallen",
   "filters.name": "Naam zoeken",
   "filters.text": "Woorden in notities",
   "filters.textInclude": "Opnemen",

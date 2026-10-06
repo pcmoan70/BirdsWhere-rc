@@ -402,6 +402,7 @@
   "filters.newHint": "Näita ainult pärast sisselülitamist tõmmatud vaatlusi — tõmba uuesti, et näha uusi.",
   "filters.nSpecies": "{n} liiki",
   "filters.selChosen": "Valitud — puuduta muutmiseks või eemaldamiseks:",
+  "filters.counts": "Arvud",
   "filters.name": "Nimeotsing",
   "filters.text": "Sõnad märkmetes",
   "filters.textInclude": "Kaasa",

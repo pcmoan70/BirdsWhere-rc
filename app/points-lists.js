@@ -1197,11 +1197,19 @@ window.AppPoints = (function () {
   // So EVERY record with a species, model or not, goes through the detection pipeline:
   // legend row, translated name, species menu, source link, ⓘ (owner, 2026-10-02: "the popup
   // windows for imported lists … should look the same as fetched data").
+  // A stored "x:<sci>" key (a name the model did not know as written — an old genus, say) is
+  // looked up again, so lists imported before the resolver existed show the model species too.
+  var _xKeyOf = Object.create(null);
   function detKeyOf(p) {
     if (!p) return "";
-    if (p.spKey) return p.spKey;
+    if (p.spKey) {
+      if (p.spKey.indexOf("x:") !== 0) return p.spKey;
+      var xk = p.spKey + "|" + (p.cls || "");
+      if (!(xk in _xKeyOf)) { var lx = labelForSci(p.spKey.slice(2), p.cls); _xKeyOf[xk] = lx ? lx.key : p.spKey; }
+      return _xKeyOf[xk];
+    }
     var sci = String(p.sci || "").trim(); if (!sci) return "";
-    var l = labelForSci(sci);
+    var l = labelForSci(sci, p.cls);
     return l ? l.key : "x:" + sci;
   }
   var SRC_OF = { ao: "Artsobs", gbif_sql: "GBIF", gbif_api: "GBIF", parquet: "GBIF", artsobservasjoner: "Artsobs", artportalen: "Artportalen" };

@@ -385,7 +385,19 @@ window.AppShare = (function () {
       if (v3) { si = c.sp[i] || 0; laI = c.la[i] || 0; loI = c.lo[i] || 0; di = (c.dt && c.dt[i] != null) ? c.dt[i] : -1; cnt = (c.cn && c.cn[i]) || 0; oi = (c.ob && c.ob[i] != null) ? c.ob[i] : -1; ri = (c.sc && c.sc[i] != null) ? c.sc[i] : -1; }
       else { var row = obj.r[i] || []; si = row[0] || 0; laI = row[1] || 0; loI = row[2] || 0; di = (row[3] == null ? -1 : row[3]); cnt = row[4] || 0; oi = (row[5] == null ? -1 : row[5]); ri = (row[6] == null ? -1 : row[6]); }
       var spx = (obj.s && obj.s[si]) || ["", "", "#888"], key = "s" + si;
-      if (!dets[key]) dets[key] = { key: spx[0] || "", cls: spx[1] || "", color: spx[2] || "#888", fam: spx[3] || "", name: spx[4] || "", rows: [] };
+      if (!dets[key]) {
+        // A non-model name ("x:Charadrius dubius") that is an OLD name of a model species
+        // (Thinornis dubius) is filed under that species — and shares its entry with any rows
+        // that already arrived under the current name, so one species is one entry.
+        var spk = spx[0] || "";
+        if (spk.indexOf("x:") === 0) {
+          var rl = null; try { rl = window.AppAggregate.labelForAnySci(spk.slice(2), spx[1] || ""); } catch (eR) {}
+          if (rl && rl.key) { spk = rl.key; spx = [spk, "", spx[2] || "#888", spx[3] || "", ""]; }
+        }
+        var same = null;
+        for (var dk in dets) if (dets[dk].key === spk && spk) { same = dets[dk]; break; }
+        dets[key] = same || { key: spk, cls: spx[1] || "", color: spx[2] || "#888", fam: spx[3] || "", name: spx[4] || "", rows: [] };
+      }
       var rr = { lat: baseLat + laI / SC, lon: baseLon + loI / SC };
       if (di >= 0 && obj.d && obj.d[di]) rr.date = obj.d[di];
       if (cnt) rr.count = cnt;
@@ -408,6 +420,10 @@ window.AppShare = (function () {
       }
       dets[key].rows.push(rr);
     }
+    // two "sN" keys can point at one merged entry (an old and a current name) — hand it on once
+    var seenE = [], uniq = {};
+    Object.keys(dets).forEach(function (k) { if (seenE.indexOf(dets[k]) < 0) { seenE.push(dets[k]); uniq[k] = dets[k]; } });
+    dets = uniq;
     return { type: "det", name: obj.n || "", group: obj.g || "all", view: obj.lv ? "list" : "map", listLayout: obj.ly || "", pt: (obj.pt && obj.pt.length === 2) ? obj.pt : null, wk: +obj.wk || 0, detections: dets };   // legacy links (no g) → "all", so nothing is group-filtered away
   }
   function uniqueShareName(base, taken) { var n = base, i = 2; while (taken(n)) n = base + " (" + (i++) + ")"; return n; }

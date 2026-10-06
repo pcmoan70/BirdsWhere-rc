@@ -402,6 +402,7 @@
   "filters.newHint": "Mostrar só deteções obtidas depois de ativar — pesquise de novo para ver as novas.",
   "filters.nSpecies": "{n} espécies",
   "filters.selChosen": "Escolhidas — toque para alterar ou retirar:",
+  "filters.counts": "Contagens",
   "filters.name": "Pesquisa por nome",
   "filters.text": "Palavras nas notas",
   "filters.textInclude": "Incluir",

@@ -17068,7 +17068,7 @@
       '<button type="button" class="sp-cnt-metric aff-cmetric">' + escapeHtml(metricLbl) + "</button>" +
       '<span class="sp-bound-op">≤</span>' +
       '<input type="number" min="0" step="1" class="aff-cmax" value="' + (spCountMax == null ? "" : spCountMax) + '" aria-label="max" /></div>';
-    var secCnt = affSection("count", t("th.total"), totalFilterActive(), totalFilterActive() ? countHeadLabel() : t("filters.any"), cntBody);
+    var secCnt = affSection("count", t("filters.counts"), totalFilterActive(), totalFilterActive() ? countHeadLabel() : t("filters.any"), cntBody);
 
     // Species name search (narrows the species table + the map/legend)
     var nameActive = !!spNameQuery.trim();
@@ -17705,12 +17705,10 @@
   // A pin's species, as the app knows it: the file's scientific name looked up in the
   // model's index, so the LOCAL name (and the second language) match too — typing
   // "kattugle" finds a pin whose file only ever said "Strix aluco".
-  function labelForSci(sci) {
+  function labelForSci(sci, cls) {
     if (!sci) return null;
-    try {
-      var idx = window.AppAggregate && window.AppAggregate.ensureSciIndex && window.AppAggregate.ensureSciIndex();
-      return (idx && idx[String(sci).toLowerCase()]) || null;
-    } catch (e) { return null; }
+    try { return window.AppAggregate.labelForAnySci(sci, cls) || null; }   // old genus names too (Charadrius → Thinornis dubius)
+    catch (e) { return null; }
   }
   // A tag that IS a scientific name is shown as the local species name. The point files
   // carry "Buteo buteo" as a tag so several lists can be told apart by species, but a tile

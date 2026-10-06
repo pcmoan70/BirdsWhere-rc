@@ -402,6 +402,7 @@
   "filters.newHint": "Nur Nachweise zeigen, die nach dem Einschalten geladen wurden – erneut abrufen für neue.",
   "filters.nSpecies": "{n} Arten",
   "filters.selChosen": "Gewählt — tippen zum Ändern oder Entfernen:",
+  "filters.counts": "Anzahlen",
   "filters.name": "Namenssuche",
   "filters.text": "Wörter in Notizen",
   "filters.textInclude": "Einschließen",

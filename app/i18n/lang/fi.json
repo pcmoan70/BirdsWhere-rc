@@ -402,6 +402,7 @@
   "filters.newHint": "Näytä vain käyttöönoton jälkeen haetut havainnot — hae uudelleen nähdäksesi uudet.",
   "filters.nSpecies": "{n} lajia",
   "filters.selChosen": "Valitut — napauta muuttaaksesi tai poistaaksesi:",
+  "filters.counts": "Määrät",
   "filters.name": "Nimihaku",
   "filters.text": "Sanat muistiinpanoissa",
   "filters.textInclude": "Sisällytä",

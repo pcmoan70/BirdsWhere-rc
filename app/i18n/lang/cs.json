@@ -402,6 +402,7 @@
   "filters.newHint": "Zobrazit jen nálezy stažené po zapnutí — načti znovu pro nové.",
   "filters.nSpecies": "{n} druhů",
   "filters.selChosen": "Vybrané — klepnutím změníte nebo zrušíte:",
+  "filters.counts": "Počty",
   "filters.name": "Hledání názvu",
   "filters.text": "Slova v poznámkách",
   "filters.textInclude": "Zahrnout",

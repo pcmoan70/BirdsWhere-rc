@@ -684,6 +684,7 @@
   "filters.newHint": "Visa bara fynd som hämtats efter att detta slogs på – hämta igen för att se nya.",
   "filters.nSpecies": "{n} arter",
   "filters.selChosen": "Valda — tryck för att ändra eller ta bort:",
+  "filters.counts": "Antal",
   "filters.name": "Namnsökning",
   "filters.text": "Ord i kommentarer",
   "filters.textInclude": "Ta med",
