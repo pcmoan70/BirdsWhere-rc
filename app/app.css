@@ -2889,7 +2889,8 @@ button.dd-name:hover { text-decoration: underline; }
 .sp-prob-vals { font-size: var(--fs-s); color: var(--ink-muted); font-variant-numeric: tabular-nums; }
 .aff-name-cnt { display: block; margin-top: 4px; font-size: var(--fs-s); color: var(--ink-muted); font-variant-numeric: tabular-nums; }
 .aff-name-cnt:empty { display: none; }
-.aff-name-list .aff-nm-rows { margin-top: 6px; max-height: 32vh; overflow-y: auto; }
+.aff-sel-list { margin-top: 8px; }
+.aff-sel-list .aff-nm-rows, .aff-name-list .aff-nm-rows { margin-top: 6px; max-height: 32vh; overflow-y: auto; }
 .aff-nm-tri.sp-tri-include, .aff-nm-tri.sp-tri-exclude { color: #fff; font-weight: 700; line-height: 1; }
 /* Words in notes (detPassesText): word box + Include / Exclude, then the chips */
 .aff-text-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }

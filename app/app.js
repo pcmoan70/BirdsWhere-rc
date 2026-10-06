@@ -17036,10 +17036,7 @@
     var affPool = listPool();
     var selKeys = Object.keys(detSelected).filter(function (k) { return affPool[k]; });
     var exKeys = Object.keys(detExcluded).filter(function (k) { return affPool[k]; });
-    var selNames = selKeys.length ? '<div class="aff-sel-names">' + selKeys.map(function (k) { return escapeHtml(spKeyName(k)); }).join(", ") + "</div>" : "";
-    var selActive = selKeys.length > 0 || exKeys.length > 0;
-    var selSum = selKeys.length ? t("filters.nSelected", { n: selKeys.length }) : t("det.allSpecies");
-    var secSel = affSection("sel", t("th.species"), selActive, selSum, selNames);
+    var secSel;   // built below, with the name search (affSelSum / affSelListHtml)
 
     // Species lists — saved + premade groups, tri-state include/exclude. Always shown so
     // lists are reachable straight from the pane (premade appear once IOC taxonomy loads).
@@ -17081,7 +17078,9 @@
       '<div class="aff-name-list">' + affNameListHtml(spNameQuery) + "</div>";
     // The name search lives in the Species section (owner, 2026-10-06), above the selected names.
     var secName = "", ss = affSelSum();
-    secSel = affSection("sel", t("th.species"), ss.on, ss.txt, nameBody + selNames);
+    var selBody = affSelListHtml();
+    secSel = affSection("sel", t("th.species"), ss.on, ss.txt, nameBody +
+      (selBody ? '<div class="aff-sel-list"><div class="aff-hint">' + escapeHtml(t("filters.selChosen")) + "</div>" + selBody + "</div>" : ""));
 
     // Words in notes — include / exclude chips over a word box (detPassesText)
     var chip = function (w, exc) {
@@ -17171,17 +17170,27 @@
     sec.classList.toggle("on", ss.on);
   }
   function affNameCountTxt(q) { return String(q || "").trim() ? t("filters.nSpecies", { n: affNameHits(q).length }) : ""; }
+  function affNmRowHtml(k, nm, pool) {
+    var st = listTriState([k], pool), glyph = st === "include" ? "+" : st === "exclude" ? "\u2212" : "";
+    var lbl = labelsByKey[k], sci = lbl && lbl.sci ? lbl.sci : (k.indexOf("x:") === 0 ? k.slice(2) : "");
+    return '<div class="sp-list-row"><button type="button" class="sp-tri sp-tri-' + st + ' aff-nm-tri" data-key="' + escapeHtml(k) + '" title="' + escapeHtml(t("sp.triCycle")) + '" aria-label="' + escapeHtml(t("sp.triCycle")) + '">' + glyph + "</button>" +
+      ' <span class="sp-list-nm">' + escapeHtml(nm) + "</span>" + (sci && sci !== nm ? ' <i class="sp-list-n">' + escapeHtml(sci) + "</i>" : "") + "</div>";
+  }
+  // The species already included / excluded (in the legend, a list, here …), each with the
+  // same three-state box — so a legend selection can be undone from the pane (owner, 2026-10-06).
+  function affSelListHtml() {
+    var pool = listPool(), keys = Object.keys(detSelected).concat(Object.keys(detExcluded)).filter(function (k, i, a) { return pool[k] && a.indexOf(k) === i; });
+    if (!keys.length) return "";
+    return '<div class="aff-nm-rows">' + keys.map(function (k) { return { k: k, nm: spKeyName(k) }; })
+      .sort(function (a, b) { return a.nm.localeCompare(b.nm); })
+      .map(function (h) { return affNmRowHtml(h.k, h.nm, pool); }).join("") + "</div>";
+  }
   function affNameListHtml(q) {
     q = String(q || "").trim(); if (!q) return "";
     var pool = listPool(), hits = affNameHits(q);
     if (!hits.length) return "";
     hits.sort(function (a, b) { return a.nm.localeCompare(b.nm); });
-    var rows = hits.slice(0, AFF_NAME_MAX).map(function (h) {
-      var st = listTriState([h.k], pool), glyph = st === "include" ? "+" : st === "exclude" ? "\u2212" : "";
-      var lbl = labelsByKey[h.k], sci = lbl && lbl.sci ? lbl.sci : (h.k.indexOf("x:") === 0 ? h.k.slice(2) : "");
-      return '<div class="sp-list-row"><button type="button" class="sp-tri sp-tri-' + st + ' aff-nm-tri" data-key="' + escapeHtml(h.k) + '" title="' + escapeHtml(t("sp.triCycle")) + '" aria-label="' + escapeHtml(t("sp.triCycle")) + '">' + glyph + "</button>" +
-        ' <span class="sp-list-nm">' + escapeHtml(h.nm) + "</span>" + (sci && sci !== h.nm ? ' <i class="sp-list-n">' + escapeHtml(sci) + "</i>" : "") + "</div>";
-    }).join("");
+    var rows = hits.slice(0, AFF_NAME_MAX).map(function (h) { return affNmRowHtml(h.k, h.nm, pool); }).join("");
     return '<div class="aff-nm-rows">' + rows + "</div>" + (hits.length > AFF_NAME_MAX ? '<div class="aff-hint">' + escapeHtml(t("filters.textFirst", { n: AFF_NAME_MAX })) + "</div>" : "");
   }
   function affRegionHtml() {
@@ -17359,13 +17368,17 @@
         var lst = box.querySelector(".aff-name-list"); if (lst) lst.innerHTML = affNameListHtml(spNameQuery);
       }, 500);
     });
-    var nmList = box.querySelector(".aff-name-list");
-    if (nmList) nmList.addEventListener("click", function (e) {
+    var nmList = box.querySelector(".aff-name-list"), selSec = box.querySelector('.aff-sec[data-sec="sel"] .aff-sec-body');
+    if (selSec) selSec.addEventListener("click", function (e) {
       var b = e.target.closest && e.target.closest(".aff-nm-tri"); if (!b) return;
       e.stopPropagation();
       cycleListTri([b.getAttribute("data-key")]);
       // …which re-renders the pane, except while the search box has focus — refresh the boxes here
-      if (nmList.isConnected) { nmList.innerHTML = affNameListHtml(spNameQuery); affSelSumRefresh(box); }
+      if (nmList && nmList.isConnected) {
+        nmList.innerHTML = affNameListHtml(spNameQuery); affSelSumRefresh(box);
+        var sl = selSec.querySelector(".aff-sel-list"), h = affSelListHtml();
+        if (sl) { if (h) sl.lastChild.outerHTML = h; else sl.remove(); }
+      }
     });
     function affBounds() {
       var mn = box.querySelector(".aff-cmin").value, mx = box.querySelector(".aff-cmax").value;

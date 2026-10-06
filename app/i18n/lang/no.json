@@ -400,6 +400,7 @@
   "filters.noAreas": "Ingen hentede områder å laste om",
   "filters.newHint": "Vis bare funn hentet etter at dette ble slått på – hent på nytt for å se nye.",
   "filters.nSpecies": "{n} arter",
+  "filters.selChosen": "Valgt — trykk for å endre eller fjerne:",
   "filters.name": "Navnesøk",
   "filters.text": "Ord i merknader",
   "filters.textInclude": "Ta med",

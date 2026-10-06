@@ -400,6 +400,7 @@
   "filters.noAreas": "No hay zonas obtenidas para recargar",
   "filters.newHint": "Mostrar solo detecciones obtenidas tras activar esto — vuelve a buscar para ver novedades.",
   "filters.nSpecies": "{n} especies",
+  "filters.selChosen": "Elegidas — toca para cambiar o quitar:",
   "filters.name": "Búsqueda por nombre",
   "filters.text": "Palabras en notas",
   "filters.textInclude": "Incluir",

@@ -400,6 +400,7 @@
   "filters.noAreas": "Nessuna area recuperata da ricaricare",
   "filters.newHint": "Mostra solo rilevazioni recuperate dopo l'attivazione — riesegui la ricerca per le novità.",
   "filters.nSpecies": "{n} specie",
+  "filters.selChosen": "Scelte — tocca per cambiare o togliere:",
   "filters.name": "Ricerca per nome",
   "filters.text": "Parole nelle note",
   "filters.textInclude": "Includi",

@@ -400,6 +400,7 @@
   "filters.noAreas": "Brak pobranych obszarów do odświeżenia",
   "filters.newHint": "Pokaż tylko obserwacje pobrane po włączeniu — pobierz ponownie, aby zobaczyć nowe.",
   "filters.nSpecies": "{n} gat.",
+  "filters.selChosen": "Wybrane — dotknij, aby zmienić lub usunąć:",
   "filters.name": "Wyszukiwanie nazwy",
   "filters.text": "Słowa w notatkach",
   "filters.textInclude": "Uwzględnij",
