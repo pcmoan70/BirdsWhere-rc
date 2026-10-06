@@ -11943,8 +11943,23 @@
   // Add a map point to a named point-list (creating the list if needed). When the
   // Add a point straight onto a named list (creating it if new). The list is
   // shown via its checkbox — never duplicated into the always-drawn loose set.
+  // The list a point was last saved to (owner, 2026-10-06: "When saving to list, app should
+  // remember last list point was saved to"). Every save records it; every list picker shows
+  // it first (marked), and the point editor preselects it.
+  function lastSaveList() {
+    var n = String(window.GeoState.get("mpLastList", "") || "");
+    return n && mpState.mpCollections().some(function (c) { return c && c.name === n; }) ? n : "";
+  }
+  function rememberSaveList(name) { name = String(name || "").trim(); if (name) window.GeoState.save({ mpLastList: name }); }
+  function lastListFirst(lists) {
+    var n = lastSaveList(); if (!n) return lists;
+    var a = lists.filter(function (c) { return c.name === n; });
+    return a.concat(lists.filter(function (c) { return c.name !== n; }));
+  }
+  function lastListCls(name) { return name === lastSaveList() ? "drm-last" : ""; }
   function addPointToCollection(name, point) {
     name = String(name || "").trim(); if (!name) return false;
+    rememberSaveList(name);
     var c = mpState.mpCollections().filter(function (x) { return x.name === name; })[0];
     if (!c) { c = { name: name, points: [] }; mpState.mpCollections().push(c); }
     c.points.push(point);
@@ -13113,7 +13128,7 @@
     var rect = el.getBoundingClientRect();
     el.innerHTML = "";
     var hdr = document.createElement("div"); hdr.className = "detrow-menu-hdr"; hdr.textContent = t("detmenu.addList"); el.appendChild(hdr);
-    mpState.mpCollections().forEach(function (c) { el.appendChild(drmBtn(c.name, function () { addDetPoint(d, c.name); }, "pin")); });
+    lastListFirst(mpState.mpCollections().slice()).forEach(function (c) { el.appendChild(drmBtn(c.name, function () { addDetPoint(d, c.name); }, "pin", lastListCls(c.name))); });
     el.appendChild(drmBtn(t("detmenu.newList"), function () {
       closeDetRowMenu();
       modalPrompt(t("detmenu.newListPrompt"), "").then(function (n) { if (n && n.trim()) addDetPoint(d, n.trim()); });
@@ -13155,6 +13170,7 @@
   // Batched into a single save (unlike per-point addPointToCollection).
   function saveDetRowsToCollection(name, rows, color) {
     name = String(name || "").trim(); if (!name) return 0;
+    rememberSaveList(name);
     var c = mpState.mpCollections().filter(function (x) { return x.name === name; })[0];
     if (!c) { c = { name: name, points: [] }; mpState.mpCollections().push(c); }
     // Merge + dedupe into an existing list: a point already present (same species +
@@ -13192,8 +13208,8 @@
     if (!rows || !rows.length) { setStatus(t("detlist.empty")); return; }
     var el = openAnchoredMenu("detrow-menu");
     var hdr = document.createElement("div"); hdr.className = "detrow-menu-hdr"; hdr.textContent = t("detlist.saveTitle"); el.appendChild(hdr);
-    mpState.mpCollections().forEach(function (c) {
-      el.appendChild(drmBtn(c.name, function () { closeDetRowMenu(); commitDetSave(c.name, rows); }, "pin"));
+    lastListFirst(mpState.mpCollections().slice()).forEach(function (c) {
+      el.appendChild(drmBtn(c.name, function () { closeDetRowMenu(); commitDetSave(c.name, rows); }, "pin", lastListCls(c.name)));
     });
     el.appendChild(drmBtn(t("detmenu.newList"), function () {
       closeDetRowMenu();
@@ -17510,9 +17526,10 @@
   // and by "copy this point to another list". `skip` hides one list (a point's own).
   function chooseListThen(anchor, then, title, skip) {
     var br = anchor.getBoundingClientRect();
-    var lists = mpState.mpCollections().slice()
+    var lists = lastListFirst(mpState.mpCollections().slice()
       .filter(function (c) { return c.name !== skip; })
-      .sort(function (a, b) { return a.name.localeCompare(b.name); });
+      .sort(function (a, b) { return a.name.localeCompare(b.name); }));
+    var then0 = then; then = function (nm) { rememberSaveList(nm); then0(nm); };
     var el = openAnchoredMenu("detrow-menu mp-saveinto-menu", anchor);
     var hdr = document.createElement("div");
     hdr.className = "detrow-menu-hdr";
@@ -17520,7 +17537,7 @@
     el.appendChild(hdr);
     lists.forEach(function (c) {
       var cn = mpState.collCount(c);
-      el.appendChild(drmBtn(c.name + " (" + cn + ")", function () { closeAnchoredMenu(); then(c.name); }, "pin"));
+      el.appendChild(drmBtn(c.name + " (" + cn + ")", function () { closeAnchoredMenu(); then(c.name); }, "pin", lastListCls(c.name)));
     });
     el.appendChild(drmBtn(t("detmenu.newList"), function () {
       closeAnchoredMenu();
@@ -18119,9 +18136,9 @@
     var listSel = !showListSel ? "" :
       '<label>' + esc(t("points.saveToList")) +
         '<select id="mp-listsel">' +
-          '<option value=""' + (mpState.mpActiveName() ? "" : " selected") + ">" + esc(t("points.listNone")) + "</option>" +
+          '<option value=""' + ((mpState.mpActiveName() || lastSaveList()) ? "" : " selected") + ">" + esc(t("points.listNone")) + "</option>" +
           mpState.mpCollections().slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (c) {
-            return '<option value="' + esc(c.name) + '"' + (c.name === mpState.mpActiveName() ? " selected" : "") + ">" + esc(c.name) + "</option>";
+            return '<option value="' + esc(c.name) + '"' + (c.name === (mpState.mpActiveName() || lastSaveList()) ? " selected" : "") + ">" + esc(c.name) + "</option>";
           }).join("") +
           '<option value="__new__">' + esc(t("points.listNew")) + "</option>" +
         "</select>" +
@@ -18198,6 +18215,7 @@
       if (color) { mpState.setMpLastColor(color); try { window.GeoState.save({ mpLastColor: color }); } catch (e) {} }   // remember for the next new point
       var sel = document.getElementById("mp-listsel");
       var target = sel ? sel.value : "";
+      if (target && target !== "__new__") rememberSaveList(target);
       if (isEdit) {
         var patch = { name: name, tags: tags, note: note, color: color };
         var ownerName = ownerListOf(p);
@@ -18827,7 +18845,8 @@
     // The list chooser, drawn exactly like "add this observation to a list".
     function chooseListThen(anchor, then) {
       var br = anchor.getBoundingClientRect();
-      var lists = mpState.mpCollections().slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
+      var lists = lastListFirst(mpState.mpCollections().slice().sort(function (a, b) { return a.name.localeCompare(b.name); }));
+      var then1 = then; then = function (nm) { rememberSaveList(nm); then1(nm); };
       // Built exactly like the "add this observation to a list" menu (drmRenderLists):
       // the same .detrow-menu-hdr heading and the same drmBtn rows with the pin icon, so
       // filing points and filing an observation look and read the same.
@@ -18838,7 +18857,7 @@
       el.appendChild(hdr);
       lists.forEach(function (c) {
         var n = mpState.collCount(c);
-        el.appendChild(drmBtn(c.name + " (" + n + ")", function () { closeAnchoredMenu(); then(c.name); }, "pin"));
+        el.appendChild(drmBtn(c.name + " (" + n + ")", function () { closeAnchoredMenu(); then(c.name); }, "pin", lastListCls(c.name)));
       });
       el.appendChild(drmBtn(t("detmenu.newList"), function () {
         closeAnchoredMenu();

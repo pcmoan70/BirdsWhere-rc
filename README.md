@@ -958,6 +958,9 @@ Right-click / long-press / tap any species name for a menu **led by the species 
   list** (each coloured when the species is in that set, greyed when not).
 - **This observation** (bottom, when opened from a record with a location) — **Show on map**,
   **Navigate here** and **Add to route**.
+- **Last list remembered** — whichever list you last saved a point to comes **first, marked ✓**, in
+  every "save to list" picker (observation menu, Save in the detections list, copy / file points),
+  and the point editor preselects it. Remembered across visits.
 
 ---
 

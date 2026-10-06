@@ -4864,3 +4864,7 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 
 .mp-actions .mp-route-btn { margin-left: auto; padding: 4px 8px; display: inline-flex; align-items: center; }
 .mp-actions .mp-route-btn .btn-ico { width: var(--ico-m); height: var(--ico-m); }
+
+/* The list a point was last saved to: first in every list picker, marked (rememberSaveList). */
+.detrow-menu-item.drm-last { font-weight: 700; }
+.detrow-menu-item.drm-last::after { content: "\2713"; margin-left: auto; padding-left: 8px; color: var(--accent, #1f8a3b); font-weight: 700; }
