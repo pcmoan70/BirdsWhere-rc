@@ -338,7 +338,8 @@ the list fills with the model's own expectation for that place instead of coming
 at 1 % or better (and, where even that is empty, its best 25 anyway), with a line saying so. The
 **[!]** button switches back to observed-only; your own **[?]** setting is left as you had it. **Filtering** lives in the **filter pane** (funnel button next to the layout
 selector; it keeps its scroll position as you tick things). Every section **folds** — tap its
-heading (▾ / ▸); which sections are folded is remembered. The **name search** — in the
+heading (▾ / ▸); which sections are folded is remembered. **Species lists** shows the lists straight
+away — *Your lists* with the ✎ (manage / edit) beside them, then the premade *Groups*. The **name search** — in the
 **Species** section — matches
 fuzzily against the displayed, English and scientific names and runs **half a second after the
 last key press**; it shows **how many species match** (the number listed under it), narrows the table, the legend *and* the map dots

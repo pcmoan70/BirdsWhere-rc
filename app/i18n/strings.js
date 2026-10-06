@@ -1165,6 +1165,7 @@ window.GeoI18N = (function () {
         "sp.manageLists": "Manage lists",
         "sp.noLists": "No saved lists yet",
         "sp.saveAsList": "＋ Save selection as list",
+        "sp.myLists": "Your lists",
         "sp.premadeLists": "Groups",
         "premade.raptors": "Raptors",
         "premade.owls": "Owls",

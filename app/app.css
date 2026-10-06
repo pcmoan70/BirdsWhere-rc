@@ -1857,7 +1857,7 @@ button.dd-name:hover { text-decoration: underline; }
 .bird-spot-mk svg { width: var(--ico-s); height: var(--ico-s); display: block; }
 
 /* Tickable list dropdowns (species + observer filter panes) + list manager. */
-.sp-splist-head .sp-lists-manage { background: none; border: none; cursor: pointer; color: var(--brand); font-size: var(--fs-b); margin-left: 4px; padding: 0 2px; }
+.sp-splist-head .sp-lists-manage, .sp-list-sub .sp-lists-manage { background: none; border: none; cursor: pointer; color: var(--brand); font-size: var(--fs-b); margin-left: 4px; padding: 0 2px; }
 .sp-lists-dd, .det-obslists-dd { margin: 2px 0 4px; }
 .sp-lists-dd > summary, .det-obslists-dd > summary { cursor: pointer; font-size: var(--fs-b); padding: 3px 6px; border: 1px solid var(--border); border-radius: 5px; list-style: none; display: inline-flex; align-items: center; gap: 4px; user-select: none; }
 .sp-lists-dd > summary::after, .det-obslists-dd > summary::after { content: "▾"; color: var(--ink-muted); }

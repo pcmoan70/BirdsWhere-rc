@@ -26626,15 +26626,17 @@
     var pm = iocReady ? PREMADE_LISTS.map(function (def) { return { def: def, keys: premadeKeys(def, pool) }; }).filter(function (x) { return x.keys.length; }) : (ensureIocLoaded(), []);
     pm.sort(function (a, b) { return b.keys.length - a.keys.length; });   // biggest groups first
     if (!force && !(spLists.length || pm.length || sel.length)) return "";
-    var html = '<div class="sp-splist-head">' + escapeHtml(t("sp.speciesLists")) +
-      ' <button type="button" class="sp-lists-manage" title="' + escapeHtml(t("sp.manageLists")) + '" aria-label="' + escapeHtml(t("sp.manageLists")) + '">✎</button></div>';
+    var mngBtn = '<button type="button" class="sp-lists-manage" title="' + escapeHtml(t("sp.manageLists")) + '" aria-label="' + escapeHtml(t("sp.manageLists")) + '">✎</button>';
+    // In the filter pane the section heading already says "Species lists": no second heading and
+    // no "Pick lists…" fold — the lists themselves, the ✎ beside YOUR lists (owner, 2026-10-06).
+    var html = force ? "" : '<div class="sp-splist-head">' + escapeHtml(t("sp.speciesLists")) + " " + mngBtn + "</div>";
     // Each list has a 3-state box: empty → include (green ✓) → exclude (red ✕) → empty.
     function triRow(cls, dataAttr, keys, label, n) {
       var st = listTriState(keys, pool), glyph = st === "include" ? "✓" : st === "exclude" ? "✕" : "";
       return '<div class="sp-list-row"><button type="button" class="sp-tri sp-tri-' + st + " " + cls + '" ' + dataAttr + ' title="' + escapeHtml(t("sp.triCycle")) + '" aria-label="' + escapeHtml(t("sp.triCycle")) + '">' + glyph + "</button>" +
         ' <span class="sp-list-nm">' + escapeHtml(label) + '</span> <span class="sp-list-n">(' + n + ")</span></div>";
     }
-    var rows = "";
+    var rows = force ? '<div class="sp-list-sub">' + escapeHtml(t("sp.myLists")) + " " + mngBtn + "</div>" : "";
     spLists.forEach(function (l, i) { rows += triRow("sp-list-tri", 'data-i="' + i + '"', l.keys, l.name, (l.keys || []).length); });
     if (pm.length) {
       rows += '<div class="sp-list-sub">' + escapeHtml(t("sp.premadeLists")) + "</div>";
@@ -26643,7 +26645,8 @@
     // In the all-filters pane (force) the picker is the whole point of the section, so
     // show the lists (saved + premade groups) expanded by default — don't bury them in a
     // collapsed dropdown. In the header panel it stays collapsed unless the user opened it.
-    html += '<details class="sp-lists-dd"' + ((force || spListsDdOpen) ? " open" : "") + '><summary>' + escapeHtml(t("sp.pickLists")) + "</summary>" +
+    if (force) html += '<div class="sp-lists-menu">' + rows + (spLists.length ? "" : '<div class="sp-list-empty">' + escapeHtml(t("sp.noLists")) + "</div>") + "</div>";
+    else html += '<details class="sp-lists-dd"' + (spListsDdOpen ? " open" : "") + '><summary>' + escapeHtml(t("sp.pickLists")) + "</summary>" +
       '<div class="sp-lists-menu">' + (rows || '<div class="sp-list-empty">' + escapeHtml(t("sp.noLists")) + "</div>") + "</div></details>";
     if (sel.length) html += '<button type="button" class="sp-splist-save btn btn-light">' + escapeHtml(t("sp.saveAsList")) + "</button>";
     return html;
