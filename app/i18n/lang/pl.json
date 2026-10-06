@@ -659,6 +659,7 @@
   "sync.dirTwo": "Scalanie dwukierunkowe",
   "sync.dirUp": "Wyślij (to urządzenie → Drive)",
   "sync.dirDown": "Pobierz (Drive → to urządzenie)",
+  "sync.dirListsHint": "Listy punktów: Wysyłanie nadpisuje kopię na Drive listami z tego urządzenia (listy tylko na Drive zostają); Pobieranie zastępuje kopię każdej listy na tym urządzeniu wersją z Drive (listy tylko tutaj zostają); Dwukierunkowo łączy obie.",
   "sync.include": "Uwzględnij",
   "sync.catSettings": "Ustawienia",
   "sync.catLists": "Listy punktów",

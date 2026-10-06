@@ -659,6 +659,7 @@
   "sync.dirTwo": "Combinar en ambos sentidos",
   "sync.dirUp": "Subir (este dispositivo → Drive)",
   "sync.dirDown": "Descargar (Drive → este dispositivo)",
+  "sync.dirListsHint": "Listas de puntos: Subir sobrescribe la copia de Drive con las listas de este dispositivo (se conservan las que solo están en Drive); Descargar sustituye la copia de cada lista en este dispositivo por la de Drive (se conservan las que solo están aquí); Bidireccional combina ambas.",
   "sync.include": "Incluir",
   "sync.catSettings": "Ajustes",
   "sync.catLists": "Listas de puntos",

@@ -659,6 +659,7 @@
   "sync.dirTwo": "Kahesuunaline liitmine",
   "sync.dirUp": "Laadi üles (see seade → Drive)",
   "sync.dirDown": "Laadi alla (Drive → see seade)",
+  "sync.dirListsHint": "Punktiloendid: Üleslaadimine kirjutab Drive'i koopia üle selle seadme loenditega (ainult Drive'is olevad jäävad alles); Allalaadimine asendab iga loendi koopia selles seadmes Drive'i omaga (ainult siin olevad jäävad alles); Kahesuunaline ühendab mõlemad.",
   "sync.include": "Kaasa",
   "sync.catSettings": "Seaded",
   "sync.catLists": "Punktiloendid",

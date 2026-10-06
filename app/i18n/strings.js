@@ -130,6 +130,7 @@ window.GeoI18N = (function () {
         "sync.dirTwo": "Two-way merge",
         "sync.dirUp": "Upload (this device → Drive)",
         "sync.dirDown": "Download (Drive → this device)",
+        "sync.dirListsHint": "Point lists: Upload overwrites Drive's copy with this device's lists (lists only on Drive are kept); Download replaces this device's copy of each list with Drive's (lists only here are kept); Two-way merges both.",
         "sync.include": "Include",
         "sync.catSettings": "Settings",
         "sync.catLists": "Point lists",

@@ -659,6 +659,7 @@
   "sync.dirTwo": "Tovejs-fletning",
   "sync.dirUp": "Upload (denne enhed → Drive)",
   "sync.dirDown": "Download (Drive → denne enhed)",
+  "sync.dirListsHint": "Punktlister: Upload overskriver Drives kopi med enhedens lister (lister, der kun findes på Drive, bevares); Download erstatter enhedens kopi af hver liste med Drives (lister, der kun findes her, bevares); Tovejs fletter begge.",
   "sync.include": "Inkluder",
   "sync.catSettings": "Indstillinger",
   "sync.catLists": "Punktlister",

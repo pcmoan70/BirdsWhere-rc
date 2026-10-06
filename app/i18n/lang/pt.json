@@ -659,6 +659,7 @@
   "sync.dirTwo": "Mesclagem bidirecional",
   "sync.dirUp": "Enviar (este dispositivo → Drive)",
   "sync.dirDown": "Baixar (Drive → este dispositivo)",
+  "sync.dirListsHint": "Listas de pontos: Enviar substitui a cópia no Drive pelas listas deste dispositivo (as que só existem no Drive mantêm-se); Transferir substitui a cópia de cada lista neste dispositivo pela do Drive (as que só existem aqui mantêm-se); Bidirecional junta ambas.",
   "sync.include": "Incluir",
   "sync.catSettings": "Configurações",
   "sync.catLists": "Listas de pontos",

@@ -457,7 +457,7 @@ window.GDriveSync = (function () {
       var e = need[i];
       out.refs[e.name] = { file: e.file, psig: e.psig };
       phase("download", e.name, i + 1, need.length);
-      if (e.psig && window.AppData.localListSig(e.name) === e.psig) e.points = [];   // same points here already → nothing to fetch or merge
+      if (e.psig && window.AppData.localListSig(e.name) === e.psig) { e._same = true; continue; }   // same points here already → nothing to fetch or merge
       else {
         var id = out.ids[e.file];
         if (!id) throw new Error("list file missing on Drive: " + e.file);
@@ -467,6 +467,9 @@ window.GDriveSync = (function () {
       }
       delete e.file; delete e.psig; delete e.n;   // a merged list must not carry the reference fields
     }
+    // Lists identical here are left out of the merge altogether — merging an empty stand-in
+    // would wipe them on a download, where Drive's copy replaces the local one.
+    data.state.mapPointSets = sets.filter(function (e) { return !(e && e._same); });
     return out;
   }
   // Write this run's list files into its folder. `prev` = hydrateLists' result for the run
@@ -616,11 +619,22 @@ window.GDriveSync = (function () {
       // are part of this sync — otherwise the references are carried over untouched).
       var prevLists = null, remoteCmp = remote ? remote.state : null;
       if (remote && remote.state) {
-        if (inc.lists) {
+        if (inc.lists && dir !== "upload") {
           prevLists = await hydrateLists(remote, meta.folderId);
           if (prevLists.raw) { remoteCmp = {}; for (var rk in remote.state) remoteCmp[rk] = remote.state[rk]; remoteCmp.mapPointSets = prevLists.raw; }
         } else if (Array.isArray(remote.state.mapPointSets)) {
-          prevLists = { refs: {}, ids: null, raw: remote.state.mapPointSets };
+          // Upload (or lists left out): Drive's list files are NOT read. On an upload this
+          // device's lists are the ones that go up as they are — reading Drive's copy and
+          // merging it back (v2013–v2019) was the long "Downloading" step, and it brought back
+          // every point deleted here (owner, 2026-10-06: "syncing a simple point list seems
+          // not to work"). Lists only Drive holds are carried over by reference (copied).
+          var rawL = remote.state.mapPointSets.map(function (e) { var c = {}; for (var k in e) c[k] = e[k]; return c; });
+          prevLists = { refs: {}, ids: null, raw: rawL };
+          rawL.forEach(function (e) { if (window.AppData.isListRef(e)) prevLists.refs[e.name] = { file: e.file, psig: e.psig }; });
+          remoteCmp = {}; for (var rk2 in remote.state) remoteCmp[rk2] = remote.state[rk2]; remoteCmp.mapPointSets = rawL;
+          // Upload overwrites: nothing of Drive's lists is merged into this device (owner,
+          // 2026-10-06: "It should just fully overwrite existing files. Separate files should be kept.")
+          if (dir === "upload" && inc.lists) remote.state.mapPointSets = [];
         }
       }
       phase("merge");
@@ -653,7 +667,9 @@ window.GDriveSync = (function () {
       var localState = {}; try { localState = JSON.parse(localStateStr()); } catch (e) {}
       var toApply = remote ? window.AppData.filterIncomingForSync(remote, inc, localState) : null;
       var before = localStateStr();
-      if (toApply) window.AppData.applyRemote(toApply, { incomingWins: incomingWins, interactive: false });
+      // Download: Drive's copy of a list REPLACES this device's (points deleted elsewhere go here
+      // too); lists only this device has are kept. Two-way stays a union — nothing is lost.
+      if (toApply) window.AppData.applyRemote(toApply, { incomingWins: incomingWins, interactive: false, replaceLists: dir === "download" });
       var changed = localStateStr() !== before;
 
       // Push when there's no remote yet, or the merged result differs from it
@@ -664,6 +680,12 @@ window.GDriveSync = (function () {
       var merged = window.AppData.buildPayload();
       window.AppData.overlayExcludedForPush(merged, remote, inc, localState);
       // From here the payload names each list's file instead of holding its points.
+      // Upload: lists only Drive holds go back up as they are (by reference), never dropped.
+      if (dir === "upload" && inc.lists && prevLists && prevLists.raw && Array.isArray(merged.state.mapPointSets)) {
+        var mine = {}; merged.state.mapPointSets.forEach(function (c) { if (c && c.name) mine[c.name] = 1; });
+        // a list file only Drive has stays on Drive (copied; an old-format embedded one is written as a file)
+        prevLists.raw.forEach(function (e) { if (e && e.name && !mine[e.name]) merged.state.mapPointSets.push(e); });
+      }
       var listFiles = window.AppData.splitListsForDrive(merged, prevLists && prevLists.refs);
       var needPush = dir !== "download" && (!remote ||
         stateDiffers(merged.state, remoteCmp) ||

@@ -659,6 +659,7 @@
   "sync.dirTwo": "Toveis sammenslåing",
   "sync.dirUp": "Last opp (denne enheten → Drive)",
   "sync.dirDown": "Last ned (Drive → denne enheten)",
+  "sync.dirListsHint": "Punktlister: Last opp overskriver Drives kopi med enhetens lister (lister som bare finnes på Drive beholdes); Last ned erstatter enhetens kopi av hver liste med Drives (lister som bare finnes her beholdes); Toveis slår sammen begge.",
   "sync.include": "Inkluder",
   "sync.catSettings": "Innstillinger",
   "sync.catLists": "Punktlister",

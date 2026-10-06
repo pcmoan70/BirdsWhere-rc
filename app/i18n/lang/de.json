@@ -659,6 +659,7 @@
   "sync.dirTwo": "Beidseitig zusammenführen",
   "sync.dirUp": "Hochladen (dieses Gerät → Drive)",
   "sync.dirDown": "Herunterladen (Drive → dieses Gerät)",
+  "sync.dirListsHint": "Punktlisten: Hochladen überschreibt die Drive-Kopie mit den Listen dieses Geräts (nur auf Drive vorhandene Listen bleiben); Herunterladen ersetzt die Kopie jeder Liste auf diesem Gerät durch die von Drive (nur hier vorhandene bleiben); Beidseitig führt beide zusammen.",
   "sync.include": "Einschließen",
   "sync.catSettings": "Einstellungen",
   "sync.catLists": "Punktlisten",

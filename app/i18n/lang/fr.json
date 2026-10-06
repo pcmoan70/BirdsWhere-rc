@@ -660,6 +660,7 @@
   "sync.dirTwo": "Fusion bidirectionnelle",
   "sync.dirUp": "Envoyer (cet appareil → Drive)",
   "sync.dirDown": "Télécharger (Drive → cet appareil)",
+  "sync.dirListsHint": "Listes de points : Envoyer remplace la copie Drive par les listes de cet appareil (les listes présentes seulement sur Drive sont conservées) ; Télécharger remplace la copie de chaque liste sur cet appareil par celle de Drive (les listes présentes seulement ici sont conservées) ; Bidirectionnel fusionne les deux.",
   "sync.include": "Inclure",
   "sync.catSettings": "Réglages",
   "sync.catLists": "Listes de points",

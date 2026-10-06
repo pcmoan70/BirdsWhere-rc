@@ -6112,7 +6112,7 @@
     Object.keys(c).forEach(function (k) { if (k !== "points" && k !== "name" && c[k] != null) o[k] = c[k]; });
     return o;
   }
-  function mergePointSets(localSets, incSets, interactive, incomingWins) {
+  function mergePointSets(localSets, incSets, interactive, incomingWins, replace) {
     var out = (Array.isArray(localSets) ? localSets : []).map(withMeta);
     var byName = Object.create(null); out.forEach(function (c) { byName[c.name] = c; });
     (Array.isArray(incSets) ? incSets : []).forEach(function (inc) {
@@ -6126,7 +6126,8 @@
       // stays. A plain list keeps the local-first union as before.
       var isRoute = !!(inc.route || cur.route) || ((inc.points || []).length > 0 && (inc.points || []).every(function (p) { return p && p.source === "route"; }));
       if (isRoute) cur.route = true;
-      if (!interactive || confirm(t("sync.listMergePrompt", { name: inc.name }))) cur.points = (isRoute && incomingWins) ? mergePins(inc.points, cur.points) : mergePins(cur.points, inc.points);
+      if (replace) cur.points = (inc.points || []).slice();   // a download: Drive's copy of the list is the truth
+      else if (!interactive || confirm(t("sync.listMergePrompt", { name: inc.name }))) cur.points = (isRoute && incomingWins) ? mergePins(inc.points, cur.points) : mergePins(cur.points, inc.points);
       else cur.points = (inc.points || []).slice();
     });
     return out;
@@ -6291,7 +6292,7 @@
     // Map points: merge rather than overwrite. Loose pins from both sides are
     // unioned into the working set; named lists are merged/overwritten by name.
     var mergedLoose = mergePins(loosePointsOf(local), loosePointsOf(incoming));
-    var mergedSets = mergePointSets(local.mapPointSets, incoming.mapPointSets, opts.interactive, !!opts.incomingWins);
+    var mergedSets = mergePointSets(local.mapPointSets, incoming.mapPointSets, opts.interactive, !!opts.incomingWins, !!opts.replaceLists);
     // Plotted detections (dots/stars) and the starred-species list: union both
     // sides so syncing merges pins instead of one device overwriting the other.
     var localDetN = detRowCount(local.mapDetections);
@@ -21253,6 +21254,7 @@
           "<h3>" + escapeHtml(t("sync.title")) + "</h3>" +
           '<div class="so-sec">' + escapeHtml(t("sync.direction")) + "</div>" +
           dirRow("two", "sync.dirTwo") + dirRow("upload", "sync.dirUp") + dirRow("download", "sync.dirDown") +
+          '<p class="cu-hint">' + escapeHtml(t("sync.dirListsHint")) + "</p>" +
           '<div class="so-sec">' + escapeHtml(t("sync.include")) + "</div>" +
           catRow("settings", "sync.catSettings") + catRow("lists", "sync.catLists") + catRow("trips", "sync.catTrips") + catRow("checklists", "sync.catChecklists") + catRow("fetched", "sync.catFetched") +
           '<p class="cu-hint">' + escapeHtml(t("sync.mergeNote")) + "</p>" +

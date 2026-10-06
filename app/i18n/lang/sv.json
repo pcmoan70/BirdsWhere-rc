@@ -226,6 +226,7 @@
   "sync.dirTwo": "Sammanfoga åt båda håll",
   "sync.dirUp": "Ladda upp (denna enhet → Drive)",
   "sync.dirDown": "Ladda ner (Drive → denna enhet)",
+  "sync.dirListsHint": "Punktlistor: Ladda upp skriver över Drives kopia med enhetens listor (listor som bara finns på Drive behålls); Ladda ner ersätter enhetens kopia av varje lista med Drives (listor som bara finns här behålls); Tvåvägs slår ihop båda.",
   "sync.include": "Inkludera",
   "sync.catSettings": "Inställningar",
   "sync.catLists": "Punktlistor",

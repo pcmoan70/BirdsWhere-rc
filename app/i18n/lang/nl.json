@@ -659,6 +659,7 @@
   "sync.dirTwo": "Tweerichtings samenvoegen",
   "sync.dirUp": "Uploaden (dit apparaat → Drive)",
   "sync.dirDown": "Downloaden (Drive → dit apparaat)",
+  "sync.dirListsHint": "Puntenlijsten: Uploaden overschrijft de Drive-kopie met de lijsten van dit apparaat (lijsten die alleen op Drive staan blijven); Downloaden vervangt de kopie van elke lijst op dit apparaat door die van Drive (lijsten die alleen hier staan blijven); Tweerichting voegt beide samen.",
   "sync.include": "Opnemen",
   "sync.catSettings": "Instellingen",
   "sync.catLists": "Puntenlijsten",

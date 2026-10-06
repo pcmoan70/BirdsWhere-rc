@@ -659,6 +659,7 @@
   "sync.dirTwo": "Obousměrné sloučení",
   "sync.dirUp": "Nahrát (toto zařízení → Disk)",
   "sync.dirDown": "Stáhnout (Disk → toto zařízení)",
+  "sync.dirListsHint": "Seznamy bodů: Nahrání přepíše kopii na Drive seznamy z tohoto zařízení (seznamy jen na Drive zůstanou); Stažení nahradí kopii každého seznamu v zařízení verzí z Drive (seznamy jen zde zůstanou); Obousměrně sloučí obojí.",
   "sync.include": "Zahrnout",
   "sync.catSettings": "Nastavení",
   "sync.catLists": "Seznamy bodů",

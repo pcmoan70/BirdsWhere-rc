@@ -659,6 +659,7 @@
   "sync.dirTwo": "Kaksisuuntainen yhdistäminen",
   "sync.dirUp": "Lähetä (tämä laite → Drive)",
   "sync.dirDown": "Lataa (Drive → tämä laite)",
+  "sync.dirListsHint": "Pistelistat: Lähetys korvaa Driven kopion tämän laitteen listoilla (vain Drivessa olevat listat säilyvät); Lataus korvaa laitteen kopion kustakin listasta Driven versiolla (vain täällä olevat säilyvät); Kaksisuuntainen yhdistää molemmat.",
   "sync.include": "Sisällytä",
   "sync.catSettings": "Asetukset",
   "sync.catLists": "Pistelistat",
