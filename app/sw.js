@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2014";
+var VERSION = "v2015";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Observation menu: \u201cAdd point to list\u201d now sits right under \u201cAdd to species list\u201d in Lists & actions.",
+  "\u2022 Filter pane: new \u201cWords in notes\u201d \u2014 add words to include or exclude; matches notes, places, activity and observers of fetched and imported records, forgiving case, accents and typos.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

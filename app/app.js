@@ -10165,6 +10165,67 @@
     if (detFocusSrc) return srcLabel(r) === detFocusSrc;   // aff-pane hover isolates one source
     return !detSrcFilter || detSrcFilter.has(srcLabel(r));
   }
+  // ---- Words in notes (owner, 2026-10-05) ------------------------------------------------
+  // "The app should support fuzzy search for words in the notes etc of uploaded lists. User
+  // should be able to add include words, and exclude words." A record is kept when its text
+  // (note, place, activity, observer, flags — and a plain pin's name / tags) contains ANY
+  // include word and NONE of the exclude words. Matching is case- and accent-insensitive and
+  // forgiving: a word matches as a substring, or a word in the text that starts within one
+  // typo of it (two from 8 letters) — "kassse" finds "kasse", "ugle" finds "Ugler".
+  var detTextInc = [], detTextExc = [];
+  function detTextActive() { return detTextInc.length > 0 || detTextExc.length > 0; }
+  function textFold(x) {
+    x = String(x || "").toLowerCase();
+    try { x = x.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); } catch (e) {}
+    return x.replace(/æ/g, "ae").replace(/ø/g, "o").replace(/ß/g, "ss");
+  }
+  // Edit distance between a and b, giving up (returning max + 1) once it exceeds `max`.
+  function editDistMax(a, b, max) {
+    if (Math.abs(a.length - b.length) > max) return max + 1;
+    var prev = [], cur, i, j;
+    for (j = 0; j <= b.length; j++) prev[j] = j;
+    for (i = 1; i <= a.length; i++) {
+      cur = [i]; var best = i;
+      for (j = 1; j <= b.length; j++) {
+        var v = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a.charCodeAt(i - 1) === b.charCodeAt(j - 1) ? 0 : 1));
+        cur[j] = v; if (v < best) best = v;
+      }
+      if (best > max) return max + 1;
+      prev = cur;
+    }
+    return prev[b.length];
+  }
+  function textWordHits(word, hay, toks) {
+    if (hay.indexOf(word) >= 0) return true;
+    if (word.length < 4) return false;   // short words: exact substring only (fuzzy would match everything)
+    var max = word.length >= 8 ? 2 : 1, L = word.length;
+    for (var i = 0; i < toks.length; i++) {
+      var tk = toks[i]; if (tk.length < L - max) continue;
+      // the word against the token's start (a few lengths around it, so "ugle" ↔ "uglekasse")
+      for (var n = Math.max(1, L - max); n <= Math.min(tk.length, L + max); n++) {
+        if (editDistMax(word, tk.slice(0, n), max) <= max) return true;
+      }
+    }
+    return false;
+  }
+  var _textMemo = (typeof WeakMap === "function") ? new WeakMap() : null, _textSig = "";
+  function detTextSig() { return detTextInc.join("\u0001") + "\u0002" + detTextExc.join("\u0001"); }
+  function textPasses(obj, parts) {
+    if (!detTextActive()) return true;
+    var m = _textMemo && _textMemo.get(obj);
+    if (m && m.sig === _textSig) return m.ok;
+    var hay = textFold(parts.join(" \u0001 ")), toks = hay.split(/[^0-9a-zåäöüéèçñ]+/).filter(Boolean), ok = true;
+    if (detTextInc.length) ok = detTextInc.some(function (w) { return textWordHits(w, hay, toks); });
+    if (ok && detTextExc.length) ok = !detTextExc.some(function (w) { return textWordHits(w, hay, toks); });
+    if (_textMemo) _textMemo.set(obj, { sig: _textSig, ok: ok });
+    return ok;
+  }
+  function detPassesText(r) { return !detTextActive() || textPasses(r, [r.note, r.place, r.act, r.observer, r.flags]); }
+  function setDetText(inc, exc) {
+    var norm = function (a) { var o = []; (a || []).forEach(function (w) { w = textFold(w).trim(); if (w && o.indexOf(w) < 0) o.push(w); }); return o; };
+    detTextInc = norm(inc); detTextExc = norm(exc).filter(function (w) { return detTextInc.indexOf(w) < 0; });
+    _textSig = detTextSig();
+  }
   // "New" filter: after a baseline fetch, show only detections FIRST fetched later — so
   // re-fetching a spot surfaces just the new arrivals. Baseline = detNewSince, captured
   // when the filter is switched on; each row's _ts is its first-fetched time (stamped in
@@ -10433,7 +10494,7 @@
     applyAgeFilter();                            // the list's own show/hide pass
     if (allFiltersPane) renderAllFiltersPane();  // keep the pane's own summary line current
   }
-  function detRowPasses(r) { return detDatePasses(r.date) && detObsPasses(r) && detLocPasses(r) && detAreaPasses(r) && detPassesSrc(r) && detPassesNew(r); }
+  function detRowPasses(r) { return detDatePasses(r.date) && detObsPasses(r) && detLocPasses(r) && detAreaPasses(r) && detPassesSrc(r) && detPassesNew(r) && detPassesText(r); }
   // A species is an "alert" when its detPlot entry carries injected rarity rows
   // (syncAlertDetections flags the entry `alert`).
   function isAlertSpecies(k) { return !!(detPlot[k] && detPlot[k].alert); }
@@ -14629,7 +14690,7 @@
   // recency days / date range.) Drives the black × (clear all) in both the legend
   // and the detections-list filter bar.
   function detHasFilter() {
-    return detBflyFilter || detSelectionActive() || detExclusionActive() || detDaySelActive() || detStarFilter || detRareFilter || detYearFilter || detLifeFilter || detAlertFilter || (detLegendRows !== "all") || detNewFilter || !!detObsFilter || !!detLocFilter || !!detSrcFilter || (detRecencyDays() !== 0) || !!detDateRange() || detMonths().length > 0 || countFilterActive() || probFilterActive() || (detRegionMode !== "off");
+    return detTextActive() || detBflyFilter || detSelectionActive() || detExclusionActive() || detDaySelActive() || detStarFilter || detRareFilter || detYearFilter || detLifeFilter || detAlertFilter || (detLegendRows !== "all") || detNewFilter || !!detObsFilter || !!detLocFilter || !!detSrcFilter || (detRecencyDays() !== 0) || !!detDateRange() || detMonths().length > 0 || countFilterActive() || probFilterActive() || (detRegionMode !== "off");
   }
   // Reset every legend filter at once (the black ×): the species selection, the
   // ★/◉/🟡 mode filter, the observer filter, and the recency (days) window → All.
@@ -14638,6 +14699,7 @@
     detSelected = {}; detExcluded = {}; snapshotSelBase();   // selection AND its base reset → the legend's black × has nothing to revert
     detStarFilter = 0; detRareFilter = 0; detYearFilter = 0; detLifeFilter = 0; detAlertFilter = 0; detNewFilter = false; detTodayFilter = false;
     detBflyFilter = false;                                                    // butterflies-only → off
+    setDetText([], []);                                                       // words in notes → none
     detObsPanelOpen = false; detDaysPanelOpen = false; detModePanelOpen = false;
     setDetObsFilter(null);                                                   // observer → all
     setDetLocFilter(null);                                                   // location → all
@@ -14857,7 +14919,7 @@
   window.addEventListener("pagehide", flushLegendState);
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") flushLegendState(); });
   function saveLegendStateNow() {
-    window.GeoState.save({ mapLegend: { mini: detLegendMini, bflyFilter: detBflyFilter, starFilter: detStarFilter, rareFilter: detRareFilter, yearFilter: detYearFilter, lifeFilter: detLifeFilter, alertFilter: detAlertFilter, selected: Object.keys(detSelected), excluded: Object.keys(detExcluded), selBase: { sel: Object.keys(detSelBase.sel), exc: Object.keys(detSelBase.exc) }, obsFilter: detObsFilter ? Array.from(detObsFilter) : null, locFilter: detLocFilter ? Array.from(detLocFilter) : null, srcFilter: detSrcFilter ? Array.from(detSrcFilter) : null, areaExcl: detAreaExcl ? Array.from(detAreaExcl) : null, deleted: deletedSpecies, countMin: spCountMin, countMax: spCountMax, countMetric: spCountMetric, ageDays: speciesAgeFilterDays, newFilter: detNewFilter, newSince: detNewSince, todayFilter: detTodayFilter, daySel: Object.keys(detDaySel), rows: detLegendRows, sort: detLegendSort, regionMode: detRegionMode, regionPick: detRegionPick } });
+    window.GeoState.save({ mapLegend: { mini: detLegendMini, bflyFilter: detBflyFilter, starFilter: detStarFilter, rareFilter: detRareFilter, yearFilter: detYearFilter, lifeFilter: detLifeFilter, alertFilter: detAlertFilter, selected: Object.keys(detSelected), excluded: Object.keys(detExcluded), selBase: { sel: Object.keys(detSelBase.sel), exc: Object.keys(detSelBase.exc) }, obsFilter: detObsFilter ? Array.from(detObsFilter) : null, locFilter: detLocFilter ? Array.from(detLocFilter) : null, srcFilter: detSrcFilter ? Array.from(detSrcFilter) : null, areaExcl: detAreaExcl ? Array.from(detAreaExcl) : null, deleted: deletedSpecies, countMin: spCountMin, countMax: spCountMax, countMetric: spCountMetric, ageDays: speciesAgeFilterDays, newFilter: detNewFilter, newSince: detNewSince, todayFilter: detTodayFilter, textInc: detTextInc, textExc: detTextExc, daySel: Object.keys(detDaySel), rows: detLegendRows, sort: detLegendSort, regionMode: detRegionMode, regionPick: detRegionPick } });
   }
   function loadDetections() {
     // Self-heal a store left over-quota by an older build: cap the stored
@@ -14929,6 +14991,7 @@
     spCountMetric = (ls.countMetric === "pairs") ? "pairs" : "total";
     speciesAgeFilterDays = +ls.ageDays || 0;
     detNewFilter = !!ls.newFilter; detNewSince = +ls.newSince || 0; detTodayFilter = !!ls.todayFilter;
+    setDetText(Array.isArray(ls.textInc) ? ls.textInc : [], Array.isArray(ls.textExc) ? ls.textExc : []);
     updateNewReloadCtrl();   // reflect a restored New mode on the on-map Reload button
     rebuildDetLayers();
     updateDetLegend();
@@ -16948,6 +17011,19 @@
     var nameSum = !nameActive ? t("filters.any") : (spNameQuery + (nameCnt == null ? "" : "  ·  " + nameCntTxt));
     var secName = affSection("name", t("filters.name"), nameActive, nameSum, nameBody);
 
+    // Words in notes — include / exclude chips over a word box (detPassesText)
+    var chip = function (w, exc) {
+      return '<span class="aff-word' + (exc ? " exc" : "") + '">' + (exc ? "−" : "+") + " " + escapeHtml(w) +
+        '<button type="button" class="aff-word-x" data-w="' + escapeHtml(w) + '" data-exc="' + (exc ? 1 : 0) + '" aria-label="' + escapeHtml(t("offline.delete")) + '">×</button></span>';
+    };
+    var textBody = '<div class="aff-text-row"><input type="search" class="aff-text-in sp-search" placeholder="' + escapeHtml(t("filters.textPh")) + '" autocomplete="off" autocorrect="off" spellcheck="false" />' +
+      '<button type="button" class="btn btn-light aff-text-add" data-exc="0">' + escapeHtml(t("filters.textInclude")) + "</button>" +
+      '<button type="button" class="btn btn-light aff-text-add" data-exc="1">' + escapeHtml(t("filters.textExclude")) + "</button></div>" +
+      (detTextActive() ? '<div class="aff-words">' + detTextInc.map(function (w) { return chip(w, false); }).join("") + detTextExc.map(function (w) { return chip(w, true); }).join("") + "</div>" : "") +
+      '<div class="aff-hint">' + escapeHtml(t("filters.textHint")) + "</div>";
+    var textSum = !detTextActive() ? t("filters.any") : detTextInc.map(function (w) { return "+" + w; }).concat(detTextExc.map(function (w) { return "−" + w; })).join(" ");
+    var secText = affSection("text", t("filters.text"), detTextActive(), textSum, textBody);
+
     // Date / recency / months — reuse the days panel
     var rg = detDateRange(), dateActive = daysBackActive() || !!rg || detMonths().length > 0;
     var dateSum = rg ? ((rg.from || "…") + "–" + (rg.to || "…"))
@@ -16987,7 +17063,7 @@
     var secRegion = affSection("region", t("region.title"), detRegionMode !== "off", regSum, affRegionHtml());
 
     // Order: "Show last" (date) at the top; Probability sits right under Status; the standalone Hidden checkbox at the very bottom.
-    return head + '<div class="aff-body">' + secDate + secSort + secSel + secLists + secMode + secProb + secNew + secBfly + secCnt + secName + secLoc + secObs + secSrc + secRegion + "</div>";
+    return head + '<div class="aff-body">' + secDate + secSort + secSel + secLists + secMode + secProb + secNew + secBfly + secCnt + secName + secText + secLoc + secObs + secSrc + secRegion + "</div>";
   }
   function affRegionHtml() {
     var opts = DET_REGIONS.map(function (n, i) { return '<option value="' + i + '"' + (i === detRegionPick ? " selected" : "") + ">" + escapeHtml(regionName(i)) + "</option>"; }).join("");
@@ -17049,6 +17125,7 @@
             if (pmv) pmv.textContent = "0%"; if (pxv) pxv.textContent = "100%";
             window.GeoState.save({ probMin: 0, probMax: 100 }); rerenderPointList(); renderAllFiltersPane(); break;
           case "name": spNameQuery = ""; detMapSearch = ""; detFiltersRefresh(); break;
+          case "text": setDetText([], []); saveLegendState(); detFiltersRefresh(); break;
           case "date": clearDateFilters(); break;
           case "loc": setDetLocFilter(null); saveLegendState(); detFiltersRefresh(); break;
           case "obs": setDetObsFilter(null); detFiltersRefresh(); break;
@@ -17098,6 +17175,26 @@
       plo.addEventListener("input", affProbUpd); phi.addEventListener("input", affProbUpd);
       plo.addEventListener("change", affProbApply); phi.addEventListener("change", affProbApply);
     }
+    // Words in notes: type a word, then Include / Exclude (Enter = Include). Several words in
+    // one go ("reir kasse") become separate chips; × on a chip removes it.
+    var txIn = box.querySelector(".aff-text-in");
+    var txAdd = function (exc) {
+      var ws = String((txIn && txIn.value) || "").split(/[\s,;]+/).filter(Boolean); if (!ws.length) return;
+      var inc = detTextInc.slice(), ex = detTextExc.slice();
+      ws.forEach(function (w) { w = textFold(w); inc = inc.filter(function (x) { return x !== w; }); ex = ex.filter(function (x) { return x !== w; }); (exc ? ex : inc).push(w); });
+      setDetText(inc, ex); if (txIn) txIn.value = "";
+      saveLegendState(); detFiltersRefresh(); renderAllFiltersPane();
+    };
+    box.querySelectorAll(".aff-text-add").forEach(function (b) { b.addEventListener("click", function (e) { e.stopPropagation(); txAdd(this.getAttribute("data-exc") === "1"); }); });
+    if (txIn) txIn.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); txIn.blur(); txAdd(e.shiftKey); } });
+    box.querySelectorAll(".aff-word-x").forEach(function (b) {
+      b.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var w = this.getAttribute("data-w"), exc = this.getAttribute("data-exc") === "1";
+        setDetText(exc ? detTextInc : detTextInc.filter(function (x) { return x !== w; }), exc ? detTextExc.filter(function (x) { return x !== w; }) : detTextExc);
+        saveLegendState(); detFiltersRefresh(); renderAllFiltersPane();
+      });
+    });
     var nm = box.querySelector(".aff-name");
     if (nm) nm.addEventListener("input", function (e) {
       e.stopPropagation();
@@ -17426,6 +17523,7 @@
     if (p.observer && !detObsPasses({ observer: p.observer })) return false;
     var q = spNameQuery.trim();
     if (q && !pointNameMatches(p, q)) return false;
+    if (detTextActive() && !textPasses(p, [p.note, p.desc, p.name, (p.tags || []).join(" "), p.place, p.act, p.observer])) return false;
     return true;
   }
   // A pin's species, as the app knows it: the file's scientific name looked up in the

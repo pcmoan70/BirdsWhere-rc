@@ -2885,6 +2885,15 @@ button.dd-name:hover { text-decoration: underline; }
 .sp-prob-vals { font-size: var(--fs-s); color: var(--ink-muted); font-variant-numeric: tabular-nums; }
 .aff-name-cnt { display: block; margin-top: 4px; font-size: var(--fs-s); color: var(--ink-muted); font-variant-numeric: tabular-nums; }
 .aff-name-cnt:empty { display: none; }
+/* Words in notes (detPassesText): word box + Include / Exclude, then the chips */
+.aff-text-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.aff-text-row .aff-text-in { flex: 1 1 10ch; min-width: 0; }
+.aff-words { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.aff-word { display: inline-flex; align-items: center; gap: 2px; padding: 1px 4px 1px 8px; border-radius: 12px; font-size: var(--fs-s);
+  background: color-mix(in srgb, #2e7d32 14%, transparent); color: var(--ink, #222); border: 1px solid color-mix(in srgb, #2e7d32 45%, transparent); }
+.aff-word.exc { background: color-mix(in srgb, #c62828 12%, transparent); border-color: color-mix(in srgb, #c62828 45%, transparent); text-decoration: line-through; }
+.aff-word-x { border: 0; background: none; color: inherit; cursor: pointer; font-size: 14px; line-height: 1; padding: 0 3px; text-decoration: none; }
+.aff-hint { margin-top: 4px; font-size: var(--fs-xs, 11px); color: var(--ink-muted, #777); }
 /* Sync-options dialog (which categories + direction). */
 .sync-opts-box { max-width: 360px; }
 .sync-opts-box .so-sec { margin: 12px 0 4px; font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .04em; color: var(--ink-faint); }
