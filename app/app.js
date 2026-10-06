@@ -16977,9 +16977,13 @@
   // via the hook at the end of detFiltersRefresh().
   var allFiltersPane = null;   // { overlay, box, close } while open, else null
 
+  // Each section folds: tap its heading (owner, 2026-10-06). Which ones are folded is
+  // remembered per section key (GeoState affCollapsed), so the pane opens the way it was left.
+  function affCollapsed() { return window.GeoState.get("affCollapsed", {}) || {}; }
   function affSection(key, label, active, summary, bodyHtml) {
-    return '<div class="aff-sec' + (active ? " on" : "") + '">' +
-      '<div class="aff-sec-head"><span class="aff-sec-lbl">' + escapeHtml(label) + "</span>" +
+    var folded = !!affCollapsed()[key];
+    return '<div class="aff-sec' + (active ? " on" : "") + (folded ? " folded" : "") + '" data-sec="' + key + '">' +
+      '<div class="aff-sec-head" role="button" tabindex="0" aria-expanded="' + (folded ? "false" : "true") + '"><span class="aff-sec-chev" aria-hidden="true">▾</span><span class="aff-sec-lbl">' + escapeHtml(label) + "</span>" +
         '<span class="aff-sec-sum">' + escapeHtml(summary) + "</span>" +
         (active ? '<button type="button" class="aff-sec-clear" data-sec="' + key + '" title="' + escapeHtml(t("det.clearFilters")) + '">' + filterXSvg(13) + "</button>" : "") +
       "</div>" + (bodyHtml ? '<div class="aff-sec-body">' + bodyHtml + "</div>" : "") + "</div>";
@@ -17209,6 +17213,19 @@
     var tb = box.querySelector(".aff-today-cb"); if (tb) tb.addEventListener("change", function (e) { e.stopPropagation(); setDetTodayFilter(this.checked); });
     var bb = box.querySelector(".aff-bfly-cb"); if (bb) bb.addEventListener("change", function (e) { e.stopPropagation(); setDetBflyFilter(this.checked); });
     var ca = box.querySelector(".aff-clear-all"); if (ca) ca.addEventListener("click", function (e) { e.stopPropagation(); clearAllFilters(); });
+    box.querySelectorAll(".aff-sec-head").forEach(function (h) {
+      var toggle = function (e) {
+        if (e.target.closest && e.target.closest(".aff-sec-clear")) return;   // the section's own × clears, it does not fold
+        e.stopPropagation();
+        var sec = h.parentNode, key = sec.getAttribute("data-sec"), st = affCollapsed();
+        var fold = !sec.classList.contains("folded");
+        sec.classList.toggle("folded", fold); h.setAttribute("aria-expanded", fold ? "false" : "true");
+        if (fold) st[key] = 1; else delete st[key];
+        window.GeoState.save({ affCollapsed: st });
+      };
+      h.addEventListener("click", toggle);
+      h.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(e); } });
+    });
     box.querySelectorAll(".aff-sec-clear").forEach(function (b) {
       b.addEventListener("click", function (e) {
         e.stopPropagation();

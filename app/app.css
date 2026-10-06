@@ -1941,6 +1941,10 @@ button.dd-name:hover { text-decoration: underline; }
 .aff-sec.on .aff-sec-sum { color: var(--brand); font-weight: 600; }
 .aff-sec-clear { display: inline-flex; align-items: center; background: none; border: none; cursor: pointer; color: var(--brand); padding: 0; }
 .aff-sec-body { margin-top: 7px; }
+.aff-sec-head { cursor: pointer; user-select: none; }
+.aff-sec-chev { flex: 0 0 auto; width: 1em; font-size: 12px; color: var(--ink-muted); transition: transform .15s; }
+.aff-sec.folded .aff-sec-chev { transform: rotate(-90deg); }
+.aff-sec.folded .aff-sec-body { display: none; }
 /* Standalone Hidden checkbox at the very bottom of the filter pane. */
 .aff-sel-names { font-size: var(--fs-b); color: var(--ink); line-height: 1.4; max-height: 84px; overflow-y: auto; }
 .aff-src-list { display: flex; flex-direction: column; gap: 2px; }
