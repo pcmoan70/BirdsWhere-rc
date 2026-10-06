@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2018";
+var VERSION = "v2019";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Filter pane name search waits half a second after your last key press, and lists the matching species with a box to include (green +) or exclude (red \u2212) each one.",
+  "\u2022 Fixed: clearing the filters (or changing week / probability range) no longer re-fetches the point you clicked and puts its observations back on the map.",
+  "\u2022 Fixed: a fetched area you delete stays deleted when you switch between list and map.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

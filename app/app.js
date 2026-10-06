@@ -4092,6 +4092,10 @@
       if (!kept.length) { if (e.group) map.removeLayer(e.group); delete detPlot[k]; delete detSelected[k]; }
       else e.rows = kept;
     });
+    // The point list still holding THIS square's result must not put it back: List → Map
+    // (plotAllSightings) and a filter change re-plotted it, so a deleted fetch reappeared
+    // (owner, 2026-10-06). Same guard the red × uses — a stale plot generation.
+    if (currentSpView && b && isFinite(+currentSpView.lat) && isFinite(+currentSpView.lon) && b.contains([+currentSpView.lat, +currentSpView.lon])) currentSpView._plotGen = -1;
     if (area.rect && fetchedAreasLayer) fetchedAreasLayer.removeLayer(area.rect);
     if (area.delMarker && areaDelLayer) areaDelLayer.removeLayer(area.delMarker);
     if (fetchedAreaKeys) delete fetchedAreaKeys[id];
@@ -5703,7 +5707,7 @@
       }
     }
     tbody._fetchAgg = (result && result.agg) || {};   // THIS point's fetch only (no detPlot union / rarity) — the PDF/CSV "Seen" column reads this
-    if (currentSpView) currentSpView._result = result;   // latest data for plotAllSightings (partial or final)
+    if (currentSpView) { currentSpView._result = result; if (isFinal) currentSpView._final = true; }   // latest data for plotAllSightings (partial or final)
     updateSpMapBtn();
     var now = Date.now();
     tbody.querySelectorAll(".det-nd").forEach(function (td) {
@@ -23597,6 +23601,7 @@
   function rerenderPointList(opts) {
     if (!marker) return;
     var ll = marker.getLatLng();
+    opts = opts || {}; if (opts.reuse == null) opts.reuse = true;   // same point → its result is re-used, never re-fetched / re-plotted
     if (currentMode === "list" || currentMode === "range") renderSpeciesList(ll.lat, ll.lng, undefined, opts);
   }
 
@@ -26749,6 +26754,15 @@
     // counts and the map-plot come from a GBIF fetch over the historic range
     // instead of the recent all-source fetch.
     var keepScroll = keepListScroll; keepListScroll = false;   // consume one-shot flag
+    // A RE-render of the same point (a filter, week or probability change — rerenderPointList)
+    // reuses the point's settled result instead of fetching it again. The re-fetch was also a
+    // re-PLOT: clearing the filters brought back a fetch the user had just deleted from the
+    // map (owner, 2026-10-06: "previous fetch seem to be refetched when i turn off filtering.
+    // Deleting the fetch does not seem to have an effect"). Only a settled, plain point result
+    // is reused; one still loading is fetched as before so nothing in flight is lost.
+    var prevView = currentSpView;
+    var reuse = !!(opts && opts.reuse && !hist && !(opts && opts.noFetch) && prevView && prevView.mode === "point" && prevView._final && prevView._result &&
+      Math.abs(+prevView.lat - lat) < 1e-9 && Math.abs(+prevView.lon - lon) < 1e-9);
     var myGen = ++spListGen;   // supersede any older in-flight render (see spListGen)
     // Count this fetch from the moment it's QUEUED (now — through the inference /
     // list build) until it settles, so the status-line dots show queued + in-progress
@@ -26768,6 +26782,7 @@
       : { mode: "point", lat: lat, lon: lon };
     currentSpView._plotGen = detPlotGen;   // red × mid-fetch bumps this → partial plots stop
     if (noFetch) currentSpView._noFetch = true;   // a model-only list: it holds no observations of its own (see goToMapView)
+    if (reuse) { currentSpView._plotGen = prevView._plotGen; currentSpView._result = prevView._result; currentSpView._final = true; if (prevView._noFetch) currentSpView._noFetch = true; }
     // Harmonise the date window so historic records aren't dropped by the recency
     // filter: Historic sets the global date-range to the fetched range (and clears
     // recency); Recent clears the range so its own recency window applies. Either way
@@ -26914,7 +26929,7 @@
           // (predictions resolving, a late source, a layout rebuild) would yank the
           // page away and drop them back on the map mid-scroll.
           sp.style.display = "none";
-          if (!noFetch) spMapFetch = true;
+          if (!noFetch && !reuse) spMapFetch = true;
         }
       } else if (currentMode === "historic") {
         // Historic is MAP-FIRST like Recent: stay on the map and watch the dots
@@ -26999,6 +27014,11 @@
           if (!currentSpView || currentSpView.range !== histTok) return;   // a newer search owns the bar
           var p = document.getElementById("sp-hist-prog"); if (p) p.style.display = "none";
         }).then(releaseDot, releaseDot);   // fetch settled → drop this fetch's status-line dot
+      } else if (reuse) {
+        // the counts / Last / sightings columns from the result already held — no fetch, no plot
+        var tbR = document.getElementById("sp-tbody");
+        if (tbR) { var tokR = lat.toFixed(4) + "," + lon.toFixed(4); tbR.dataset.sightingsToken = tokR; try { applySightings(tbR, tokR, currentSpView._result, true); } catch (eR) {} }
+        releaseDot();
       } else {
         var fetchGen = myGen;   // guard against a newer point / mode switch mid-fetch
         // Map-first: the dots are dropped progressively from applySightings as each
