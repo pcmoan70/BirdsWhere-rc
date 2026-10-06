@@ -675,10 +675,11 @@ window.GDriveSync = (function () {
       // Download: Drive's copy of a list REPLACES this device's (points deleted elsewhere go here
       // too); lists only this device has are kept. Two-way stays a union — nothing is lost.
       // Download: "merge" (default) is an outer join — Drive's lists and points are added,
-      // nothing on this device is removed; without merge the device's point lists become the
-      // folder's (same-named lists replaced, lists not in the folder removed). Two-way: union.
+      // nothing on this device is removed; without merge each list in the folder REPLACES this
+      // device's copy of it. Lists not in the folder are always kept — the user deletes them by
+      // hand if wanted (owner, 2026-10-06). Two-way: union.
       var replaceL = dir === "download" && options && options.merge === false;
-      if (toApply) window.AppData.applyRemote(toApply, { incomingWins: incomingWins, interactive: false, replaceLists: replaceL, dropLocalLists: replaceL && !!inc.lists });
+      if (toApply) window.AppData.applyRemote(toApply, { incomingWins: incomingWins, interactive: false, replaceLists: replaceL });
       var changed = localStateStr() !== before;
 
       // Push when there's no remote yet, or the merged result differs from it

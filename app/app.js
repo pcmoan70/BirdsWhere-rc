@@ -6112,13 +6112,8 @@
     Object.keys(c).forEach(function (k) { if (k !== "points" && k !== "name" && c[k] != null) o[k] = c[k]; });
     return o;
   }
-  function mergePointSets(localSets, incSets, interactive, incomingWins, replace, dropLocal) {
+  function mergePointSets(localSets, incSets, interactive, incomingWins, replace) {
     var out = (Array.isArray(localSets) ? localSets : []).map(withMeta);
-    // Replace (a download without merge): lists this device has that the folder does not are removed.
-    if (dropLocal && Array.isArray(incSets)) {
-      var incNames = Object.create(null); incSets.forEach(function (c) { if (c && c.name) incNames[c.name] = 1; });
-      out = out.filter(function (c) { return incNames[c.name]; });
-    }
     var byName = Object.create(null); out.forEach(function (c) { byName[c.name] = c; });
     (Array.isArray(incSets) ? incSets : []).forEach(function (inc) {
       if (!inc || !inc.name) return;
@@ -6298,7 +6293,7 @@
     // Map points: merge rather than overwrite. Loose pins from both sides are
     // unioned into the working set; named lists are merged/overwritten by name.
     var mergedLoose = mergePins(loosePointsOf(local), loosePointsOf(incoming));
-    var mergedSets = mergePointSets(local.mapPointSets, incoming.mapPointSets, opts.interactive, !!opts.incomingWins, !!opts.replaceLists, !!opts.dropLocalLists);
+    var mergedSets = mergePointSets(local.mapPointSets, incoming.mapPointSets, opts.interactive, !!opts.incomingWins, !!opts.replaceLists);
     // Plotted detections (dots/stars) and the starred-species list: union both
     // sides so syncing merges pins instead of one device overwriting the other.
     var localDetN = detRowCount(local.mapDetections);

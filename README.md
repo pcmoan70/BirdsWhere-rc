@@ -1184,8 +1184,9 @@ exports**: a `.kmz` per saved trip, `Species lists.csv` and `Checklists.csv` —
 data** — nothing from Drive is read into the device or carried into the folder (an unchanged list
 file is copied server-side instead of uploaded again). **Download** reads the folder you pick
 (*List folders…*, default the newest) and either **merges** it in — an outer join: the folder's
-lists and points are added, nothing on this device is deleted — or **replaces** this device's point
-lists with the folder's (lists not in the folder are removed; asks first). **Two-way** merges both
+lists and points are added, nothing on this device is deleted — or **replaces**: each list in the
+folder replaces this device's copy of it (asks first). Lists that are not in the folder are always
+kept; delete them by hand if you want them gone. **Two-way** merges both
 ways (union), as before.
 Backups written by earlier versions (lists inside the JSON, or in Drive's hidden app-data area)
 are still read; the next push rewrites them in the new layout. Update every device before
