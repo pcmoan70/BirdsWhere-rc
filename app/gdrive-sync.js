@@ -457,7 +457,7 @@ window.GDriveSync = (function () {
       var e = need[i];
       out.refs[e.name] = { file: e.file, psig: e.psig };
       phase("download", e.name, i + 1, need.length);
-      if (e.psig && window.AppData.localListSig(e.name) === e.psig) { e._same = true; continue; }   // same points here already → nothing to fetch or merge
+      if (e.psig && window.AppData.localListSig(e.name) === e.psig) { e._same = true; e.points = []; delete e.file; delete e.psig; delete e.n; continue; }   // same points here already → not fetched, not merged (mergePointSets keeps the local copy)
       else {
         var id = out.ids[e.file];
         if (!id) throw new Error("list file missing on Drive: " + e.file);
@@ -467,9 +467,6 @@ window.GDriveSync = (function () {
       }
       delete e.file; delete e.psig; delete e.n;   // a merged list must not carry the reference fields
     }
-    // Lists identical here are left out of the merge altogether — merging an empty stand-in
-    // would wipe them on a download, where Drive's copy replaces the local one.
-    data.state.mapPointSets = sets.filter(function (e) { return !(e && e._same); });
     return out;
   }
   // Write this run's list files into its folder. `prev` = hydrateLists' result for the run
@@ -608,7 +605,11 @@ window.GDriveSync = (function () {
       // the size it is pulling, what arrived, how big the upload is. "Reading Drive…" for
       // twenty seconds with no detail is indistinguishable from a hang.
       phase("read");
-      var meta = await findFile();                 // newest payload: latest dated run folder, else legacy
+      // Download from a folder the user picked (options.fileId = that folder's payload), else
+      // the newest payload: latest dated run folder, else legacy.
+      var meta = (options && options.fileId)
+        ? { id: options.fileId, folderId: await parentOf(options.fileId), folderName: options.folderName || "" }
+        : await findFile();
       var remote = null;
       if (meta) {
         // Data, not wording: the folder this came from and how big it is.
@@ -665,11 +666,19 @@ window.GDriveSync = (function () {
       // arrived; the counting itself happens just above.
       if (remote) phase("merge");
       var localState = {}; try { localState = JSON.parse(localStateStr()); } catch (e) {}
-      var toApply = remote ? window.AppData.filterIncomingForSync(remote, inc, localState) : null;
+      // Upload writes a NEW folder holding this device's data and nothing else (owner,
+      // 2026-10-06: "When uploading: a new folder on gdrive should be created containing only
+      // device datafiles"): Drive's payload is read only to copy list files that are byte-for-
+      // byte this device's own (same signature) instead of uploading them again.
+      var toApply = (remote && dir !== "upload") ? window.AppData.filterIncomingForSync(remote, inc, localState) : null;
       var before = localStateStr();
       // Download: Drive's copy of a list REPLACES this device's (points deleted elsewhere go here
       // too); lists only this device has are kept. Two-way stays a union — nothing is lost.
-      if (toApply) window.AppData.applyRemote(toApply, { incomingWins: incomingWins, interactive: false, replaceLists: dir === "download" });
+      // Download: "merge" (default) is an outer join — Drive's lists and points are added,
+      // nothing on this device is removed; without merge the device's point lists become the
+      // folder's (same-named lists replaced, lists not in the folder removed). Two-way: union.
+      var replaceL = dir === "download" && options && options.merge === false;
+      if (toApply) window.AppData.applyRemote(toApply, { incomingWins: incomingWins, interactive: false, replaceLists: replaceL, dropLocalLists: replaceL && !!inc.lists });
       var changed = localStateStr() !== before;
 
       // Push when there's no remote yet, or the merged result differs from it
@@ -678,18 +687,12 @@ window.GDriveSync = (function () {
       // bare stringify would treat an otherwise-unchanged sync as dirty and
       // trigger a full resumable upload on every sync. Download is pull-only.
       var merged = window.AppData.buildPayload();
-      window.AppData.overlayExcludedForPush(merged, remote, inc, localState);
+      if (dir !== "upload") window.AppData.overlayExcludedForPush(merged, remote, inc, localState);
       // From here the payload names each list's file instead of holding its points.
-      // Upload: lists only Drive holds go back up as they are (by reference), never dropped.
-      if (dir === "upload" && inc.lists && prevLists && prevLists.raw && Array.isArray(merged.state.mapPointSets)) {
-        var mine = {}; merged.state.mapPointSets.forEach(function (c) { if (c && c.name) mine[c.name] = 1; });
-        // a list file only Drive has stays on Drive (copied; an old-format embedded one is written as a file)
-        prevLists.raw.forEach(function (e) { if (e && e.name && !mine[e.name]) merged.state.mapPointSets.push(e); });
-      }
       var listFiles = window.AppData.splitListsForDrive(merged, prevLists && prevLists.refs);
-      var needPush = dir !== "download" && (!remote ||
+      var needPush = dir === "upload" || (dir !== "download" && (!remote ||
         stateDiffers(merged.state, remoteCmp) ||
-        (merged.ebirdKey && merged.ebirdKey !== (remote.ebirdKey || "")));
+        (merged.ebirdKey && merged.ebirdKey !== (remote.ebirdKey || ""))));
       if (needPush) {
         var str = JSON.stringify(merged);
         // Each sync gets its own dated folder holding that run's payload AND its readable

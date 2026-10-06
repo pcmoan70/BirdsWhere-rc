@@ -2909,6 +2909,9 @@ button.dd-name:hover { text-decoration: underline; }
 .sync-opts-box .so-sec { margin: 12px 0 4px; font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .04em; color: var(--ink-faint); }
 .sync-opts-box .so-dir, .sync-opts-box .so-cat { display: flex; align-items: center; gap: 8px; padding: 5px 2px; cursor: pointer; }
 .sync-opts-box .so-dir input, .sync-opts-box .so-cat input { flex: 0 0 auto; }
+.sync-opts-box .so-down { margin: 4px 0 6px 24px; padding: 6px 8px; border-left: 2px solid var(--border, #ccc); }
+.sync-opts-box .so-folder-row { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.sync-opts-box .so-folder { max-width: 16em; }
 .sync-opts-box .so-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
 /* Dated backups in Drive's app-data folder — Drive's own UI cannot list them, so
    this is the only way to reach the history. */

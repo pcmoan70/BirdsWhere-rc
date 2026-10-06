@@ -1177,11 +1177,13 @@ only its name, folder, file name, point count and a signature. A sync downloads 
 that differ from the device's own, uploads only the lists that changed, and copies the unchanged
 ones inside Drive; a sync with nothing to change writes nothing. Beside them are **readable
 exports**: a `.kmz` per saved trip, `Species lists.csv` and `Checklists.csv` — those are one-way.
-**Directions for point lists** (since v2020): **Upload** overwrites Drive's copy of each list with
-this device's, without reading Drive's list files first (so a point deleted here stays deleted);
-lists only on Drive are kept. **Download** replaces this device's copy of each list with Drive's;
-lists only on this device are kept. **Two-way** merges (union): nothing is lost, which also means
-a deletion does not travel — use Upload or Download for that.
+**Directions** (since v2021): **Upload** writes a **new dated folder holding only this device's
+data** — nothing from Drive is read into the device or carried into the folder (an unchanged list
+file is copied server-side instead of uploaded again). **Download** reads the folder you pick
+(*List folders…*, default the newest) and either **merges** it in — an outer join: the folder's
+lists and points are added, nothing on this device is deleted — or **replaces** this device's point
+lists with the folder's (lists not in the folder are removed; asks first). **Two-way** merges both
+ways (union), as before.
 Backups written by earlier versions (lists inside the JSON, or in Drive's hidden app-data area)
 are still read; the next push rewrites them in the new layout. Update every device before
 syncing between them: an older version reads the new files' lists as empty until it updates

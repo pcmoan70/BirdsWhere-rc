@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2020";
+var VERSION = "v2021";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Drive sync: Upload now overwrites Drive\u2019s point lists with this device\u2019s (points you deleted stay deleted, no long \u201cDownloading\u201d step); Download replaces this device\u2019s lists with Drive\u2019s. Lists only on the other side are kept.",
+  "\u2022 Drive sync: Upload makes a new folder with only this device\u2019s data. Download lets you pick the folder and choose Merge (adds, deletes nothing here) or Replace (this device\u2019s point lists become the folder\u2019s).",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

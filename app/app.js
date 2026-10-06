@@ -6112,12 +6112,18 @@
     Object.keys(c).forEach(function (k) { if (k !== "points" && k !== "name" && c[k] != null) o[k] = c[k]; });
     return o;
   }
-  function mergePointSets(localSets, incSets, interactive, incomingWins, replace) {
+  function mergePointSets(localSets, incSets, interactive, incomingWins, replace, dropLocal) {
     var out = (Array.isArray(localSets) ? localSets : []).map(withMeta);
+    // Replace (a download without merge): lists this device has that the folder does not are removed.
+    if (dropLocal && Array.isArray(incSets)) {
+      var incNames = Object.create(null); incSets.forEach(function (c) { if (c && c.name) incNames[c.name] = 1; });
+      out = out.filter(function (c) { return incNames[c.name]; });
+    }
     var byName = Object.create(null); out.forEach(function (c) { byName[c.name] = c; });
     (Array.isArray(incSets) ? incSets : []).forEach(function (inc) {
       if (!inc || !inc.name) return;
       var cur = byName[inc.name];
+      if (inc._same) return;   // identical to this device's copy — not downloaded, kept as it is
       if (!cur) { var added = withMeta(inc); delete added.file; delete added.n; delete added.psig; out.push(added); byName[inc.name] = added; return; }
       // (file / n / psig are a Drive payload's reference fields — an older build echoes them back; never a list's own)
       Object.keys(inc).forEach(function (k) { if (k !== "points" && k !== "name" && k !== "file" && k !== "n" && k !== "psig" && cur[k] == null && inc[k] != null) cur[k] = inc[k]; });
@@ -6292,7 +6298,7 @@
     // Map points: merge rather than overwrite. Loose pins from both sides are
     // unioned into the working set; named lists are merged/overwritten by name.
     var mergedLoose = mergePins(loosePointsOf(local), loosePointsOf(incoming));
-    var mergedSets = mergePointSets(local.mapPointSets, incoming.mapPointSets, opts.interactive, !!opts.incomingWins, !!opts.replaceLists);
+    var mergedSets = mergePointSets(local.mapPointSets, incoming.mapPointSets, opts.interactive, !!opts.incomingWins, !!opts.replaceLists, !!opts.dropLocalLists);
     // Plotted detections (dots/stars) and the starred-species list: union both
     // sides so syncing merges pins instead of one device overwriting the other.
     var localDetN = detRowCount(local.mapDetections);
@@ -21254,6 +21260,12 @@
           "<h3>" + escapeHtml(t("sync.title")) + "</h3>" +
           '<div class="so-sec">' + escapeHtml(t("sync.direction")) + "</div>" +
           dirRow("two", "sync.dirTwo") + dirRow("upload", "sync.dirUp") + dirRow("download", "sync.dirDown") +
+          '<div class="so-down"' + (dir === "download" ? "" : ' hidden') + ">" +
+            '<label class="so-folder-row">' + escapeHtml(t("sync.folder")) + ' <select class="so-folder"><option value="">' + escapeHtml(t("sync.folderNewest")) + "</option></select></label> " +
+            '<button type="button" class="btn btn-light so-folders">' + escapeHtml(t("sync.folderLoad")) + "</button>" +
+            '<label class="so-dir"><input type="radio" name="so-mode" value="merge"' + (saved.merge === false ? "" : " checked") + "> " + escapeHtml(t("sync.modeMerge")) + "</label>" +
+            '<label class="so-dir"><input type="radio" name="so-mode" value="replace"' + (saved.merge === false ? " checked" : "") + "> " + escapeHtml(t("sync.modeReplace")) + "</label>" +
+          "</div>" +
           '<p class="cu-hint">' + escapeHtml(t("sync.dirListsHint")) + "</p>" +
           '<div class="so-sec">' + escapeHtml(t("sync.include")) + "</div>" +
           catRow("settings", "sync.catSettings") + catRow("lists", "sync.catLists") + catRow("trips", "sync.catTrips") + catRow("checklists", "sync.catChecklists") + catRow("fetched", "sync.catFetched") +
@@ -21269,14 +21281,37 @@
         ov.addEventListener("click", function (e) { if (e.target === ov) close(); });
         ov.querySelector(".so-close").addEventListener("click", close);
         ov.querySelector(".so-cancel").addEventListener("click", close);
+        var downBox = ov.querySelector(".so-down"), folderSel = ov.querySelector(".so-folder");
+        Array.prototype.forEach.call(ov.querySelectorAll('input[name="so-dir"]'), function (r) {
+          r.addEventListener("change", function () { downBox.hidden = this.value !== "download"; });
+        });
+        ov.querySelector(".so-folders").addEventListener("click", function () {
+          var btn = this; btn.disabled = true; btn.textContent = t("gdrive.syncing");
+          window.GDriveSync.listBackups().then(function (list) {
+            btn.disabled = false; btn.textContent = t("sync.folderLoad");
+            folderSel.innerHTML = '<option value="">' + escapeHtml(t("sync.folderNewest")) + "</option>" + list.map(function (b) {
+              return '<option value="' + escapeHtml(b.id) + '" data-name="' + escapeHtml(b.name || "") + '">' + escapeHtml((b.name || "") + " · " + fmtBytes(b.size)) + "</option>";
+            }).join("");
+            if (!list.length) btn.textContent = t("sync.backupsNone");
+          });
+        });
         ov.querySelector(".so-go").addEventListener("click", function () {
           var chosenDir = (ov.querySelector('input[name="so-dir"]:checked') || {}).value || "two";
           var chosenCats = {};
           Array.prototype.forEach.call(ov.querySelectorAll(".so-cat-cb"), function (cb) { chosenCats[cb.getAttribute("data-cat")] = cb.checked ? 1 : 0; });
-          window.GeoState.save({ syncOpts: { direction: chosenDir, cats: chosenCats } });
-          close();
-          gdStatus.textContent = "⟳ " + t("gdrive.syncing"); gdStatus.classList.add("gd-syncing");
-          window.GDriveSync.syncNow({ direction: chosenDir, cats: chosenCats });
+          var merge = ((ov.querySelector('input[name="so-mode"]:checked') || {}).value || "merge") !== "replace";
+          var opt = folderSel.options[folderSel.selectedIndex] || {};
+          var run = function () {
+            window.GeoState.save({ syncOpts: { direction: chosenDir, cats: chosenCats, merge: merge } });
+            close();
+            gdStatus.textContent = "⟳ " + t("gdrive.syncing"); gdStatus.classList.add("gd-syncing");
+            var o = { direction: chosenDir, cats: chosenCats };
+            if (chosenDir === "download") { o.merge = merge; if (folderSel.value) { o.fileId = folderSel.value; o.folderName = opt.getAttribute ? opt.getAttribute("data-name") : ""; } }
+            window.GDriveSync.syncNow(o);
+          };
+          // Replace removes point lists from this device — ask first.
+          if (chosenDir === "download" && !merge && chosenCats.lists) modalConfirm(t("sync.replaceConfirm")).then(function (ok) { if (ok) run(); });
+          else run();
         });
         // "Earlier backups…": list the dated copies (one sign-in), then restore one.
         // A restore lets the backup's settings win and UNIONS the collections, so
