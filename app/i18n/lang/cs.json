@@ -399,6 +399,7 @@
   "filters.reloading": "Načítání… ({i}/{n})",
   "filters.noAreas": "Žádné stažené oblasti k načtení",
   "filters.newHint": "Zobrazit jen nálezy stažené po zapnutí — načti znovu pro nové.",
+  "filters.nSpecies": "{n} druhů",
   "filters.name": "Hledání názvu",
   "filters.text": "Slova v poznámkách",
   "filters.textInclude": "Zahrnout",

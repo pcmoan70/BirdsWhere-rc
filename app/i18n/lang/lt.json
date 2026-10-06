@@ -399,6 +399,7 @@
   "filters.reloading": "Perkraunama… ({i}/{n})",
   "filters.noAreas": "Nėra gautų sričių perkrovimui",
   "filters.newHint": "Rodyti tik po įjungimo gautus aptikimus — atsisiųskite iš naujo naujiems pamatyti.",
+  "filters.nSpecies": "{n} rūš.",
   "filters.name": "Vardo paieška",
   "filters.text": "Žodžiai pastabose",
   "filters.textInclude": "Įtraukti",

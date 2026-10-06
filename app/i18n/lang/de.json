@@ -399,6 +399,7 @@
   "filters.reloading": "Wird neu geladen… ({i}/{n})",
   "filters.noAreas": "Keine abgerufenen Gebiete zum Neuladen",
   "filters.newHint": "Nur Nachweise zeigen, die nach dem Einschalten geladen wurden – erneut abrufen für neue.",
+  "filters.nSpecies": "{n} Arten",
   "filters.name": "Namenssuche",
   "filters.text": "Wörter in Notizen",
   "filters.textInclude": "Einschließen",

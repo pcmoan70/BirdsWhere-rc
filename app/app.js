@@ -2843,17 +2843,6 @@
     var name = sl ? (sl.getAttribute("data-name") || sl.textContent || "") : (tr.textContent || "");
     return detFuzzy(q, detSearchText({ key: key, name: name }));
   }
-  // How many listed species match the current name search (null when no list / empty query).
-  function spNameMatchCount() {
-    var tb = document.getElementById("sp-tbody"); if (!tb) return null;
-    var q = spNameQuery.trim(); if (!q) return null;
-    var n = 0;
-    Array.prototype.forEach.call(tb.querySelectorAll("tr"), function (tr) {
-      if (tr.classList.contains("sp-detail-row")) return;
-      if (spRowMatchesName(tr, q)) n++;
-    });
-    return n;
-  }
   function filterSpRows() {
     // The same search also filters list pins on the map (listPointPasses → pointNameMatches).
     try { if (mpState && mpState.mpFilterRefresh) mpState.mpFilterRefresh(); } catch (e) {}
@@ -17086,13 +17075,13 @@
 
     // Species name search (narrows the species table + the map/legend)
     var nameActive = !!spNameQuery.trim();
-    var nameCnt = nameActive ? spNameMatchCount() : null;
-    var nameCntTxt = nameCnt == null ? "" : t("filters.nMatches", { n: nameCnt });
+    var nameCntTxt = affNameCountTxt(spNameQuery);
     var nameBody = '<input type="search" class="aff-name sp-search" placeholder="' + escapeHtml(t("ph.filter")) + '" value="' + escapeHtml(spNameQuery) + '" autocomplete="off" autocorrect="off" spellcheck="false" />' +
       '<span class="aff-name-cnt">' + escapeHtml(nameCntTxt) + "</span>" +
       '<div class="aff-name-list">' + affNameListHtml(spNameQuery) + "</div>";
-    var nameSum = !nameActive ? t("filters.any") : (spNameQuery + (nameCnt == null ? "" : "  ·  " + nameCntTxt));
-    var secName = affSection("name", t("filters.name"), nameActive, nameSum, nameBody);
+    // The name search lives in the Species section (owner, 2026-10-06), above the selected names.
+    var secName = "", ss = affSelSum();
+    secSel = affSection("sel", t("th.species"), ss.on, ss.txt, nameBody + selNames);
 
     // Words in notes — include / exclude chips over a word box (detPassesText)
     var chip = function (w, exc) {
@@ -17153,13 +17142,38 @@
   // (green +) → exclude (red −) → empty — on the same selection / exclusion sets the legend
   // and the species lists use (cycleListTri). Shown only while there is a query.
   var AFF_NAME_MAX = 60;
-  function affNameListHtml(q) {
-    q = String(q || "").trim(); if (!q) return "";
+  // The species the name search matches — the same set the list under the box shows, so its
+  // count is the number of species listed (it used to count species-TABLE rows, which with
+  // no point list open is 0; owner, 2026-10-06).
+  function affNameHits(q) {
+    q = String(q || "").trim(); if (!q) return [];
     var pool = listPool(), hits = [];
     Object.keys(pool).forEach(function (k) {
       var nm = spKeyName(k);
       if (detFuzzy(q, detSearchText({ key: k, name: nm }))) hits.push({ k: k, nm: nm });
     });
+    return hits;
+  }
+  // The Species section's summary: the name search (with its species count) and the selection.
+  function affSelSum() {
+    var pool = listPool(), nSel = Object.keys(detSelected).filter(function (k) { return pool[k]; }).length;
+    var sel = nSel > 0 || Object.keys(detExcluded).some(function (k) { return pool[k]; });
+    var q = spNameQuery.trim(), parts = [];
+    if (q) parts.push(q + "  ·  " + affNameCountTxt(q));
+    if (sel || !q) parts.push(nSel ? t("filters.nSelected", { n: nSel }) : t("det.allSpecies"));
+    return { on: sel || !!q, txt: parts.join("  ·  ") };
+  }
+  // …refreshed in place while the search box has focus (the pane is not rebuilt then)
+  function affSelSumRefresh(box) {
+    var sec = box && box.querySelector('.aff-sec[data-sec="sel"]'); if (!sec) return;
+    var ss = affSelSum(), el = sec.querySelector(".aff-sec-sum");
+    if (el) el.textContent = ss.txt;
+    sec.classList.toggle("on", ss.on);
+  }
+  function affNameCountTxt(q) { return String(q || "").trim() ? t("filters.nSpecies", { n: affNameHits(q).length }) : ""; }
+  function affNameListHtml(q) {
+    q = String(q || "").trim(); if (!q) return "";
+    var pool = listPool(), hits = affNameHits(q);
     if (!hits.length) return "";
     hits.sort(function (a, b) { return a.nm.localeCompare(b.nm); });
     var rows = hits.slice(0, AFF_NAME_MAX).map(function (h) {
@@ -17230,7 +17244,7 @@
       b.addEventListener("click", function (e) {
         e.stopPropagation();
         switch (this.getAttribute("data-sec")) {
-          case "sel": detSelected = {}; detExcluded = {}; snapshotSelBase(); saveLegendState(); detFiltersRefresh(); break;
+          case "sel": detSelected = {}; detExcluded = {}; snapshotSelBase(); spNameQuery = ""; detMapSearch = ""; saveLegendState(); detFiltersRefresh(); break;
           case "lists": detSelected = {}; detExcluded = {}; snapshotSelBase(); saveLegendState(); detFiltersRefresh(); break;
           case "mode": detStarFilter = detRareFilter = detYearFilter = detLifeFilter = detAlertFilter = 0; detFiltersRefresh(); break;
           case "new": setDetNewFilter(false); break;
@@ -17340,7 +17354,8 @@
         detMapSearch = spNameQuery.trim().toLowerCase();   // also narrow the map dots + legend (not just the species table)
         detFiltersRefresh();
         var cntEl = box.querySelector(".aff-name-cnt");
-        if (cntEl) { var c = spNameMatchCount(); cntEl.textContent = c == null ? "" : t("filters.nMatches", { n: c }); }
+        if (cntEl) cntEl.textContent = affNameCountTxt(spNameQuery);
+        affSelSumRefresh(box);
         var lst = box.querySelector(".aff-name-list"); if (lst) lst.innerHTML = affNameListHtml(spNameQuery);
       }, 500);
     });
@@ -17350,7 +17365,7 @@
       e.stopPropagation();
       cycleListTri([b.getAttribute("data-key")]);
       // …which re-renders the pane, except while the search box has focus — refresh the boxes here
-      if (nmList.isConnected) nmList.innerHTML = affNameListHtml(spNameQuery);
+      if (nmList.isConnected) { nmList.innerHTML = affNameListHtml(spNameQuery); affSelSumRefresh(box); }
     });
     function affBounds() {
       var mn = box.querySelector(".aff-cmin").value, mx = box.querySelector(".aff-cmax").value;

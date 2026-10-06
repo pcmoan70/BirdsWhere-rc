@@ -682,6 +682,7 @@
   "filters.reloading": "Laddar om… ({i}/{n})",
   "filters.noAreas": "Inga hämtade områden att ladda om",
   "filters.newHint": "Visa bara fynd som hämtats efter att detta slogs på – hämta igen för att se nya.",
+  "filters.nSpecies": "{n} arter",
   "filters.name": "Namnsökning",
   "filters.text": "Ord i kommentarer",
   "filters.textInclude": "Ta med",

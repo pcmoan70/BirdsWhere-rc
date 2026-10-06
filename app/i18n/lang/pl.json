@@ -399,6 +399,7 @@
   "filters.reloading": "Odświeżanie… ({i}/{n})",
   "filters.noAreas": "Brak pobranych obszarów do odświeżenia",
   "filters.newHint": "Pokaż tylko obserwacje pobrane po włączeniu — pobierz ponownie, aby zobaczyć nowe.",
+  "filters.nSpecies": "{n} gat.",
   "filters.name": "Wyszukiwanie nazwy",
   "filters.text": "Słowa w notatkach",
   "filters.textInclude": "Uwzględnij",

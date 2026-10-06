@@ -399,6 +399,7 @@
   "filters.reloading": "Opnieuw laden… ({i}/{n})",
   "filters.noAreas": "Geen opgehaalde gebieden om te herladen",
   "filters.newHint": "Toon alleen waarnemingen opgehaald na inschakelen — haal opnieuw op voor nieuwe.",
+  "filters.nSpecies": "{n} soorten",
   "filters.name": "Naam zoeken",
   "filters.text": "Woorden in notities",
   "filters.textInclude": "Opnemen",

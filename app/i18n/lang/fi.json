@@ -399,6 +399,7 @@
   "filters.reloading": "Ladataan uudelleen… ({i}/{n})",
   "filters.noAreas": "Ei ladattuja alueita uudelleenladattavaksi",
   "filters.newHint": "Näytä vain käyttöönoton jälkeen haetut havainnot — hae uudelleen nähdäksesi uudet.",
+  "filters.nSpecies": "{n} lajia",
   "filters.name": "Nimihaku",
   "filters.text": "Sanat muistiinpanoissa",
   "filters.textInclude": "Sisällytä",

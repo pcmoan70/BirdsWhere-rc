@@ -399,6 +399,7 @@
   "filters.reloading": "A recarregar… ({i}/{n})",
   "filters.noAreas": "Nenhuma área obtida para recarregar",
   "filters.newHint": "Mostrar só deteções obtidas depois de ativar — pesquise de novo para ver as novas.",
+  "filters.nSpecies": "{n} espécies",
   "filters.name": "Pesquisa por nome",
   "filters.text": "Palavras nas notas",
   "filters.textInclude": "Incluir",

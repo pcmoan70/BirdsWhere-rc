@@ -841,6 +841,7 @@ window.GeoI18N = (function () {
         "filters.reloading": "Reloading… ({i}/{n})",
         "filters.noAreas": "No fetched areas to reload",
         "filters.newHint": "Shows only detections fetched after turning this on — re-fetch a spot (or hit ↻ Reload) to reveal the new arrivals.",
+        "filters.nSpecies": "{n} species",
         "filters.name": "Name search",
         "filters.text": "Words in notes",
         "filters.textInclude": "Include",

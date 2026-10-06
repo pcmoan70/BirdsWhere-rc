@@ -399,6 +399,7 @@
   "filters.reloading": "Genindlæser… ({i}/{n})",
   "filters.noAreas": "Ingen hentede områder at genindlæse",
   "filters.newHint": "Vis kun fund hentet efter aktivering – hent igen for at se nye.",
+  "filters.nSpecies": "{n} arter",
   "filters.name": "Navnesøgning",
   "filters.text": "Ord i noter",
   "filters.textInclude": "Medtag",
