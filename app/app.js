@@ -18813,13 +18813,13 @@
         closeDropdowns();   // the import's progress goes to the status line this panel covers
         var el = openAnchoredMenu("detrow-menu mp-link-menu");
         el.innerHTML = '<div class="detrow-menu-hdr detrow-menu-name">' + escapeHtml(t("points.loadFile")) + "</div>" +
-          '<button type="button" id="mp-pick-file" class="detrow-menu-item">' + escapeHtml(t("points.chooseFile")) + "</button>" +
           '<div class="mp-link-row"><input type="url" id="mp-link-url" autocomplete="off" spellcheck="false" placeholder="' + escapeHtml(t("points.linkPh")) + '" />' +
           '<button type="button" id="mp-link-go" class="btn">' + escapeHtml(t("points.load").replace(/^\S+\s*/, "")) + "</button></div>" +
           '<p class="cu-hint">' + escapeHtml(t("points.linkHint")) + "</p>";
         var inp = el.querySelector("#mp-link-url");
-        function go() { var u = inp.value.trim(); if (!u) return; closeAnchoredMenu(); importPointsUrl(u); }
-        el.querySelector("#mp-pick-file").addEventListener("click", function (ev) { ev.stopPropagation(); closeAnchoredMenu(); shareFileInput.click(); });
+        // A link loads that link; no link opens the file chooser (owner, 2026-10-07: one way in,
+        // no separate "Choose file…" row).
+        function go() { var u = inp.value.trim(); closeAnchoredMenu(); if (u) importPointsUrl(u); else shareFileInput.click(); }
         el.querySelector("#mp-link-go").addEventListener("click", function (ev) { ev.stopPropagation(); go(); });
         inp.addEventListener("keydown", function (ev) { if (ev.key === "Enter") { ev.preventDefault(); go(); } });
         positionAnchoredMenu(el, Math.round(r.left), Math.round(r.bottom + 4));

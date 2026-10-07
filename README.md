@@ -688,7 +688,7 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
 - **Import / export** — points import and export as **KML, KMZ and GeoJSON**. Export everything from
   Settings → *Map points*; download a **single list or trip** from the ↓ beside its × — in the Points
   menu and in the lists window (press-and-hold or right-click the Points button) — choosing the format
-  there. *Load from file* also takes a **direct link** to a .kmz / .kml / .geojson — or a BirdsWhere
+  there. *Load from file* opens one box: paste a **direct link** and press Load, or leave it **empty and press Load to choose a file**. The link can point to a .kmz / .kml / .geojson — or a BirdsWhere
   **.share** file — that the host lets a browser fetch (a GitHub raw link, say) — the popover has the
   file picker and a link field; the bytes then take the same import path. A **.share observation
   list** loaded this way (a person's records, say) is **saved as a point list** like a KMZ: it appears
