@@ -8957,7 +8957,7 @@
       // showing — otherwise marking interesting from the map would jump the user
       // off the map onto the "Species at location" list.
       var ll = marker.getLatLng();
-      renderSpeciesList(ll.lat, ll.lng);
+      renderSpeciesList(ll.lat, ll.lng, undefined, { reuse: true });   // a refresh, not a new fetch (see renderSpeciesList)
     } else if (currentMode === "barchart" && analysisData) {
       renderActiveTab();
     } else if ((currentMode === "range" || currentMode === "richness") && cachedRender) {
@@ -26858,8 +26858,14 @@
     // Deleting the fetch does not seem to have an effect"). Only a settled, plain point result
     // is reused; one still loading is fetched as before so nothing in flight is lost.
     var prevView = currentSpView;
-    var reuse = !!(opts && opts.reuse && !hist && !(opts && opts.noFetch) && prevView && prevView.mode === "point" && prevView._final && prevView._result &&
-      Math.abs(+prevView.lat - lat) < 1e-9 && Math.abs(+prevView.lon - lon) < 1e-9);
+    var samePt = !!(prevView && prevView.mode === "point" && Math.abs(+prevView.lat - lat) < 1e-9 && Math.abs(+prevView.lon - lon) < 1e-9);
+    // A refresh of a list that was only RESTORED (opening the app shows the last view without
+    // fetching) stays a restore: it must never start fetching observations at the pin
+    // (owner, 2026-10-07: "When opening the app normally it now loads observations around
+    // whichever point the map pointer is at"). Language packs, species names, sync and
+    // star toggles all refresh the open list at start-up.
+    if (opts && opts.reuse && !hist && samePt && prevView._noFetch) { opts = Object.assign({}, opts, { noFetch: true }); noFetch = true; }
+    var reuse = !!(opts && opts.reuse && !hist && !(opts && opts.noFetch) && samePt && prevView._final && prevView._result);
     var myGen = ++spListGen;   // supersede any older in-flight render (see spListGen)
     // Count this fetch from the moment it's QUEUED (now — through the inference /
     // list build) until it settles, so the status-line dots show queued + in-progress
