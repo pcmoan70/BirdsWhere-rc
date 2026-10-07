@@ -1093,7 +1093,10 @@ window.AppPoints = (function () {
           "breedingEvidence", "breeding_evidence", "category"],
     stage: ["lifeStage", "life_stage", "lifestage", "age"],
     country: ["country", "countryCode", "country_code"],
-    dset: ["dataset", "datasetName", "dataset_name", "collectionCode"]
+    dset: ["dataset", "datasetName", "dataset_name", "collectionCode"],
+    // How far off the position may be, in metres — drawn as a transparent circle round the pin
+    // (owner, 2026-10-07: "make a point list with radius of transparent dots reflecting uncertainty")
+    radius: ["uncertainty_m", "radius_m", "radius", "coordinateUncertaintyInMeters", "uncertainty", "accuracy"]
   };
   // Our own point builders write the whole record as an HTML <table> into <description>:
   // species, date, place, country, evidence, count, notes, observer, dataset, a GBIF link.
@@ -1223,6 +1226,7 @@ window.AppPoints = (function () {
         if (v == null || String(v).trim() === "") continue;
         v = String(v).trim();
         if (field === "date") { var m = /\d{4}-\d{2}-\d{2}/.exec(v); v = m ? m[0] : v.slice(0, 10); }
+        if (field === "radius") { v = parseFloat(v); if (!(v > 0)) continue; }
         pt[field] = v;
         return;
       }
@@ -1872,6 +1876,10 @@ window.AppPoints = (function () {
     return L.divIcon({ className: "mp-tri-icon", html: svg, iconSize: [20, 18], iconAnchor: [10, 11] });
   }
   function renderMpPin(p, editable, color) {
+    if (+p.radius > 0) {   // the position's uncertainty: a transparent circle in metres, under the pin
+      var rc = p.color || color || mpColorFor(p);
+      mpLayer.addLayer(L.circle([p.lat, p.lon], { radius: +p.radius, color: rc, weight: 1, opacity: 0.55, fillColor: rc, fillOpacity: 0.12, interactive: false }));
+    }
     // A detection-saved pin (read-only, carries the species' colour) is drawn
     // like the plotted detection — species colour + ★ for interesting + a black
     // centre dot for rare — sitting on a slightly larger list-coloured disc, so

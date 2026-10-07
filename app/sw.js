@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2029";
+var VERSION = "v2030";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Fixed: opening the app no longer fetches observations around the map pin \u2014 the last list is only shown again; observations are fetched only when you ask.",
+  "\u2022 Point files with an uncertainty radius (uncertainty_m / coordinateUncertaintyInMeters) now show a transparent circle of that size around each point.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
