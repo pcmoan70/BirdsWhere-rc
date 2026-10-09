@@ -155,7 +155,8 @@
   <h2><span class="n">8</span>Output</h2>
   <ul>
     <li><b>Map point:</b> the site position; <code>uncertainty_m</code> = long axis of the 95 % ellipse (2.45 σ), plus short axis and bearing. Tags: image name and status.</li>
-    <li><b>DTM point:</b> an extra point drawn as a <b>red circle</b>, tags image name, status and <code>DTM</code>; no radius of its own.</li>
+    <li><b>DTM point:</b> an extra point drawn as an <b>unfilled red circle</b> (field <code>marker</code> = <code>ring</code>), tags image name, status and <code>DTM</code>; no radius of its own.</li>
+    <li>Uncertainty circles and ellipses are drawn faint (outline ~30 %, fill ~5 %) so the map underneath stays readable.</li>
   </ul>
   <div class="wrap"><table>
     <tr><th>Status</th><th>Colour</th></tr>
@@ -164,7 +165,7 @@
     <tr><td>nest</td><td><span class="sw" style="background:#141414"></span>black</td></tr>
     <tr><td>unverified / not checked</td><td><span class="sw" style="background:#aaaaaa"></span>grey</td></tr>
     <tr><td>known territory</td><td><span class="sw" style="background:#3153d2"></span>blue</td></tr>
-    <tr><td>DTM point (steepest terrain)</td><td><span class="sw" style="background:#dc1414"></span>red circle</td></tr>
+    <tr><td>DTM point (steepest terrain)</td><td><span class="sw" style="background:transparent;border:2.5px solid #dc1414"></span>unfilled red circle</td></tr>
   </table></div>
   <p class="note">Files: <code>map_dots_v3.kmz</code> (points), <code>map_dots_v3_ellipses.kmz</code> (points + 95 % ellipses centred on the map position), <code>map_dots_v3.csv</code>. The point lists themselves are private and not published here.</p>
 </section>
@@ -180,7 +181,7 @@
   </ul>
 </section>
 
-<footer>Method as of 2026-10-09 · <a href="../">BirdsWhere</a></footer>
+<footer>Method as of 2026-10-10 · <a href="../">BirdsWhere</a></footer>
 </main>
 </body>
 </html>

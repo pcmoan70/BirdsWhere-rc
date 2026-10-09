@@ -963,8 +963,10 @@ Right-click / long-press / tap any species name for a menu **led by the species 
 - **This observation** (bottom, when opened from a record with a location) — **Show on map**,
   **Navigate here** and **Add to route**.
 - **Uncertainty circles** — a point whose file carries `uncertainty_m` (also `radius_m`, `radius`,
-  `coordinateUncertaintyInMeters`, `accuracy`) is drawn with a transparent circle of that radius in
-  metres around it, in the list's colour.
+  `coordinateUncertaintyInMeters`, `accuracy`) is drawn with a faint, see-through circle of that
+  radius in metres around it, in the list's colour.
+- **Ring markers** — a point whose file carries `marker` = `ring` (also `symbol`) is drawn as an
+  unfilled circle in its colour instead of a filled dot (used for the map-dot lists' DTM points).
 - **Last list remembered** — whichever list you last saved a point to comes **first, marked ✓**, in
   every "save to list" picker (observation menu, Save in the detections list, copy / file points),
   and the point editor preselects it. Remembered across visits.

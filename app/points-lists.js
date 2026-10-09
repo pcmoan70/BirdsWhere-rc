@@ -613,6 +613,8 @@ window.AppPoints = (function () {
       if (p.note) props.note = p.note;
       if (p.noteHtml) props.noteHtml = true;
       if (p.color) props.color = p.color;
+      if (+p.radius > 0) props.uncertainty_m = +p.radius;
+      if (p.marker) props.marker = p.marker;
       if (p.spKey) props.spKey = p.spKey;
       if (p.spColor) props.spColor = p.spColor;
       if (p.date) props.date = p.date;
@@ -1096,7 +1098,10 @@ window.AppPoints = (function () {
     dset: ["dataset", "datasetName", "dataset_name", "collectionCode"],
     // How far off the position may be, in metres — drawn as a transparent circle round the pin
     // (owner, 2026-10-07: "make a point list with radius of transparent dots reflecting uncertainty")
-    radius: ["uncertainty_m", "radius_m", "radius", "coordinateUncertaintyInMeters", "uncertainty", "accuracy"]
+    radius: ["uncertainty_m", "radius_m", "radius", "coordinateUncertaintyInMeters", "uncertainty", "accuracy"],
+    // The pin's symbol: "ring" = an unfilled circle in the point's colour (owner, 2026-10-10: the
+    // terrain-placed DTM points of the map-dot lists are "unfilled red circles")
+    marker: ["marker", "symbol"]
   };
   // Our own point builders write the whole record as an HTML <table> into <description>:
   // species, date, place, country, evidence, count, notes, observer, dataset, a GBIF link.
@@ -1878,7 +1883,8 @@ window.AppPoints = (function () {
   function renderMpPin(p, editable, color) {
     if (+p.radius > 0) {   // the position's uncertainty: a transparent circle in metres, under the pin
       var rc = p.color || color || mpColorFor(p);
-      mpLayer.addLayer(L.circle([p.lat, p.lon], { radius: +p.radius, color: rc, weight: 1, opacity: 0.55, fillColor: rc, fillOpacity: 0.12, interactive: false }));
+      // faint, so the map stays readable under many overlapping circles (owner, 2026-10-10)
+      mpLayer.addLayer(L.circle([p.lat, p.lon], { radius: +p.radius, color: rc, weight: 1, opacity: 0.3, fillColor: rc, fillOpacity: 0.04, interactive: false }));
     }
     // A detection-saved pin (read-only, carries the species' colour) is drawn
     // like the plotted detection — species colour + ★ for interesting + a black
@@ -1904,9 +1910,12 @@ window.AppPoints = (function () {
     var fill = p.color || color || mpColorFor(p);   // explicit per-point colour wins over list/tag colour
     // Points that arrived via a shared link are drawn as TRIANGLES so they stand
     // out from your own (circular) pins; everything else stays a circle.
+    // marker "ring": an unfilled circle in the point's colour (still clickable inside: fill with opacity 0)
     var m = p.shared
       ? L.marker([p.lat, p.lon], { icon: mpTriangleIcon(fill), keyboard: false })
-      : L.circleMarker([p.lat, p.lon], { radius: 7, color: "#111", weight: 1, opacity: 0.9, fillColor: fill, fillOpacity: editable ? 0.9 : 0.65 });
+      : p.marker === "ring"
+        ? L.circleMarker([p.lat, p.lon], { radius: 7, color: fill, weight: 2.5, opacity: 0.95, fill: true, fillOpacity: 0 })
+        : L.circleMarker([p.lat, p.lon], { radius: 7, color: "#111", weight: 1, opacity: 0.9, fillColor: fill, fillOpacity: editable ? 0.9 : 0.65 });
     var rec = { m: m, p: p, editable: editable };
     mpPins.push(rec);
     // Stop propagation so a marker click doesn't open the species-list popup
