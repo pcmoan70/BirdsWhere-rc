@@ -43,12 +43,12 @@
 
 <nav class="toc">
   <a href="#overview">Overview</a><a href="#geo">1 Georeference</a><a href="#local">2 Local correction</a><a href="#dots">3 Finding dots</a>
-  <a href="#subpx">4 Sub-pixel centres</a><a href="#unc">5 Uncertainty</a><a href="#merge">6 Merging</a><a href="#dtm">7 Cliff points</a><a href="#out">8 Output</a><a href="#checks">Checks</a>
+  <a href="#subpx">4 Sub-pixel centres</a><a href="#unc">5 Uncertainty</a><a href="#merge">6 Merging</a><a href="#dtm">7 DTM points</a><a href="#out">8 Output</a><a href="#checks">Checks</a>
 </nav>
 
 <section id="overview">
   <h2>Overview</h2>
-  <p>Every map colour is one dot list (24 lists). Each list is extracted on its own; the merge then aligns the maps against each other, groups dots that show the same site, and adds cliff-placed points.</p>
+  <p>Every map colour is one dot list (24 lists). Each list is extracted on its own; the merge then aligns the maps against each other, groups dots that show the same site, and adds a DTM point at the steepest terrain within 500 m.</p>
   <div class="wrap">
   <svg class="flow" viewBox="0 0 860 210" role="img" aria-label="Pipeline: map image, georeference, local coast correction, dot detection, sub-pixel centres, per-dot position and covariance, merge, cliff points, output">
     <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2e8b74" stroke="none"/></marker></defs>
@@ -59,11 +59,11 @@
     <rect x="550" y="128" width="150" height="62"/><text class="t" x="562" y="152">Sub-pixel centres</text><text x="562" y="172">disc fit, sectors</text>
     <rect x="370" y="128" width="150" height="62"/><text class="t" x="382" y="152">Position + ellipse</text><text x="382" y="172">per dot, in metres</text>
     <rect x="190" y="128" width="150" height="62"/><text class="t" x="202" y="152">Merge</text><text x="202" y="172">align maps, group sites</text>
-    <rect x="10" y="128" width="150" height="62"/><text class="t" x="22" y="152">Output</text><text x="22" y="172">map + DTM cliff points</text>
+    <rect x="10" y="128" width="150" height="62"/><text class="t" x="22" y="152">Output</text><text x="22" y="172">map + DTM steepest points</text>
     <path class="e" d="M160,51 H188"/><path class="e" d="M340,51 H368"/><path class="e" d="M520,51 H548"/><path class="e" d="M625,82 V126"/><path class="e" d="M550,159 H522"/><path class="e" d="M370,159 H342"/><path class="e" d="M190,159 H162"/>
   </svg>
   </div>
-  <p class="note">Tools (private Artsdata repo): <code>map_dots_extract.py</code> (one list), <code>subpixel_dots.py</code>, <code>joint_fit.py</code> (the NOF2014 series), <code>inset_fit.py</code> (JRR-10-95 insets), <code>terrain_cliff_grid.py</code>, and <code>merge.py</code>.</p>
+  <p class="note">Tools (private Artsdata repo): <code>map_dots_extract.py</code> (one list), <code>subpixel_dots.py</code>, <code>joint_fit.py</code> (the NOF2014 series), <code>inset_fit.py</code> (JRR-10-95 insets), and <code>merge.py</code>.</p>
 </section>
 
 <section id="geo">
@@ -141,20 +141,21 @@
 </section>
 
 <section id="dtm">
-  <h2><span class="n">7</span>Cliff (DTM) points</h2>
+  <h2><span class="n">7</span>DTM points (steepest terrain)</h2>
   <ol>
-    <li><b>Cliff grid:</b> a DTM10 (10 m) pixel is cliff when it differs by ≥ 5 m from one of its 8 neighbours; every 100 m cell stores its share of cliff pixels.</li>
-    <li><b>Placement:</b> for each map point, every cell within 2 km is scored: Gaussian likelihood of the point × cliff share (smoothed ~300 m, baseline 0.01; sea and outside the DTM score 0). The DTM point goes to the best cell.</li>
-    <li>Points are placed best-known first; two active points of one list never land within 3 km of each other. JRR nests are not moved.</li>
+    <li>For each map point, a 1 km window of Kartverket's DTM10 (10 m terrain model) is read around it.</li>
+    <li>The slope of every 10 m pixel is computed from its 3×3 neighbourhood (Horn's method). Pixels next to sea or missing data are left out.</li>
+    <li>The DTM point is placed at the <b>steepest pixel within 500 m</b> of the map point — eagle owls nest on cliffs, never on flat land.</li>
+    <li>Map points that several maps share get one DTM point. JRR nests are already exact and get none; a map point with no land data within 500 m gets none.</li>
   </ol>
-  <p class="note">The cliff placement is a habitat prior, not a measurement — the map positions stay the primary points.</p>
+  <p class="note">The DTM point is a habitat-based guess, not a measurement — the map positions stay the primary points and carry the uncertainty ellipses.</p>
 </section>
 
 <section id="out">
   <h2><span class="n">8</span>Output</h2>
   <ul>
     <li><b>Map point:</b> the site position; <code>uncertainty_m</code> = long axis of the 95 % ellipse (2.45 σ), plus short axis and bearing. Tags: image name and status.</li>
-    <li><b>DTM point:</b> an extra point, tags image name, status and <code>DTM</code>; no radius of its own.</li>
+    <li><b>DTM point:</b> an extra point drawn as a <b>red circle</b>, tags image name, status and <code>DTM</code>; no radius of its own.</li>
   </ul>
   <div class="wrap"><table>
     <tr><th>Status</th><th>Colour</th></tr>
@@ -163,6 +164,7 @@
     <tr><td>nest</td><td><span class="sw" style="background:#141414"></span>black</td></tr>
     <tr><td>unverified / not checked</td><td><span class="sw" style="background:#aaaaaa"></span>grey</td></tr>
     <tr><td>known territory</td><td><span class="sw" style="background:#3153d2"></span>blue</td></tr>
+    <tr><td>DTM point (steepest terrain)</td><td><span class="sw" style="background:#dc1414"></span>red circle</td></tr>
   </table></div>
   <p class="note">Files: <code>map_dots_v3.kmz</code> (points), <code>map_dots_v3_ellipses.kmz</code> (points + 95 % ellipses centred on the map position), <code>map_dots_v3.csv</code>. The point lists themselves are private and not published here.</p>
 </section>
@@ -174,7 +176,7 @@
     <li>True positions vs. the maps' sites: 0.3–2.1 km; every one inside its 95 % ellipse.</li>
     <li>No map positions in a neighbouring country.</li>
     <li>1,383 sites from 4,828 dots; 971 shown by more than one map.</li>
-    <li>DTM points: median 0.4 km from their map point, all within 2 km.</li>
+    <li>DTM points: 4,821; median 0.39 km from their map point (all within 500 m); slope at the chosen pixel median 50°.</li>
   </ul>
 </section>
 
