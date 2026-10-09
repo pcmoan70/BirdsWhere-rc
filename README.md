@@ -689,8 +689,7 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   Settings → *Map points*; download a **single list or trip** from the ↓ beside its × — in the Points
   menu and in the lists window (press-and-hold or right-click the Points button) — choosing the format
   there. *Load from file* opens one box: paste a **direct link** and press Load, or leave it **empty and press Load to choose a file**. The link can point to a .kmz / .kml / .geojson — or a BirdsWhere
-  **.share** file — that the host lets a browser fetch (a GitHub raw link, say) — the popover has the
-  file picker and a link field; the bytes then take the same import path. A **.share observation
+  **.share** file — that the host lets a browser fetch (a GitHub raw link, say); the bytes then take the same import path as a picked file. A **.share observation
   list** loaded this way (a person's records, say) is **saved as a point list** like a KMZ: it appears
   in the Points menu with its tick, year tag chips and ⋯ menu, survives reloads, and while ticked its
   records are plotted exactly like fetched observations (date · observer · place groups, count, note,

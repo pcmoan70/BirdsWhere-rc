@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow" />
+<title>Map points — how they are made</title>
+<style>
+  :root { --ink: #1c2b2a; --muted: #5f706e; --bg: #f3f6f5; --panel: #ffffff; --brand: #2e8b74; --line: #d7e0de; --chip: #e7f1ee; --code: #eef2f1; color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root { --ink: #e2ebe9; --muted: #9db0ad; --bg: #121816; --panel: #1a2220; --brand: #5cc3a6; --line: #2c3936; --chip: #22302c; --code: #222c2a; color-scheme: dark; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: var(--bg); }
+  main { max-width: 880px; margin: 0 auto; padding: 28px 18px 60px; }
+  header h1 { font-size: 26px; margin: 0 0 6px; }
+  header p { margin: 0; color: var(--muted); }
+  nav.toc { margin: 18px 0 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+  nav.toc a { font-size: 13px; padding: 3px 9px; border-radius: 999px; background: var(--chip); color: var(--ink); text-decoration: none; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; margin: 16px 0; }
+  h2 { font-size: 18px; margin: 0 0 8px; }
+  h2 .n { display: inline-block; min-width: 26px; height: 26px; line-height: 26px; text-align: center; border-radius: 50%; background: var(--brand); color: #fff; font-size: 14px; margin-right: 8px; }
+  ol, ul { padding-left: 22px; margin: 6px 0; } li { margin: 4px 0; }
+  code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+  .note { color: var(--muted); font-size: 13px; }
+  .wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  .sw { display: inline-block; width: 12px; height: 12px; border-radius: 50%; vertical-align: -1px; margin-right: 6px; border: 1px solid rgba(0,0,0,.2); }
+  svg.flow { width: 100%; min-width: 640px; height: auto; display: block; }
+  svg.flow rect { fill: var(--chip); stroke: var(--brand); stroke-width: 1.2; rx: 8; }
+  svg.flow text { fill: var(--ink); font: 12px system-ui, sans-serif; }
+  svg.flow text.t { font-weight: 600; font-size: 13px; }
+  svg.flow path.e { stroke: var(--brand); stroke-width: 1.6; fill: none; marker-end: url(#arr); }
+  footer { color: var(--muted); font-size: 13px; text-align: center; margin-top: 28px; }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Map points — how they are made</h1>
+  <p>How eagle-owl territory dots on 12 printed report maps (NOF 2010/2014/2020, VFF 2014, JRR-10-95) are turned into a point list with positions and honest uncertainty ellipses. This page describes the method only: it contains no site positions.</p>
+</header>
+
+<nav class="toc">
+  <a href="#overview">Overview</a><a href="#geo">1 Georeference</a><a href="#local">2 Local correction</a><a href="#dots">3 Finding dots</a>
+  <a href="#subpx">4 Sub-pixel centres</a><a href="#unc">5 Uncertainty</a><a href="#merge">6 Merging</a><a href="#dtm">7 Cliff points</a><a href="#out">8 Output</a><a href="#checks">Checks</a>
+</nav>
+
+<section id="overview">
+  <h2>Overview</h2>
+  <p>Every map colour is one dot list (24 lists). Each list is extracted on its own; the merge then aligns the maps against each other, groups dots that show the same site, and adds cliff-placed points.</p>
+  <div class="wrap">
+  <svg class="flow" viewBox="0 0 860 210" role="img" aria-label="Pipeline: map image, georeference, local coast correction, dot detection, sub-pixel centres, per-dot position and covariance, merge, cliff points, output">
+    <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2e8b74" stroke="none"/></marker></defs>
+    <rect x="10" y="20" width="150" height="62"/><text class="t" x="22" y="44">Map image</text><text x="22" y="64">one list per colour</text>
+    <rect x="190" y="20" width="150" height="62"/><text class="t" x="202" y="44">Georeference</text><text x="202" y="64">N250 coast, projection</text>
+    <rect x="370" y="20" width="150" height="62"/><text class="t" x="382" y="44">Local correction</text><text x="382" y="64">coast windows → field</text>
+    <rect x="550" y="20" width="150" height="62"/><text class="t" x="562" y="44">Find dots</text><text x="562" y="64">lone · cluster · massed</text>
+    <rect x="550" y="128" width="150" height="62"/><text class="t" x="562" y="152">Sub-pixel centres</text><text x="562" y="172">disc fit, sectors</text>
+    <rect x="370" y="128" width="150" height="62"/><text class="t" x="382" y="152">Position + ellipse</text><text x="382" y="172">per dot, in metres</text>
+    <rect x="190" y="128" width="150" height="62"/><text class="t" x="202" y="152">Merge</text><text x="202" y="172">align maps, group sites</text>
+    <rect x="10" y="128" width="150" height="62"/><text class="t" x="22" y="152">Output</text><text x="22" y="172">map + DTM cliff points</text>
+    <path class="e" d="M160,51 H188"/><path class="e" d="M340,51 H368"/><path class="e" d="M520,51 H548"/><path class="e" d="M625,82 V126"/><path class="e" d="M550,159 H522"/><path class="e" d="M370,159 H342"/><path class="e" d="M190,159 H162"/>
+  </svg>
+  </div>
+  <p class="note">Tools (private Artsdata repo): <code>map_dots_extract.py</code> (one list), <code>subpixel_dots.py</code>, <code>joint_fit.py</code> (the NOF2014 series), <code>inset_fit.py</code> (JRR-10-95 insets), <code>terrain_cliff_grid.py</code>, and <code>merge.py</code>.</p>
+</section>
+
+<section id="geo">
+  <h2><span class="n">1</span>Georeferencing each image</h2>
+  <ol>
+    <li><b>Reference coastline:</b> Kartverket N250 municipality polygons, merged, sea removed, simplified to 300 m, in UTM33. On the nests map, Sweden and Finland are drawn as land too and are added.</li>
+    <li><b>Land in the image:</b> everything that is not white paper (plain maps); everything except sea touching the frame (basemap); the drawn coast and border lines (line map).</li>
+    <li><b>Projection:</b> UTM33, UTM32, LAEA Europe and Web Mercator are each fitted with an affine transform that best overlays N250 land on the image's land; the best overlap wins. Found: UTM33 (NOF2014, VFF2014, NOF2010), UTM32 (NOF2020 2008–2020), Web Mercator (nests map).</li>
+    <li><b>Coastline refinement:</b> the transform is re-fitted so the image's coastline edges meet N250's — affine, then second order if better. Coast under or next to dots is left out; each latitude band counts equally.</li>
+    <li><b>NOF2014 series:</b> the six NOF2014 maps share one base map. They are aligned to each other with sub-pixel accuracy, so coast hidden by dots on one map is seen on another; the georeference is fitted once and passed to each map.</li>
+    <li><b>JRR-10-95:</b> its two insets are fitted separately to the regional N250 coast and checked against the printed scale bar.</li>
+  </ol>
+</section>
+
+<section id="local">
+  <h2><span class="n">2</span>Local coastline correction</h2>
+  <ol>
+    <li>The image is cut into 120 px windows (every 60 px). In each, the fitted coast is shifted by up to ±6 px; the match cost counts every mismatch up to 3 px only, so a stray line cannot dominate.</li>
+    <li>The best shift is the misalignment left there. How sharply the cost rises around it gives the window's uncertainty per direction — a coast running north–south pins east–west well but leaves north–south loose, so the uncertainty is an <b>ellipse</b>.</li>
+    <li>The window shifts become a smooth field (Gaussian weights over ~120 px, pulled toward zero where evidence is thin, windows at the search edge left out, two robust passes against fjord outlines and borders). Each dot is moved by the field before conversion.</li>
+    <li>Scatter of the windows around the field is mostly measurement noise from the simplified drawn coast and averages down. Only scatter that neighbouring, non-overlapping windows share counts as real local misalignment.</li>
+  </ol>
+</section>
+
+<section id="dots">
+  <h2><span class="n">3</span>Finding the dots</h2>
+  <ol>
+    <li>A pixel belongs to a dot when every colour channel is within the list's tolerance of the dot colour; specks are removed and blobs labelled.</li>
+    <li>One dot's area is the median of the small blobs (set by hand where a colour is often half-covered by others).</li>
+    <li>Each blob is <b>lone</b> (one dot), a <b>cluster</b> (touching dots — one per peak of the distance transform), or <b>massed</b> (a solid patch: area ÷ 80 % of one dot's area gives the count, k-means places the centres).</li>
+  </ol>
+</section>
+
+<section id="subpx">
+  <h2><span class="n">4</span>Sub-pixel centres</h2>
+  <ol>
+    <li><b>Coverage:</b> each pixel's share of dot, 0–1, measured between the local background colour and the dot colour (anti-aliased edge pixels are fractions).</li>
+    <li><b>Shape:</b> dot radius and edge softness are measured on isolated dots.</li>
+    <li><b>Joint fit:</b> touching dots are fitted together as overlapping anti-aliased discs by least squares. Unexplained dot colour adds a dot; two discs that converge become one.</li>
+    <li><b>Sectors:</b> alternatively, each touching dot is re-centred on its free edge only — rays from its centre that reach background, not another dot — by fitting a circle of known radius.</li>
+    <li><b>Synthetic test:</b> 300 dots of known position are drawn on the map's own background, overlapping and partly covered by other colours, saved as JPEG, and run through the same detector. This gives the real centre error per kind of dot, and decides whether sectors are used for that map.</li>
+  </ol>
+</section>
+
+<section id="unc">
+  <h2><span class="n">5</span>Coordinates and uncertainty of one dot</h2>
+  <ol>
+    <li>Pixel − local field → fitted transform → latitude / longitude.</li>
+    <li>Covariance = georeference part (the field's own error + real local misalignment) + centre error from the synthetic test + for massed dots half a dot radius (their count is estimated).</li>
+    <li>Converted from pixels to metres east / north with the transform's local scale.</li>
+  </ol>
+</section>
+
+<section id="merge">
+  <h2><span class="n">6</span>Merging</h2>
+  <ol>
+    <li><b>Status per list:</b>
+      <div class="wrap"><table>
+        <tr><th>Map</th><th>Colours</th></tr>
+        <tr><td>NOF2014 (2008 … 2012, 2008–2012), VFF2014</td><td>orange = active · teal = inactive · grey = unverified</td></tr>
+        <tr><td>NOF2020 2008–2020</td><td>red = active · green = inactive</td></tr>
+        <tr><td>NOF2010 2010</td><td>teal = active · yellow = inactive · grey = not checked</td></tr>
+        <tr><td>NOF2010 2008–2010</td><td>both colours = known territory</td></tr>
+        <tr><td>NOF2020 nests, JRR-10-95</td><td>nests</td></tr>
+      </table></div>
+    </li>
+    <li><b>NOF2014 territories:</b> on one base map a territory sits on the same spot every year, whatever its status. Dots of the six NOF2014 maps are grouped (at most one per map, inside their 99 % centre ellipse, ≤ 4 km) and share their precision-weighted mean position. Centre errors average down; the shared georeference error does not.</li>
+    <li><b>Local alignment between series:</b> dots of different series that are mutual nearest neighbours inside their joint 99 % ellipse (≤ 15 km, lone and cluster dots) pull toward each other — the less certain one more, capped at 6 km. Per series this becomes a smooth field over ~75 km, pulled to zero where ties are few; five passes. The accurate JRR nests are fixed anchors.
+      <br><span class="note">A single linear correction per series (lat′ = lat + a₀ + a₁·lat + a₂·lon, likewise lon) was tried first and is switched off: it extrapolated badly at the corners and pushed points across the Swedish and Russian borders.</span></li>
+    <li><b>Sites across all maps:</b> same grouping rule, with each NOF2014 territory entering as one unit (its six maps are not independent). A site takes the precision-weighted mean; a site with a JRR nest takes the nest's position and ±150 m.</li>
+    <li><b>Calibration:</b> grouped dots scatter less than predicted (χ²/dof 0.30), so nothing is inflated. But the maps share error that agreement cannot show — likely the same underlying records — so a floor σ<sub>c</sub> is added to every multi-map site, chosen so the known true positions (the JRR nests and two owner-supplied control points) sit, on average, where a correct 95 % ellipse predicts. Current value: 433 m. The control points size the uncertainty only — they never move points.</li>
+    <li><b>Border safeguard:</b> a point inside Sweden, Finland or Russia would be moved to the likeliest spot inside Norway within its ellipse (the maps show Norwegian sites only). It currently moves none.</li>
+    <li><b>Same-year check:</b> two active dots of one year closer than 3 km are reported as suspicious.</li>
+  </ol>
+</section>
+
+<section id="dtm">
+  <h2><span class="n">7</span>Cliff (DTM) points</h2>
+  <ol>
+    <li><b>Cliff grid:</b> a DTM10 (10 m) pixel is cliff when it differs by ≥ 5 m from one of its 8 neighbours; every 100 m cell stores its share of cliff pixels.</li>
+    <li><b>Placement:</b> for each map point, every cell within 2 km is scored: Gaussian likelihood of the point × cliff share (smoothed ~300 m, baseline 0.01; sea and outside the DTM score 0). The DTM point goes to the best cell.</li>
+    <li>Points are placed best-known first; two active points of one list never land within 3 km of each other. JRR nests are not moved.</li>
+  </ol>
+  <p class="note">The cliff placement is a habitat prior, not a measurement — the map positions stay the primary points.</p>
+</section>
+
+<section id="out">
+  <h2><span class="n">8</span>Output</h2>
+  <ul>
+    <li><b>Map point:</b> the site position; <code>uncertainty_m</code> = long axis of the 95 % ellipse (2.45 σ), plus short axis and bearing. Tags: image name and status.</li>
+    <li><b>DTM point:</b> an extra point, tags image name, status and <code>DTM</code>; no radius of its own.</li>
+  </ul>
+  <div class="wrap"><table>
+    <tr><th>Status</th><th>Colour</th></tr>
+    <tr><td>active</td><td><span class="sw" style="background:#f28e38"></span>orange, a shade per image</td></tr>
+    <tr><td>inactive</td><td><span class="sw" style="background:#40e513"></span>green, a shade per image</td></tr>
+    <tr><td>nest</td><td><span class="sw" style="background:#141414"></span>black</td></tr>
+    <tr><td>unverified / not checked</td><td><span class="sw" style="background:#aaaaaa"></span>grey</td></tr>
+    <tr><td>known territory</td><td><span class="sw" style="background:#3153d2"></span>blue</td></tr>
+  </table></div>
+  <p class="note">Files: <code>map_dots_v3.kmz</code> (points), <code>map_dots_v3_ellipses.kmz</code> (points + 95 % ellipses centred on the map position), <code>map_dots_v3.csv</code>. The point lists themselves are private and not published here.</p>
+</section>
+
+<section id="checks">
+  <h2>Checks (current run)</h2>
+  <ul>
+    <li>Cross-map disagreement of shared sites: 3.2 → 2.0 km RMS after local alignment.</li>
+    <li>True positions vs. the maps' sites: 0.3–2.1 km; every one inside its 95 % ellipse.</li>
+    <li>No map positions in a neighbouring country.</li>
+    <li>1,383 sites from 4,828 dots; 971 shown by more than one map.</li>
+    <li>DTM points: median 0.4 km from their map point, all within 2 km.</li>
+  </ul>
+</section>
+
+<footer>Method as of 2026-10-09 · <a href="../">BirdsWhere</a></footer>
+</main>
+</body>
+</html>
