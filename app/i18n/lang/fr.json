@@ -145,7 +145,7 @@
   "area.removeObs": "Retirer toutes les observations de ce lieu",
   "bc.detWeek": "observé ici",
   "ctrl.downloadHold": "Télécharger cette vue (maintenir pour les cartes hors ligne enregistrées)",
-  "ctrl.clearPoints": "Effacer tous les points de la carte",
+  "ctrl.clearPoints": "Effacer de la carte les observations chargées (les listes de points enregistrées restent)",
   "offline.purgedAsk": "{n} zone(s) de carte hors ligne ont été effacées par le navigateur. Les retélécharger maintenant ?",
   "offline.redownloading": "Retéléchargement de « {name} »…",
   "offline.redone": "Zones hors ligne retéléchargées.",

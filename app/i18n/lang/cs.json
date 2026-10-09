@@ -145,7 +145,7 @@
   "area.removeObs": "Odstranit všechna pozorování z tohoto místa",
   "bc.detWeek": "pozorováno zde",
   "ctrl.downloadHold": "Stáhnout tento výřez (podržte pro uložené offline mapy)",
-  "ctrl.clearPoints": "Odstranit všechny body z mapy",
+  "ctrl.clearPoints": "Odstranit z mapy načtená pozorování (uložené seznamy bodů zůstanou)",
   "offline.purgedAsk": "Prohlížeč vymazal {n} offline oblast(í) mapy. Stáhnout je znovu?",
   "offline.redownloading": "Znovu se stahuje „{name}“…",
   "offline.redone": "Offline oblasti staženy znovu.",

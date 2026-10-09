@@ -145,7 +145,7 @@
   "area.removeObs": "Alle Beobachtungen dieses Orts entfernen",
   "bc.detWeek": "hier beobachtet",
   "ctrl.downloadHold": "Diesen Ausschnitt herunterladen (halten für gespeicherte Offline-Karten)",
-  "ctrl.clearPoints": "Alle Punkte von der Karte entfernen",
+  "ctrl.clearPoints": "Abgerufene Beobachtungen von der Karte entfernen (gespeicherte Punktlisten bleiben)",
   "offline.purgedAsk": "{n} Offline-Kartenbereich(e) wurden vom Browser gelöscht. Jetzt erneut herunterladen?",
   "offline.redownloading": "„{name}“ wird erneut heruntergeladen…",
   "offline.redone": "Offline-Bereiche erneut heruntergeladen.",

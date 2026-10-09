@@ -145,7 +145,7 @@
   "area.removeObs": "Quitar todas las observaciones de esta ubicación",
   "bc.detWeek": "observado aquí",
   "ctrl.downloadHold": "Descargar esta vista (mantén pulsado para mapas offline guardados)",
-  "ctrl.clearPoints": "Borrar todos los puntos del mapa",
+  "ctrl.clearPoints": "Borrar del mapa las observaciones descargadas (las listas de puntos guardadas se mantienen)",
   "offline.purgedAsk": "El navegador borró {n} área(s) de mapa offline. ¿Volver a descargarlas ahora?",
   "offline.redownloading": "Volviendo a descargar «{name}»…",
   "offline.redone": "Áreas offline vueltas a descargar.",

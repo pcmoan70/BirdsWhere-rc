@@ -145,7 +145,7 @@
   "area.removeObs": "Eemalda kõik selle asukoha vaatlused",
   "bc.detWeek": "vaadeldud siin",
   "ctrl.downloadHold": "Laadi see vaade alla (hoia all salvestatud offline-kaartide jaoks)",
-  "ctrl.clearPoints": "Eemalda kõik punktid kaardilt",
+  "ctrl.clearPoints": "Eemalda kaardilt laaditud vaatlused (salvestatud punktiloendid jäävad)",
   "offline.purgedAsk": "Brauser tühjendas {n} offline-kaardiala. Kas laadida need nüüd uuesti alla?",
   "offline.redownloading": "„{name}“ uuesti allalaadimine…",
   "offline.redone": "Offline-alad uuesti alla laaditud.",

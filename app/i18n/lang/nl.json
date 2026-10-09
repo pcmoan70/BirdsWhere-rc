@@ -145,7 +145,7 @@
   "area.removeObs": "Alle waarnemingen van deze locatie verwijderen",
   "bc.detWeek": "hier waargenomen",
   "ctrl.downloadHold": "Download deze weergave (houd ingedrukt voor opgeslagen offlinekaarten)",
-  "ctrl.clearPoints": "Alle punten van de kaart wissen",
+  "ctrl.clearPoints": "Opgehaalde waarnemingen van de kaart wissen (opgeslagen puntenlijsten blijven)",
   "offline.purgedAsk": "{n} offlinekaartgebied(en) zijn door de browser gewist. Nu opnieuw downloaden?",
   "offline.redownloading": "“{name}” opnieuw downloaden…",
   "offline.redone": "Offlinegebieden opnieuw gedownload.",

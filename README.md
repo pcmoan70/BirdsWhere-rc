@@ -617,10 +617,12 @@ lists** together.
 Plus **−** minimise (to a corner pill), a black **× Clear filters** (keeps the dots), and a
 red **×** that clears all detections — or, when fetched-area outlines exist, first arms
 **per-area delete** (a red × on each area removes just that area's detections; a second click
-clears everything). A **⚠** appears when the *Max points on map* draw cap is hiding dots.
+clears every fetched detection). Shown saved point lists and detection sets are **not** removed —
+they stay ticked and on the map. A **⚠** appears when the *Max points on map* draw cap is hiding dots.
 
 There's also a standalone red **×** on the **right of the map** (near the offline-download button),
-shown only while observations are plotted: one tap clears them all off the map and the × disappears.
+shown only while observations are plotted: one tap clears the fetched observations off the map
+(saved point lists stay shown).
 
 A **✓ Update** button (also on the right of the map, shown only when you have fetched areas) brings
 **every area you've already fetched up to today's latest observations** in one tap: each area is

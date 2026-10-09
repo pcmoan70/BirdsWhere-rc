@@ -145,7 +145,7 @@
   "area.removeObs": "Poista kaikki tämän paikan havainnot",
   "bc.detWeek": "havaittu tässä",
   "ctrl.downloadHold": "Lataa tämä näkymä (pidä pohjassa nähdäksesi tallennetut offline-kartat)",
-  "ctrl.clearPoints": "Poista kaikki pisteet kartalta",
+  "ctrl.clearPoints": "Poista haetut havainnot kartalta (tallennetut pistelistat jäävät)",
   "offline.purgedAsk": "Selain tyhjensi {n} offline-karta-aluetta. Ladataanko ne uudelleen nyt?",
   "offline.redownloading": "Ladataan uudelleen ”{name}”…",
   "offline.redone": "Offline-alueet ladattu uudelleen.",

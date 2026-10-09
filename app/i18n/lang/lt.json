@@ -145,7 +145,7 @@
   "area.removeObs": "Pašalinti visus šios vietos stebėjimus",
   "bc.detWeek": "stebėta čia",
   "ctrl.downloadHold": "Atsisiųsti šį rodinį (laikykite – išsaugoti žemėlapiai neprisijungus)",
-  "ctrl.clearPoints": "Pašalinti visus taškus iš žemėlapio",
+  "ctrl.clearPoints": "Pašalinti iš žemėlapio atsisiųstus stebėjimus (išsaugoti taškų sąrašai lieka)",
   "offline.purgedAsk": "Naršyklė išvalė {n} neprisijungimo žemėlapio sričių. Atsisiųsti jas iš naujo?",
   "offline.redownloading": "Iš naujo atsisiunčiama „{name}“…",
   "offline.redone": "Neprisijungimo sritys atsisiųstos iš naujo.",

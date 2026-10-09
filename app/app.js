@@ -14805,12 +14805,11 @@
     // Filters are DELIBERATELY kept (they persist until the black × / toggled off) —
     // only the transient subwindow-open flags and the minimise state reset here.
     detObsPanelOpen = false; detDaysPanelOpen = false; detModePanelOpen = false; detLegendMini = false;
-    var hadShown = Object.keys(mpState.shownColls()).length || Object.keys(mpState.shownDetSets()).length;
-    mpState.setShownColls({}); mpState.setShownDetSets({});
-    updateDetSetOverlays();     // remove detection-set overlays
-    saveShownState();
-    if (hadShown && typeof renderMapPoints === "function") renderMapPoints();   // drop shown-list pins
-    syncListDetections();       // nothing shown now → no re-injection
+    // Only FETCHED observations go (owner, 2026-10-10: "only remove fetched points, do not remove
+    // the point list points"): shown saved lists and detection sets stay ticked, their pins stay, and
+    // their rows — dropped with detPlot above — are re-injected (forced: the signature is reset).
+    _listSyncSig = "";
+    syncListDetections();
     if (typeof clearLocalRarities === "function") clearLocalRarities();   // fetch-derived rarities go with the fetch (eBird notable alerts stay)
     syncAlertDetections();      // re-inject the surviving (eBird) rarity alerts into the cleared pipeline
     // The per-point species list belonged to a fetch that's now gone — drop that context so
@@ -14823,7 +14822,7 @@
     if (marker) { try { map.removeLayer(marker); } catch (e) {} marker = null; }
     if (onListView() && typeof renderPlottedObsPage === "function") { try { renderPlottedObsPage(); } catch (e) {} updateViewToggle(); }
     updateDetLegend(); saveDetections(); saveLegendState();
-    if (typeof refreshMpPanel === "function") refreshMpPanel();   // reflect the un-ticked state
+    if (typeof refreshMpPanel === "function") refreshMpPanel();
   }
   // Re-render plotted points + legend in the current language (called on lang change).
   function refreshDetections() {

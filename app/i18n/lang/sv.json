@@ -146,7 +146,7 @@
   "bc.detWeek": "observerad här",
   "ctrl.downloadView": "Ladda ner karta",
   "ctrl.downloadHold": "Ladda ner vyn (håll in för sparade offlinekartor)",
-  "ctrl.clearPoints": "Rensa alla punkter från kartan",
+  "ctrl.clearPoints": "Rensa hämtade observationer från kartan (sparade punktlistor ligger kvar)",
   "ctrl.offline": "Offlinekartor",
   "ctrl.offlineZoom": "Max zoom för nedladdning",
   "ctrl.rarepct": "Tröskel för sällsynta arter (%)",

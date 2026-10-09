@@ -145,7 +145,7 @@
   "area.removeObs": "Fjern alle observasjoner for dette stedet",
   "bc.detWeek": "observert her",
   "ctrl.downloadHold": "Last ned dette kartutsnittet (hold for lagrede offline-kart)",
-  "ctrl.clearPoints": "Fjern alle punkter fra kartet",
+  "ctrl.clearPoints": "Fjern hentede observasjoner fra kartet (lagrede punktlister blir værende)",
   "offline.purgedAsk": "{n} offline-kartområde(r) ble slettet av nettleseren. Laste dem ned på nytt nå?",
   "offline.redownloading": "Laster ned «{name}» på nytt …",
   "offline.redone": "Offline-områder lastet ned på nytt.",
