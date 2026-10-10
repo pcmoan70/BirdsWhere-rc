@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2039";
+var VERSION = "v2040";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 GPS tracking: the blue cross marking your live position now blinks once a second.",
+  "\u2022 No popup is taller than the screen any more: dialogs, map popups and menus scroll inside, with their buttons kept in view.",
+  "\u2022 GPS tracking: the blue cross at your live position blinks once a second.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
