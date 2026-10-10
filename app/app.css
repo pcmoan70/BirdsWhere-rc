@@ -4146,6 +4146,10 @@ path.rc-pulse-dot { animation: rc-pulse-fade 1.1s ease-in-out infinite alternate
 .live-pos { background: transparent; border: 0; }
 .live-pos svg { display: block; filter: drop-shadow(0 0 2px rgba(255,255,255,.95)); }
 .live-pos-blue { color: #1565c0; }   /* live, follows GPS */
+/* GPS tracking on: the live cross blinks once a second (owner, 2026-10-10) — on half the cycle,
+   faint (not gone) the other half, so it can still be found while it is "off" */
+.live-pos-blue svg { animation: live-pos-blink 1s steps(1, end) infinite; }
+@keyframes live-pos-blink { 0% { opacity: 1; } 50% { opacity: .15; } }
 .live-pos-red { color: #d32f2f; }    /* current location at click time */
 a.place-search-btn.is-open { background: var(--brand-soft, #e6f0ee); }
 
