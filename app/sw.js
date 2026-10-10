@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2041";
+var VERSION = "v2042";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Popups may now use the whole screen (never more), scrolling inside, and every popup has a \u00d7 in its top-right corner.",
-  "\u2022 GPS tracking: the blue cross at your live position blinks once a second.",
+  "\u2022 Point lists can hold areas: polygons in a KML/KMZ file are drawn on the map with the list (e.g. steep terrain round the map-dot sites).",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

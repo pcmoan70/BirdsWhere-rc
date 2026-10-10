@@ -599,6 +599,14 @@ window.AppPoints = (function () {
     colls.forEach(function (c) {
       parts.push("<Folder><name>" + xml(c.name) + "</name>");
       (c.points || []).forEach(placemark);
+      (c.polys || []).forEach(function (pg) {
+        if (!pg || !pg.r || pg.r.length < 3) return;
+        var ring = pg.r.map(function (v) { return Number(v[1]).toFixed(5) + "," + Number(v[0]).toFixed(5) + ",0"; });
+        if (ring[0] !== ring[ring.length - 1]) ring.push(ring[0]);
+        var ed = (pg.c ? '<Data name="color"><value>' + xml(pg.c) + "</value></Data>" : "") + (pg.f === 0 ? '<Data name="fill"><value>0</value></Data>' : "");
+        parts.push("<Placemark><name>" + xml(pg.n || "Area") + "</name>" + (ed ? "<ExtendedData>" + ed + "</ExtendedData>" : "") +
+                   "<Polygon><outerBoundaryIs><LinearRing><coordinates>" + ring.join(" ") + "</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>");
+      });
       parts.push("</Folder>");
     });
     loose.forEach(placemark);
@@ -824,7 +832,7 @@ window.AppPoints = (function () {
     await yieldToUi();                       // let that message paint before the long call
     var doc = new DOMParser().parseFromString(text, "application/xml");
     if (doc.getElementsByTagName("parsererror").length) throw new Error(t("kml.parseErr"));
-    var marks = [], fieldSet = {}, folderSet = {};
+    var marks = [], polys = [], fieldSet = {}, folderSet = {};
     var styleCol = kmlStyleColors(doc);
     var pms = doc.getElementsByTagName("Placemark");
     function txt(el, tag) { var n = el.getElementsByTagName(tag)[0]; return n ? (n.textContent || "").trim() : ""; }
@@ -834,6 +842,10 @@ window.AppPoints = (function () {
         await yieldToUi();
       }
       var pm = pms[i];
+      // An area (owner, 2026-10-10: steep-terrain polygons round the map-dot sites) is kept as
+      // the list's POLYGON — outer ring only — instead of becoming a point at its first vertex.
+      var pg = pm.getElementsByTagName("Polygon")[0];
+      if (pg) { var pr0 = kmlPolygon(pm, pg, styleCol); if (pr0) polys.push(pr0); continue; }
       // First coordinates found under this placemark (Point, else first vertex).
       var co = pm.getElementsByTagName("coordinates")[0];
       if (!co) continue;
@@ -865,7 +877,35 @@ window.AppPoints = (function () {
       }
       marks.push({ name: txt(pm, "name"), lat: lat, lon: lon, desc: txt(pm, "description"), data: data, folder: folder, color: pcol });
     }
-    return { marks: marks, fields: Object.keys(fieldSet), folders: Object.keys(folderSet) };
+    return { marks: marks, polys: polys, fields: Object.keys(fieldSet), folders: Object.keys(folderSet) };
+  }
+  // One KML <Polygon> → { r: [[lat, lon], …] outer ring (5 dp ≈ 1 m), c: colour, n: name }. The
+  // colour: a <Data name="color">, else the style's PolyStyle / LineStyle colour, else none.
+  function kmlPolygon(pm, pg, styleCol) {
+    var ob = pg.getElementsByTagName("outerBoundaryIs")[0] || pg;
+    var co = ob.getElementsByTagName("coordinates")[0]; if (!co) return null;
+    var ring = [];
+    (co.textContent || "").trim().split(/\s+/).forEach(function (tup) {
+      var a = tup.split(","), lo = parseFloat(a[0]), la = parseFloat(a[1]);
+      if (isFinite(la) && isFinite(lo)) ring.push([Math.round(la * 1e5) / 1e5, Math.round(lo * 1e5) / 1e5]);
+    });
+    if (ring.length < 3) return null;
+    var col = "", fill = "", ds = pm.getElementsByTagName("Data");
+    for (var d = 0; d < ds.length; d++) {
+      var dn = ds[d].getAttribute("name"), vv = ds[d].getElementsByTagName("value")[0], dv = vv ? (vv.textContent || "").trim() : "";
+      if (dn === "color") col = dv; else if (dn === "fill") fill = dv;
+    }
+    if (!col) {
+      var suEl = pm.getElementsByTagName("styleUrl")[0], sref = suEl ? (suEl.textContent || "").trim().replace(/^#/, "") : "";
+      var st = sref && pm.ownerDocument.getElementById ? pm.ownerDocument.querySelector('Style[id="' + sref.replace(/"/g, "") + '"]') : null;
+      var ps = st && (st.getElementsByTagName("PolyStyle")[0] || st.getElementsByTagName("LineStyle")[0]);
+      var pc = ps && ps.getElementsByTagName("color")[0];
+      if (pc) col = kmlColorToHex(pc.textContent);
+    }
+    var nm = pm.getElementsByTagName("name")[0];
+    var out = { r: ring, c: col || "", n: nm ? (nm.textContent || "").trim() : "" };
+    if (fill === "0") out.f = 0;   // outline only (e.g. a search radius)
+    return out;
   }
   // Resolve a placemark field to text given a mapping token: "name" / "desc" /
   // "folder" / "data:<key>" / "" (none).
@@ -890,7 +930,7 @@ window.AppPoints = (function () {
   async function startKmlImport(text, fileName) {
     var parsed;
     try { parsed = await parseKmlText(text); } catch (e) { mpLoading(null); setStatus(t("kml.parseErr")); return; }
-    if (!parsed.marks.length) { mpLoading(null); setStatus(t("kml.none")); return; }
+    if (!parsed.marks.length && !(parsed.polys || []).length) { mpLoading(null); setStatus(t("kml.none")); return; }
     parsed.fileName = fileName || "";
     kmlImport = parsed;
     setStatus("");
@@ -955,7 +995,7 @@ window.AppPoints = (function () {
           continue;
         }
         var parsed = await parsePointsBuf(buf);
-        if (parsed.marks.length) {
+        if (parsed.marks.length || (parsed.polys || []).length) {
           var nm = uniqueListName(listNameFromFile(f.name) || f.name, taken);
           taken.push(nm);
           items.push({ name: nm, parsed: parsed });
@@ -981,7 +1021,7 @@ window.AppPoints = (function () {
       it.parsed.fields.forEach(function (f) { fieldSet[f] = 1; });
       it.parsed.folders.forEach(function (f) { folderSet[f] = 1; });
       marks = marks.concat(it.parsed.marks);
-      batch.push({ name: it.name, marks: it.parsed.marks });
+      batch.push({ name: it.name, marks: it.parsed.marks, polys: it.parsed.polys || [] });
     });
     kmlImport = { marks: marks, fields: Object.keys(fieldSet), folders: Object.keys(folderSet), files: batch };
     setStatus(failed.length ? t("kml.someFailed", { n: failed.length }) : "");
@@ -1295,7 +1335,7 @@ window.AppPoints = (function () {
     var noteToks = noteTokens();
     var noteHtmlBox = document.getElementById("kml-note-html");
     var noteIsHtml = !!(noteHtmlBox && noteHtmlBox.checked);
-    function finish(listName, marks, show) {
+    function finish(listName, marks, show, polys) {
       var pts = (marks || p.marks).map(function (pm) {
         var tag = normTag(kmlFieldValue(pm, tagTok));
         // One field → exactly what it always was. Several → each line labelled, because
@@ -1339,6 +1379,8 @@ window.AppPoints = (function () {
       var c = mpCollections.filter(function (x) { return x.name === listName; })[0];
       if (!c) { c = { name: listName, points: [] }; mpCollections.push(c); }
       c.points = c.points.concat(pts);
+      polys = polys || (marks ? [] : (p.polys || []));
+      if (polys.length) c.polys = (c.polys || []).concat(polys);   // areas travel with the list (drawn when it is ticked)
       if (pts.length && pts.every(function (p) { return p.source === "route"; })) c.route = true;   // a loaded route is a route: numbered stops, arrows, Navigate
       internPoints([c]);   // a fresh import is the other place equal strings arrive unshared
       if (show !== false) shownColls[listName] = true;   // a batch of files is saved UNTICKED (owner, 2026-10-02): tick what you want to see
@@ -1352,7 +1394,7 @@ window.AppPoints = (function () {
     }
     if (p.files && p.files.length) {
       var total = 0;
-      p.files.forEach(function (b) { total += finish(b.name, b.marks, p.files.length === 1); });
+      p.files.forEach(function (b) { total += finish(b.name, b.marks, p.files.length === 1, b.polys || []); });
       commit();
       setStatus(p.files.length > 1 ? t("kml.importedN", { n: total, lists: p.files.length })
                                    : t("kml.imported", { n: total, name: p.files[0].name }));
@@ -2272,6 +2314,16 @@ window.AppPoints = (function () {
       var give = Math.min(want, have);
       share[c.name] = (budget === Infinity) ? Infinity : give;
       left -= give; nLeft--;
+    });
+    // A ticked list's AREAS first, under its pins: faint fill in the area's own colour (else the
+    // list's), outline only a little stronger, not clickable — the map stays readable beneath.
+    shownLists.forEach(function (c) {
+      (c.polys || []).forEach(function (pg) {
+        if (!pg || !pg.r || pg.r.length < 3) return;
+        if (bb) { var inV = false; for (var q = 0; q < pg.r.length && !inV; q++) { var v = pg.r[q]; if (v[0] >= bb[0] && v[0] <= bb[2] && v[1] >= bb[1] && v[1] <= bb[3]) inV = true; } if (!inV) return; }
+        var pc = pg.c || collColor(c);
+        mpLayer.addLayer(L.polygon(pg.r, { color: pc, weight: pg.f === 0 ? 1.5 : 1, opacity: 0.6, fillColor: pc, fillOpacity: pg.f === 0 ? 0 : 0.25, interactive: false }));
+      });
     });
     // Pass 2: draw, largest list first so the smallest end up on top.
     shownLists.slice().reverse().forEach(function (c) {

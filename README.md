@@ -969,6 +969,10 @@ Right-click / long-press / tap any species name for a menu **led by the species 
   radius in metres around it, in the list's colour.
 - **Ring markers** — a point whose file carries `marker` = `ring` (also `symbol`) is drawn as an
   unfilled circle in its colour instead of a filled dot (used for the map-dot lists' DTM points).
+- **Areas (polygons)** — a KML/KMZ placemark with a `Polygon` is kept as one of the list's **areas**
+  (outer ring) instead of becoming a point: drawn under the list's pins when the list is ticked,
+  with a faint fill in the area's `color` (ExtendedData) or style colour, else the list's; `fill` = `0`
+  draws only the outline. Areas travel with the list through Drive sync and KML export.
 - **Last list remembered** — whichever list you last saved a point to comes **first, marked ✓**, in
   every "save to list" picker (observation menu, Save in the detections list, copy / file points),
   and the point editor preselects it. Remembered across visits.

@@ -6682,7 +6682,7 @@
   async function listKmzBytes(c) {
     var xml = function (x) { return String(x == null ? "" : x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); };
     var pts = c.points || [], kml;
-    var data = "<ExtendedData>" + LIST_DATA_OPEN + JSON.stringify({ v: 1, name: c.name, points: pts }, function (k, val) { return k.charAt(0) === "_" ? undefined : val; }).replace(/]]>/g, "]]]]><![CDATA[>") + LIST_DATA_CLOSE + "</ExtendedData>";
+    var data = "<ExtendedData>" + LIST_DATA_OPEN + JSON.stringify((c.polys && c.polys.length) ? { v: 1, name: c.name, points: pts, polys: c.polys } : { v: 1, name: c.name, points: pts }, function (k, val) { return k.charAt(0) === "_" ? undefined : val; }).replace(/]]>/g, "]]]]><![CDATA[>") + LIST_DATA_CLOSE + "</ExtendedData>";
     if (pts.length > COPY_MAX_POINTS) {
       // A very large list: bare placemarks (name + position) — the full KML with descriptions
       // is hundreds of megabytes of string. The data block is complete either way.
@@ -6691,7 +6691,7 @@
       parts.push("</Folder>", "</Document>", "</kml>");
       kml = parts.join("\n");
     } else {
-      kml = mpState.buildPointsKml([{ name: c.name, points: pts }], []);
+      kml = mpState.buildPointsKml([{ name: c.name, points: pts, polys: c.polys }], []);
       var at = kml.indexOf("<Document>");
       kml = kml.slice(0, at + 10) + "\n" + data + kml.slice(at + 10);
     }
@@ -6705,6 +6705,7 @@
     var b = kml.indexOf(LIST_DATA_CLOSE, a); if (b < 0) throw new Error("list file is cut short");
     var obj = JSON.parse(kml.slice(a, b).split("]]]]><![CDATA[>").join("]]>"));
     if (!obj || !Array.isArray(obj.points)) throw new Error("list file has no points");
+    if (Array.isArray(obj.polys)) obj.points.polys = obj.polys;   // the list's areas ride along (the caller moves them onto the list)
     return obj.points;
   }
   function isListRef(e) { return !!(e && e.file && !Array.isArray(e.points)); }
@@ -6727,7 +6728,7 @@
       else while (taken[fname]) fname = base + " (" + (k++) + ").kmz";
       taken[fname] = 1;
       var stub = {};
-      Object.keys(c).sort().forEach(function (key) { if (key !== "points" && key !== "file" && key !== "n" && key !== "psig") stub[key] = c[key]; });
+      Object.keys(c).sort().forEach(function (key) { if (key !== "points" && key !== "polys" && key !== "file" && key !== "n" && key !== "psig") stub[key] = c[key]; });   // areas live in the list's .kmz, not the JSON
       stub.file = fname; stub.n = (c.points || []).length; stub.psig = psig;
       files.push({ name: fname, list: c.name, copy: (ref && ref.psig === psig) ? ref.file : null, build: function () { return listKmzBytes(c); } });
       return stub;
