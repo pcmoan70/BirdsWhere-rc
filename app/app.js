@@ -7935,7 +7935,8 @@
           '<h3 data-i18n="about.title">About the model &amp; how values are computed</h3>' +
           '<div id="about-body"></div>' +
         '</div></div>' +
-        '<div id="perf-modal" style="display:none"><div id="perf-modal-box">' +
+        '<div id="perf-modal" style="display:none"><div id="perf-modal-box" class="has-modal-x">' +
+          '<button type="button" id="perf-modal-x" class="ui-modal-x" data-i18n-title="btn.close" title="Close" aria-label="Close">\u00d7</button>' +
           '<h2 class="perf-title" data-i18n="popup.title">Species — distributions &amp; observations</h2>' +
           '<p class="perf-desc" data-i18n="popup.desc">See where birds live, migrate, and are being seen right now — live observations from eBird, GBIF, iNaturalist and national databases, plus range and timing estimates worked out on your device. Everything runs in your browser.</p>' +
           '<p class="perf-privacy" data-i18n="popup.privacy">Private by design: there is no account and no server of ours. Your searches, saved lists and settings stay on this device — nothing is sent anywhere except the direct requests to the observation sources you query.</p>' +
@@ -20219,6 +20220,8 @@
       }
       ok.addEventListener("click", function () { finish(true); });
       if (cancel) cancel.addEventListener("click", function () { finish(false); });
+      var gx = document.getElementById("perf-modal-x");   // the gate runs before the app's own wiring: × = Cancel here
+      if (gx) gx.addEventListener("click", function () { finish(false); });
     });
   }
   // Cancel on the gate: nothing was loaded or asked for; say so and offer to load after all
@@ -21446,6 +21449,11 @@
     updateBasemapOptions();
 
     document.getElementById("perf-modal-ok").addEventListener("click", hidePerfModal);
+    // × top-right (every popup has one): Cancel while it is the launch gate, else just close
+    document.getElementById("perf-modal-x").addEventListener("click", function () {
+      var c = document.getElementById("perf-modal-cancel");
+      if (c && !c.hidden) c.click(); else hidePerfModal();
+    });
     document.getElementById("perf-modal").addEventListener("click", function (e) {
       if (e.target === this) hidePerfModal();   // click outside the box
     });

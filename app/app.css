@@ -4880,12 +4880,19 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .detrow-menu-item.drm-last { font-weight: 700; }
 .detrow-menu-item.drm-last::after { content: "\2713"; margin-left: auto; padding-left: 8px; color: var(--accent, #1f8a3b); font-weight: 700; }
 
-/* ---- No popup taller than the screen (owner, 2026-10-10) ----------------------------------
-   A safety net over every popup container: capped to the VISIBLE viewport (dvh; vh as the
-   fallback for older browsers) and scrolling inside. Shared action rows stay pinned at the
-   bottom of a scrolling box, so OK / Cancel never slide out of reach. */
-.kml-modal-box { max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; }
+/* ---- Popups: up to the full screen, never taller (owner, 2026-10-10) ----------------------
+   "no popups should be taller than the screen" + "let the popup be full screen": every popup
+   container may grow to the full VISIBLE viewport (dvh; vh as the fallback for older browsers),
+   8 px clear of the top and bottom edges, and scrolls inside beyond that. Shared action rows stay
+   pinned at the bottom of a scrolling box, so OK / Cancel never slide out of reach. Every popup
+   also has a × top-right (createModal / ensureAnchClose add one where the caller built none). */
+.kml-modal, .ui-modal-overlay { padding-top: 8px; padding-bottom: 8px; }
+.kml-modal-box, .ui-modal, .ui-modal.ovl-help-box, .aff-modal, #about-box,
+#gbif-box, #natdb-box, #offline-box, #sources-box, #det-sets-box, #lists-box, #blogs-box,
+#distmap-box, #detlist-box, #feedback-modal > div, #perf-modal > div {
+  max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); overflow-y: auto; overscroll-behavior: contain; }
+.aff-modal, #detlist-box { overflow-y: hidden; }   /* these scroll an inner list themselves */
 .kml-modal-box .kml-actions, .kml-modal-box .cu-actions { position: sticky; bottom: -16px; margin-bottom: -16px; padding-bottom: 16px; background: var(--surface, #fff); }
-#feedback-modal > div, #perf-modal > div { max-height: 88vh; max-height: 88dvh; overflow-y: auto; overscroll-behavior: contain; }
-.leaflet-popup-content { max-height: 70vh; max-height: 70dvh; overflow-y: auto; overscroll-behavior: contain; }
-.obs-addmenu, .fp-dl-menu, .place-search-panel, #group-picker-panel { max-height: 80vh; max-height: 80dvh; overflow-y: auto; overscroll-behavior: contain; }
+.leaflet-popup-content { max-height: calc(100vh - 90px); max-height: calc(100dvh - 90px); overflow-y: auto; overscroll-behavior: contain; }
+.obs-addmenu, .fp-dl-menu, .place-search-panel, #group-picker-panel, .detrow-menu, .mp-listfilt-menu {
+  max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); overflow-y: auto; overscroll-behavior: contain; }
