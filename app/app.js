@@ -1390,7 +1390,14 @@
       if (posFixedMarker) { map.removeLayer(posFixedMarker); }
       posFixedMarker = L.marker(ll, { icon: livePosIcon("red"), interactive: false, keyboard: false, zIndexOffset: 1000 }).addTo(map);
       map.setView(ll, Math.max(map.getZoom() || 0, 14));
-      if (["list", "barchart", "range"].indexOf(currentMode) >= 0) onMapClick({ latlng: ll });
+      // Open the map-point popup AT THE FIX directly (owner, 2026-10-10: a quick GPS tap must give
+      // the popup for a quick fetch even when a stored point lies there). onMapClick's tap guards —
+      // a dot / saved pin within 16 px swallows the tap, an open popup only gets dismissed, the
+      // touch delay is cancelled by the setView pan — are meant for finger taps, not a GPS fix.
+      if (["list", "barchart", "range"].indexOf(currentMode) >= 0) {
+        dismissTransientUI();
+        selectMapPoint(Math.max(-90, Math.min(90, ll.lat)), wrapLon(ll.lng));
+      }
     }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000 });
   }
   function crossTap() {

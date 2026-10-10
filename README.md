@@ -1127,7 +1127,8 @@ an **eBird Record Format CSV** ready for [ebird.org/import](https://ebird.org/im
 ## Navigation & GPS
 
 - **Locate me** (crosshair, top-left): **tap** = locate once (blinks blue while finding you,
-  then the map jumps to your position); **hold** (or right-click) = continuous **GPS-follow /
+  then the map jumps to your position and opens the **map-point popup** there for a quick fetch —
+  even when a saved point or plotted dot sits at that spot); **hold** (or right-click) = continuous **GPS-follow /
   tracking** — the button **pulses blue** and the map re-centres (keeping your zoom) as you move,
   live-updating distance sorts; hold again for the **red read cursor** (a fixed centre cursor: pan
   a plotted dot, map point or eBird hotspot under it to open it); a tap in either state turns it off.
