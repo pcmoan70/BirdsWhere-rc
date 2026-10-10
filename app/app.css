@@ -2910,14 +2910,16 @@ button.dd-name:hover { text-decoration: underline; }
 .aff-tl-txt mark { background: #ffe58a; color: #222; padding: 0 1px; border-radius: 2px; }
 .aff-hint { margin-top: 4px; font-size: var(--fs-xs, 11px); color: var(--ink-muted, #777); }
 /* Sync-options dialog (which categories + direction). */
-.sync-opts-box { max-width: 360px; }
+/* Fits the screen (owner, 2026-10-10: on a phone the Download section pushed the Sync button out of
+   sight): the box scrolls inside, and Cancel / Sync stay pinned at its bottom edge. */
+.sync-opts-box { max-width: 360px; max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; }
 .sync-opts-box .so-sec { margin: 12px 0 4px; font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .04em; color: var(--ink-faint); }
 .sync-opts-box .so-dir, .sync-opts-box .so-cat { display: flex; align-items: center; gap: 8px; padding: 5px 2px; cursor: pointer; }
 .sync-opts-box .so-dir input, .sync-opts-box .so-cat input { flex: 0 0 auto; }
 .sync-opts-box .so-down { margin: 4px 0 6px 24px; padding: 6px 8px; border-left: 2px solid var(--border, #ccc); }
 .sync-opts-box .so-folder-row { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 4px; }
 .sync-opts-box .so-folder { max-width: 16em; }
-.sync-opts-box .so-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.sync-opts-box .so-actions { display: flex; justify-content: flex-end; gap: 8px; margin: 14px -18px -16px; padding: 10px 18px 16px; position: sticky; bottom: -16px; background: var(--surface, #fff); border-top: 1px solid var(--border, rgba(0,0,0,.08)); }
 /* Dated backups in Drive's app-data folder — Drive's own UI cannot list them, so
    this is the only way to reach the history. */
 .sync-opts-box .so-backups { margin-top: 10px; }
