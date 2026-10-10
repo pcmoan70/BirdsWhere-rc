@@ -298,8 +298,9 @@ window.AppPoints = (function () {
       c.points = ((rec && rec.points) || []).concat(added);
       hide(c, "_lazy", false); hide(c, "_loading", null);
       adopt(c);
-      // Renamed / moved / reordered / added to while a stub → the next save writes it.
-      if (added.length || cheapSig(c) !== c._cheap0) mpCheap[c.name] = "";
+      // Renamed / moved / reordered / added to while a stub → written now: waiting for "the next
+      // save" lost points added to a big list that took longer to load than the 4 s verify.
+      if (added.length || cheapSig(c) !== c._cheap0) { mpCheap[c.name] = ""; writeIfChanged(c, false); }
       if (shownColls[c.name]) { try { renderMapPoints(); } catch (e) {} }
       settleLoaded();
     }, function () { hide(c, "_loading", null); hide(c, "_fails", (c._fails || 0) + 1); });
@@ -334,6 +335,7 @@ window.AppPoints = (function () {
   }
   async function initMpSetStore() {
     if (!(window.AppIDB && window.AppIDB.available())) return;   // no IDB → the blob stays the store
+    var wasReady = mpIdbReady;   // a re-run over an already-read store has no in-memory-only lists
     try {
       var blobSets = window.GeoState.get("mapPointSets", null);
       if (Array.isArray(blobSets) && blobSets.length) {
@@ -362,6 +364,19 @@ window.AppPoints = (function () {
         if (meta && meta.sig) mpSetSig[full.name] = meta.sig; else needMeta.push(full);
         out.push(full);
       }
+      // A list made while the store could not be read (IndexedDB blocked at start → the app ran on
+      // an empty mirror, and saves skipped the store) exists only in memory: keep it, under a new
+      // name if a stored list already has its name, and write it once the store is ready — the
+      // reload must never quietly drop it (owner, 2026-10-10: "make sure user created lists are
+      // never deleted").
+      var fromBlob = Object.create(null); (Array.isArray(blobSets) ? blobSets : []).forEach(function (c) { if (c && c.name) fromBlob[c.name] = 1; });
+      var orphans = wasReady ? [] : (mpCollections || []).filter(function (c) { return c && c.name && !c._lazy && (c.points || []).length && !fromBlob[c.name]; });   // blob lists were just moved into the store — the same data, not orphans
+      var names = Object.create(null); out.forEach(function (c) { names[c.name] = 1; });
+      orphans.forEach(function (c) {
+        if (out.indexOf(c) >= 0) return;
+        if (names[c.name]) { var base = c.name + " (unsaved)", nm2 = base, k2 = 2; while (names[nm2]) nm2 = base + " " + (k2++); c.name = nm2; }
+        names[c.name] = 1; out.push(c);
+      });
       mpCollections = out;
       mpCollections.forEach(function (c) { if (!c._lazy) adopt(c); });
       // First start with this version (or a list written by an older one): one meta each,
@@ -374,6 +389,7 @@ window.AppPoints = (function () {
       loadListFilters();
       mpIdbReady = true;
       if (ptsKeys.length) askPersist();
+      orphans.forEach(function (c) { writeIfChanged(c, false); });   // the kept in-memory lists, now stored
       if (anyLazy()) setTimeout(hydrateRest, 1500);   // after the app is up
     } catch (e) {
       mpIdbReady = false;
@@ -455,8 +471,8 @@ window.AppPoints = (function () {
     askPersist();
     var pm = window.AppIDB.put("ptm:" + c.name, meta).catch(function () {});
     return window.AppIDB.put("pts:" + c.name, c)
-      .then(function () { if (sig) mpSetSig[c.name] = sig; return pm; },
-            function () { setStatus(t("err.storageFull")); });
+      .then(function () { if (sig) mpSetSig[c.name] = sig; return pm.then(function () { return true; }); },
+            function () { setStatus(t("err.storageFull")); return false; });   // false: this list did NOT reach the store
   }
   function persistMpSets(list, opts) {
     if (!mpIdbReady || !window.AppIDB) return Promise.resolve();
@@ -477,14 +493,18 @@ window.AppPoints = (function () {
     // before a save) must not take every saved list with it. Deleting the last list
     // still works — it just leaves its record for the next real save to retire.
     if (!Object.keys(keep).length) return Promise.all(writes);
-    writes.push(window.AppIDB.keys().then(function (ks) {
-      var dels = [];
-      ks.map(String).forEach(function (k) {
-        if ((k.indexOf("pts:") === 0 || k.indexOf("ptm:") === 0) && !keep[k.slice(4)]) dels.push(window.AppIDB.del(k).catch(function () {}));
-      });
-      return Promise.all(dels);
-    }).catch(function () {}));
-    return Promise.all(writes);
+    // Retire old records only once EVERY write has committed: a rename whose new record failed to
+    // write (storage full) must not take the old one with it.
+    return Promise.all(writes).then(function (res) {
+      if (res.some(function (r) { return r === false; })) return res;
+      return window.AppIDB.keys().then(function (ks) {
+        var dels = [];
+        ks.map(String).forEach(function (k) {
+          if ((k.indexOf("pts:") === 0 || k.indexOf("ptm:") === 0) && !keep[k.slice(4)]) dels.push(window.AppIDB.del(k).catch(function () {}));
+        });
+        return Promise.all(dels).then(function () { return res; });
+      }).catch(function () { return res; });
+    });
   }
   function loadMapPoints() {
     loadListFilters();   // also when IndexedDB never hydrated (initMpSetStore bailed)

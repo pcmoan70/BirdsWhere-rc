@@ -6268,6 +6268,9 @@
   function applyRemote(data, opts) {
     opts = opts || {};
     if (!data || data.app !== "migration_calendar") throw new Error(t("sync.notBackup"));
+    // The list store not readable yet (IndexedDB blocked): the merge would see NO local lists and
+    // the result would stand in for them — never merge then (owner, 2026-10-10: lists must never go).
+    if (window.AppIDB && window.AppIDB.available() && mpState.mpIdbReady && !mpState.mpIdbReady()) throw new Error("lists still loading");
     // A list that is only a file reference (a Drive payload opened without its .kmz files)
     // has no points to merge — and merging it would stamp its file fields onto a local list.
     if (data.state && Array.isArray(data.state.mapPointSets) && data.state.mapPointSets.some(isListRef)) {
