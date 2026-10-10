@@ -373,6 +373,7 @@ window.AppPoints = (function () {
       });
       loadListFilters();
       mpIdbReady = true;
+      if (ptsKeys.length) askPersist();
       if (anyLazy()) setTimeout(hydrateRest, 1500);   // after the app is up
     } catch (e) {
       mpIdbReady = false;
@@ -430,6 +431,18 @@ window.AppPoints = (function () {
       (function step() { var c = todo.shift(); if (!c) return; if (mpCollections.indexOf(c) >= 0) writeIfChanged(c, false); setTimeout(step, 30); })();
     }, 4000);
   }
+  // Ask the browser to keep this site's storage (owner, 2026-10-10: all lists gone on an Android
+  // phone). Without it Chrome treats IndexedDB as "best effort" and may evict it silently under
+  // storage pressure; until now only saving an offline map area asked. Chrome grants or refuses
+  // without a prompt; asked once per session, as soon as there is a saved list.
+  var persistAsked = false;
+  function askPersist() {
+    if (persistAsked) return; persistAsked = true;
+    try {
+      if (!(navigator.storage && navigator.storage.persist && navigator.storage.persisted)) return;
+      navigator.storage.persisted().then(function (y) { if (!y) return navigator.storage.persist(); }).catch(function () {});
+    } catch (e) {}
+  }
   function writeIfChanged(c, fast) {
     if (fast && !shownColls[c.name] && mpCheap[c.name] === cheapSig(c)) return null;
     var sig;
@@ -439,6 +452,7 @@ window.AppPoints = (function () {
     var meta = metaOf(c); meta.n = (c.points || []).length; meta.sig = sig || "";
     // Both requests are issued now (not one after the other), so a page closing right after
     // a save cannot leave the data written and its meta stale.
+    askPersist();
     var pm = window.AppIDB.put("ptm:" + c.name, meta).catch(function () {});
     return window.AppIDB.put("pts:" + c.name, c)
       .then(function () { if (sig) mpSetSig[c.name] = sig; return pm; },
