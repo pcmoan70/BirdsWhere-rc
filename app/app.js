@@ -18664,25 +18664,31 @@
   // ---- Search across all lists (owner, 2026-10-11): "add a fuzzy string search for all the elements
   // (for species name search make sure to go via label files). The search should show which lists the
   // searched word matches, giving user chance to select those." Then: "Do not match on list name,
-  // match only on notes and species names." A record matches when every word hits its NOTE (the
-  // "Words in notes" matcher, typo-tolerant) OR its species matches: the query is matched against the
+  // match only on notes and species names." A record matches when every word is in its NOTE
+  // (exact, case- and concatenation-insensitive — see mpSquash) OR its species matches: the query is matched against the
   // MODEL LABELS (localised, English and scientific name), never against what a file happened to call
   // the bird. Trips (detection sets) are searched the same way. Only matching records are counted.
   var mpSearchQ = "", mpSearchT = null, mpSearchRes = null, mpSearchGen = 0, mpSearchBusyOn = false;
   // A flashing ⌛ in the box from the first key until the results are painted (owner, 2026-10-11).
   function mpSearchBusy(on) { mpSearchBusyOn = !!on; var b = document.getElementById("mp-search-busy"); if (b) b.hidden = !on; }
+  // Exact, not fuzzy (owner, 2026-10-11: "non-fuzzy, but insensitive to case and concatenations"):
+  // case- and accent-folded, and blind to spaces / hyphens / punctuation — so "Slagugle-kasse" finds
+  // "slaguglekasse" and back, and a word inside a compound still counts. Every query word must appear.
+  function mpSquash(x) { return textFold(x).replace(/[^a-z0-9]+/g, ""); }
+  function mpSearchWords(q) { return textFold(q).split(/[\s,;]+/).map(function (w) { return w.replace(/[^a-z0-9]+/g, ""); }).filter(Boolean); }
+  function mpAllIn(words, hay) { for (var i = 0; i < words.length; i++) if (hay.indexOf(words[i]) < 0) return false; return true; }
   function mpSearchSpecies(q) {
-    var out = Object.create(null), n = 0;
-    if (q.replace(/\s+/g, "").length < 3) return out;
+    var out = Object.create(null), n = 0, words = mpSearchWords(q);
+    if (words.join("").length < 3) return out;
     Object.keys(labelsByKey).forEach(function (k) {
       var lbl = labelsByKey[k];
-      if (detFuzzy(q, speciesName(lbl) + " " + (lbl.common || "") + " " + (lbl.sci || ""))) { out[k] = 1; n++; }
+      if (mpAllIn(words, mpSquash(speciesName(lbl)) + "|" + mpSquash(lbl.common || "") + "|" + mpSquash(lbl.sci || ""))) { out[k] = 1; n++; }
     });
     return n > 400 ? Object.create(null) : out;   // a query that hits half the model is not a species search
   }
   // Owner, 2026-10-11: "Do not match on list name, match only on notes and species names." — a point's
   // own text that counts is its NOTE; species go through the model labels (mpSearchSpecies).
-  function mpPointText(p) { return textFold(p.note || ""); }
+  function mpPointText(p) { return mpSquash(p.note || ""); }
   function mpSearchRun(q) {
     var gen = ++mpSearchGen, res = document.getElementById("mp-search-res");
     q = String(q || "").trim();
@@ -18691,8 +18697,8 @@
     mpSearchBusy(true);
     mpState.whenAllLoaded().then(function () { return new Promise(function (r) { setTimeout(r, 30); }); }).then(function () {   // let the ⌛ paint before the work
       if (gen !== mpSearchGen) return;
-      var words = textFold(q).split(/\s+/).filter(Boolean), sp = mpSearchSpecies(q), spN = Object.keys(sp).length;
-      var hits = function (hay) { var toks = hay.split(/[^a-z0-9]+/); return words.every(function (w) { return textWordHits(w, hay, toks); }); };
+      var words = mpSearchWords(q), sp = mpSearchSpecies(q), spN = Object.keys(sp).length;
+      var hits = function (hay) { return mpAllIn(words, hay); };
       var out = [];
       mpState.mpCollections().forEach(function (c) {
         if (!c || !c.name) return;
@@ -18706,7 +18712,7 @@
           var e = st.detections[k];
           (e.rows || []).forEach(function (r) {
             total++;
-            if (sp[k] || hits(textFold(r.note || ""))) {
+            if (sp[k] || hits(mpSquash(r.note || ""))) {
               n++; got.push({ lat: +r.lat, lon: +r.lon, name: detName({ key: k, name: e.name }) || e.name || "", date: r.date || "", observer: r.observer || "", place: r.place || "", note: r.note || "", spKey: k, tags: [] });
             }
           });

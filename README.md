@@ -977,8 +977,10 @@ Right-click / long-press / tap any species name for a menu **led by the species 
   ticked list and trip off the map but remembers them — their checkboxes stay ticked, greyed out and
   locked — and **Show lists** puts exactly those back. The hidden state survives a reopen.
 - **Search all lists** — the box at the top of the Points panel searches every saved list and trip by
-  **notes** (typo-tolerant, as "Words in notes") and **species via the model's labels** — the
-  localised, English and scientific name — so "hubro", "eagle owl" and "Bubo bubo" find the same
+  **notes** and **species via the model's labels** — exact words (no typo-guessing), but case- and
+  accent-insensitive and blind to spaces / hyphens, so "Slagugle-kasse" finds "slaguglekasse" and
+  "kasse" finds it too — matched against the
+  localised, English and scientific name, so "hubro", "eagle owl" and "Bubo bubo" find the same
   points even where a file spelled the bird differently. List names, point names, tags, observers and
   places are not searched. The search starts 1 s after the last letter (a flashing ⌛ shows it is
   working); lists still loading are loaded first. The results list the lists with matches and how many
