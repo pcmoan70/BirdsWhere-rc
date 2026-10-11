@@ -886,6 +886,8 @@
   "ctrl.sightTtl": "Återanvänd nedladdningar (min)",
   "ctrl.sightTtlHint": "När appen öppnas igen återanvänds en plats redan nedladdade observationer i så här många minuter i stället för att hämtas på nytt. 0 = återanvänd för alltid (hämta bara om vald plats, radie, grupp eller källa ändras).",
   "ctrl.fetchOnOpen": "Hämta vid öppning",
+  "ctrl.restoreDet": "Visa förra sessionens observationer vid start",
+  "ctrl.restoreDetHint": "Av: appen startar utan hämtade observationer, utan urval och utan filter — bara dina visade listor. På: observationerna som hämtades senast kommer tillbaka på kartan.",
   "ctrl.fetchOnOpenHint": "När detta är på hämtas och ritas observationer automatiskt vid appstart för de sparade platser du bockar för ”ladda vid öppning” — ⟳-kolumnen i panelen Sparade platser (håll in 🔍). Återanvänder cachen ovan, så inom det fönstret laddas de direkt utan nätverk; hämtar bara på nytt när cachen är för gammal. Hoppas över när appen öppnas via en delad länk eller ?here-länk.",
   "ctrl.fetchOnOpenDays": "Antal senaste dagar att hämta",
   "sources.timedOut": "Tidsgräns nådd — delresultat behålls",

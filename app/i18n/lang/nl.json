@@ -1123,6 +1123,8 @@
   "ctrl.sightTtl": "Downloads hergebruiken (min)",
   "ctrl.sightTtlHint": "Bij het opnieuw openen worden de al gedownloade waarnemingen van een locatie zoveel minuten hergebruikt in plaats van opnieuw op te halen. 0 = onbeperkt hergebruiken (alleen opnieuw ophalen bij een nieuwe plek of gewijzigde straal/groep/bron).",
   "ctrl.fetchOnOpen": "Ophalen bij openen",
+  "ctrl.restoreDet": "Waarnemingen van de vorige sessie tonen bij openen",
+  "ctrl.restoreDetHint": "Uit: de app opent zonder opgehaalde waarnemingen, zonder selectie en zonder filters — alleen je getoonde lijsten. Aan: de laatst opgehaalde waarnemingen komen terug op de kaart.",
   "ctrl.fetchOnOpenHint": "Als dit aanstaat worden bij het openen van de app automatisch waarnemingen opgehaald en getekend voor de opgeslagen locaties die je aanvinkt met ‘laden bij openen’ — de ⟳-kolom in het paneel Opgeslagen locaties (houd 🔍 ingedrukt). Hergebruikt de cache hierboven, dus binnen dat venster laden ze direct zonder netwerk; opnieuw ophalen alleen als de cache verouderd is. Overgeslagen als de app via een gedeelde of ?here-link wordt geopend.",
   "ctrl.fetchOnOpenDays": "Laatste dagen op te halen",
   "sources.timedOut": "Time-out — gedeeltelijke resultaten behouden",

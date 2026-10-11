@@ -1123,6 +1123,8 @@
   "ctrl.sightTtl": "Użyj ponownie pobranych (min)",
   "ctrl.sightTtlHint": "Po ponownym otwarciu aplikacji już pobrane obserwacje danego miejsca są używane ponownie przez tyle minut, zamiast pobierać je na nowo. 0 = używaj bez końca (pobieraj ponownie tylko dla nowego miejsca lub zmiany promienia/grupy/źródła).",
   "ctrl.fetchOnOpen": "Pobierz przy otwarciu",
+  "ctrl.restoreDet": "Pokaż obserwacje z ostatniej sesji przy otwarciu",
+  "ctrl.restoreDetHint": "Wył.: aplikacja otwiera się bez pobranych obserwacji, bez zaznaczenia i bez filtrów — tylko z pokazanymi listami. Wł.: obserwacje pobrane ostatnio wracają na mapę.",
   "ctrl.fetchOnOpenHint": "Gdy włączone, po otwarciu aplikacji obserwacje dla zapisanych lokalizacji zaznaczonych jako „wczytaj przy otwarciu” są automatycznie pobierane i nanoszone — kolumna ⟳ w panelu Zapisane lokalizacje (przytrzymaj 🔍). Ponownie wykorzystuje powyższą pamięć podręczną, więc w tym oknie ładują się natychmiast bez sieci; ponowne pobranie następuje tylko, gdy pamięć podręczna jest nieaktualna. Pomijane, gdy aplikacja jest otwierana przez link udostępniony lub ?here.",
   "ctrl.fetchOnOpenDays": "Ostatnie dni do pobrania",
   "sources.timedOut": "Przekroczono limit czasu — zachowano częściowe wyniki",

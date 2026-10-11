@@ -1123,6 +1123,8 @@
   "ctrl.sightTtl": "Käytä latauksia uudelleen (min)",
   "ctrl.sightTtlHint": "Sovelluksen avaaminen uudelleen käyttää paikan jo ladattuja havaintoja näin monta minuuttia sen sijaan, että ne haettaisiin uudelleen. 0 = käytä loputtomasti (hae uudelleen vain uudessa paikassa tai kun säde/ryhmä/lähde muuttuu).",
   "ctrl.fetchOnOpen": "Hae avattaessa",
+  "ctrl.restoreDet": "Näytä edellisen istunnon havainnot avattaessa",
+  "ctrl.restoreDetHint": "Pois: sovellus avautuu ilman haettuja havaintoja, valintoja ja suodattimia — vain näytetyt listasi. Päällä: viimeksi haetut havainnot palaavat kartalle.",
   "ctrl.fetchOnOpenHint": "Kun tämä on päällä, sovelluksen avautuessa tallennetuille sijainneille, jotka merkitset ”lataa avattaessa”, haetaan ja piirretään havainnot automaattisesti — ⟳-sarake Tallennetut sijainnit -paneelissa (paina 🔍 pitkään). Käyttää yllä olevaa välimuistia uudelleen, joten ne latautuvat sen aikaikkunan sisällä heti ilman verkkoa; haku uusitaan vain, kun välimuisti on vanhentunut. Ohitetaan, kun sovellus avataan jaetulla tai ?here-linkillä.",
   "ctrl.fetchOnOpenDays": "Montako viime päivää haetaan",
   "sources.timedOut": "Aikakatkaisu — osittaiset tulokset säilytetty",

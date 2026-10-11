@@ -1123,6 +1123,8 @@
   "ctrl.sightTtl": "Réutiliser les téléchargements (min)",
   "ctrl.sightTtlHint": "À la réouverture de l’appli, les observations déjà téléchargées d’un lieu sont réutilisées pendant ce nombre de minutes au lieu d’être rechargées. 0 = réutiliser indéfiniment (recharger seulement pour un nouveau lieu ou si le rayon/groupe/source change).",
   "ctrl.fetchOnOpen": "Charger à l’ouverture",
+  "ctrl.restoreDet": "Afficher les observations de la dernière session à l’ouverture",
+  "ctrl.restoreDetHint": "Désactivé : l’app s’ouvre sans observations chargées, sans sélection ni filtre — seulement vos listes affichées. Activé : les observations chargées la dernière fois reviennent sur la carte.",
   "ctrl.fetchOnOpenHint": "Quand activé, à l’ouverture de l’appli les observations des lieux enregistrés que vous cochez « charger à l’ouverture » sont récupérées et tracées automatiquement — la colonne ⟳ du panneau Lieux enregistrés (appui long sur 🔍). Réutilise le cache ci-dessus : dans ce délai, elles se chargent instantanément sans réseau ; nouvel appel uniquement quand le cache a expiré. Ignoré quand l’appli est ouverte via un lien partagé ou ?here.",
   "ctrl.fetchOnOpenDays": "Derniers jours à récupérer",
   "sources.timedOut": "Délai dépassé — résultats partiels conservés",

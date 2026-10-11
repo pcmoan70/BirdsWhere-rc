@@ -7609,6 +7609,10 @@
                 '</div>' +
               '</div>' +
               '<div class="ctrl-group">' +
+                '<label class="ctrl-check"><input type="checkbox" id="restore-det-toggle"> <span data-i18n="ctrl.restoreDet">Show the last session’s observations on open</span></label>' +
+                '<p class="cu-hint" data-i18n="ctrl.restoreDetHint">Off: the app opens with no fetched observations, no selection and no filters — only your shown lists. On: the observations fetched last time come back on the map.</p>' +
+              '</div>' +
+              '<div class="ctrl-group">' +
                 '<label for="max-points" data-i18n="ctrl.maxpoints">Max points on map</label>' +
                 '<input id="max-points" type="number" min="50" max="100000" step="50" />' +
                 '<p class="cu-hint" data-i18n="ctrl.maxpointshint">Caps how many detection dots are drawn at once for speed. When more are plotted, only the newest this-many are shown on the map (the rest stay in the Detections list).</p>' +
@@ -9602,7 +9606,7 @@
     // just added ABOVE the clear-× (added earlier). Re-append the × so it sits BELOW
     // both the download and overlay-toggle icons, not between them.
     if (clearGroupEl && clearGroupEl.parentNode) clearGroupEl.parentNode.appendChild(clearGroupEl);
-    loadDetections();      // restore any "Show in map" detection points
+    loadDetections(true);  // restore any "Show in map" detection points — at START: no selection, no filters
     restoreFetchedAreas(); // ...and their fetched-area outlines (per-area red × needs them)
     loadMapPoints();       // user-added pins + saved named lists (IndexedDB, hydrated above)
     try { migrateDetSetsToLists(); } catch (e) {}   // old "trips" (detection sets) → ordinary saved lists, once
@@ -14909,6 +14913,7 @@
     currentSpView = null;
     if (marker) { try { map.removeLayer(marker); } catch (e) {} marker = null; }
     if (onListView() && typeof renderPlottedObsPage === "function") { try { renderPlottedObsPage(); } catch (e) {} updateViewToggle(); }
+    detRestoreSkipped = false;   // the red × clears the stored observations too, not only those on the map
     updateDetLegend(); saveDetections(); saveLegendState();
     if (typeof refreshMpPanel === "function") refreshMpPanel();
   }
@@ -14930,7 +14935,12 @@
     });
     return out;
   }
-  function saveDetections() { window.GeoState.save({ mapDetections: capDetections(serializeDetPlot(), DET_CAP) }); }
+  var detRestoreSkipped;   // true: the last session's observations were left in storage at start (no initialiser — the start may run first)
+  function saveDetections() {
+    var out = serializeDetPlot();
+    if (detRestoreSkipped) { if (!Object.keys(out).length) return; detRestoreSkipped = false; }   // nothing fetched yet → keep the stored ones
+    window.GeoState.save({ mapDetections: capDetections(out, DET_CAP) });
+  }
   // Like serializeDetPlot, but ONLY the dots showing on the SCREEN: passing the active
   // recency / date-range, species (★/◉/🟠/🟡) and observer filters and any legend
   // selection (collectVisibleDetections = the exact set of drawn dots) AND inside the
@@ -15075,7 +15085,7 @@
   function saveLegendStateNow() {
     window.GeoState.save({ mapLegend: { mini: detLegendMini, bflyFilter: detBflyFilter, starFilter: detStarFilter, rareFilter: detRareFilter, yearFilter: detYearFilter, lifeFilter: detLifeFilter, alertFilter: detAlertFilter, selected: Object.keys(detSelected), excluded: Object.keys(detExcluded), selBase: { sel: Object.keys(detSelBase.sel), exc: Object.keys(detSelBase.exc) }, obsFilter: detObsFilter ? Array.from(detObsFilter) : null, locFilter: detLocFilter ? Array.from(detLocFilter) : null, srcFilter: detSrcFilter ? Array.from(detSrcFilter) : null, areaExcl: detAreaExcl ? Array.from(detAreaExcl) : null, deleted: deletedSpecies, countMin: spCountMin, countMax: spCountMax, countMetric: spCountMetric, ageDays: speciesAgeFilterDays, newFilter: detNewFilter, newSince: detNewSince, todayFilter: detTodayFilter, textInc: detTextInc, textExc: detTextExc, daySel: Object.keys(detDaySel), rows: detLegendRows, sort: detLegendSort, regionMode: detRegionMode, regionPick: detRegionPick } });
   }
-  function loadDetections() {
+  function loadDetections(atStart) {
     // Self-heal a store left over-quota by an older build: cap the stored
     // detections (oldest dropped) and rewrite, so settings / points / lists can
     // be saved again and a sync isn't blocked. No-op once already within cap.
@@ -15083,7 +15093,11 @@
       var raw = JSON.parse(localStorage.getItem(window.GeoState.storageKey) || "{}");
       if (detRowCount(raw.mapDetections) > DET_CAP) writeStateCapped(raw);
     } catch (e) {}
-    var saved = window.GeoState.get("mapDetections", {}) || {};
+    // Owner, 2026-10-11: "No implicit running of load Detections unless specified in settings" — at
+    // START the last session's observations come back only with Settings → "Show the last session's
+    // observations on open". Skipped, they stay in storage untouched until a new fetch replaces them.
+    var saved = (atStart && window.GeoState.get("restoreDetOnOpen", false) !== true) ? {} : (window.GeoState.get("mapDetections", {}) || {});
+    if (atStart && window.GeoState.get("restoreDetOnOpen", false) !== true) detRestoreSkipped = true;
     Object.keys(saved).forEach(function (sk) {
       var d = saved[sk]; if (!d || !d.rows || !d.rows.length) return;
       var key = d.key || sk;   // older builds keyed by display name and had no .key
@@ -15095,6 +15109,21 @@
     foldDetPlotSubspecies();   // saved dots keep the keys they were plotted with
     // Restore the saved legend state, then render the layers honouring it.
     var ls = window.GeoState.get("mapLegend", {}) || {};
+    // Opening the app starts CLEAN (owner, 2026-10-11: "When opening the app the legend shows 0/nnnnnn
+    // and filtering is blinking … when opening no selecting and fetching should be done"): no legend
+    // selection, no filters — a filter left on last time hid every restored record. Only display
+    // preferences (minimised legend, sort order) and deleted species are kept.
+    // A reload after a sync (reloadPlottedFromStore) still restores the live state as it was.
+    if (atStart) {
+      ls = { mini: ls.mini, sort: ls.sort, deleted: ls.deleted, countMetric: ls.countMetric };   // row set, age window, every filter → defaults
+      // The filters kept outside the legend state too — the same ones the black × resets (without
+      // its map fit or species-list re-render: opening the app must not move or fetch anything).
+      window.GeoState.save({ detRecencyDays: 0, detDateRange: null, detMonths: [], probMin: 0, probMax: 100 });
+      var pmn = document.getElementById("prob-min"), pmx = document.getElementById("prob-max");
+      if (pmn) pmn.value = 0; if (pmx) pmx.value = 100;
+      var pmv = document.getElementById("prob-min-val"), pxv = document.getElementById("prob-max-val");
+      if (pmv) pmv.textContent = "0%"; if (pxv) pxv.textContent = "100%";
+    }
     detLegendMini = !!ls.mini;
     detBflyFilter = !!ls.bflyFilter;   // butterflies-only
     if (detBflyFilter) ensureButterflyGenera().then(function () { try { rebuildDetLayers(); updateDetLegend(); applyAgeFilter(); } catch (e) {} });
@@ -21187,6 +21216,11 @@
       });
     }
     wireNumSetting("sight-ttl", sightTtlMin, 0, 10080, 0, function (v) { window.GeoState.save({ sightTtlMin: v }); }, null);
+    var rdEl = document.getElementById("restore-det-toggle");
+    if (rdEl) {
+      rdEl.checked = window.GeoState.get("restoreDetOnOpen", false) === true;
+      rdEl.addEventListener("change", function () { window.GeoState.save({ restoreDetOnOpen: !!this.checked }); });
+    }
     var fooEl = document.getElementById("fetchonopen-toggle");
     var fooDaysWrap = document.getElementById("fetchonopen-days-wrap");
     function syncFooDays() { if (fooDaysWrap) fooDaysWrap.style.display = (fooEl && fooEl.checked) ? "" : "none"; }

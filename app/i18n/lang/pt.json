@@ -1123,6 +1123,8 @@
   "ctrl.sightTtl": "Reutilizar transferências (min)",
   "ctrl.sightTtlHint": "Ao reabrir a aplicação, as observações já transferidas de um local são reutilizadas durante estes minutos em vez de serem obtidas de novo. 0 = reutilizar indefinidamente (só obter de novo num local novo ou se mudar o raio/grupo/fonte).",
   "ctrl.fetchOnOpen": "Obter ao abrir",
+  "ctrl.restoreDet": "Mostrar as observações da última sessão ao abrir",
+  "ctrl.restoreDetHint": "Desligado: a app abre sem observações obtidas, sem seleção e sem filtros — só as suas listas mostradas. Ligado: as observações obtidas da última vez voltam ao mapa.",
   "ctrl.fetchOnOpenHint": "Quando ativado, ao abrir a aplicação as observações das localizações guardadas que marcar como «carregar ao abrir» são obtidas e traçadas automaticamente — a coluna ⟳ no painel Localizações guardadas (mantenha 🔍 premido). Reutiliza a cache acima, por isso dentro dessa janela carregam instantaneamente sem rede; só volta a obter quando a cache expira. Ignorado quando a aplicação é aberta através de uma ligação partilhada ou ?here.",
   "ctrl.fetchOnOpenDays": "Últimos dias a obter",
   "sources.timedOut": "Tempo esgotado — resultados parciais mantidos",

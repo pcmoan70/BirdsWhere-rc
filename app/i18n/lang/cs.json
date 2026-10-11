@@ -1123,6 +1123,8 @@
   "ctrl.sightTtl": "Znovu použít stažené (min)",
   "ctrl.sightTtlHint": "Po opětovném otevření aplikace se již stažená pozorování místa použijí znovu po tolik minut, místo opětovného stažení. 0 = používat neomezeně (znovu stáhnout jen u nového místa nebo změny poloměru/skupiny/zdroje).",
   "ctrl.fetchOnOpen": "Načíst při otevření",
+  "ctrl.restoreDet": "Při otevření zobrazit pozorování z minulé relace",
+  "ctrl.restoreDetHint": "Vypnuto: aplikace se otevře bez načtených pozorování, bez výběru a bez filtrů — jen s vašimi zobrazenými seznamy. Zapnuto: naposledy načtená pozorování se vrátí na mapu.",
   "ctrl.fetchOnOpenHint": "Když je zapnuto, při otevření aplikace se pro uložená místa označená „načíst při otevření“ automaticky stáhnou a vykreslí pozorování — sloupec ⟳ v panelu Uložená místa (podržte 🔍). Znovu využívá výše uvedenou mezipaměť, takže se v tomto okně načtou okamžitě bez sítě; znovu se stahují jen když je mezipaměť zastaralá. Přeskočeno, když se aplikace otevře přes sdílený odkaz nebo ?here.",
   "ctrl.fetchOnOpenDays": "Poslední dny ke stažení",
   "sources.timedOut": "Vypršel časový limit — částečné výsledky zachovány",

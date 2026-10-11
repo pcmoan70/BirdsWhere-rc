@@ -1123,6 +1123,8 @@
   "ctrl.sightTtl": "Riusa i download (min)",
   "ctrl.sightTtlHint": "Riaprendo l’app le osservazioni già scaricate di un luogo vengono riusate per questi minuti invece di essere riscaricate. 0 = riusa indefinitamente (ricarica solo per un nuovo luogo o se cambia raggio/gruppo/fonte).",
   "ctrl.fetchOnOpen": "Recupera all’apertura",
+  "ctrl.restoreDet": "Mostra le osservazioni dell’ultima sessione all’apertura",
+  "ctrl.restoreDetHint": "Disattivato: l’app si apre senza osservazioni scaricate, senza selezione e senza filtri — solo i tuoi elenchi mostrati. Attivato: le osservazioni scaricate l’ultima volta tornano sulla mappa.",
   "ctrl.fetchOnOpenHint": "Quando è attivo, all’apertura dell’app le osservazioni per i luoghi salvati che spunti come «carica all’apertura» vengono recuperate e tracciate automaticamente — la colonna ⟳ nel pannello Luoghi salvati (tieni premuto 🔍). Riutilizza la cache qui sopra, quindi entro quell’intervallo si caricano all’istante senza rete; il recupero avviene di nuovo solo quando la cache è scaduta. Saltato quando l’app è aperta tramite un link condiviso o ?here.",
   "ctrl.fetchOnOpenDays": "Ultimi giorni da recuperare",
   "sources.timedOut": "Timeout — risultati parziali mantenuti",

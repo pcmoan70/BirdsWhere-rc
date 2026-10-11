@@ -1123,6 +1123,8 @@
   "ctrl.sightTtl": "Downloads wiederverwenden (Min)",
   "ctrl.sightTtlHint": "Beim erneuten Öffnen der App werden die bereits geladenen Beobachtungen eines Orts so viele Minuten lang wiederverwendet, statt neu abzurufen. 0 = unbegrenzt wiederverwenden (nur bei neuem Ort oder geändertem Radius/Gruppe/Quelle neu abrufen).",
   "ctrl.fetchOnOpen": "Beim Öffnen abrufen",
+  "ctrl.restoreDet": "Beobachtungen der letzten Sitzung beim Öffnen zeigen",
+  "ctrl.restoreDetHint": "Aus: Die App öffnet ohne abgerufene Beobachtungen, ohne Auswahl und ohne Filter — nur deine angezeigten Listen. An: Die zuletzt abgerufenen Beobachtungen kommen auf die Karte zurück.",
   "ctrl.fetchOnOpenHint": "Wenn aktiviert, ruft die App beim Öffnen automatisch Beobachtungen für die gespeicherten Orte ab und plottet sie, die du mit „beim Öffnen laden“ markierst — die ⟳-Spalte im Panel „Gespeicherte Orte“ (🔍 gedrückt halten). Nutzt den obigen Cache wieder, sodass sie in diesem Zeitfenster sofort ohne Netzwerk laden; ein erneuter Abruf erfolgt nur, wenn der Cache veraltet ist. Wird übersprungen, wenn die App über einen geteilten oder ?here-Link geöffnet wird.",
   "ctrl.fetchOnOpenDays": "Letzte Tage zum Abrufen",
   "sources.timedOut": "Zeitüberschreitung — Teilergebnisse behalten",

@@ -1123,6 +1123,8 @@
   "ctrl.sightTtl": "Reutilizar descargas (min)",
   "ctrl.sightTtlHint": "Al reabrir la app se reutilizan las observaciones ya descargadas de un lugar durante estos minutos en vez de volver a descargarlas. 0 = reutilizar indefinidamente (solo recargar en un lugar nuevo o si cambia el radio/grupo/fuente).",
   "ctrl.fetchOnOpen": "Obtener al abrir",
+  "ctrl.restoreDet": "Mostrar las observaciones de la última sesión al abrir",
+  "ctrl.restoreDetHint": "Desactivado: la app se abre sin observaciones descargadas, sin selección y sin filtros; solo tus listas mostradas. Activado: las observaciones descargadas la última vez vuelven al mapa.",
   "ctrl.fetchOnOpenHint": "Cuando está activado, al abrir la app se obtienen y trazan automáticamente las observaciones de las ubicaciones guardadas que marques como «cargar al abrir» — la columna ⟳ en el panel Ubicaciones guardadas (mantén pulsado 🔍). Reutiliza la caché de arriba, así que dentro de ese intervalo cargan al instante sin red; solo se vuelven a obtener cuando la caché caduca. Se omite cuando la app se abre mediante un enlace compartido o ?here.",
   "ctrl.fetchOnOpenDays": "Últimos días a obtener",
   "sources.timedOut": "Tiempo agotado — resultados parciales conservados",

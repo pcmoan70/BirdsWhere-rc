@@ -1123,6 +1123,8 @@
   "ctrl.sightTtl": "Genbrug downloads (min)",
   "ctrl.sightTtlHint": "Når appen åbnes igen, genbruges et steds allerede downloadede observationer i så mange minutter i stedet for at hente dem igen. 0 = genbrug uendeligt (hent kun igen ved nyt sted eller ændret radius/gruppe/kilde).",
   "ctrl.fetchOnOpen": "Hent ved åbning",
+  "ctrl.restoreDet": "Vis sidste sessions observationer ved åbning",
+  "ctrl.restoreDetHint": "Fra: appen åbner uden hentede observationer, uden valg og uden filtre — kun dine viste lister. Til: observationerne, der blev hentet sidst, kommer tilbage på kortet.",
   "ctrl.fetchOnOpenHint": "Når dette er slået til, hentes og tegnes observationer automatisk ved appstart for de gemte lokationer, du markerer med “indlæs ved åbning” — ⟳-kolonnen i panelet Gemte lokationer (hold 🔍 nede). Genbruger cachen ovenfor, så inden for det vindue indlæses de øjeblikkeligt uden netværk; henter kun igen, når cachen er forældet. Springes over, når appen åbnes via et delt link eller ?here-link.",
   "ctrl.fetchOnOpenDays": "Sidste dage der hentes",
   "sources.timedOut": "Timeout — delresultater beholdt",

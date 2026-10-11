@@ -1123,6 +1123,8 @@
   "ctrl.sightTtl": "Naudoti atsisiųstus (min)",
   "ctrl.sightTtlHint": "Iš naujo atidarius programą vietos jau atsisiųsti stebėjimai naudojami dar tiek minučių, o ne atsisiunčiami iš naujo. 0 = naudoti neribotai (atsisiųsti iš naujo tik esant naujai vietai ar pakeitus spindulį/grupę/šaltinį).",
   "ctrl.fetchOnOpen": "Gauti atidarius",
+  "ctrl.restoreDet": "Atidarant rodyti paskutinės sesijos stebėjimus",
+  "ctrl.restoreDetHint": "Išjungta: programa atsidaro be atsisiųstų stebėjimų, be pasirinkimo ir be filtrų — tik su jūsų rodomais sąrašais. Įjungta: paskutinį kartą atsisiųsti stebėjimai grįžta į žemėlapį.",
   "ctrl.fetchOnOpenHint": "Kai įjungta, atidarius programą išsaugotų vietų, kurias pažymėsite „įkelti atidarius“, stebėjimai automatiškai gaunami ir pažymimi — ⟳ stulpelis skydelyje Išsaugotos vietos (palaikykite 🔍). Pakartotinai naudoja pirmiau esančią talpyklą, tad per tą laiką jie įkeliami akimirksniu be tinklo; iš naujo gaunama tik kai talpykla pasenusi. Praleidžiama, kai programa atidaroma per bendrinamą arba ?here nuorodą.",
   "ctrl.fetchOnOpenDays": "Kiek paskutinių dienų gauti",
   "sources.timedOut": "Baigėsi laikas — daliniai rezultatai išsaugoti",

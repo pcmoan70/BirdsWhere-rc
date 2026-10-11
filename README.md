@@ -620,6 +620,12 @@ red **×** that clears all detections — or, when fetched-area outlines exist, 
 clears every fetched detection). Shown saved point lists and detection sets are **not** removed —
 they stay ticked and on the map. A **⚠** appears when the *Max points on map* draw cap is hiding dots.
 
+**Opening the app starts clean**: no species selection and no filters (only display preferences —
+the minimised legend, sort order — and deleted species are kept), and the observations fetched last
+time are **not** put back unless Settings → Fetching & detections → **Show the last session's
+observations on open** is on (off by default). Shown point lists still appear; "Fetch on open" is the
+only start-up fetch.
+
 There's also a standalone red **×** on the **right of the map** (near the offline-download button),
 shown only while observations are plotted: one tap clears the fetched observations off the map
 (saved point lists stay shown).

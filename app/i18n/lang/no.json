@@ -1123,6 +1123,8 @@
   "ctrl.sightTtl": "Gjenbruk nedlastinger (min)",
   "ctrl.sightTtlHint": "Når appen åpnes igjen gjenbrukes et steds allerede nedlastede observasjoner i så mange minutter i stedet for å hentes på nytt. 0 = gjenbruk for alltid (hent bare på nytt ved nytt sted eller endret radius/gruppe/kilde).",
   "ctrl.fetchOnOpen": "Hent ved åpning",
+  "ctrl.restoreDet": "Vis forrige økts observasjoner ved åpning",
+  "ctrl.restoreDetHint": "Av: appen åpner uten hentede observasjoner, uten utvalg og uten filtre — bare de viste listene dine. På: observasjonene som ble hentet sist, kommer tilbake på kartet.",
   "ctrl.fetchOnOpenHint": "Når dette er på, hentes og tegnes observasjoner automatisk ved appstart for de lagrede stedene du huker av «last ved åpning» — ⟳-kolonnen i panelet Lagrede steder (hold inne 🔍). Gjenbruker hurtiglageret over, så innenfor det vinduet lastes de umiddelbart uten nettverk; henter bare på nytt når hurtiglageret er utdatert. Hoppes over når appen åpnes via en delt lenke eller ?here-lenke.",
   "ctrl.fetchOnOpenDays": "Antall siste dager å hente",
   "sources.timedOut": "Tidsavbrudd — delresultater beholdt",

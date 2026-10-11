@@ -1123,6 +1123,8 @@
   "ctrl.sightTtl": "Taaskasuta allalaadimisi (min)",
   "ctrl.sightTtlHint": "Rakenduse taasavamisel kasutatakse asukoha juba alla laaditud vaatlusi nii mitu minutit uuesti, selle asemel et neid uuesti laadida. 0 = kasuta lõpmatuseni (lae uuesti vaid uue koha või muudetud raadiuse/rühma/allika korral).",
   "ctrl.fetchOnOpen": "Tõmba avamisel",
+  "ctrl.restoreDet": "Näita avamisel eelmise seansi vaatlusi",
+  "ctrl.restoreDetHint": "Väljas: rakendus avaneb ilma laaditud vaatlusteta, ilma valiku ja filtriteta — ainult sinu kuvatud loenditega. Sees: viimati laaditud vaatlused tulevad kaardile tagasi.",
   "ctrl.fetchOnOpenHint": "Kui sees, tõmmatakse ja joonistatakse rakenduse avamisel automaatselt vaatlused salvestatud asukohtade kohta, mis on märgitud „laadi avamisel“ — ⟳ veerg paneelil Salvestatud asukohad (hoia 🔍 all). Kasutab ülalolevat vahemälu, nii et selle akna jooksul laaditakse need kohe ilma võrguta; uuesti tõmmatakse ainult siis, kui vahemälu on aegunud. Jäetakse vahele, kui rakendus avatakse jagatud või ?here-lingi kaudu.",
   "ctrl.fetchOnOpenDays": "Mitu viimast päeva tõmmata",
   "sources.timedOut": "Ajalõpp — osalised tulemused säilitatud",
