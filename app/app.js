@@ -18729,10 +18729,11 @@
         (nPts ? '<button type="button" class="btn mp-search-tomap">' + escapeHtml(t("points.searchToMap", { n: nPts })) + "</button>" : "") +
       R.list.map(function (r) {
         var what = t("points.searchHits", { n: r.n, total: r.total });
-        var shown = !!(r.type === "d" ? mpState.shownDetSets() : mpState.shownColls())[r.name];
+        var hs = mpHiddenStash();   // lists hidden with the panel's Hide toggle: ticked, greyed out, not changeable
+        var shown = hs ? hs[r.type].indexOf(r.name) >= 0 : !!(r.type === "d" ? mpState.shownDetSets() : mpState.shownColls())[r.name];
         // The checkbox shows / hides the COMPLETE list (as the panel's own does); the name, tapped,
         // strikes the list through = its records are left out of the transfer (owner, 2026-10-11).
-        return '<div class="mp-search-row' + (r.sel ? "" : " off") + '"><input type="checkbox" class="mp-search-cb" data-i="' + R.list.indexOf(r) + '"' + (shown ? " checked" : "") + ' title="' + escapeHtml(t("points.searchShowList")) + '">' +
+        return '<div class="mp-search-row' + (r.sel ? "" : " off") + (hs ? " mp-hidden" : "") + '"><input type="checkbox" class="mp-search-cb" data-i="' + R.list.indexOf(r) + '"' + (shown ? " checked" : "") + (hs ? " disabled" : "") + ' title="' + escapeHtml(t("points.searchShowList")) + '">' +
           '<button type="button" class="mp-search-name" data-i="' + R.list.indexOf(r) + '" title="' + escapeHtml(t("points.searchStrike")) + '">' + escapeHtml(r.name) + '</button><span class="mp-search-n">' + escapeHtml(what) + "</span></div>";
       }).join("");
     res.scrollTop = keepScroll;
@@ -18789,6 +18790,8 @@
       clearTimeout(mpSearchT); mpSearchT = setTimeout(function () { mpSearchRun(mpSearchQ); }, 1000);   // 1 s after the last key (owner, 2026-10-11)
     });
   }
+  // The lists hidden with the panel's Hide toggle: { p: [list names], d: [trip names] }, or null.
+  function mpHiddenStash() { var st = window.GeoState.get("mpHiddenStash", null); return (st && Array.isArray(st.p) && Array.isArray(st.d)) ? st : null; }
   function refreshMpPanel() {
     var panel = document.getElementById("mp-panel"); if (!panel) return;
     // Closed → nothing to draw. Every map-point redraw came through here and rebuilt the whole
@@ -18803,6 +18806,7 @@
     [".mp-coll-list", ".mp-list"].forEach(function (sel) {
       var el = panel.querySelector(sel); if (el) innerTop[sel] = el.scrollTop;
     });
+    var hidStash = mpHiddenStash();   // lists hidden with the Hide toggle → their boxes show ticked, greyed out
     var allTags = mpAllTags();
     var hasUntagged = mpState.mapPoints().some(function (p) { return !p.tags || !p.tags.length; });
     var center = mpState.mpDistOrigin() || (map && map.getCenter());   // measure from the last selected point, else map centre
@@ -18990,7 +18994,7 @@
         '" data-count="' + count + '" data-prot="' + (isProt ? "1" : "") + '" data-route="' + (isRoute ? "1" : "") +
         '" title="' + escapeHtml(t("points.more")) + '" aria-label="' + escapeHtml(t("points.more")) + '">\u22EF</button>';
       return '<div class="mp-coll-row' + (isRoute ? " is-route" : "") + '">' +
-        '<label class="mp-coll-lbl"><input type="checkbox" class="mp-coll-cb" data-type="' + type + '" data-name="' + escapeHtml(name) + '"' + (checked ? " checked" : "") + ">" +
+        '<label class="mp-coll-lbl' + (hidStash ? " mp-hidden" : "") + '"><input type="checkbox" class="mp-coll-cb" data-type="' + type + '" data-name="' + escapeHtml(name) + '"' + ((hidStash ? hidStash[type].indexOf(name) >= 0 : checked) ? " checked" : "") + (hidStash ? " disabled" : "") + ">" +
           swIcon + '<span class="mp-coll-name">' + escapeHtml(name) + ' <span class="mp-coll-n">(' + count + ")</span></span></label>" +
         filtBtn + moreBtn +
         "</div>";
@@ -19035,9 +19039,10 @@
           (mpHasUnsaved() ? " mp-save-unsaved" : "") + '">' + escapeHtml(t("points.save")) + "</button>" : "") +
         '<button type="button" id="mp-import-share" class="btn btn-light" title="' + escapeHtml(tLabel("share.importFile")) + '" data-i18n="points.loadFile">' + escapeHtml(t("points.loadFile")) + "</button>" +
         '<input type="file" id="share-file-input" accept=".kmz,.kml,.geojson,.json,.share,.mcshare,.txt" multiple style="display:none" />' +
-        // Red ×: untick every list and trip at once (owner, 2026-10-11) — shown only while something is ticked.
-        ((Object.keys(mpState.shownColls()).length || Object.keys(mpState.shownDetSets()).length)
-          ? '<button type="button" id="mp-untick-all" class="mp-untick-all" title="' + escapeHtml(t("points.untickAll")) + '" aria-label="' + escapeHtml(t("points.untickAll")) + '">' + X_MARK_SVG + "</button>" : "") +
+        // Hide / Show toggle (owner, 2026-10-11, instead of a red ×): Hide takes every ticked list and trip
+        // off the map but remembers them (their boxes stay ticked, greyed out); Show puts them back.
+        ((hidStash || Object.keys(mpState.shownColls()).length || Object.keys(mpState.shownDetSets()).length)
+          ? '<button type="button" id="mp-hide-toggle" class="btn btn-light mp-hide-toggle' + (hidStash ? " on" : "") + '">' + escapeHtml(t(hidStash ? "points.showLists" : "points.hideLists")) + "</button>" : "") +
       "</div>" +
       '<div id="mp-backup-line" class="mp-backup-line"></div>' +
       '<div class="mp-search"><div class="mp-search-box"><input type="search" id="mp-search-in" autocomplete="off" spellcheck="false" placeholder="' + escapeHtml(t("points.search")) + '" value="' + escapeHtml(mpSearchQ) + '" />' +
@@ -19055,10 +19060,19 @@
           : "") + "</div>";
     // Wire interactions
     wireMpSearch(panel);
-    var untickAll = panel.querySelector("#mp-untick-all");
-    if (untickAll) untickAll.addEventListener("click", function (e) {
+    var hideTg = panel.querySelector("#mp-hide-toggle");
+    if (hideTg) hideTg.addEventListener("click", function (e) {
       e.stopPropagation();
-      mpState.setShownColls({}); mpState.setShownDetSets({});
+      var st = mpHiddenStash();
+      if (st) {   // Show: exactly the lists that were hidden come back
+        var sc = {}, sd = {};
+        st.p.forEach(function (n) { sc[n] = true; }); st.d.forEach(function (n) { sd[n] = true; });
+        mpState.setShownColls(sc); mpState.setShownDetSets(sd);
+        window.GeoState.save({ mpHiddenStash: null });
+      } else {    // Hide: remember the ticked ones, take them off the map
+        window.GeoState.save({ mpHiddenStash: { p: Object.keys(mpState.shownColls()), d: Object.keys(mpState.shownDetSets()) } });
+        mpState.setShownColls({}); mpState.setShownDetSets({});
+      }
       saveShownState(); updateDetSetOverlays(); renderMapPoints(); refreshMpPanel(); keepMpPanelOpen();
     });
     var importShareBtn = panel.querySelector("#mp-import-share"), shareFileInput = panel.querySelector("#share-file-input");
