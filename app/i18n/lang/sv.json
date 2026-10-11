@@ -1540,7 +1540,6 @@
   "points.searchBusy": "Söker i listorna…",
   "points.searchNone": "Ingen lista matchar ”{q}”.",
   "points.searchLists": "{n} listor matchar",
-  "points.searchShowAll": "Visa alla",
   "points.searchHits": "{n} av {total}",
   "points.searchByName": "namnet matchar",
   "points.searchToMap": "Lägg de {n} träffpunkterna på kartan",

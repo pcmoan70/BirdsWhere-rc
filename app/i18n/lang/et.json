@@ -1540,7 +1540,6 @@
   "points.searchBusy": "Otsin loenditest…",
   "points.searchNone": "Ükski loend ei vasta päringule „{q}”.",
   "points.searchLists": "Vastavaid loendeid: {n}",
-  "points.searchShowAll": "Näita kõiki",
   "points.searchHits": "{n}/{total}",
   "points.searchByName": "nimi vastab",
   "points.searchToMap": "Pane {n} leitud punkti kaardile",

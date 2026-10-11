@@ -1540,7 +1540,6 @@
   "points.searchBusy": "Ieškoma sąrašuose…",
   "points.searchNone": "Joks sąrašas neatitinka „{q}“.",
   "points.searchLists": "Atitinkančių sąrašų: {n}",
-  "points.searchShowAll": "Rodyti visus",
   "points.searchHits": "{n} iš {total}",
   "points.searchByName": "atitinka pavadinimas",
   "points.searchToMap": "Dėti {n} rastų taškų į žemėlapį",

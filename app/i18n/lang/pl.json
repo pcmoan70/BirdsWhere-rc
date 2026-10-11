@@ -1540,7 +1540,6 @@
   "points.searchBusy": "Przeszukiwanie list…",
   "points.searchNone": "Żadna lista nie pasuje do „{q}”.",
   "points.searchLists": "Pasujące listy: {n}",
-  "points.searchShowAll": "Pokaż wszystkie",
   "points.searchHits": "{n} z {total}",
   "points.searchByName": "pasuje nazwa",
   "points.searchToMap": "Umieść {n} znalezionych punktów na mapie",

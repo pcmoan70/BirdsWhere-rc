@@ -1540,7 +1540,6 @@
   "points.searchBusy": "Recherche dans les listes…",
   "points.searchNone": "Aucune liste ne correspond à « {q} ».",
   "points.searchLists": "{n} listes correspondent",
-  "points.searchShowAll": "Tout afficher",
   "points.searchHits": "{n} sur {total}",
   "points.searchByName": "le nom correspond",
   "points.searchToMap": "Mettre les {n} points trouvés sur la carte",

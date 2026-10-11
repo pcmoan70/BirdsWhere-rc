@@ -1540,7 +1540,6 @@
   "points.searchBusy": "Lijsten doorzoeken…",
   "points.searchNone": "Geen lijst past bij ‘{q}’.",
   "points.searchLists": "{n} lijsten passen",
-  "points.searchShowAll": "Alle tonen",
   "points.searchHits": "{n} van {total}",
   "points.searchByName": "naam past",
   "points.searchToMap": "De {n} gevonden punten op de kaart zetten",

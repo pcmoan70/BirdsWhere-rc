@@ -1540,7 +1540,6 @@
   "points.searchBusy": "Listen werden durchsucht…",
   "points.searchNone": "Keine Liste passt zu „{q}“.",
   "points.searchLists": "{n} Listen passen",
-  "points.searchShowAll": "Alle zeigen",
   "points.searchHits": "{n} von {total}",
   "points.searchByName": "Name passt",
   "points.searchToMap": "Die {n} gefundenen Punkte auf die Karte legen",

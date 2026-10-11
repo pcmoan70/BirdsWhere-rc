@@ -286,7 +286,6 @@ window.GeoI18N = (function () {
         "points.searchBusy": "Searching the lists…",
         "points.searchNone": "No list matches “{q}”.",
         "points.searchLists": "{n} lists match",
-        "points.searchShowAll": "Show all",
         "points.searchHits": "{n} of {total}",
         "points.searchByName": "name matches",
         "points.searchToMap": "Put the {n} matched points on the map",

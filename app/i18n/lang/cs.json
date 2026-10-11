@@ -1540,7 +1540,6 @@
   "points.searchBusy": "Prohledávám seznamy…",
   "points.searchNone": "Žádný seznam neodpovídá „{q}“.",
   "points.searchLists": "Odpovídajících seznamů: {n}",
-  "points.searchShowAll": "Zobrazit vše",
   "points.searchHits": "{n} z {total}",
   "points.searchByName": "odpovídá název",
   "points.searchToMap": "Dát {n} nalezených bodů na mapu",

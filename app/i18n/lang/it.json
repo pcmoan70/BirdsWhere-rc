@@ -1540,7 +1540,6 @@
   "points.searchBusy": "Ricerca negli elenchi…",
   "points.searchNone": "Nessun elenco corrisponde a «{q}».",
   "points.searchLists": "{n} elenchi corrispondono",
-  "points.searchShowAll": "Mostra tutti",
   "points.searchHits": "{n} di {total}",
   "points.searchByName": "il nome corrisponde",
   "points.searchToMap": "Metti i {n} punti trovati sulla mappa",

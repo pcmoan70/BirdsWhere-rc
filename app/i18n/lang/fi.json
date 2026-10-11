@@ -1540,7 +1540,6 @@
   "points.searchBusy": "Haetaan listoista…",
   "points.searchNone": "Mikään lista ei vastaa hakua ”{q}”.",
   "points.searchLists": "{n} listaa vastaa",
-  "points.searchShowAll": "Näytä kaikki",
   "points.searchHits": "{n}/{total}",
   "points.searchByName": "nimi vastaa",
   "points.searchToMap": "Lisää {n} osumapistettä kartalle",
