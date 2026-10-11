@@ -2177,8 +2177,9 @@ window.AppPoints = (function () {
             mpTipHtml(o.p) + "</div>" + pointTagsHtml(o.p) + "</div>";
       }).join("");
     // Leaflet's own maxHeight gives the popup its scrollbar (.leaflet-popup-scrolled).
-    var pop = L.popup({ className: "area-tip mp-stack-pop", maxWidth: 320, maxHeight: 300, autoPan: true })
+    var pop = L.popup({ className: "area-tip mp-stack-pop", maxWidth: 320, maxHeight: 300, autoPan: false })
       .setLatLng(center).setContent(html).openOn(getMap());
+    centerPopup(pop);
     var el = pop.getElement();
     if (!el) return;
     // The card body opens the point's actions; the tag row is edited in place, so a tag
@@ -2316,6 +2317,23 @@ window.AppPoints = (function () {
   }
   // Re-draw after a pan/zoom, but only while a list is actually being culled, and only
   // once the map has been still -- the same shape the legend's redraw uses.
+  // A point list's popup opens in the MIDDLE of the screen (owner, 2026-10-11: "currently on first
+  // open the right edge disappears outside window"). Leaflet's autoPan fits the popup to its size at
+  // the moment it opens — on a first open the content (fonts, tag row) is still settling and the popup
+  // grows afterwards. So: wait until it has its final size, then pan the map so the popup's centre is
+  // the map's centre.
+  function centerPopup(pop) {
+    var m = getMap(); if (!m || !pop) return;
+    function go() {
+      var el = pop.getElement(); if (!el || !m.hasLayer(pop)) return;
+      pop.update();
+      var r = el.getBoundingClientRect(), mr = m.getContainer().getBoundingClientRect();
+      var dx = (r.left + r.width / 2) - (mr.left + mr.width / 2), dy = (r.top + r.height / 2) - (mr.top + mr.height / 2);
+      if (Math.abs(dx) > 2 || Math.abs(dy) > 2) m.panBy([dx, dy], { animate: true, duration: 0.25 });
+    }
+    requestAnimationFrame(function () { requestAnimationFrame(go); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { setTimeout(go, 0); });
+  }
   function mpWatchMoves() {
     var m = getMap(); if (!m || mpWatchMoves.on) return;
     mpWatchMoves.on = true;
@@ -2457,6 +2475,7 @@ window.AppPoints = (function () {
     updateRouteChip: updateRouteChip, navigatePoints: navigatePoints, navigateStops: navigateStops,
     // ---- pins on the map ----
     ensureMpLayer: ensureMpLayer, renderMapPoints: renderMapPoints, renderMpPin: renderMpPin,
+    centerPopup: centerPopup,
     onMpPinClick: onMpPinClick, setMpDistOrigin: setMpDistOrigin,
 
     // ---- state (app.js reads through these) ----

@@ -18240,9 +18240,10 @@
     // Re-use a single working popup; close any other detail popups first.
     if (mpEditPopup) map.closePopup(mpEditPopup);
     var html = mpEditorHtml(p, isEdit);
-    var pop = L.popup({ closeButton: true, autoClose: true, maxWidth: 280, className: "mp-popup" })
+    var pop = L.popup({ closeButton: true, autoClose: true, maxWidth: 280, className: "mp-popup", autoPan: false })
       .setLatLng([p.lat, p.lon]).setContent(html);
     mpEditPopup = pop; pop.openOn(map);
+    window.AppPoints.centerPopup(pop);   // in the middle of the screen, once it has its final size
     setTimeout(function () { wireEditorPopup(p, isEdit); }, 0);
   }
   var mpEditPopup = null;
