@@ -18683,6 +18683,7 @@
         if (n || byName) out.push({ type: "d", name: st.name, n: n, total: total, byName: byName, pts: got });
       });
       out.sort(function (a, b) { return (b.n - a.n) || a.name.localeCompare(b.name); });
+      out.forEach(function (r) { r.sel = true; });   // every matching list starts selected (owner, 2026-10-11) — untick to leave one out
       mpSearchRes = { q: q, list: out, species: spN };
       mpSearchPaint(); mpSearchBusy(false);
     });
@@ -18691,14 +18692,14 @@
     var res = document.getElementById("mp-search-res"); if (!res || !mpSearchRes) return;
     var R = mpSearchRes;
     if (!R.list.length) { res.innerHTML = '<p class="dd-empty">' + escapeHtml(t("points.searchNone", { q: R.q })) + "</p>"; return; }
-    var nPts = R.list.reduce(function (a, r) { return a + (r.pts || []).length; }, 0);
+    var nPts = R.list.reduce(function (a, r) { return a + (r.sel ? (r.pts || []).length : 0); }, 0);
+    var keepScroll = R.scroll || 0;
     res.innerHTML = '<div class="mp-search-head"><span>' + escapeHtml(t("points.searchLists", { n: R.list.length })) + "</span>" +
         '<button type="button" class="btn btn-light mp-search-all">' + escapeHtml(t("points.searchShowAll")) + "</button></div>" +
         (nPts ? '<button type="button" class="btn mp-search-tomap">' + escapeHtml(t("points.searchToMap", { n: nPts })) + "</button>" : "") +
       R.list.map(function (r) {
-        var shown = !!(r.type === "d" ? mpState.shownDetSets() : mpState.shownColls())[r.name];
         var what = r.n ? t("points.searchHits", { n: r.n, total: r.total }) : t("points.searchByName");
-        return '<label class="mp-search-row"><input type="checkbox" class="mp-search-cb" data-type="' + r.type + '" data-name="' + escapeHtml(r.name) + '"' + (shown ? " checked" : "") + ">" +
+        return '<label class="mp-search-row"><input type="checkbox" class="mp-search-cb" data-i="' + R.list.indexOf(r) + '"' + (r.sel ? " checked" : "") + ">" +
           '<span class="mp-search-name">' + escapeHtml(r.name) + '</span><span class="mp-search-n">' + escapeHtml(what) + "</span></label>";
       }).join("");
     function setShown(type, name, on) {
@@ -18707,8 +18708,12 @@
       var main = document.querySelector('#mp-panel .mp-coll-cb[data-type="' + type + '"][data-name="' + (window.CSS && CSS.escape ? CSS.escape(name) : name) + '"]');
       if (main) main.checked = on;
     }
+    res.scrollTop = keepScroll;
+    res.onscroll = function () { R.scroll = res.scrollTop; };   // kept across repaints and panel rebuilds
+    // The checkbox SELECTS the list for the actions below (owner, 2026-10-11) — it no longer
+    // shows / hides it, so ticking does not rebuild the panel (and nothing jumps).
     res.querySelectorAll(".mp-search-cb").forEach(function (cb) {
-      cb.addEventListener("change", function () { setShown(this.getAttribute("data-type"), this.getAttribute("data-name"), this.checked); saveShownState(); mpState.mpFilterRefresh(this.closest(".mp-search-row") || this); });
+      cb.addEventListener("change", function () { var r = R.list[+this.getAttribute("data-i")]; if (r) r.sel = this.checked; mpSearchPaint(); });
     });
     // The matched records themselves → map points (the working pins), as COPIES: the lists stay as they
     // are (owner, 2026-10-11: "a button for selecting the matched records/points and transfer them to
@@ -18719,6 +18724,7 @@
       mp.forEach(function (q) { have[(+q.lat).toFixed(6) + "," + (+q.lon).toFixed(6) + "|" + (q.name || "")] = 1; });
       var added = 0;
       R.list.forEach(function (r) {
+        if (!r.sel) return;   // a list the user unticked keeps its points out
         (r.pts || []).forEach(function (q) {
           if (!isFinite(+q.lat) || !isFinite(+q.lon)) return;
           var k = (+q.lat).toFixed(6) + "," + (+q.lon).toFixed(6) + "|" + (q.name || "");
@@ -18732,14 +18738,14 @@
     });
     var all = res.querySelector(".mp-search-all");
     if (all) all.addEventListener("click", function () {
-      res.querySelectorAll(".mp-search-cb").forEach(function (cb) { cb.checked = true; setShown(cb.getAttribute("data-type"), cb.getAttribute("data-name"), true); });
+      R.list.forEach(function (r) { if (r.sel) setShown(r.type, r.name, true); });   // show the SELECTED lists
       saveShownState(); mpState.mpFilterRefresh(all);
     });
   }
   function wireMpSearch(panel) {
     var inp = panel.querySelector("#mp-search-in"); if (!inp) return;
     if (mpSearchRes && mpSearchRes.q === mpSearchQ.trim()) mpSearchPaint();          // the panel was rebuilt: put the results back
-    if (wireMpSearch._focus) { inp.focus(); try { inp.setSelectionRange(inp.value.length, inp.value.length); } catch (e) {} }
+    if (wireMpSearch._focus) { try { inp.focus({ preventScroll: true }); } catch (e) { inp.focus(); } try { inp.setSelectionRange(inp.value.length, inp.value.length); } catch (e) {} }   // preventScroll: refocusing must not throw the panel back to the top
     inp.addEventListener("focus", function () { wireMpSearch._focus = true; });
     inp.addEventListener("blur", function () { setTimeout(function () { if (document.activeElement !== inp) wireMpSearch._focus = false; }, 0); });
     inp.addEventListener("click", function (e) { e.stopPropagation(); });
