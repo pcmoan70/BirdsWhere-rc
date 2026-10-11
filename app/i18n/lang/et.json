@@ -1543,6 +1543,8 @@
   "points.searchShowAll": "Näita kõiki",
   "points.searchHits": "{n}/{total}",
   "points.searchByName": "nimi vastab",
+  "points.searchToMap": "Pane {n} leitud punkti kaardile",
+  "points.searchToMapDone": "{n} punkti pandi kaardile kaardipunktidena — salvesta need Punktide alt loendisse, kui soovid neid hoida.",
   "settings.trackRecord": "Salvesta rada GPS-jälgimise ajal",
   "settings.trackRecordHint": "Kui automaatne GPS-uuendus on sees (hoia asukohanuppu all), joonistatakse su teekond kaardile. Jälgimise väljalülitamisel saad selle salvestada punktiloendina (joon ning algus ja lõpp).",
   "track.defaultName": "Rada {date}",

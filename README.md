@@ -973,6 +973,9 @@ Right-click / long-press / tap any species name for a menu **led by the species 
   name — so "hubro", "eagle owl" and "Bubo bubo" find the same points even where a file spelled the
   bird differently. Results list the matching lists with how many points matched; tick one to show
   it, or **Show all**. The search starts 1 s after the last letter; lists still loading are loaded first.
+  **Put the N matched points on the map** copies the matched records themselves (list points and trip
+  observations) into the map points — the working pins — without changing the lists; a pin already
+  there is not added twice. Save them into a list from Points to keep them.
 - **Ring markers** — a point whose file carries `marker` = `ring` (also `symbol`) is drawn as an
   unfilled circle in its colour instead of a filled dot (used for the map-dot lists' DTM points).
 - **Areas (polygons)** — a KML/KMZ placemark with a `Polygon` is kept as one of the list's **areas**

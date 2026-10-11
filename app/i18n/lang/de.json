@@ -1543,6 +1543,8 @@
   "points.searchShowAll": "Alle zeigen",
   "points.searchHits": "{n} von {total}",
   "points.searchByName": "Name passt",
+  "points.searchToMap": "Die {n} gefundenen Punkte auf die Karte legen",
+  "points.searchToMapDone": "{n} Punkte als Kartenpunkte auf die Karte gelegt — speichere sie unter Punkte in einer Liste, wenn du sie behalten willst.",
   "settings.trackRecord": "Track während der GPS-Verfolgung aufzeichnen",
   "settings.trackRecordHint": "Solange die automatische GPS-Aktualisierung an ist (Standort-Taste gedrückt halten), wird deine Route auf der Karte gezeichnet. Beim Ausschalten der Verfolgung kannst du sie als Punktliste speichern (die Linie plus Start und Ende).",
   "track.defaultName": "Track {date}",

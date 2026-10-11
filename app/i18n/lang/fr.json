@@ -1543,6 +1543,8 @@
   "points.searchShowAll": "Tout afficher",
   "points.searchHits": "{n} sur {total}",
   "points.searchByName": "le nom correspond",
+  "points.searchToMap": "Mettre les {n} points trouvés sur la carte",
+  "points.searchToMapDone": "{n} points mis sur la carte comme points de carte — enregistrez-les dans une liste depuis Points pour les garder.",
   "settings.trackRecord": "Enregistrer une trace pendant le suivi GPS",
   "settings.trackRecordHint": "Tant que la mise à jour GPS automatique est active (maintenez le bouton de localisation), votre parcours est tracé sur la carte. Quand vous arrêtez le suivi, vous pouvez l’enregistrer comme liste de points (la ligne, plus le départ et l’arrivée).",
   "track.defaultName": "Trace {date}",

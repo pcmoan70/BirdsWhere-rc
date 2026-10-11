@@ -18662,16 +18662,22 @@
       var out = [];
       mpState.mpCollections().forEach(function (c) {
         if (!c || !c.name) return;
-        var pts = c.points || [], byName = hits(textFold(c.name + " " + (c.folder || ""))), n = 0;
-        for (var i = 0; i < pts.length; i++) { var pt = pts[i]; if (!pt) continue; var key = mpState.detKeyOf(pt); if ((key && sp[key]) || hits(mpPointText(pt))) n++; }
-        if (n || byName) out.push({ type: "p", name: c.name, n: n, total: pts.length, byName: byName });
+        var pts = c.points || [], byName = hits(textFold(c.name + " " + (c.folder || ""))), n = 0, got = [];
+        for (var i = 0; i < pts.length; i++) { var pt = pts[i]; if (!pt) continue; var key = mpState.detKeyOf(pt); if ((key && sp[key]) || hits(mpPointText(pt))) { n++; got.push(pt); } }
+        if (n || byName) out.push({ type: "p", name: c.name, n: n, total: pts.length, byName: byName, pts: got });
       });
       detSets().forEach(function (st) {
-        var n = 0, total = 0, byName = hits(textFold(st.name));
+        var n = 0, total = 0, byName = hits(textFold(st.name)), got = [];
         Object.keys(st.detections || {}).forEach(function (k) {
-          (st.detections[k].rows || []).forEach(function (r) { total++; if (sp[k] || hits(textFold([r.observer, r.place, r.note, r.act].join(" ")))) n++; });
+          var e = st.detections[k];
+          (e.rows || []).forEach(function (r) {
+            total++;
+            if (sp[k] || hits(textFold([r.observer, r.place, r.note, r.act].join(" ")))) {
+              n++; got.push({ lat: +r.lat, lon: +r.lon, name: detName({ key: k, name: e.name }) || e.name || "", date: r.date || "", observer: r.observer || "", place: r.place || "", note: r.note || "", spKey: k, tags: [] });
+            }
+          });
         });
-        if (n || byName) out.push({ type: "d", name: st.name, n: n, total: total, byName: byName });
+        if (n || byName) out.push({ type: "d", name: st.name, n: n, total: total, byName: byName, pts: got });
       });
       out.sort(function (a, b) { return (b.n - a.n) || a.name.localeCompare(b.name); });
       mpSearchRes = { q: q, list: out, species: spN };
@@ -18682,8 +18688,10 @@
     var res = document.getElementById("mp-search-res"); if (!res || !mpSearchRes) return;
     var R = mpSearchRes;
     if (!R.list.length) { res.innerHTML = '<p class="dd-empty">' + escapeHtml(t("points.searchNone", { q: R.q })) + "</p>"; return; }
+    var nPts = R.list.reduce(function (a, r) { return a + (r.pts || []).length; }, 0);
     res.innerHTML = '<div class="mp-search-head"><span>' + escapeHtml(t("points.searchLists", { n: R.list.length })) + "</span>" +
         '<button type="button" class="btn btn-light mp-search-all">' + escapeHtml(t("points.searchShowAll")) + "</button></div>" +
+        (nPts ? '<button type="button" class="btn mp-search-tomap">' + escapeHtml(t("points.searchToMap", { n: nPts })) + "</button>" : "") +
       R.list.map(function (r) {
         var shown = !!(r.type === "d" ? mpState.shownDetSets() : mpState.shownColls())[r.name];
         var what = r.n ? t("points.searchHits", { n: r.n, total: r.total }) : t("points.searchByName");
@@ -18698,6 +18706,26 @@
     }
     res.querySelectorAll(".mp-search-cb").forEach(function (cb) {
       cb.addEventListener("change", function () { setShown(this.getAttribute("data-type"), this.getAttribute("data-name"), this.checked); saveShownState(); mpState.mpFilterRefresh(this.closest(".mp-search-row") || this); });
+    });
+    // The matched records themselves → map points (the working pins), as COPIES: the lists stay as they
+    // are (owner, 2026-10-11: "a button for selecting the matched records/points and transfer them to
+    // map points"). A spot + name already among the pins is not added twice.
+    var tm = res.querySelector(".mp-search-tomap");
+    if (tm) tm.addEventListener("click", function () {
+      var have = Object.create(null), mp = mpState.mapPoints();
+      mp.forEach(function (q) { have[(+q.lat).toFixed(6) + "," + (+q.lon).toFixed(6) + "|" + (q.name || "")] = 1; });
+      var added = 0;
+      R.list.forEach(function (r) {
+        (r.pts || []).forEach(function (q) {
+          if (!isFinite(+q.lat) || !isFinite(+q.lon)) return;
+          var k = (+q.lat).toFixed(6) + "," + (+q.lon).toFixed(6) + "|" + (q.name || "");
+          if (have[k]) return; have[k] = 1;
+          var cp = Object.assign({}, q); cp.id = mpState.mpUid(); cp.tags = (q.tags || []).slice(); cp.source = cp.source || "search";
+          mp.push(cp); added++;
+        });
+      });
+      saveMapPoints(); renderMapPoints(); refreshMpPanel();
+      setStatus(t("points.searchToMapDone", { n: added }));
     });
     var all = res.querySelector(".mp-search-all");
     if (all) all.addEventListener("click", function () {

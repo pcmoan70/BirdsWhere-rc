@@ -289,6 +289,8 @@ window.GeoI18N = (function () {
         "points.searchShowAll": "Show all",
         "points.searchHits": "{n} of {total}",
         "points.searchByName": "name matches",
+        "points.searchToMap": "Put the {n} matched points on the map",
+        "points.searchToMapDone": "{n} points put on the map as map points — save them into a list from Points when you want to keep them.",
         "settings.trackRecord": "Record a track while GPS tracking",
         "settings.trackRecordHint": "While automatic GPS updating is on (hold the locate button), your route is drawn on the map. When you turn tracking off you can save it as a point list (the line, plus start and end).",
         "track.defaultName": "Track {date}",

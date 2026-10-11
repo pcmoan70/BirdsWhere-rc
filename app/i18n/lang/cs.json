@@ -1543,6 +1543,8 @@
   "points.searchShowAll": "Zobrazit vše",
   "points.searchHits": "{n} z {total}",
   "points.searchByName": "odpovídá název",
+  "points.searchToMap": "Dát {n} nalezených bodů na mapu",
+  "points.searchToMapDone": "{n} bodů dáno na mapu jako body mapy — chcete-li je ponechat, uložte je do seznamu v Bodech.",
   "settings.trackRecord": "Zaznamenávat trasu během sledování GPS",
   "settings.trackRecordHint": "Když je zapnutá automatická aktualizace GPS (podržte tlačítko polohy), vaše trasa se kreslí do mapy. Po vypnutí sledování ji můžete uložit jako seznam bodů (čára plus začátek a konec).",
   "track.defaultName": "Trasa {date}",

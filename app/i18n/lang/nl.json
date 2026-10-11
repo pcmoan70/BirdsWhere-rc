@@ -1543,6 +1543,8 @@
   "points.searchShowAll": "Alle tonen",
   "points.searchHits": "{n} van {total}",
   "points.searchByName": "naam past",
+  "points.searchToMap": "De {n} gevonden punten op de kaart zetten",
+  "points.searchToMapDone": "{n} punten als kaartpunten op de kaart gezet — bewaar ze via Punten in een lijst als je ze wilt houden.",
   "settings.trackRecord": "Een track opnemen tijdens GPS-volgen",
   "settings.trackRecordHint": "Zolang automatisch GPS-bijwerken aan staat (houd de locatieknop ingedrukt), wordt je route op de kaart getekend. Als je het volgen uitzet, kun je hem bewaren als puntenlijst (de lijn plus begin en eind).",
   "track.defaultName": "Track {date}",

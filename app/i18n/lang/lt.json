@@ -1543,6 +1543,8 @@
   "points.searchShowAll": "Rodyti visus",
   "points.searchHits": "{n} iš {total}",
   "points.searchByName": "atitinka pavadinimas",
+  "points.searchToMap": "Dėti {n} rastų taškų į žemėlapį",
+  "points.searchToMapDone": "{n} taškų padėta į žemėlapį kaip žemėlapio taškai — išsaugokite juos sąraše per Taškai, jei norite išlaikyti.",
   "settings.trackRecord": "Įrašyti maršrutą GPS sekimo metu",
   "settings.trackRecordHint": "Kol įjungtas automatinis GPS atnaujinimas (palaikykite vietos mygtuką), jūsų maršrutas piešiamas žemėlapyje. Išjungę sekimą galite jį išsaugoti kaip taškų sąrašą (linija bei pradžia ir pabaiga).",
   "track.defaultName": "Maršrutas {date}",

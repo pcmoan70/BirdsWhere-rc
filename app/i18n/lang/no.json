@@ -1543,6 +1543,8 @@
   "points.searchShowAll": "Vis alle",
   "points.searchHits": "{n} av {total}",
   "points.searchByName": "navnet treffer",
+  "points.searchToMap": "Legg de {n} treffpunktene på kartet",
+  "points.searchToMapDone": "{n} punkter lagt på kartet som kartpunkter — lagre dem i en liste fra Punkter når du vil beholde dem.",
   "settings.trackRecord": "Registrer spor under GPS-sporing",
   "settings.trackRecordHint": "Mens automatisk GPS-oppdatering er på (hold inne posisjonsknappen), tegnes ruten din på kartet. Når du slår av sporingen, kan du lagre den som en punktliste (linjen, pluss start og slutt).",
   "track.defaultName": "Spor {date}",
