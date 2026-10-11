@@ -1138,6 +1138,12 @@ an **eBird Record Format CSV** ready for [ebird.org/import](https://ebird.org/im
   tracking** — the button **pulses blue**, the blue cross at your position **blinks once a second**, and the map re-centres (keeping your zoom) as you move,
   live-updating distance sorts; hold again for the **red read cursor** (a fixed centre cursor: pan
   a plotted dot, map point or eBird hotspot under it to open it); a tap in either state turns it off.
+- **GPS track** — Settings → Lists & sharing → **Record a track while GPS tracking**: while GPS-follow is
+  on, your route is drawn on the map (a fix counts when it is within 50 m accuracy and 5 m from the
+  last). The track so far survives a reload and continues on the next tracking. When tracking stops a
+  dialog offers **Save track** (named "Track <date time>" by default) or **Discard**; the × keeps it for
+  later. A saved track is a point list holding the line plus its start and end points; lists can hold
+  lines (KML `LineString`) the way they hold areas — imported, drawn, exported and synced with the list.
   **Stored locations** are recalled by holding the **🔍 search button** — the list always starts
   with a built-in **Here** row (your GPS position: same tick columns and an editable radius,
   not deletable; its coordinates resolve when used, so 🔔 rarity alerts can follow you).

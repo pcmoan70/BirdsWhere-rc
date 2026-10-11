@@ -607,7 +607,13 @@
       var btns = document.createElement("div");
       btns.className = "ui-modal-btns";
       var cancel = document.createElement("button");
-      cancel.type = "button"; cancel.className = "btn btn-light"; cancel.textContent = t("btn.cancel");
+      cancel.type = "button"; cancel.className = "btn btn-light"; cancel.textContent = opts.cancelLabel || t("btn.cancel");
+      // Every popup has a × top-right (owner, 2026-10-10). It closes like Cancel, but resolves to
+      // `undefined` so a caller can tell "decide later" (×) from an explicit Cancel.
+      var xb = document.createElement("button");
+      xb.type = "button"; xb.className = "ui-modal-x"; xb.textContent = "\u00d7";
+      xb.setAttribute("aria-label", t("btn.close")); xb.title = t("btn.close");
+      box.insertBefore(xb, box.firstChild); box.classList.add("has-modal-x");
       var ok = document.createElement("button");
       ok.type = "button"; ok.className = "btn"; ok.textContent = opts.okLabel || t("popup.ok");
       if (colorInput) btns.appendChild(colorInput);   // swatch at the LEFT of the action row (popup opens below it, clear of the buttons)
@@ -629,6 +635,7 @@
         else if (e.key === "Enter") { e.preventDefault(); close(result(true)); }
       }
       cancel.addEventListener("click", function () { close(result(false)); });
+      xb.addEventListener("click", function () { close(opts.xLater ? undefined : result(false)); });
       ok.addEventListener("click", function () { close(result(true)); });
       ov.addEventListener("click", function (e) { if (e.target === ov) close(result(false)); });
       document.addEventListener("keydown", onKey, true);
@@ -1400,6 +1407,59 @@
       }
     }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000 });
   }
+  // ---- GPS track (owner, 2026-10-10): "an option in settings, which when on traces out the route in
+  // track gps mode. When tracking is turned off user is given option to save track". A fix is kept
+  // when it is good enough (≤ 50 m accuracy) and ≥ 5 m from the last one; the track so far is saved
+  // as it grows (a reload mid-walk does not lose it) and continues on the next tracking.
+  var TRACK_MIN_M = 5, TRACK_MAX_ACC = 50;
+  var trackPts = null, trackLine = null, trackSavedN = 0;
+  function trackRecordOn() { return window.GeoState.get("trackRecord", false) === true; }
+  function trackLoad() { if (!trackPts) { trackPts = (window.GeoState.get("trackInProgress", []) || []).filter(function (q) { return q && isFinite(q[0]) && isFinite(q[1]); }); trackSavedN = trackPts.length; } return trackPts; }
+  function trackStore(force) { if (trackPts && (force || trackPts.length - trackSavedN >= 5)) { window.GeoState.save({ trackInProgress: trackPts }); trackSavedN = trackPts.length; } }
+  function drawTrackLine() {
+    if (!map) return;
+    var ll = trackLoad().map(function (q) { return [q[0], q[1]]; });
+    if (!trackLine) trackLine = L.polyline(ll, { color: "#d81b60", weight: 4, opacity: 0.85, interactive: false }).addTo(map);
+    else trackLine.setLatLngs(ll);
+  }
+  function clearTrackLine() { if (trackLine && map) { try { map.removeLayer(trackLine); } catch (e) {} } trackLine = null; }
+  function recordTrackFix(e) {
+    if (!trackRecordOn() || !e || !e.latlng) return;
+    if (e.accuracy != null && e.accuracy > TRACK_MAX_ACC) return;
+    var pts = trackLoad(), q = [Math.round(e.latlng.lat * 1e6) / 1e6, Math.round(e.latlng.lng * 1e6) / 1e6, Date.now()];
+    var last = pts[pts.length - 1];
+    if (last && haversineKm(last[0], last[1], q[0], q[1]) * 1000 < TRACK_MIN_M) return;
+    pts.push(q); trackStore(false); drawTrackLine();
+  }
+  function trackKm(pts) { var d = 0; for (var i = 1; i < pts.length; i++) d += haversineKm(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1]); return d; }
+  function endTrack() {
+    var pts = trackLoad();
+    clearTrackLine();
+    if (pts.length < 2) { trackPts = []; window.GeoState.save({ trackInProgress: [] }); trackSavedN = 0; return; }
+    trackStore(true);
+    var km = trackKm(pts), d0 = new Date(pts[0][2] || Date.now());
+    var pad = function (n) { return (n < 10 ? "0" : "") + n; };
+    var def = t("track.defaultName", { date: d0.getFullYear() + "-" + pad(d0.getMonth() + 1) + "-" + pad(d0.getDate()) + " " + pad(d0.getHours()) + ":" + pad(d0.getMinutes()) });
+    uiDialog({ message: t("track.savePrompt", { km: km.toFixed(2), n: pts.length }), input: true, value: def, okLabel: t("track.save"), cancelLabel: t("track.discard"), xLater: true })
+      .then(function (name) {
+        if (name === undefined) { trackPts = null; setStatus(t("track.kept")); return; }     // × → decide later: stays, continues on the next tracking
+        if (name === null || !String(name).trim()) { trackPts = []; trackSavedN = 0; window.GeoState.save({ trackInProgress: [] }); setStatus(t("track.discarded")); return; }
+        name = String(name).trim();
+        var taken = mpState.mpCollections().map(function (c) { return c.name; }), nm = name, k = 2;
+        while (taken.indexOf(nm) >= 0) nm = name + " #" + (k++);
+        var iso = function (ms) { return new Date(ms).toISOString(); };
+        var first = pts[0], lastP = pts[pts.length - 1];
+        var c = { name: nm, color: "#d81b60", track: true,
+          points: [{ id: mpState.mpUid(), lat: first[0], lon: first[1], name: t("track.start"), tags: [], date: iso(first[2]).slice(0, 10), note: iso(first[2]), source: "track", createdAt: iso(Date.now()) },
+                   { id: mpState.mpUid(), lat: lastP[0], lon: lastP[1], name: t("track.end"), tags: [], date: iso(lastP[2]).slice(0, 10), note: iso(lastP[2]) + " · " + km.toFixed(2) + " km", source: "track", createdAt: iso(Date.now()) }],
+          lines: [{ r: pts.map(function (q) { return [q[0], q[1]]; }), c: "#d81b60", n: nm }] };
+        mpState.mpCollections().push(c);
+        mpState.shownColls()[nm] = true;
+        trackPts = []; trackSavedN = 0; window.GeoState.save({ trackInProgress: [] });
+        saveMapPoints(); saveShownState(); renderMapPoints(); if (typeof refreshMpPanel === "function") refreshMpPanel();
+        setStatus(t("track.saved", { name: nm, km: km.toFixed(2) }));
+      });
+  }
   function crossTap() {
     if (crossState !== 0) { setCrosshairState(0); return; }   // follow/read → off
     locateOnce();
@@ -1415,6 +1475,7 @@
   }
   function startFollow() {
     posWatching = true; posCentered = false;
+    if (trackRecordOn() && trackLoad().length) drawTrackLine();   // a track left from before continues
     map.locate({ watch: true, enableHighAccuracy: true, maximumAge: 3000, timeout: 20000 });
   }
   function stopReticle() {
@@ -1428,7 +1489,9 @@
     reticleTarget();
   }
   function setCrosshairState(s) {
+    var wasFollow = crossState === 1;
     crossState = s;
+    if (wasFollow && s !== 1) endTrack();
     oneShotBusy = false;
     stopFollow(); stopReticle();
     var btn = document.querySelector(".geo-locate-btn");
@@ -6685,7 +6748,10 @@
   async function listKmzBytes(c) {
     var xml = function (x) { return String(x == null ? "" : x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); };
     var pts = c.points || [], kml;
-    var data = "<ExtendedData>" + LIST_DATA_OPEN + JSON.stringify((c.polys && c.polys.length) ? { v: 1, name: c.name, points: pts, polys: c.polys } : { v: 1, name: c.name, points: pts }, function (k, val) { return k.charAt(0) === "_" ? undefined : val; }).replace(/]]>/g, "]]]]><![CDATA[>") + LIST_DATA_CLOSE + "</ExtendedData>";
+    var body = { v: 1, name: c.name, points: pts };
+    if (c.polys && c.polys.length) body.polys = c.polys;
+    if (c.lines && c.lines.length) body.lines = c.lines;   // a recorded GPS track
+    var data = "<ExtendedData>" + LIST_DATA_OPEN + JSON.stringify(body, function (k, val) { return k.charAt(0) === "_" ? undefined : val; }).replace(/]]>/g, "]]]]><![CDATA[>") + LIST_DATA_CLOSE + "</ExtendedData>";
     if (pts.length > COPY_MAX_POINTS) {
       // A very large list: bare placemarks (name + position) — the full KML with descriptions
       // is hundreds of megabytes of string. The data block is complete either way.
@@ -6694,7 +6760,7 @@
       parts.push("</Folder>", "</Document>", "</kml>");
       kml = parts.join("\n");
     } else {
-      kml = mpState.buildPointsKml([{ name: c.name, points: pts, polys: c.polys }], []);
+      kml = mpState.buildPointsKml([{ name: c.name, points: pts, polys: c.polys, lines: c.lines }], []);
       var at = kml.indexOf("<Document>");
       kml = kml.slice(0, at + 10) + "\n" + data + kml.slice(at + 10);
     }
@@ -6709,6 +6775,7 @@
     var obj = JSON.parse(kml.slice(a, b).split("]]]]><![CDATA[>").join("]]>"));
     if (!obj || !Array.isArray(obj.points)) throw new Error("list file has no points");
     if (Array.isArray(obj.polys)) obj.points.polys = obj.polys;   // the list's areas ride along (the caller moves them onto the list)
+    if (Array.isArray(obj.lines)) obj.points.lines = obj.lines;   // … and its lines (a GPS track)
     return obj.points;
   }
   function isListRef(e) { return !!(e && e.file && !Array.isArray(e.points)); }
@@ -6731,7 +6798,7 @@
       else while (taken[fname]) fname = base + " (" + (k++) + ").kmz";
       taken[fname] = 1;
       var stub = {};
-      Object.keys(c).sort().forEach(function (key) { if (key !== "points" && key !== "polys" && key !== "file" && key !== "n" && key !== "psig") stub[key] = c[key]; });   // areas live in the list's .kmz, not the JSON
+      Object.keys(c).sort().forEach(function (key) { if (key !== "points" && key !== "polys" && key !== "lines" && key !== "file" && key !== "n" && key !== "psig") stub[key] = c[key]; });   // areas live in the list's .kmz, not the JSON
       stub.file = fname; stub.n = (c.points || []).length; stub.psig = psig;
       files.push({ name: fname, list: c.name, copy: (ref && ref.psig === psig) ? ref.file : null, build: function () { return listKmzBytes(c); } });
       return stub;
@@ -7620,6 +7687,10 @@
                 '<p class="cu-hint" data-i18n="rarity.probThHint">A bird counts as a rarity when the model finds it unlikely at its own spot and week — probability below this %. Applies to both your own fetched observations and eBird notable alerts. Default 15. 0/100 = off.</p>' +
               '</div>' +
               '<div class="settings-section" data-i18n="settings.secListsShare">Lists &amp; sharing</div>' +
+              '<div class="ctrl-group">' +
+                '<label class="ctrl-check"><input type="checkbox" id="track-record-toggle"> <span data-i18n="settings.trackRecord">Record a track while GPS tracking</span></label>' +
+                '<p class="cu-hint" data-i18n="settings.trackRecordHint">While automatic GPS updating is on (hold the locate button), your route is drawn on the map. When you turn tracking off you can save it as a point list (the line, plus start and end).</p>' +
+              '</div>' +
               '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="share-tiny-toggle"> <span data-i18n="ctrl.shareTiny">Shorten share links (TinyURL)</span></label>' +
                 '<p class="cu-hint" data-i18n="ctrl.shareTinyHint">Turns share links into short tinyurl.com links (easier to paste / QR), for links under 14 kB. On by default. ⚠ The shared data is sent to TinyURL — a third party — so it may be exposed to unknown parties. Turn off for a plain link + .share file, so nothing leaves via a shortener.</p>' +
@@ -9488,6 +9559,7 @@
     // to push it back inside. So the central 80% of the screen is a hold-still zone.
     map.on("locationfound", function (e) {
       if (!posWatching) return;
+      recordTrackFix(e);
       // Blue plus follows the live position.
       if (posMarker) posMarker.setLatLng(e.latlng);
       else posMarker = L.marker(e.latlng, { icon: livePosIcon("blue"), interactive: false, keyboard: false, zIndexOffset: 1100 }).addTo(map);
@@ -21184,6 +21256,11 @@
       var f = pointsFmt();
       if (f === "kmz") exportPointsKmz(); else if (f === "geojson") exportPointsGeoJson(); else exportPointsKml();
     });
+    var trackCb = document.getElementById("track-record-toggle");
+    if (trackCb) {
+      trackCb.checked = trackRecordOn();
+      trackCb.addEventListener("change", function () { window.GeoState.save({ trackRecord: !!this.checked }); if (!this.checked) clearTrackLine(); });
+    }
     var shareTinyCb = document.getElementById("share-tiny-toggle");
     if (shareTinyCb) {
       shareTinyCb.checked = window.GeoState.get("shareTinyUrl", true) !== false;

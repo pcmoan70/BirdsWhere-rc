@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2045";
+var VERSION = "v2046";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 /mappoints: nesting cliffs are now only those facing east, south or west (more sun, less snow in the breeding season).",
+  "\u2022 GPS track: switch on Settings \u2192 Lists & sharing \u2192 \u201cRecord a track while GPS tracking\u201d. Your route is drawn while tracking, and you can save it as a list when you stop.",
+  "\u2022 Every small dialog now has a \u00d7 in its corner.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

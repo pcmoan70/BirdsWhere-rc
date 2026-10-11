@@ -619,6 +619,11 @@ window.AppPoints = (function () {
     colls.forEach(function (c) {
       parts.push("<Folder><name>" + xml(c.name) + "</name>");
       (c.points || []).forEach(placemark);
+      (c.lines || []).forEach(function (ln) {
+        if (!ln || !ln.r || ln.r.length < 2) return;
+        parts.push("<Placemark><name>" + xml(ln.n || "Track") + "</name>" + (ln.c ? '<ExtendedData><Data name="color"><value>' + xml(ln.c) + "</value></Data></ExtendedData>" : "") +
+                   "<LineString><coordinates>" + ln.r.map(function (v) { return Number(v[1]).toFixed(6) + "," + Number(v[0]).toFixed(6) + ",0"; }).join(" ") + "</coordinates></LineString></Placemark>");
+      });
       (c.polys || []).forEach(function (pg) {
         if (!pg || !pg.r || pg.r.length < 3) return;
         var ring = pg.r.map(function (v) { return Number(v[1]).toFixed(5) + "," + Number(v[0]).toFixed(5) + ",0"; });
@@ -852,7 +857,7 @@ window.AppPoints = (function () {
     await yieldToUi();                       // let that message paint before the long call
     var doc = new DOMParser().parseFromString(text, "application/xml");
     if (doc.getElementsByTagName("parsererror").length) throw new Error(t("kml.parseErr"));
-    var marks = [], polys = [], fieldSet = {}, folderSet = {};
+    var marks = [], polys = [], lines = [], fieldSet = {}, folderSet = {};
     var styleCol = kmlStyleColors(doc);
     var pms = doc.getElementsByTagName("Placemark");
     function txt(el, tag) { var n = el.getElementsByTagName(tag)[0]; return n ? (n.textContent || "").trim() : ""; }
@@ -866,6 +871,9 @@ window.AppPoints = (function () {
       // the list's POLYGON — outer ring only — instead of becoming a point at its first vertex.
       var pg = pm.getElementsByTagName("Polygon")[0];
       if (pg) { var pr0 = kmlPolygon(pm, pg, styleCol); if (pr0) polys.push(pr0); continue; }
+      // …and a LINE (a GPS track, a route drawn in Google Earth) as one of its lines.
+      var lsEl = pm.getElementsByTagName("LineString")[0];
+      if (lsEl) { var ln0 = kmlLine(pm, lsEl); if (ln0) lines.push(ln0); continue; }
       // First coordinates found under this placemark (Point, else first vertex).
       var co = pm.getElementsByTagName("coordinates")[0];
       if (!co) continue;
@@ -897,7 +905,22 @@ window.AppPoints = (function () {
       }
       marks.push({ name: txt(pm, "name"), lat: lat, lon: lon, desc: txt(pm, "description"), data: data, folder: folder, color: pcol });
     }
-    return { marks: marks, polys: polys, fields: Object.keys(fieldSet), folders: Object.keys(folderSet) };
+    return { marks: marks, polys: polys, lines: lines, fields: Object.keys(fieldSet), folders: Object.keys(folderSet) };
+  }
+  // A placemark's <Data name="…"> value ("" when absent).
+  function kmlData(pm, name) {
+    var ds = pm.getElementsByTagName("Data");
+    for (var d = 0; d < ds.length; d++) if (ds[d].getAttribute("name") === name) { var vv = ds[d].getElementsByTagName("value")[0]; return vv ? (vv.textContent || "").trim() : ""; }
+    return "";
+  }
+  // An area's / line's colour: <Data name="color">, else its style's PolyStyle / LineStyle colour.
+  function kmlShapeColor(pm) {
+    var col = kmlData(pm, "color"); if (col) return col;
+    var suEl = pm.getElementsByTagName("styleUrl")[0], sref = suEl ? (suEl.textContent || "").trim().replace(/^#/, "") : "";
+    var st = sref ? pm.ownerDocument.querySelector('Style[id="' + sref.replace(/"/g, "") + '"]') : null;
+    var ps = st && (st.getElementsByTagName("PolyStyle")[0] || st.getElementsByTagName("LineStyle")[0]);
+    var pc = ps && ps.getElementsByTagName("color")[0];
+    return pc ? kmlColorToHex(pc.textContent) : "";
   }
   // One KML <Polygon> → { r: [[lat, lon], …] outer ring (5 dp ≈ 1 m), c: colour, n: name }. The
   // colour: a <Data name="color">, else the style's PolyStyle / LineStyle colour, else none.
@@ -910,22 +933,23 @@ window.AppPoints = (function () {
       if (isFinite(la) && isFinite(lo)) ring.push([Math.round(la * 1e5) / 1e5, Math.round(lo * 1e5) / 1e5]);
     });
     if (ring.length < 3) return null;
-    var col = "", fill = "", ds = pm.getElementsByTagName("Data");
-    for (var d = 0; d < ds.length; d++) {
-      var dn = ds[d].getAttribute("name"), vv = ds[d].getElementsByTagName("value")[0], dv = vv ? (vv.textContent || "").trim() : "";
-      if (dn === "color") col = dv; else if (dn === "fill") fill = dv;
-    }
-    if (!col) {
-      var suEl = pm.getElementsByTagName("styleUrl")[0], sref = suEl ? (suEl.textContent || "").trim().replace(/^#/, "") : "";
-      var st = sref && pm.ownerDocument.getElementById ? pm.ownerDocument.querySelector('Style[id="' + sref.replace(/"/g, "") + '"]') : null;
-      var ps = st && (st.getElementsByTagName("PolyStyle")[0] || st.getElementsByTagName("LineStyle")[0]);
-      var pc = ps && ps.getElementsByTagName("color")[0];
-      if (pc) col = kmlColorToHex(pc.textContent);
-    }
+    var col = kmlShapeColor(pm), fill = kmlData(pm, "fill");
     var nm = pm.getElementsByTagName("name")[0];
     var out = { r: ring, c: col || "", n: nm ? (nm.textContent || "").trim() : "" };
     if (fill === "0") out.f = 0;   // outline only (e.g. a search radius)
     return out;
+  }
+  // One KML <LineString> → { r: [[lat, lon], …], c: colour, n: name } (colour as for an area).
+  function kmlLine(pm, ls) {
+    var co = ls.getElementsByTagName("coordinates")[0]; if (!co) return null;
+    var r = [];
+    (co.textContent || "").trim().split(/\s+/).forEach(function (tup) {
+      var a = tup.split(","), lo = parseFloat(a[0]), la = parseFloat(a[1]);
+      if (isFinite(la) && isFinite(lo)) r.push([Math.round(la * 1e6) / 1e6, Math.round(lo * 1e6) / 1e6]);
+    });
+    if (r.length < 2) return null;
+    var nm = pm.getElementsByTagName("name")[0];
+    return { r: r, c: kmlShapeColor(pm), n: nm ? (nm.textContent || "").trim() : "" };
   }
   // Resolve a placemark field to text given a mapping token: "name" / "desc" /
   // "folder" / "data:<key>" / "" (none).
@@ -950,7 +974,7 @@ window.AppPoints = (function () {
   async function startKmlImport(text, fileName) {
     var parsed;
     try { parsed = await parseKmlText(text); } catch (e) { mpLoading(null); setStatus(t("kml.parseErr")); return; }
-    if (!parsed.marks.length && !(parsed.polys || []).length) { mpLoading(null); setStatus(t("kml.none")); return; }
+    if (!parsed.marks.length && !(parsed.polys || []).length && !(parsed.lines || []).length) { mpLoading(null); setStatus(t("kml.none")); return; }
     parsed.fileName = fileName || "";
     kmlImport = parsed;
     setStatus("");
@@ -1015,7 +1039,7 @@ window.AppPoints = (function () {
           continue;
         }
         var parsed = await parsePointsBuf(buf);
-        if (parsed.marks.length || (parsed.polys || []).length) {
+        if (parsed.marks.length || (parsed.polys || []).length || (parsed.lines || []).length) {
           var nm = uniqueListName(listNameFromFile(f.name) || f.name, taken);
           taken.push(nm);
           items.push({ name: nm, parsed: parsed });
@@ -1041,7 +1065,7 @@ window.AppPoints = (function () {
       it.parsed.fields.forEach(function (f) { fieldSet[f] = 1; });
       it.parsed.folders.forEach(function (f) { folderSet[f] = 1; });
       marks = marks.concat(it.parsed.marks);
-      batch.push({ name: it.name, marks: it.parsed.marks, polys: it.parsed.polys || [] });
+      batch.push({ name: it.name, marks: it.parsed.marks, polys: it.parsed.polys || [], lines: it.parsed.lines || [] });
     });
     kmlImport = { marks: marks, fields: Object.keys(fieldSet), folders: Object.keys(folderSet), files: batch };
     setStatus(failed.length ? t("kml.someFailed", { n: failed.length }) : "");
@@ -1355,7 +1379,7 @@ window.AppPoints = (function () {
     var noteToks = noteTokens();
     var noteHtmlBox = document.getElementById("kml-note-html");
     var noteIsHtml = !!(noteHtmlBox && noteHtmlBox.checked);
-    function finish(listName, marks, show, polys) {
+    function finish(listName, marks, show, polys, lines) {
       var pts = (marks || p.marks).map(function (pm) {
         var tag = normTag(kmlFieldValue(pm, tagTok));
         // One field → exactly what it always was. Several → each line labelled, because
@@ -1401,6 +1425,8 @@ window.AppPoints = (function () {
       c.points = c.points.concat(pts);
       polys = polys || (marks ? [] : (p.polys || []));
       if (polys.length) c.polys = (c.polys || []).concat(polys);   // areas travel with the list (drawn when it is ticked)
+      lines = lines || (marks ? [] : (p.lines || []));
+      if (lines.length) c.lines = (c.lines || []).concat(lines);   // and lines (GPS tracks)
       if (pts.length && pts.every(function (p) { return p.source === "route"; })) c.route = true;   // a loaded route is a route: numbered stops, arrows, Navigate
       internPoints([c]);   // a fresh import is the other place equal strings arrive unshared
       if (show !== false) shownColls[listName] = true;   // a batch of files is saved UNTICKED (owner, 2026-10-02): tick what you want to see
@@ -1414,7 +1440,7 @@ window.AppPoints = (function () {
     }
     if (p.files && p.files.length) {
       var total = 0;
-      p.files.forEach(function (b) { total += finish(b.name, b.marks, p.files.length === 1, b.polys || []); });
+      p.files.forEach(function (b) { total += finish(b.name, b.marks, p.files.length === 1, b.polys || [], b.lines || []); });
       commit();
       setStatus(p.files.length > 1 ? t("kml.importedN", { n: total, lists: p.files.length })
                                    : t("kml.imported", { n: total, name: p.files[0].name }));
@@ -2353,6 +2379,13 @@ window.AppPoints = (function () {
         if (bb) { var inV = false; for (var q = 0; q < pg.r.length && !inV; q++) { var v = pg.r[q]; if (v[0] >= bb[0] && v[0] <= bb[2] && v[1] >= bb[1] && v[1] <= bb[3]) inV = true; } if (!inV) return; }
         var pc = pg.c || collColor(c);
         mpLayer.addLayer(L.polygon(pg.r, { color: pc, weight: pg.f === 0 ? 1.5 : 1, opacity: 0.6, fillColor: pc, fillOpacity: pg.f === 0 ? 0 : 0.25, interactive: false }));
+      });
+    });
+    // A list's LINES (a recorded GPS track) above its areas, below its pins.
+    shownLists.forEach(function (c) {
+      (c.lines || []).forEach(function (ln) {
+        if (!ln || !ln.r || ln.r.length < 2) return;
+        mpLayer.addLayer(L.polyline(ln.r, { color: ln.c || collColor(c), weight: 3, opacity: 0.85, interactive: false }));
       });
     });
     // Pass 2: draw, largest list first so the smallest end up on top.

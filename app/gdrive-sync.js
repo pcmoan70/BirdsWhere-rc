@@ -465,6 +465,7 @@ window.GDriveSync = (function () {
         if (!r.ok) throw new Error("list file could not be read: " + e.file + " (" + r.status + ")");
         e.points = await window.AppData.listFromKmz(await r.arrayBuffer());
         if (e.points.polys) { e.polys = e.points.polys; delete e.points.polys; }   // the list's areas (steep-terrain polygons …)
+        if (e.points.lines) { e.lines = e.points.lines; delete e.points.lines; }   // … and lines (a GPS track)
       }
       delete e.file; delete e.psig; delete e.n;   // a merged list must not carry the reference fields
     }
