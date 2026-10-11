@@ -18801,13 +18801,30 @@
   // are unremovable. Add a section on top of point list with a list of all the search-words without
   // checkbox but with an X to remove those points"). Pins from before the words were recorded group as
   // "earlier search"; a hand-placed pin is in no group.
-  function mpSearchKey(q) { return q && (q.fromSearch || (q.source === "search" ? "\u0000" : null)); }
+  // Pins copied by a search before v2064 carry neither `fromSearch` nor (usually) source "search" —
+  // copying a list point kept its own source ("kml" …). They are recognised as an exact copy (same
+  // spot to 1e-6°, same name) of a point in a saved list, and join the "earlier search" group.
+  var MP_EARLIER = "#earlier-search#";   // the group key for pins without their search words (plain text: the HTML parser rewrites a NUL)
+  var _mpListPtIdx = null, _mpListPtSig = "";
+  function mpListPointIndex() {
+    var cs = mpState.mpCollections(), sig = cs.map(function (c) { return c._lazy ? "L" : (c.points || []).length; }).join(",");   // a list that loads later changes it
+    if (_mpListPtIdx && sig === _mpListPtSig) return _mpListPtIdx;
+    var idx = Object.create(null);
+    cs.forEach(function (c) { (c.points || []).forEach(function (q) { if (q && isFinite(+q.lat) && isFinite(+q.lon)) idx[(+q.lat).toFixed(6) + "," + (+q.lon).toFixed(6) + "|" + (q.name || "")] = 1; }); });
+    _mpListPtIdx = idx; _mpListPtSig = sig; return idx;
+  }
+  function mpSearchKey(q) {
+    if (!q) return null;
+    if (q.fromSearch) return q.fromSearch;
+    if (q.source === "search") return MP_EARLIER;
+    return mpListPointIndex()[(+q.lat).toFixed(6) + "," + (+q.lon).toFixed(6) + "|" + (q.name || "")] ? MP_EARLIER : null;
+  }
   function mpFromSearchHtml() {
     var groups = Object.create(null), order = [];
     mpState.mapPoints().forEach(function (q) { var k = mpSearchKey(q); if (k == null) return; if (!groups[k]) { groups[k] = 0; order.push(k); } groups[k]++; });
     if (!order.length) return "";
     return '<div class="mp-fs"><div class="mp-fs-head">' + escapeHtml(t("points.fromSearches")) + "</div>" + order.map(function (k) {
-      var label = k === "\u0000" ? t("points.searchEarlier") : "\u201c" + k + "\u201d";
+      var label = k === MP_EARLIER ? t("points.searchEarlier") : "\u201c" + k + "\u201d";
       return '<div class="mp-fs-row"><span class="mp-fs-q">' + escapeHtml(label) + '</span><span class="mp-fs-n">' + escapeHtml(t("points.searchPins", { n: groups[k] })) + "</span>" +
         '<button type="button" class="mp-fs-del" data-q="' + escapeHtml(k) + '" title="' + escapeHtml(t("points.removeSearchPts")) + '" aria-label="' + escapeHtml(t("points.removeSearchPts")) + '">' + X_MARK_SVG + "</button></div>";
     }).join("") + "</div>";
