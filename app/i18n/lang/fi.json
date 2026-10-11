@@ -1543,6 +1543,8 @@
   "points.searchNone": "Mikään lista ei vastaa hakua ”{q}”.",
   "points.searchLists": "{n} listaa vastaa",
   "points.searchHits": "{n}/{total}",
+  "points.searchShowList": "Näytä koko lista kartalla",
+  "points.searchStrike": "Napauta jättääksesi tämän listan osumat pois (yliviivattu); napauta uudelleen ottaaksesi ne mukaan",
   "points.searchToMap": "Lisää {n} osumapistettä kartalle",
   "points.searchToMapDone": "{n} pistettä lisätty kartalle karttapisteinä — tallenna ne listaan Pisteet-valikosta, jos haluat säilyttää ne.",
   "settings.trackRecord": "Tallenna reitti GPS-seurannan aikana",

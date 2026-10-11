@@ -1543,6 +1543,8 @@
   "points.searchNone": "Ükski loend ei vasta päringule „{q}”.",
   "points.searchLists": "Vastavaid loendeid: {n}",
   "points.searchHits": "{n}/{total}",
+  "points.searchShowList": "Näita kogu loendit kaardil",
+  "points.searchStrike": "Puuduta, et jätta selle loendi tulemused välja (läbikriipsutatud); puuduta uuesti, et need kaasata",
   "points.searchToMap": "Pane {n} leitud punkti kaardile",
   "points.searchToMapDone": "{n} punkti pandi kaardile kaardipunktidena — salvesta need Punktide alt loendisse, kui soovid neid hoida.",
   "settings.trackRecord": "Salvesta rada GPS-jälgimise ajal",

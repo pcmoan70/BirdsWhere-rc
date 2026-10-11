@@ -1543,6 +1543,8 @@
   "points.searchNone": "Ninguna lista coincide con «{q}».",
   "points.searchLists": "{n} listas coinciden",
   "points.searchHits": "{n} de {total}",
+  "points.searchShowList": "Mostrar la lista completa en el mapa",
+  "points.searchStrike": "Toca para dejar fuera las coincidencias de esta lista (tachada); vuelve a tocar para incluirlas",
   "points.searchToMap": "Poner los {n} puntos encontrados en el mapa",
   "points.searchToMapDone": "{n} puntos puestos en el mapa como puntos de mapa: guárdalos en una lista desde Puntos si quieres conservarlos.",
   "settings.trackRecord": "Grabar un track durante el seguimiento GPS",

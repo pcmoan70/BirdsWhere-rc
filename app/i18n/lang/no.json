@@ -1543,6 +1543,8 @@
   "points.searchNone": "Ingen liste treffer «{q}».",
   "points.searchLists": "{n} lister treffer",
   "points.searchHits": "{n} av {total}",
+  "points.searchShowList": "Vis hele listen på kartet",
+  "points.searchStrike": "Trykk for å utelate treffene i denne listen (overstreket); trykk igjen for å ta dem med",
   "points.searchToMap": "Legg de {n} treffpunktene på kartet",
   "points.searchToMapDone": "{n} punkter lagt på kartet som kartpunkter — lagre dem i en liste fra Punkter når du vil beholde dem.",
   "settings.trackRecord": "Registrer spor under GPS-sporing",

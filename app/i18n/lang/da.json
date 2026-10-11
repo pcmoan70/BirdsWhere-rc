@@ -1543,6 +1543,8 @@
   "points.searchNone": "Ingen liste matcher “{q}”.",
   "points.searchLists": "{n} lister matcher",
   "points.searchHits": "{n} af {total}",
+  "points.searchShowList": "Vis hele listen på kortet",
+  "points.searchStrike": "Tryk for at udelade listens fund (overstreget); tryk igen for at tage dem med",
   "points.searchToMap": "Læg de {n} fundne punkter på kortet",
   "points.searchToMapDone": "{n} punkter lagt på kortet som kortpunkter — gem dem i en liste fra Punkter, når du vil beholde dem.",
   "settings.trackRecord": "Optag et spor under GPS-sporing",

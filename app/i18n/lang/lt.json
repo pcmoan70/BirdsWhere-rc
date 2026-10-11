@@ -1543,6 +1543,8 @@
   "points.searchNone": "Joks sąrašas neatitinka „{q}“.",
   "points.searchLists": "Atitinkančių sąrašų: {n}",
   "points.searchHits": "{n} iš {total}",
+  "points.searchShowList": "Rodyti visą sąrašą žemėlapyje",
+  "points.searchStrike": "Bakstelėkite, kad praleistumėte šio sąrašo atitikmenis (perbraukta); bakstelėkite dar kartą, kad juos įtrauktumėte",
   "points.searchToMap": "Dėti {n} rastų taškų į žemėlapį",
   "points.searchToMapDone": "{n} taškų padėta į žemėlapį kaip žemėlapio taškai — išsaugokite juos sąraše per Taškai, jei norite išlaikyti.",
   "settings.trackRecord": "Įrašyti maršrutą GPS sekimo metu",

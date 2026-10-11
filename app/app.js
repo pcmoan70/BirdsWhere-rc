@@ -18729,15 +18729,29 @@
         (nPts ? '<button type="button" class="btn mp-search-tomap">' + escapeHtml(t("points.searchToMap", { n: nPts })) + "</button>" : "") +
       R.list.map(function (r) {
         var what = t("points.searchHits", { n: r.n, total: r.total });
-        return '<label class="mp-search-row"><input type="checkbox" class="mp-search-cb" data-i="' + R.list.indexOf(r) + '"' + (r.sel ? " checked" : "") + ">" +
-          '<span class="mp-search-name">' + escapeHtml(r.name) + '</span><span class="mp-search-n">' + escapeHtml(what) + "</span></label>";
+        var shown = !!(r.type === "d" ? mpState.shownDetSets() : mpState.shownColls())[r.name];
+        // The checkbox shows / hides the COMPLETE list (as the panel's own does); the name, tapped,
+        // strikes the list through = its records are left out of the transfer (owner, 2026-10-11).
+        return '<div class="mp-search-row' + (r.sel ? "" : " off") + '"><input type="checkbox" class="mp-search-cb" data-i="' + R.list.indexOf(r) + '"' + (shown ? " checked" : "") + ' title="' + escapeHtml(t("points.searchShowList")) + '">' +
+          '<button type="button" class="mp-search-name" data-i="' + R.list.indexOf(r) + '" title="' + escapeHtml(t("points.searchStrike")) + '">' + escapeHtml(r.name) + '</button><span class="mp-search-n">' + escapeHtml(what) + "</span></div>";
       }).join("");
     res.scrollTop = keepScroll;
     res.onscroll = function () { R.scroll = res.scrollTop; };   // kept across repaints and panel rebuilds
     // The checkbox SELECTS the list for the actions below (owner, 2026-10-11) — it no longer
     // shows / hides it, so ticking does not rebuild the panel (and nothing jumps).
-    res.querySelectorAll(".mp-search-cb").forEach(function (cb) {
-      cb.addEventListener("change", function () { var r = R.list[+this.getAttribute("data-i")]; if (r) r.sel = this.checked; mpSearchPaint(); });
+    res.querySelectorAll(".mp-search-cb").forEach(function (cb) {   // show / hide the complete list
+      cb.addEventListener("change", function () {
+        var r = R.list[+this.getAttribute("data-i")]; if (!r) return;
+        var set = r.type === "d" ? mpState.shownDetSets() : mpState.shownColls();
+        if (this.checked) set[r.name] = true; else delete set[r.name];
+        var main = document.querySelector('#mp-panel .mp-coll-cb[data-type="' + r.type + '"][data-name="' + (window.CSS && CSS.escape ? CSS.escape(r.name) : r.name) + '"]');
+        if (main) main.checked = this.checked;
+        saveShownState(); if (r.type === "d" && typeof updateDetSetOverlays === "function") updateDetSetOverlays();
+        mpState.mpFilterRefresh(this.closest(".mp-search-row") || this);
+      });
+    });
+    res.querySelectorAll(".mp-search-name").forEach(function (b) {   // strike through = leave out of the transfer
+      b.addEventListener("click", function (e) { e.preventDefault(); var r = R.list[+this.getAttribute("data-i")]; if (r) { r.sel = !r.sel; mpSearchPaint(); } });
     });
     // The matched records themselves → map points (the working pins), as COPIES: the lists stay as they
     // are (owner, 2026-10-11: "a button for selecting the matched records/points and transfer them to
@@ -18757,10 +18771,7 @@
           mp.push(cp); added++;
         });
       });
-      // The source lists are hidden (un-ticked) so the map — now and after a reopen — shows only the
-      // matched subset, not every dot of those lists (owner, 2026-10-11). The lists themselves stay.
-      R.list.forEach(function (r) { if (!r.sel) return; if (r.type === "d") delete mpState.shownDetSets()[r.name]; else delete mpState.shownColls()[r.name]; });
-      saveShownState(); if (typeof updateDetSetOverlays === "function") updateDetSetOverlays();
+      // The lists keep exactly the shown / hidden state they had before (owner, 2026-10-11).
       saveMapPoints(); renderMapPoints(); refreshMpPanel();
       setStatus(t("points.searchToMapDone", { n: added }));
     });

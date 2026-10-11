@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2059";
+var VERSION = "v2060";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Points search: putting the matched points on the map hides their source lists, so only the subset shows \u2014 also after reopening.",
-  "\u2022 The app opens clean (no selection, no filters).",
+  "\u2022 Points search results: the checkbox shows or hides the whole list; tap a list name to strike it through and leave its matches out. Your lists stay shown or hidden as before.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

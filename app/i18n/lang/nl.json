@@ -1543,6 +1543,8 @@
   "points.searchNone": "Geen lijst past bij ‘{q}’.",
   "points.searchLists": "{n} lijsten passen",
   "points.searchHits": "{n} van {total}",
+  "points.searchShowList": "De hele lijst op de kaart tonen",
+  "points.searchStrike": "Tik om de treffers van deze lijst weg te laten (doorgestreept); tik opnieuw om ze mee te nemen",
   "points.searchToMap": "De {n} gevonden punten op de kaart zetten",
   "points.searchToMapDone": "{n} punten als kaartpunten op de kaart gezet — bewaar ze via Punten in een lijst als je ze wilt houden.",
   "settings.trackRecord": "Een track opnemen tijdens GPS-volgen",
