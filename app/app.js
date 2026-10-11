@@ -18714,7 +18714,7 @@
     inp.addEventListener("click", function (e) { e.stopPropagation(); });
     inp.addEventListener("input", function () {
       mpSearchQ = inp.value;
-      clearTimeout(mpSearchT); mpSearchT = setTimeout(function () { mpSearchRun(mpSearchQ); }, 300);
+      clearTimeout(mpSearchT); mpSearchT = setTimeout(function () { mpSearchRun(mpSearchQ); }, 1000);   // 1 s after the last key (owner, 2026-10-11)
     });
   }
   function refreshMpPanel() {
