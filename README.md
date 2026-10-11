@@ -990,9 +990,11 @@ Right-click / long-press / tap any species name for a menu **led by the species 
   matching records of the lists not struck through into the map points (the working pins); the lists
   and their shown / hidden state stay as they were, and a pin already there is not added twice. Save
   the pins into a list to keep them.
-  Each search that put points on the map gets a row at the top of the Points panel — **On the map from
-  searches**: the search words, how many points, and a red **×** that removes those points from the
-  map again (the lists are not touched; pins from searches before this existed group as "earlier search").
+  The top of the Points panel — **On the map** — has a row for everything on the map that is not a
+  shown list, each with how many points and a red **×** that removes them (the lists are not touched):
+  one row per search that put points on the map (its words), **earlier search** (copies of list points
+  from searches before the words were recorded), **Other map points** (every other pin, also ones you
+  placed yourself) and **Fetched observations** (as the map's red ×; shown lists stay).
 - **Ring markers** — a point whose file carries `marker` = `ring` (also `symbol`) is drawn as an
   unfilled circle in its colour instead of a filled dot (used for the map-dot lists' DTM points).
 - **Areas (polygons)** — a KML/KMZ placemark with a `Polygon` is kept as one of the list's **areas**

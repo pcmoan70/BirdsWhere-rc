@@ -18819,15 +18819,24 @@
     if (q.source === "search") return MP_EARLIER;
     return mpListPointIndex()[(+q.lat).toFixed(6) + "," + (+q.lon).toFixed(6) + "|" + (q.name || "")] ? MP_EARLIER : null;
   }
+  var MP_OTHER = "#other-map-points#";
   function mpFromSearchHtml() {
+    // a list still loading cannot be matched yet → redraw once they all are
+    if (mpState.anyLazy && mpState.anyLazy() && !mpFromSearchHtml._wait) { mpFromSearchHtml._wait = true; mpState.whenAllLoaded().then(function () { mpFromSearchHtml._wait = false; refreshMpPanel(); }); }
     var groups = Object.create(null), order = [];
-    mpState.mapPoints().forEach(function (q) { var k = mpSearchKey(q); if (k == null) return; if (!groups[k]) { groups[k] = 0; order.push(k); } groups[k]++; });
-    if (!order.length) return "";
-    return '<div class="mp-fs"><div class="mp-fs-head">' + escapeHtml(t("points.fromSearches")) + "</div>" + order.map(function (k) {
-      var label = k === MP_EARLIER ? t("points.searchEarlier") : "\u201c" + k + "\u201d";
-      return '<div class="mp-fs-row"><span class="mp-fs-q">' + escapeHtml(label) + '</span><span class="mp-fs-n">' + escapeHtml(t("points.searchPins", { n: groups[k] })) + "</span>" +
-        '<button type="button" class="mp-fs-del" data-q="' + escapeHtml(k) + '" title="' + escapeHtml(t("points.removeSearchPts")) + '" aria-label="' + escapeHtml(t("points.removeSearchPts")) + '">' + X_MARK_SVG + "</button></div>";
-    }).join("") + "</div>";
+    mpState.mapPoints().forEach(function (q) { var k = mpSearchKey(q); if (k == null) k = MP_OTHER; if (!groups[k]) { groups[k] = 0; order.push(k); } groups[k]++; });
+    order.sort(function (a, b) { return (a === MP_OTHER) - (b === MP_OTHER); });   // "other map points" last
+    // Fetched observations get a row too (owner, 2026-10-11: "Points from earlier fetch still show w no
+    // red x in list popup"): its × clears them like the map's red × (shown lists stay).
+    var nFetched = 0; Object.keys(detPlot || {}).forEach(function (k) { (detPlot[k].rows || []).forEach(function (r) { if (!r._list && !r._alert) nFetched++; }); });
+    if (!order.length && !nFetched) return "";
+    var row = function (key, label, n) {
+      return '<div class="mp-fs-row"><span class="mp-fs-q">' + escapeHtml(label) + '</span><span class="mp-fs-n">' + escapeHtml(t("points.searchPins", { n: n })) + "</span>" +
+        '<button type="button" class="mp-fs-del" data-q="' + escapeHtml(key) + '" title="' + escapeHtml(t("points.removeSearchPts")) + '" aria-label="' + escapeHtml(t("points.removeSearchPts")) + '">' + X_MARK_SVG + "</button></div>";
+    };
+    return '<div class="mp-fs"><div class="mp-fs-head">' + escapeHtml(t("points.fromSearches")) + "</div>" +
+      order.map(function (k) { return row(k, k === MP_EARLIER ? t("points.searchEarlier") : k === MP_OTHER ? t("points.otherMapPts") : "\u201c" + k + "\u201d", groups[k]); }).join("") +
+      (nFetched ? row("#fetched#", t("points.fetchedObs"), nFetched) : "") + "</div>";
   }
   // The lists hidden with the panel's Hide toggle: { p: [list names], d: [trip names] }, or null.
   function mpHiddenStash() { var st = window.GeoState.get("mpHiddenStash", null); return (st && Array.isArray(st.p) && Array.isArray(st.d)) ? st : null; }
@@ -19104,7 +19113,8 @@
       b.addEventListener("click", function (e) {
         e.stopPropagation();
         var key = this.getAttribute("data-q");
-        mpState.setMapPoints(mpState.mapPoints().filter(function (q) { return mpSearchKey(q) !== key; }));
+        if (key === "#fetched#") { clearDetections(); updateClearGroup(); refreshMpPanel(); keepMpPanelOpen(); return; }   // the fetched observations (lists stay)
+        mpState.setMapPoints(mpState.mapPoints().filter(function (q) { var k = mpSearchKey(q); if (k == null) k = MP_OTHER; return k !== key; }));
         saveMapPoints(); renderMapPoints(); refreshMpPanel(); keepMpPanelOpen();
       });
     });
