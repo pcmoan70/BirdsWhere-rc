@@ -967,15 +967,16 @@ Right-click / long-press / tap any species name for a menu **led by the species 
 - **Uncertainty circles** — a point whose file carries `uncertainty_m` (also `radius_m`, `radius`,
   `coordinateUncertaintyInMeters`, `accuracy`) is drawn with a faint, see-through circle of that
   radius in metres around it, in the list's colour.
-- **Search all lists** — the box at the top of the Points panel searches every saved list and trip:
-  list and folder names, point names, notes, tags, observers, places and activity (typo-tolerant, as
-  "Words in notes"), and **species via the model's labels** — the localised, English and scientific
-  name — so "hubro", "eagle owl" and "Bubo bubo" find the same points even where a file spelled the
-  bird differently. Results list the matching lists with how many points matched — all **selected**
-  to start with; untick a list to leave its points out. The search starts 1 s after the last letter (a flashing ⌛ in the box shows it is working until the results are in); lists still loading are loaded first.
-  **Put the N matched points on the map** copies only the matching records of the selected lists (list
-  points and trip observations) — a whole list only when its own name or folder matches — into the map points — the working pins — without changing the lists; a pin already
-  there is not added twice. Save them into a list from Points to keep them.
+- **Search all lists** — the box at the top of the Points panel searches every saved list and trip by
+  **notes** (typo-tolerant, as "Words in notes") and **species via the model's labels** — the
+  localised, English and scientific name — so "hubro", "eagle owl" and "Bubo bubo" find the same
+  points even where a file spelled the bird differently. List names, point names, tags, observers and
+  places are not searched. The search starts 1 s after the last letter (a flashing ⌛ shows it is
+  working); lists still loading are loaded first. Results list the matching lists with how many
+  records matched — all **selected** to start with; untick a list to leave its records out.
+  **Put the N matched points on the map** copies only the matching records of the selected lists into
+  the map points (the working pins), without changing the lists; a pin already there is not added
+  twice. Save them into a list from Points to keep them.
 - **Ring markers** — a point whose file carries `marker` = `ring` (also `symbol`) is drawn as an
   unfilled circle in its colour instead of a filled dot (used for the map-dot lists' DTM points).
 - **Areas (polygons)** — a KML/KMZ placemark with a `Polygon` is kept as one of the list's **areas**

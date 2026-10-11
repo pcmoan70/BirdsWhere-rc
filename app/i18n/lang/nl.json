@@ -1541,7 +1541,6 @@
   "points.searchNone": "Geen lijst past bij ‘{q}’.",
   "points.searchLists": "{n} lijsten passen",
   "points.searchHits": "{n} van {total}",
-  "points.searchByName": "naam past",
   "points.searchToMap": "De {n} gevonden punten op de kaart zetten",
   "points.searchToMapDone": "{n} punten als kaartpunten op de kaart gezet — bewaar ze via Punten in een lijst als je ze wilt houden.",
   "settings.trackRecord": "Een track opnemen tijdens GPS-volgen",

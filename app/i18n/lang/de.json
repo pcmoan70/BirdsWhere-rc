@@ -1541,7 +1541,6 @@
   "points.searchNone": "Keine Liste passt zu „{q}“.",
   "points.searchLists": "{n} Listen passen",
   "points.searchHits": "{n} von {total}",
-  "points.searchByName": "Name passt",
   "points.searchToMap": "Die {n} gefundenen Punkte auf die Karte legen",
   "points.searchToMapDone": "{n} Punkte als Kartenpunkte auf die Karte gelegt — speichere sie unter Punkte in einer Liste, wenn du sie behalten willst.",
   "settings.trackRecord": "Track während der GPS-Verfolgung aufzeichnen",

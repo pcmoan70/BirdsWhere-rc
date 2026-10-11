@@ -287,7 +287,6 @@ window.GeoI18N = (function () {
         "points.searchNone": "No list matches “{q}”.",
         "points.searchLists": "{n} lists match",
         "points.searchHits": "{n} of {total}",
-        "points.searchByName": "name matches",
         "points.searchToMap": "Put the {n} matched points on the map",
         "points.searchToMapDone": "{n} points put on the map as map points — save them into a list from Points when you want to keep them.",
         "settings.trackRecord": "Record a track while GPS tracking",

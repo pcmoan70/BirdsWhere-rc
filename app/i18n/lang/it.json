@@ -1541,7 +1541,6 @@
   "points.searchNone": "Nessun elenco corrisponde a «{q}».",
   "points.searchLists": "{n} elenchi corrispondono",
   "points.searchHits": "{n} di {total}",
-  "points.searchByName": "il nome corrisponde",
   "points.searchToMap": "Metti i {n} punti trovati sulla mappa",
   "points.searchToMapDone": "{n} punti messi sulla mappa come punti mappa: salvali in un elenco da Punti se vuoi tenerli.",
   "settings.trackRecord": "Registra una traccia durante il tracciamento GPS",

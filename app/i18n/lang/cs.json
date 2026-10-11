@@ -1541,7 +1541,6 @@
   "points.searchNone": "Žádný seznam neodpovídá „{q}“.",
   "points.searchLists": "Odpovídajících seznamů: {n}",
   "points.searchHits": "{n} z {total}",
-  "points.searchByName": "odpovídá název",
   "points.searchToMap": "Dát {n} nalezených bodů na mapu",
   "points.searchToMapDone": "{n} bodů dáno na mapu jako body mapy — chcete-li je ponechat, uložte je do seznamu v Bodech.",
   "settings.trackRecord": "Zaznamenávat trasu během sledování GPS",

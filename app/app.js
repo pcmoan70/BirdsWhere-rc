@@ -18634,11 +18634,11 @@
   var mpRowsShown = [];    // the rows as last drawn, so a row button can reach its point
   // ---- Search across all lists (owner, 2026-10-11): "add a fuzzy string search for all the elements
   // (for species name search make sure to go via label files). The search should show which lists the
-  // searched word matches, giving user chance to select those." Every word must hit a point's text —
-  // name, note, tags, observer, place, activity — with the "Words in notes" matcher (typo-tolerant),
-  // OR the point's species must match: the query is matched against the MODEL LABELS (localised
-  // name, English name, scientific name), never against what a file happened to call the bird.
-  // A list whose (folder) name matches counts as a whole. Trips (detection sets) are searched too.
+  // searched word matches, giving user chance to select those." Then: "Do not match on list name,
+  // match only on notes and species names." A record matches when every word hits its NOTE (the
+  // "Words in notes" matcher, typo-tolerant) OR its species matches: the query is matched against the
+  // MODEL LABELS (localised, English and scientific name), never against what a file happened to call
+  // the bird. Trips (detection sets) are searched the same way. Only matching records are counted.
   var mpSearchQ = "", mpSearchT = null, mpSearchRes = null, mpSearchGen = 0, mpSearchBusyOn = false;
   // A flashing ⌛ in the box from the first key until the results are painted (owner, 2026-10-11).
   function mpSearchBusy(on) { mpSearchBusyOn = !!on; var b = document.getElementById("mp-search-busy"); if (b) b.hidden = !on; }
@@ -18651,7 +18651,9 @@
     });
     return n > 400 ? Object.create(null) : out;   // a query that hits half the model is not a species search
   }
-  function mpPointText(p) { return textFold([p.name, p.note, (p.tags || []).join(" "), p.observer, p.place, p.act, p.sci].join(" ")); }
+  // Owner, 2026-10-11: "Do not match on list name, match only on notes and species names." — a point's
+  // own text that counts is its NOTE; species go through the model labels (mpSearchSpecies).
+  function mpPointText(p) { return textFold(p.note || ""); }
   function mpSearchRun(q) {
     var gen = ++mpSearchGen, res = document.getElementById("mp-search-res");
     q = String(q || "").trim();
@@ -18665,26 +18667,22 @@
       var out = [];
       mpState.mpCollections().forEach(function (c) {
         if (!c || !c.name) return;
-        var pts = c.points || [], byName = hits(textFold(c.name + " " + (c.folder || ""))), n = 0, got = [];
+        var pts = c.points || [], n = 0, got = [];
         for (var i = 0; i < pts.length; i++) { var pt = pts[i]; if (!pt) continue; var key = mpState.detKeyOf(pt); if ((key && sp[key]) || hits(mpPointText(pt))) { n++; got.push(pt); } }
-        // Only the matching RECORDS go on to the map — the whole list only when its own name (or
-        // folder) matches (owner, 2026-10-11).
-        if (byName) got = pts.filter(Boolean);
-        if (n || byName) out.push({ type: "p", name: c.name, n: n, total: pts.length, byName: byName, pts: got });
+        if (n) out.push({ type: "p", name: c.name, n: n, total: pts.length, pts: got });
       });
       detSets().forEach(function (st) {
-        var n = 0, total = 0, byName = hits(textFold(st.name)), got = [];
+        var n = 0, total = 0, got = [];
         Object.keys(st.detections || {}).forEach(function (k) {
           var e = st.detections[k];
           (e.rows || []).forEach(function (r) {
             total++;
-            if (sp[k] || hits(textFold([r.observer, r.place, r.note, r.act].join(" ")))) {
+            if (sp[k] || hits(textFold(r.note || ""))) {
               n++; got.push({ lat: +r.lat, lon: +r.lon, name: detName({ key: k, name: e.name }) || e.name || "", date: r.date || "", observer: r.observer || "", place: r.place || "", note: r.note || "", spKey: k, tags: [] });
             }
           });
         });
-        if (byName) { got = []; Object.keys(st.detections || {}).forEach(function (k) { var e = st.detections[k]; (e.rows || []).forEach(function (r) { got.push({ lat: +r.lat, lon: +r.lon, name: detName({ key: k, name: e.name }) || e.name || "", date: r.date || "", observer: r.observer || "", place: r.place || "", note: r.note || "", spKey: k, tags: [] }); }); }); }
-        if (n || byName) out.push({ type: "d", name: st.name, n: n, total: total, byName: byName, pts: got });
+        if (n) out.push({ type: "d", name: st.name, n: n, total: total, pts: got });
       });
       out.sort(function (a, b) { return (b.n - a.n) || a.name.localeCompare(b.name); });
       out.forEach(function (r) { r.sel = true; });   // every matching list starts selected (owner, 2026-10-11) — untick to leave one out
@@ -18701,7 +18699,7 @@
     res.innerHTML = '<div class="mp-search-head"><span>' + escapeHtml(t("points.searchLists", { n: R.list.length })) + "</span></div>" +
         (nPts ? '<button type="button" class="btn mp-search-tomap">' + escapeHtml(t("points.searchToMap", { n: nPts })) + "</button>" : "") +
       R.list.map(function (r) {
-        var what = r.byName ? t("points.searchByName") + " · " + r.total : t("points.searchHits", { n: r.n, total: r.total });
+        var what = t("points.searchHits", { n: r.n, total: r.total });
         return '<label class="mp-search-row"><input type="checkbox" class="mp-search-cb" data-i="' + R.list.indexOf(r) + '"' + (r.sel ? " checked" : "") + ">" +
           '<span class="mp-search-name">' + escapeHtml(r.name) + '</span><span class="mp-search-n">' + escapeHtml(what) + "</span></label>";
       }).join("");
