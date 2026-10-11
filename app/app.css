@@ -4929,3 +4929,11 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .mp-hide-toggle { margin-left: auto; }
 .mp-hide-toggle.on { border-color: var(--brand, #2e8b74); color: var(--brand-deep, #0d4f45); font-weight: 600; }
 .mp-coll-lbl.mp-hidden input, .mp-search-row.mp-hidden input { opacity: .4; filter: grayscale(1); cursor: not-allowed; }
+/* Points panel: map points from searches, removable per search */
+.mp-fs { padding: 4px 8px 6px; border-bottom: 1px solid var(--border, #e3e8e6); }
+.mp-fs-head { font-size: var(--fs-xs); color: var(--ink-muted, #667); margin-bottom: 2px; }
+.mp-fs-row { display: flex; align-items: center; gap: 8px; padding: 2px 0; font-size: var(--fs-s); }
+.mp-fs-q { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mp-fs-n { flex: 0 0 auto; color: var(--ink-muted, #667); font-size: var(--fs-xs); }
+.mp-fs-del { flex: 0 0 auto; border: 0; background: transparent; color: #c62828; cursor: pointer; padding: 3px 5px; border-radius: 5px; display: inline-flex; }
+.mp-fs-del:hover { background: var(--hover, #fdecea); }

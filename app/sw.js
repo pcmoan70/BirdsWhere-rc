@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2063";
+var VERSION = "v2064";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Points search matches exact words now (no typo-guessing), ignoring case, accents, spaces and hyphens: \u201cSlagugle-kasse\u201d finds \u201cslaguglekasse\u201d.",
+  "\u2022 Points panel: \u201cOn the map from searches\u201d lists each search whose points you put on the map, with a \u00d7 to remove those points again.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -18775,6 +18775,7 @@
           var k = (+q.lat).toFixed(6) + "," + (+q.lon).toFixed(6) + "|" + (q.name || "");
           if (have[k]) return; have[k] = 1;
           var cp = Object.assign({}, q); cp.id = mpState.mpUid(); cp.tags = (q.tags || []).slice(); cp.source = cp.source || "search";
+          cp.fromSearch = R.q;   // which search put it here — its row at the top of the panel removes them again
           mp.push(cp); added++;
         });
       });
@@ -18795,6 +18796,21 @@
       mpSearchBusy(mpSearchQ.trim().length >= 2);
       clearTimeout(mpSearchT); mpSearchT = setTimeout(function () { mpSearchRun(mpSearchQ); }, 1000);   // 1 s after the last key (owner, 2026-10-11)
     });
+  }
+  // Map points put there by a search, grouped by its words (owner, 2026-10-11: "the dots moved to map
+  // are unremovable. Add a section on top of point list with a list of all the search-words without
+  // checkbox but with an X to remove those points"). Pins from before the words were recorded group as
+  // "earlier search"; a hand-placed pin is in no group.
+  function mpSearchKey(q) { return q && (q.fromSearch || (q.source === "search" ? "\u0000" : null)); }
+  function mpFromSearchHtml() {
+    var groups = Object.create(null), order = [];
+    mpState.mapPoints().forEach(function (q) { var k = mpSearchKey(q); if (k == null) return; if (!groups[k]) { groups[k] = 0; order.push(k); } groups[k]++; });
+    if (!order.length) return "";
+    return '<div class="mp-fs"><div class="mp-fs-head">' + escapeHtml(t("points.fromSearches")) + "</div>" + order.map(function (k) {
+      var label = k === "\u0000" ? t("points.searchEarlier") : "\u201c" + k + "\u201d";
+      return '<div class="mp-fs-row"><span class="mp-fs-q">' + escapeHtml(label) + '</span><span class="mp-fs-n">' + escapeHtml(t("points.searchPins", { n: groups[k] })) + "</span>" +
+        '<button type="button" class="mp-fs-del" data-q="' + escapeHtml(k) + '" title="' + escapeHtml(t("points.removeSearchPts")) + '" aria-label="' + escapeHtml(t("points.removeSearchPts")) + '">' + X_MARK_SVG + "</button></div>";
+    }).join("") + "</div>";
   }
   // The lists hidden with the panel's Hide toggle: { p: [list names], d: [trip names] }, or null.
   function mpHiddenStash() { var st = window.GeoState.get("mpHiddenStash", null); return (st && Array.isArray(st.p) && Array.isArray(st.d)) ? st : null; }
@@ -19051,6 +19067,7 @@
           ? '<button type="button" id="mp-hide-toggle" class="btn btn-light mp-hide-toggle' + (hidStash ? " on" : "") + '">' + escapeHtml(t(hidStash ? "points.showLists" : "points.hideLists")) + "</button>" : "") +
       "</div>" +
       '<div id="mp-backup-line" class="mp-backup-line"></div>' +
+      mpFromSearchHtml() +
       '<div class="mp-search"><div class="mp-search-box"><input type="search" id="mp-search-in" autocomplete="off" spellcheck="false" placeholder="' + escapeHtml(t("points.search")) + '" value="' + escapeHtml(mpSearchQ) + '" />' +
         '<span id="mp-search-busy" class="mp-search-busy" aria-hidden="true"' + (mpSearchBusyOn ? "" : " hidden") + '>\u231B</span></div>' +
         '<div id="mp-search-res" class="mp-search-res"></div></div>' +
@@ -19066,6 +19083,14 @@
           : "") + "</div>";
     // Wire interactions
     wireMpSearch(panel);
+    panel.querySelectorAll(".mp-fs-del").forEach(function (b) {
+      b.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var key = this.getAttribute("data-q");
+        mpState.setMapPoints(mpState.mapPoints().filter(function (q) { return mpSearchKey(q) !== key; }));
+        saveMapPoints(); renderMapPoints(); refreshMpPanel(); keepMpPanelOpen();
+      });
+    });
     var hideTg = panel.querySelector("#mp-hide-toggle");
     if (hideTg) hideTg.addEventListener("click", function (e) {
       e.stopPropagation();
