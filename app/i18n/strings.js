@@ -238,6 +238,8 @@ window.GeoI18N = (function () {
         "ctrl.downloadView": "Download map",
         "ctrl.downloadHold": "Download this view (hold for saved offline maps)",
         "ctrl.clearPoints": "Clear fetched observations from the map (saved point lists stay)",
+        "ctrl.clearLists": "Take the shown lists off the map (the lists are kept)",
+        "ctrl.listsCleared": "Shown lists taken off the map — tick them in Points to show them again.",
         "offline.hint": "Saves the map area shown on screen — pan and zoom first (– shrinks this panel to see more of the map).",
         "offline.maps": "Offline maps",
         "offline.minimize": "Minimize",

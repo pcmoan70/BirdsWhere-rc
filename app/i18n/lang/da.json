@@ -146,6 +146,8 @@
   "bc.detWeek": "observeret her",
   "ctrl.downloadHold": "Download denne visning (hold for gemte offlinekort)",
   "ctrl.clearPoints": "Ryd hentede observationer fra kortet (gemte punktlister bliver)",
+  "ctrl.clearLists": "Fjern de viste lister fra kortet (listerne beholdes)",
+  "ctrl.listsCleared": "Viste lister er fjernet fra kortet — sæt flueben i Punkter for at vise dem igen.",
   "offline.purgedAsk": "{n} offlinekortområde(r) blev ryddet af browseren. Download dem igen nu?",
   "offline.redownloading": "Downloader “{name}” igen…",
   "offline.redone": "Offlineområder downloadet igen.",

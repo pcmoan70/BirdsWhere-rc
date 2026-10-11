@@ -627,8 +627,9 @@ observations on open** is on (off by default). Shown point lists still appear; "
 only start-up fetch.
 
 There's also a standalone red **×** on the **right of the map** (near the offline-download button),
-shown only while observations are plotted: one tap clears the fetched observations off the map
-(saved point lists stay shown).
+shown while observations or lists are on the map: the first tap clears the fetched observations
+(saved point lists stay shown); a second tap — once nothing fetched is left — takes the shown lists
+and trips off the map too (un-ticked; the lists themselves are kept).
 
 A **✓ Update** button (also on the right of the map, shown only when you have fetched areas) brings
 **every area you've already fetched up to today's latest observations** in one tap: each area is

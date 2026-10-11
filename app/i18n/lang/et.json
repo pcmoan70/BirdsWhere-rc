@@ -146,6 +146,8 @@
   "bc.detWeek": "vaadeldud siin",
   "ctrl.downloadHold": "Laadi see vaade alla (hoia all salvestatud offline-kaartide jaoks)",
   "ctrl.clearPoints": "Eemalda kaardilt laaditud vaatlused (salvestatud punktiloendid jäävad)",
+  "ctrl.clearLists": "Võta kuvatud loendid kaardilt maha (loendid jäävad)",
+  "ctrl.listsCleared": "Kuvatud loendid võeti kaardilt maha — märgi need Punktides, et neid uuesti näidata.",
   "offline.purgedAsk": "Brauser tühjendas {n} offline-kaardiala. Kas laadida need nüüd uuesti alla?",
   "offline.redownloading": "„{name}“ uuesti allalaadimine…",
   "offline.redone": "Offline-alad uuesti alla laaditud.",

@@ -146,6 +146,8 @@
   "bc.detWeek": "hier waargenomen",
   "ctrl.downloadHold": "Download deze weergave (houd ingedrukt voor opgeslagen offlinekaarten)",
   "ctrl.clearPoints": "Opgehaalde waarnemingen van de kaart wissen (opgeslagen puntenlijsten blijven)",
+  "ctrl.clearLists": "Getoonde lijsten van de kaart halen (de lijsten blijven)",
+  "ctrl.listsCleared": "Getoonde lijsten van de kaart gehaald — vink ze aan bij Punten om ze weer te tonen.",
   "offline.purgedAsk": "{n} offlinekaartgebied(en) zijn door de browser gewist. Nu opnieuw downloaden?",
   "offline.redownloading": "“{name}” opnieuw downloaden…",
   "offline.redone": "Offlinegebieden opnieuw gedownload.",

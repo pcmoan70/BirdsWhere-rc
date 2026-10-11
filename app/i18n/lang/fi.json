@@ -146,6 +146,8 @@
   "bc.detWeek": "havaittu tässä",
   "ctrl.downloadHold": "Lataa tämä näkymä (pidä pohjassa nähdäksesi tallennetut offline-kartat)",
   "ctrl.clearPoints": "Poista haetut havainnot kartalta (tallennetut pistelistat jäävät)",
+  "ctrl.clearLists": "Poista näytetyt listat kartalta (listat säilyvät)",
+  "ctrl.listsCleared": "Näytetyt listat poistettu kartalta — valitse ne Pisteissä näyttääksesi ne uudelleen.",
   "offline.purgedAsk": "Selain tyhjensi {n} offline-karta-aluetta. Ladataanko ne uudelleen nyt?",
   "offline.redownloading": "Ladataan uudelleen ”{name}”…",
   "offline.redone": "Offline-alueet ladattu uudelleen.",

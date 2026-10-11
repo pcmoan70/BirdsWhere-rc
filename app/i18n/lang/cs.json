@@ -146,6 +146,8 @@
   "bc.detWeek": "pozorováno zde",
   "ctrl.downloadHold": "Stáhnout tento výřez (podržte pro uložené offline mapy)",
   "ctrl.clearPoints": "Odstranit z mapy načtená pozorování (uložené seznamy bodů zůstanou)",
+  "ctrl.clearLists": "Sundat zobrazené seznamy z mapy (seznamy zůstanou)",
+  "ctrl.listsCleared": "Zobrazené seznamy sundány z mapy — zaškrtněte je v Bodech, chcete-li je znovu zobrazit.",
   "offline.purgedAsk": "Prohlížeč vymazal {n} offline oblast(í) mapy. Stáhnout je znovu?",
   "offline.redownloading": "Znovu se stahuje „{name}“…",
   "offline.redone": "Offline oblasti staženy znovu.",

@@ -503,12 +503,13 @@
     var hasFilt = typeof detHasFilter === "function" && detHasFilter();
     var a = clearGroupEl.querySelector(".clearpts-btn");
     if (a) {
-      a.style.display = hasPts ? "" : "none";
+      var listsOn = mpState && (Object.keys(mpState.shownColls()).length || Object.keys(mpState.shownDetSets()).length);
+      a.style.display = (hasPts || listsOn) ? "" : "none";
       // Reflect the shared arm-and-delete state: armed → "click again to clear"; else
       // "arm per-area delete" when there are areas, plain "clear all" otherwise.
       var armed = !!detAreaDeleteMode;
       a.classList.toggle("armed", armed);
-      var title = armed ? t("det.delAreaHint") : (fetchedAreas.length ? t("det.delAreaArm") : t("ctrl.clearPoints"));
+      var title = armed ? t("det.delAreaHint") : (fetchedAreas.length ? t("det.delAreaArm") : (detFetchedCount() ? t("ctrl.clearPoints") : t("ctrl.clearLists")));
       a.title = title; a.setAttribute("aria-label", title);
     }
     var f = clearGroupEl.querySelector(".filterclear-btn");
@@ -9544,8 +9545,7 @@
           // Same two-stage arm-and-delete as the legend's red ×: the first click arms
           // per-area delete (a red × appears on each fetched area) when there are areas
           // to pick from; the next click (or when there are none) clears everything.
-          if (!detAreaDeleteMode && fetchedAreas.length) { enterAreaDeleteMode(); updateDetLegend(); }
-          else clearDetections();
+          clearStep();
           updateClearGroup();
         });
         var f = L.DomUtil.create("a", "filterclear-btn", c);   // below the × (same bar)
@@ -14888,6 +14888,21 @@
   // shown saved list / detection set (un-ticked so nothing is re-injected — the
   // lists/sets themselves are kept in storage, just hidden). Loose working map
   // pins and the saved lists survive.
+  // Fetched observation rows on the map (not a shown list's, not a rarity alert's).
+  function detFetchedCount() { var n = 0; Object.keys(detPlot || {}).forEach(function (k) { (detPlot[k].rows || []).forEach(function (r) { if (!r._list && !r._alert) n++; }); }); return n; }
+  // The red × (map and legend), step by step (owner, 2026-10-11: "when clicked twice also delete list
+  // points"): per-area delete when there are fetched areas → the fetched observations → then, once none
+  // are left, the shown lists and trips come off the map (un-ticked; the lists themselves are kept).
+  function clearStep() {
+    if (!detAreaDeleteMode && fetchedAreas.length) { enterAreaDeleteMode(); updateDetLegend(); return; }
+    if (detAreaDeleteMode || detFetchedCount()) { clearDetections(); return; }
+    if (Object.keys(mpState.shownColls()).length || Object.keys(mpState.shownDetSets()).length) {
+      mpState.setShownColls({}); mpState.setShownDetSets({});
+      saveShownState(); updateDetSetOverlays(); renderMapPoints();
+      if (typeof refreshMpPanel === "function") refreshMpPanel();
+      setStatus(t("ctrl.listsCleared"));
+    }
+  }
   function clearDetections() {
     detPlotGen++;   // invalidate in-flight fetches' late plotting (they finish, but won't repopulate a cleared map)
     cancelPendingFetches();   // actually stop pending detection fetches (network + loops), not just their plotting
@@ -16769,8 +16784,7 @@
     // everything (a 2nd click while armed, or when there are no areas to pick from).
     el.querySelector(".det-clear").addEventListener("click", function (e) {
       e.stopPropagation(); mapClickGuardUntil = Date.now() + 250;
-      if (!detAreaDeleteMode && fetchedAreas.length) { enterAreaDeleteMode(); updateDetLegend(); }
-      else clearDetections();
+      clearStep(); updateClearGroup();
     });
     wireClearFilterBtn(el.querySelector(".det-clear-sel"));   // click = clear all; long-press/right-click = all-filters pane
     // "Total" cycles the listed row-set: All → Selected → Starred → Rare → New for {year} → All, skipping the sets that would be empty (see detRowsStates).
