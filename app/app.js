@@ -8276,6 +8276,10 @@
           var wrap = p.parentElement, btn = wrap ? wrap.querySelector("button, select") : null;
           var r = (btn || wrap || p).getBoundingClientRect();
           var w = p.offsetWidth || 260;
+          // The Points and Checklists panels open in the MIDDLE of the screen (owner, 2026-10-11) —
+          // anchored at the button they were measured before their content filled them in, and a
+          // 320 px list ran off a 360 px phone. Their width is fixed in CSS, so it is right here.
+          if (p.id === "mp-panel" || p.id === "checklists-panel") { p.style.left = Math.max(8, Math.round((window.innerWidth - w) / 2)) + "px"; return; }
           p.style.left = Math.max(6, Math.min(r.left, window.innerWidth - w - 6)) + "px";
         }
         var mo = new MutationObserver(function (muts) {

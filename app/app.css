@@ -1283,6 +1283,9 @@ body.fs-apple #site-header { padding-left: calc(64px + env(safe-area-inset-left)
 /* Header dropdowns escape the header's scroll clip: fixed just under the banner;
    the exact left edge is set on open (anchored to the toggle, clamped on-screen). */
 #site-header .dd-panel { position: fixed; top: calc(var(--header-h, 52px) + 2px); margin-top: 0; }
+/* The Points and Checklists dropdowns open in the MIDDLE of the screen, never wider than it (owner,
+   2026-10-11: under the button, a 320 px panel ran 20 px off a 360 px phone screen). */
+#site-header #mp-panel, #site-header #checklists-panel { width: min(320px, calc(100vw - 16px)); max-width: calc(100vw - 16px); box-sizing: border-box; }   /* centred in placeHeaderPanel */
 /* With viewport-fit=cover, keep Leaflet's edge controls (scale, attribution, the
    detection + overlay legends) clear of the iOS home indicator / side notch. */
 .leaflet-bottom { bottom: env(safe-area-inset-bottom); }

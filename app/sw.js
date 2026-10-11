@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2048";
+var VERSION = "v2049";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 A point list\u2019s popup now always opens in the middle of the screen \u2014 no more right edge cut off on the first open.",
-  "\u2022 Add to route confirms itself on top of every window.",
+  "\u2022 The Points panel (and Checklists) now opens in the middle of the screen \u2014 its right edge no longer runs off a phone screen.",
+  "\u2022 Point popups on the map open in the middle of the screen.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
