@@ -1511,6 +1511,16 @@ window.AppPoints = (function () {
     routePoints.push({ lat: +lat, lon: +lon, name: name || "" });
     saveRoute(); updateRouteChip(); renderRoutePoints();
     setStatus(t("route.added", { n: routePoints.length }));
+    routeToast(t("route.added", { n: routePoints.length }));
+  }
+  // A short confirmation ABOVE every window (owner, 2026-10-11: "+ to add to route — no effect is
+  // seen"): the route bar and the status line sit under the observation list and the list windows,
+  // so adding a stop from there showed nothing.
+  var routeToastEl = null, routeToastT = null;
+  function routeToast(msg) {
+    if (!routeToastEl) { routeToastEl = document.createElement("div"); routeToastEl.id = "route-toast"; routeToastEl.setAttribute("role", "status"); document.body.appendChild(routeToastEl); }
+    routeToastEl.textContent = msg; routeToastEl.classList.add("on");
+    clearTimeout(routeToastT); routeToastT = setTimeout(function () { routeToastEl.classList.remove("on"); }, 2500);
   }
   function clearRoute() { routePoints = []; saveRoute(); updateRouteChip(); renderRoutePoints(); }
   // The stops of every SHOWN saved route list (ticked in the Points panel), in list

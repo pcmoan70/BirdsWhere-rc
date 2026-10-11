@@ -4896,3 +4896,9 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .leaflet-popup-content { max-height: calc(100vh - 90px); max-height: calc(100dvh - 90px); overflow-y: auto; overscroll-behavior: contain; }
 .obs-addmenu, .fp-dl-menu, .place-search-panel, #group-picker-panel, .detrow-menu, .mp-listfilt-menu {
   max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); overflow-y: auto; overscroll-behavior: contain; }
+
+/* "Added to route" confirmation — above every window, so it is seen from the observation list too */
+#route-toast { position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 64px); transform: translate(-50%, -8px); z-index: 20000;
+  background: var(--brand-deep, #0d4f45); color: #fff; padding: 8px 16px; border-radius: 999px; font-size: var(--fs-s); font-weight: 600;
+  box-shadow: 0 6px 18px rgba(0,0,0,.25); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; max-width: 90vw; text-align: center; }
+#route-toast.on { opacity: 1; transform: translate(-50%, 0); }
