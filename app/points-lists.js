@@ -1308,6 +1308,12 @@ window.AppPoints = (function () {
   var _xKeyOf = Object.create(null);
   function detKeyOf(p) {
     if (!p) return "";
+    // Repair (owner, 2026-10-11: loaded lists turned non-bird records into birds): a key an older build
+    // borrowed for a genus the model does not know is dropped — once per point, not written back here.
+    if (p.spKey && !p._spOk && p.sci && p.spKey.indexOf("x:") !== 0) {
+      var bad = false; try { bad = window.AppAggregate.borrowedKey(p.spKey, p.sci); } catch (e) {}
+      if (bad) delete p.spKey; else hide(p, "_spOk", true);
+    }
     if (p.spKey) {
       if (p.spKey.indexOf("x:") !== 0) return p.spKey;
       var xk = p.spKey + "|" + (p.cls || "");
@@ -1353,7 +1359,7 @@ window.AppPoints = (function () {
     }
     var cl = String(data["class"] || data.klass || data.taxonClass || "").trim();
     if (cl && !pt.spCls) pt.spCls = cl;
-    if (!pt.spKey && pt.sci) { var lk = labelForSci(pt.sci); if (lk) pt.spKey = lk.key; }
+    if (!pt.spKey && pt.sci) { var lk = labelForSci(pt.sci, pt.spCls); if (lk) pt.spKey = lk.key; }   // with the record's class: a plant never becomes a bird
     if (/^(1|true|yes)$/i.test(String(data.route || "").trim())) pt.source = "route";   // the stop of a downloaded route
     // Tags may travel as a field too ("a; b" or "a, b"), alongside whatever the dialog mapped.
     var tg = data.tags || data.tag;

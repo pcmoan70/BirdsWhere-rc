@@ -74,7 +74,7 @@ window.AppAggregate = (function () {
     return sciByLower;
   }
   // Drop the cached label index so the next ensureSciIndex() rebuilds it (call after model labels reload).
-  function resetSciIndex() { sciByLower = sciByEpithet = sciByGenus = comByLower = null; _sciResolve = Object.create(null); }
+  function resetSciIndex() { sciByLower = sciByEpithet = sciByGenus = comByLower = null; _sciResolve = Object.create(null); _keyIdx = null; }
   function labelClassOf(l) { var tax = getTaxByCode(); return (l && tax[l.key] && tax[l.key].class_name) || ""; }
   // Last-resort scientific-name match for genus renames: the epithet. Returns a
   // model label when it's the only one with that epithet, or — when several
@@ -396,7 +396,11 @@ window.AppAggregate = (function () {
       var g = s.toLowerCase().split(/\s+/)[0], fams = Object.create(null), nf = 0;
       (sciByGenus && sciByGenus[g] || []).forEach(function (x) { var f = String(familyOfKey(x.l.key) || ""); if (f && !fams[f]) { fams[f] = 1; nf++; } });
       var fam = nf === 1 ? Object.keys(fams)[0] : "";
-      l = labelBySciEpithet(s, cls, fam) || null;
+      // The epithet fallback is for RENAMED species of a genus the model knows (Charadrius dubius →
+      // Thinornis dubius, kept within that family). A genus the model has never heard of — a plant, an
+      // insect in a loaded list — must not borrow a bird that shares the epithet (owner, 2026-10-11:
+      // "when I load a list, the app translates non bird obs into birdnames").
+      l = nf ? (labelBySciEpithet(s, cls, fam) || null) : null;
       if (l && fam && String(familyOfKey(l.key) || "").toLowerCase() !== fam.toLowerCase()) l = null;   // never across families
       if (!l) l = labelBySciGenus(s, cls) || null;
     }
@@ -404,8 +408,22 @@ window.AppAggregate = (function () {
     return l;
   }
 
+  // A stored species key that an older build borrowed for a name of a genus the model does not know
+  // (a plant / insect matched on its epithet alone): true when the key's own genus differs from the
+  // name's AND the model has no species of the name's genus — the case labelForAnySci no longer makes.
+  var _keyIdx = null;   // species key → label (built once; reset with the sci index)
+  function borrowedKey(key, sciName) {
+    var g = String(sciName || "").trim().toLowerCase().split(/\s+/)[0]; if (!g || !key) return false;
+    ensureSciIndex();
+    if (sciByGenus[g] && sciByGenus[g].length) return false;       // a genus the model knows: not this case
+    if (!_keyIdx) { _keyIdx = Object.create(null); getLabels().forEach(function (l) { if (l && l.key) _keyIdx[l.key] = l; }); }
+    var lab = _keyIdx[key];
+    if (!lab || !lab.sci) return false;
+    return String(lab.sci).toLowerCase().split(/\s+/)[0] !== g;
+  }
   return {
     init: init,
+    borrowedKey: borrowedKey,
     labelForAnySci: labelForAnySci,
     aggregateRecords: aggregateRecords,
     ensureSciIndex: ensureSciIndex,
