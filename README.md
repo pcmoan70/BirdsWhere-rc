@@ -967,6 +967,12 @@ Right-click / long-press / tap any species name for a menu **led by the species 
 - **Uncertainty circles** — a point whose file carries `uncertainty_m` (also `radius_m`, `radius`,
   `coordinateUncertaintyInMeters`, `accuracy`) is drawn with a faint, see-through circle of that
   radius in metres around it, in the list's colour.
+- **Search all lists** — the box at the top of the Points panel searches every saved list and trip:
+  list and folder names, point names, notes, tags, observers, places and activity (typo-tolerant, as
+  "Words in notes"), and **species via the model's labels** — the localised, English and scientific
+  name — so "hubro", "eagle owl" and "Bubo bubo" find the same points even where a file spelled the
+  bird differently. Results list the matching lists with how many points matched; tick one to show
+  it, or **Show all**. Lists still loading are loaded first.
 - **Ring markers** — a point whose file carries `marker` = `ring` (also `symbol`) is drawn as an
   unfilled circle in its colour instead of a filled dot (used for the map-dot lists' DTM points).
 - **Areas (polygons)** — a KML/KMZ placemark with a `Polygon` is kept as one of the list's **areas**

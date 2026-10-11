@@ -18632,6 +18632,91 @@
   // ---- Points dropdown panel ----
   var MP_LIST_MAX = 300;   // rows drawn in the Points panel's merged point list
   var mpRowsShown = [];    // the rows as last drawn, so a row button can reach its point
+  // ---- Search across all lists (owner, 2026-10-11): "add a fuzzy string search for all the elements
+  // (for species name search make sure to go via label files). The search should show which lists the
+  // searched word matches, giving user chance to select those." Every word must hit a point's text —
+  // name, note, tags, observer, place, activity — with the "Words in notes" matcher (typo-tolerant),
+  // OR the point's species must match: the query is matched against the MODEL LABELS (localised
+  // name, English name, scientific name), never against what a file happened to call the bird.
+  // A list whose (folder) name matches counts as a whole. Trips (detection sets) are searched too.
+  var mpSearchQ = "", mpSearchT = null, mpSearchRes = null, mpSearchGen = 0;
+  function mpSearchSpecies(q) {
+    var out = Object.create(null), n = 0;
+    if (q.replace(/\s+/g, "").length < 3) return out;
+    Object.keys(labelsByKey).forEach(function (k) {
+      var lbl = labelsByKey[k];
+      if (detFuzzy(q, speciesName(lbl) + " " + (lbl.common || "") + " " + (lbl.sci || ""))) { out[k] = 1; n++; }
+    });
+    return n > 400 ? Object.create(null) : out;   // a query that hits half the model is not a species search
+  }
+  function mpPointText(p) { return textFold([p.name, p.note, (p.tags || []).join(" "), p.observer, p.place, p.act, p.sci].join(" ")); }
+  function mpSearchRun(q) {
+    var gen = ++mpSearchGen, res = document.getElementById("mp-search-res");
+    q = String(q || "").trim();
+    if (q.length < 2) { mpSearchRes = null; if (res) res.innerHTML = ""; return; }
+    if (res) res.innerHTML = '<p class="dd-empty">' + escapeHtml(t("points.searchBusy")) + "</p>";
+    mpState.whenAllLoaded().then(function () {
+      if (gen !== mpSearchGen) return;
+      var words = textFold(q).split(/\s+/).filter(Boolean), sp = mpSearchSpecies(q), spN = Object.keys(sp).length;
+      var hits = function (hay) { var toks = hay.split(/[^a-z0-9]+/); return words.every(function (w) { return textWordHits(w, hay, toks); }); };
+      var out = [];
+      mpState.mpCollections().forEach(function (c) {
+        if (!c || !c.name) return;
+        var pts = c.points || [], byName = hits(textFold(c.name + " " + (c.folder || ""))), n = 0;
+        for (var i = 0; i < pts.length; i++) { var pt = pts[i]; if (!pt) continue; var key = mpState.detKeyOf(pt); if ((key && sp[key]) || hits(mpPointText(pt))) n++; }
+        if (n || byName) out.push({ type: "p", name: c.name, n: n, total: pts.length, byName: byName });
+      });
+      detSets().forEach(function (st) {
+        var n = 0, total = 0, byName = hits(textFold(st.name));
+        Object.keys(st.detections || {}).forEach(function (k) {
+          (st.detections[k].rows || []).forEach(function (r) { total++; if (sp[k] || hits(textFold([r.observer, r.place, r.note, r.act].join(" ")))) n++; });
+        });
+        if (n || byName) out.push({ type: "d", name: st.name, n: n, total: total, byName: byName });
+      });
+      out.sort(function (a, b) { return (b.n - a.n) || a.name.localeCompare(b.name); });
+      mpSearchRes = { q: q, list: out, species: spN };
+      mpSearchPaint();
+    });
+  }
+  function mpSearchPaint() {
+    var res = document.getElementById("mp-search-res"); if (!res || !mpSearchRes) return;
+    var R = mpSearchRes;
+    if (!R.list.length) { res.innerHTML = '<p class="dd-empty">' + escapeHtml(t("points.searchNone", { q: R.q })) + "</p>"; return; }
+    res.innerHTML = '<div class="mp-search-head"><span>' + escapeHtml(t("points.searchLists", { n: R.list.length })) + "</span>" +
+        '<button type="button" class="btn btn-light mp-search-all">' + escapeHtml(t("points.searchShowAll")) + "</button></div>" +
+      R.list.map(function (r) {
+        var shown = !!(r.type === "d" ? mpState.shownDetSets() : mpState.shownColls())[r.name];
+        var what = r.n ? t("points.searchHits", { n: r.n, total: r.total }) : t("points.searchByName");
+        return '<label class="mp-search-row"><input type="checkbox" class="mp-search-cb" data-type="' + r.type + '" data-name="' + escapeHtml(r.name) + '"' + (shown ? " checked" : "") + ">" +
+          '<span class="mp-search-name">' + escapeHtml(r.name) + '</span><span class="mp-search-n">' + escapeHtml(what) + "</span></label>";
+      }).join("");
+    function setShown(type, name, on) {
+      var set = type === "d" ? mpState.shownDetSets() : mpState.shownColls();
+      if (on) set[name] = true; else delete set[name];
+      var main = document.querySelector('#mp-panel .mp-coll-cb[data-type="' + type + '"][data-name="' + (window.CSS && CSS.escape ? CSS.escape(name) : name) + '"]');
+      if (main) main.checked = on;
+    }
+    res.querySelectorAll(".mp-search-cb").forEach(function (cb) {
+      cb.addEventListener("change", function () { setShown(this.getAttribute("data-type"), this.getAttribute("data-name"), this.checked); saveShownState(); mpState.mpFilterRefresh(this.closest(".mp-search-row") || this); });
+    });
+    var all = res.querySelector(".mp-search-all");
+    if (all) all.addEventListener("click", function () {
+      res.querySelectorAll(".mp-search-cb").forEach(function (cb) { cb.checked = true; setShown(cb.getAttribute("data-type"), cb.getAttribute("data-name"), true); });
+      saveShownState(); mpState.mpFilterRefresh(all);
+    });
+  }
+  function wireMpSearch(panel) {
+    var inp = panel.querySelector("#mp-search-in"); if (!inp) return;
+    if (mpSearchRes && mpSearchRes.q === mpSearchQ.trim()) mpSearchPaint();          // the panel was rebuilt: put the results back
+    if (wireMpSearch._focus) { inp.focus(); try { inp.setSelectionRange(inp.value.length, inp.value.length); } catch (e) {} }
+    inp.addEventListener("focus", function () { wireMpSearch._focus = true; });
+    inp.addEventListener("blur", function () { setTimeout(function () { if (document.activeElement !== inp) wireMpSearch._focus = false; }, 0); });
+    inp.addEventListener("click", function (e) { e.stopPropagation(); });
+    inp.addEventListener("input", function () {
+      mpSearchQ = inp.value;
+      clearTimeout(mpSearchT); mpSearchT = setTimeout(function () { mpSearchRun(mpSearchQ); }, 300);
+    });
+  }
   function refreshMpPanel() {
     var panel = document.getElementById("mp-panel"); if (!panel) return;
     // Closed → nothing to draw. Every map-point redraw came through here and rebuilt the whole
@@ -18880,6 +18965,8 @@
         '<input type="file" id="share-file-input" accept=".kmz,.kml,.geojson,.json,.share,.mcshare,.txt" multiple style="display:none" />' +
       "</div>" +
       '<div id="mp-backup-line" class="mp-backup-line"></div>' +
+      '<div class="mp-search"><input type="search" id="mp-search-in" autocomplete="off" spellcheck="false" placeholder="' + escapeHtml(t("points.search")) + '" value="' + escapeHtml(mpSearchQ) + '" />' +
+        '<div id="mp-search-res" class="mp-search-res"></div></div>' +
       collSection +
       (chipsHtml ? '<div class="mp-chips">' + chipsHtml + "</div>" : "") +
       (unionPts.length > 1 ?
@@ -18891,6 +18978,7 @@
           ? '<p class="dd-empty">' + escapeHtml(t("points.listTrimmed", { n: unionPts.length, total: unionTotal })) + "</p>"
           : "") + "</div>";
     // Wire interactions
+    wireMpSearch(panel);
     var importShareBtn = panel.querySelector("#mp-import-share"), shareFileInput = panel.querySelector("#share-file-input");
     if (importShareBtn && shareFileInput) {
       // One popover for both ways in: the file picker, or a direct link to a .kmz / .kml /

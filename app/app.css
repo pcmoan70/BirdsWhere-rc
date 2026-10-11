@@ -4905,3 +4905,15 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
   background: var(--brand-deep, #0d4f45); color: #fff; padding: 8px 16px; border-radius: 999px; font-size: var(--fs-s); font-weight: 600;
   box-shadow: 0 6px 18px rgba(0,0,0,.25); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; max-width: 90vw; text-align: center; }
 #route-toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+/* Points panel: search across all lists */
+.mp-search { padding: 4px 8px 6px; border-bottom: 1px solid var(--border, #e3e8e6); }
+.mp-search input[type=search] { width: 100%; box-sizing: border-box; padding: 6px 9px; border: 1px solid var(--border, #ccc); border-radius: 8px; font: inherit; font-size: var(--fs-s); }
+.mp-search-res:empty { display: none; }
+.mp-search-res { margin-top: 6px; max-height: 40vh; max-height: 40dvh; overflow-y: auto; }
+.mp-search-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: var(--fs-xs); color: var(--ink-muted, #667); margin-bottom: 2px; }
+.mp-search-head .btn { padding: 2px 10px; font-size: var(--fs-xs); }
+.mp-search-row { display: flex; align-items: center; gap: 8px; padding: 4px 2px; cursor: pointer; font-size: var(--fs-s); }
+.mp-search-row input { flex: 0 0 auto; }
+.mp-search-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mp-search-n { flex: 0 0 auto; color: var(--ink-muted, #667); font-size: var(--fs-xs); }
