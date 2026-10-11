@@ -1538,6 +1538,7 @@
   "kml.nFields": "{n} velden",
   "points.capped": "Toont {n} van {total} lijstpunten hier — zoom in voor de rest.",
   "points.areasZoom": "{n} gebieden in getoonde lijsten — zoom in om ze te zien.",
+  "points.untickAll": "Alle lijsten uitvinken",
   "points.search": "Zoek in alle lijsten — woorden of een soort…",
   "points.searchBusy": "Lijsten doorzoeken…",
   "points.searchNone": "Geen lijst past bij ‘{q}’.",

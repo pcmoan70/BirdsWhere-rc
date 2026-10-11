@@ -1538,6 +1538,7 @@
   "kml.nFields": "{n} campos",
   "points.capped": "A mostrar {n} de {total} pontos de lista aqui — amplie para ver os restantes.",
   "points.areasZoom": "{n} áreas nas listas mostradas — aproxime para as ver.",
+  "points.untickAll": "Desmarcar todas as listas",
   "points.search": "Pesquisar em todas as listas — palavras ou uma espécie…",
   "points.searchBusy": "A pesquisar nas listas…",
   "points.searchNone": "Nenhuma lista corresponde a «{q}».",

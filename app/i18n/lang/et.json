@@ -1538,6 +1538,7 @@
   "kml.nFields": "{n} välja",
   "points.capped": "Kuvatakse {n}/{total} loendi punkti — ülejäänute nägemiseks suumi sisse.",
   "points.areasZoom": "{n} ala kuvatud loendites — suumi lähemale, et neid näha.",
+  "points.untickAll": "Eemalda kõigi loendite märked",
   "points.search": "Otsi kõigist loenditest — sõnu või liiki…",
   "points.searchBusy": "Otsin loenditest…",
   "points.searchNone": "Ükski loend ei vasta päringule „{q}”.",

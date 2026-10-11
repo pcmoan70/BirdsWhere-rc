@@ -1538,6 +1538,7 @@
   "kml.nFields": "{n} laukai",
   "points.capped": "Rodoma {n} iš {total} sąrašo taškų — priartinkite, kad pamatytumėte likusius.",
   "points.areasZoom": "{n} plotų rodomuose sąrašuose — priartinkite, kad juos matytumėte.",
+  "points.untickAll": "Atžymėti visus sąrašus",
   "points.search": "Ieškoti visuose sąrašuose — žodžių ar rūšies…",
   "points.searchBusy": "Ieškoma sąrašuose…",
   "points.searchNone": "Joks sąrašas neatitinka „{q}“.",

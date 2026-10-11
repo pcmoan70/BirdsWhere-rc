@@ -1538,6 +1538,7 @@
   "kml.nFields": "{n} kenttää",
   "points.capped": "Näytetään {n}/{total} listapistettä täällä — loput näkyvät lähentämällä.",
   "points.areasZoom": "{n} aluetta näytetyissä listoissa — lähennä nähdäksesi ne.",
+  "points.untickAll": "Poista kaikkien listojen valinnat",
   "points.search": "Hae kaikista listoista — sanoja tai laji…",
   "points.searchBusy": "Haetaan listoista…",
   "points.searchNone": "Mikään lista ei vastaa hakua ”{q}”.",

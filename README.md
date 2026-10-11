@@ -973,6 +973,8 @@ Right-click / long-press / tap any species name for a menu **led by the species 
 - **Uncertainty circles** — a point whose file carries `uncertainty_m` (also `radius_m`, `radius`,
   `coordinateUncertaintyInMeters`, `accuracy`) is drawn with a faint, see-through circle of that
   radius in metres around it, in the list's colour.
+- **Untick all** — the red **×** at the end of the Points panel's top row unticks every list and trip at
+  once (their points leave the map; the lists are kept). It shows only while something is ticked.
 - **Search all lists** — the box at the top of the Points panel searches every saved list and trip by
   **notes** (typo-tolerant, as "Words in notes") and **species via the model's labels** — the
   localised, English and scientific name — so "hubro", "eagle owl" and "Bubo bubo" find the same

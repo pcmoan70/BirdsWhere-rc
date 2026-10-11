@@ -1538,6 +1538,7 @@
   "kml.nFields": "{n} campi",
   "points.capped": "Mostra {n} di {total} punti dell’elenco qui — ingrandisci per il resto.",
   "points.areasZoom": "{n} aree negli elenchi mostrati: ingrandisci per vederle.",
+  "points.untickAll": "Deseleziona tutti gli elenchi",
   "points.search": "Cerca in tutti gli elenchi — parole o una specie…",
   "points.searchBusy": "Ricerca negli elenchi…",
   "points.searchNone": "Nessun elenco corrisponde a «{q}».",

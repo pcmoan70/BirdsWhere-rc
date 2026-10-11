@@ -4925,3 +4925,7 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .mp-search-row.off .mp-search-n { opacity: .5; }
 .mp-search-n { flex: 0 0 auto; color: var(--ink-muted, #667); font-size: var(--fs-xs); }
 .mp-search-tomap { display: block; width: 100%; margin: 4px 0 6px; font-size: var(--fs-s); }
+/* Points panel: red × that unticks every list */
+.mp-untick-all { margin-left: auto; border: 0; background: transparent; color: #c62828; cursor: pointer; padding: 4px 6px; border-radius: 6px; display: inline-flex; align-items: center; }
+.mp-untick-all:hover { background: var(--hover, #fdecea); }
+.mp-untick-all svg { width: 18px; height: 18px; }

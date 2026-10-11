@@ -19035,6 +19035,9 @@
           (mpHasUnsaved() ? " mp-save-unsaved" : "") + '">' + escapeHtml(t("points.save")) + "</button>" : "") +
         '<button type="button" id="mp-import-share" class="btn btn-light" title="' + escapeHtml(tLabel("share.importFile")) + '" data-i18n="points.loadFile">' + escapeHtml(t("points.loadFile")) + "</button>" +
         '<input type="file" id="share-file-input" accept=".kmz,.kml,.geojson,.json,.share,.mcshare,.txt" multiple style="display:none" />' +
+        // Red ×: untick every list and trip at once (owner, 2026-10-11) — shown only while something is ticked.
+        ((Object.keys(mpState.shownColls()).length || Object.keys(mpState.shownDetSets()).length)
+          ? '<button type="button" id="mp-untick-all" class="mp-untick-all" title="' + escapeHtml(t("points.untickAll")) + '" aria-label="' + escapeHtml(t("points.untickAll")) + '">' + X_MARK_SVG + "</button>" : "") +
       "</div>" +
       '<div id="mp-backup-line" class="mp-backup-line"></div>' +
       '<div class="mp-search"><div class="mp-search-box"><input type="search" id="mp-search-in" autocomplete="off" spellcheck="false" placeholder="' + escapeHtml(t("points.search")) + '" value="' + escapeHtml(mpSearchQ) + '" />' +
@@ -19052,6 +19055,12 @@
           : "") + "</div>";
     // Wire interactions
     wireMpSearch(panel);
+    var untickAll = panel.querySelector("#mp-untick-all");
+    if (untickAll) untickAll.addEventListener("click", function (e) {
+      e.stopPropagation();
+      mpState.setShownColls({}); mpState.setShownDetSets({});
+      saveShownState(); updateDetSetOverlays(); renderMapPoints(); refreshMpPanel(); keepMpPanelOpen();
+    });
     var importShareBtn = panel.querySelector("#mp-import-share"), shareFileInput = panel.querySelector("#share-file-input");
     if (importShareBtn && shareFileInput) {
       // One popover for both ways in: the file picker, or a direct link to a .kmz / .kml /

@@ -1538,6 +1538,7 @@
   "kml.nFields": "{n} Felder",
   "points.capped": "Zeigt {n} von {total} Listenpunkten hier — für den Rest hineinzoomen.",
   "points.areasZoom": "{n} Flächen in angezeigten Listen — zum Anzeigen hineinzoomen.",
+  "points.untickAll": "Alle Listen abwählen",
   "points.search": "Alle Listen durchsuchen — Wörter oder eine Art…",
   "points.searchBusy": "Listen werden durchsucht…",
   "points.searchNone": "Keine Liste passt zu „{q}“.",

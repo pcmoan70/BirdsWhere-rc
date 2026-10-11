@@ -1538,6 +1538,7 @@
   "kml.nFields": "{n} felter",
   "points.capped": "Viser {n} af {total} listepunkter her — zoom ind for resten.",
   "points.areasZoom": "{n} områder i viste lister — zoom ind for at se dem.",
+  "points.untickAll": "Fjern markering af alle lister",
   "points.search": "Søg i alle lister — ord eller en art…",
   "points.searchBusy": "Søger i listerne…",
   "points.searchNone": "Ingen liste matcher “{q}”.",

@@ -1538,6 +1538,7 @@
   "kml.nFields": "{n} polí",
   "points.capped": "Zobrazeno {n} z {total} bodů seznamu — přibližte pro zbytek.",
   "points.areasZoom": "{n} oblastí v zobrazených seznamech — přibližte mapu, abyste je viděli.",
+  "points.untickAll": "Odškrtnout všechny seznamy",
   "points.search": "Hledat ve všech seznamech — slova nebo druh…",
   "points.searchBusy": "Prohledávám seznamy…",
   "points.searchNone": "Žádný seznam neodpovídá „{q}“.",

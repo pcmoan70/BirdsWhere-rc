@@ -282,6 +282,7 @@ window.GeoI18N = (function () {
         "points.listFilter": "Filter this list",
         "points.capped": "Showing {n} of {total} list points here — zoom in for the rest.",
         "points.areasZoom": "{n} areas in shown lists — zoom in to see them.",
+        "points.untickAll": "Untick all lists",
         "points.search": "Search all lists — words or a species…",
         "points.searchBusy": "Searching the lists…",
         "points.searchNone": "No list matches “{q}”.",
