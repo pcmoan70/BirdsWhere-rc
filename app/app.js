@@ -17945,6 +17945,9 @@
       }
       var e = detPlot[key];
       if (!e) e = detPlot[key] = { key: key, name: (key.indexOf("x:") === 0 ? (p.sci || p.name) : p.name) || key, color: p.spColor || "#888", rows: [], group: null, cls: p.spCls || (taxByCode[key] && taxByCode[key].class_name) || "" };
+      // the same record already there (a shown list's, a fetched one): not counted twice
+      var sk = (+row.lat).toFixed(5) + "," + (+row.lon).toFixed(5) + "|" + String(row.date || "").slice(0, 10);
+      if (e.rows.some(function (r0) { return (+r0.lat).toFixed(5) + "," + (+r0.lon).toFixed(5) + "|" + String(r0.date || "").slice(0, 10) === sk; })) { skipped++; return; }
       if (row._ts == null) row._ts = Date.now();
       e.rows.push(row); changed = true; injected++;
     });
@@ -18751,7 +18754,11 @@
     var res = document.getElementById("mp-search-res"); if (!res || !mpSearchRes) return;
     var R = mpSearchRes;
     if (!R.list.length) { res.innerHTML = '<p class="dd-empty">' + escapeHtml(t("points.searchNone", { q: R.q })) + "</p>"; return; }
-    var nPts = R.list.reduce(function (a, r) { return a + (r.sel ? (r.pts || []).length : 0); }, 0);
+    var nPts = (function () {   // UNIQUE records — the count the transfer will really add (the same record in two lists counts once)
+      var u = Object.create(null), n = 0;
+      R.list.forEach(function (r) { if (r.sel) (r.pts || []).forEach(function (q) { var k = mpRecKey(q); if (!u[k]) { u[k] = 1; n++; } }); });
+      return n;
+    })();
     var keepScroll = R.scroll || 0;
     res.innerHTML = '<div class="mp-search-head"><span>' + escapeHtml(t("points.searchLists", { n: R.list.length })) + "</span></div>" +
         (nPts ? '<button type="button" class="btn mp-search-tomap">' + escapeHtml(t("points.searchToMap", { n: nPts })) + "</button>" : "") +
@@ -18787,14 +18794,18 @@
     // map points"). A spot + name already among the pins is not added twice.
     var tm = res.querySelector(".mp-search-tomap");
     if (tm) tm.addEventListener("click", function () {
+      // One record = one pin (owner, 2026-10-11: "several points have at least 2x"): the same observation
+      // sits in several lists (person lists overlap) with a different name or a rounded position — so a
+      // record is its spot to ~1 m, its date and its species (else its name), not its exact text.
+      var recKey = mpRecKey;
       var have = Object.create(null), mp = mpState.mapPoints();
-      mp.forEach(function (q) { have[(+q.lat).toFixed(6) + "," + (+q.lon).toFixed(6) + "|" + (q.name || "")] = 1; });
+      mp.forEach(function (q) { have[recKey(q)] = 1; });
       var added = 0;
       R.list.forEach(function (r) {
         if (!r.sel) return;   // a list the user unticked keeps its points out
         (r.pts || []).forEach(function (q) {
           if (!isFinite(+q.lat) || !isFinite(+q.lon)) return;
-          var k = (+q.lat).toFixed(6) + "," + (+q.lon).toFixed(6) + "|" + (q.name || "");
+          var k = recKey(q);
           if (have[k]) return; have[k] = 1;
           var cp = Object.assign({}, q); cp.id = mpState.mpUid(); cp.tags = (q.tags || []).slice(); cp.source = cp.source || "search";
           cp.fromSearch = R.q;   // which search put it here — its row at the top of the panel removes them again
@@ -18845,7 +18856,24 @@
   // The map points a search put there, and that search's colour (stable per search words).
   function mpSearchPins() { return mpState.mapPoints().filter(function (p) { return p && p.fromSearch; }); }
   function mpSearchColor(q) { return mpState.mpHashColor("search:" + q); }
+  // One record's identity for de-duplication: its spot to ~1 m, its date, its species (else its name).
+  function mpRecKey(q) { var k = mpState.detKeyOf(q); return (+q.lat).toFixed(5) + "," + (+q.lon).toFixed(5) + "|" + (q.date || "").slice(0, 10) + "|" + (k || textFold(q.name || "")); }
+  // Search copies already on the map twice (made before records were matched by spot / date / species)
+  // are merged: a copy that repeats an earlier copy of the same record goes. Hand-placed pins are kept.
+  function mpDedupeSearchPins() {
+    var seen = Object.create(null), out = [], gone = 0;
+    mpState.mapPoints().forEach(function (q) {
+      var g = mpSearchKey(q);
+      if (g == null) { out.push(q); return; }
+      var k = mpRecKey(q);
+      if (seen[k]) { gone++; return; }
+      seen[k] = 1; out.push(q);
+    });
+    if (gone) { mpState.setMapPoints(out); saveMapPoints(); renderMapPoints(); }
+    return gone;
+  }
   function mpFromSearchHtml() {
+    mpDedupeSearchPins();
     // a list still loading cannot be matched yet → redraw once they all are
     if (mpState.anyLazy && mpState.anyLazy() && !mpFromSearchHtml._wait) { mpFromSearchHtml._wait = true; mpState.whenAllLoaded().then(function () { mpFromSearchHtml._wait = false; refreshMpPanel(); }); }
     var groups = Object.create(null), order = [];

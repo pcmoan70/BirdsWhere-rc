@@ -988,7 +988,9 @@ Right-click / long-press / tap any species name for a menu **led by the species 
   the search ticks nothing itself); **tapping a list's name strikes it through**, leaving its records
   out of the transfer (tap again to include). **Put the N matched points on the map** copies only the
   matching records of the lists not struck through into the map points (the working pins); the lists
-  and their shown / hidden state stay as they were, and a pin already there is not added twice. Save
+  and their shown / hidden state stay as they were. Each record goes on once — the same observation in
+  several lists (same spot to ~1 m, date and species, else name) counts and is added once, and a
+  record already on the map is not added again. Save
   the pins into a list to keep them.
   A search's points are drawn as plain circles in that search's own colour (25 % fill); those with a
   species — read from the point's stored species or scientific name through the model labels — also
