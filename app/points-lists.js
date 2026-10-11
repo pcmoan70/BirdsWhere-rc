@@ -2019,6 +2019,15 @@ window.AppPoints = (function () {
       if (p.rare) mpLayer.addLayer(L.circleMarker([p.lat, p.lon], { radius: 1.7, weight: 0, fillColor: "#111", fillOpacity: 1, interactive: false, renderer: detRenderer() }));
       return;
     }
+    // a search's pin (no species): one plain circle in its search's colour, 25 % fill (owner, 2026-10-11)
+    if (p.fromSearch) {
+      var sc = mpHashColor("search:" + p.fromSearch);
+      var sm = L.circleMarker([p.lat, p.lon], { radius: 7, color: sc, weight: 1.5, opacity: 0.9, fillColor: sc, fillOpacity: 0.25 });
+      var srec = { m: sm, p: p, editable: editable }; mpPins.push(srec);
+      sm.on("click", function (e) { if (e && e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent); onMpPinClick(srec); });
+      mpLayer.addLayer(sm);
+      return;
+    }
     var fill = p.color || color || mpColorFor(p);   // explicit per-point colour wins over list/tag colour
     // Points that arrived via a shared link are drawn as TRIANGLES so they stand
     // out from your own (circular) pins; everything else stays a circle.
@@ -2351,7 +2360,11 @@ window.AppPoints = (function () {
     ensureMpLayer().clearLayers();
     mpPins = [];
     updateDetSetOverlays();   // keep the shown detection-set layers in sync
-    mapPoints.forEach(function (p) { if (mpVisible(p)) renderMpPin(p, true); });   // loose working pins (editable, tag colour)
+    mapPoints.forEach(function (p) {
+      if (!mpVisible(p)) return;
+      if (p.fromSearch && detKeyOf(p)) return;   // a search's pin WITH a species is drawn by the detection pipeline (legend), in its search's colour
+      renderMpPin(p, true);                      // loose working pins (editable, tag colour)
+    });
     // Ticked saved point-lists: a list's DETECTION points (those carrying a species
     // key) are plotted through the shared detection pipeline (syncListDetections),
     // so they obey the same legend filters and open the same popups as fetched

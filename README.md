@@ -990,6 +990,9 @@ Right-click / long-press / tap any species name for a menu **led by the species 
   matching records of the lists not struck through into the map points (the working pins); the lists
   and their shown / hidden state stay as they were, and a pin already there is not added twice. Save
   the pins into a list to keep them.
+  A search's points are drawn as plain circles in that search's own colour (25 % fill); those with a
+  species — read from the point's stored species or scientific name through the model labels — also
+  join the legend and its filters like a shown list's records.
   The top of the Points panel — **On the map** — has a row for everything on the map that is not a
   shown list, each with how many points and a red **×** that removes them (the lists are not touched):
   one row per search that put points on the map (its words), **earlier search** (copies of list points

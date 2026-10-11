@@ -13963,7 +13963,7 @@
       // Rows that came from a shown saved list carry that list's colour — draw it
       // as a slightly larger disc BEHIND the species symbol (added first → behind
       // in the shared SVG), so the marker reads as "<species symbol> on <list> disc".
-      if (r.listColor) {
+      if (r.listColor && !r._search) {
         g.addLayer(L.circleMarker([r.lat, r.lon], { radius: starred ? 11 : (rare ? 9 : 8), color: r.listColor, weight: 1.5, opacity: strokeOp, fillColor: r.listColor, fillOpacity: 0.5, interactive: false, bubblingMouseEvents: false, renderer: detRenderer() }));
       }
       // A starred species missing from the year/life list: draw a larger star in
@@ -13971,12 +13971,15 @@
       // species-coloured star centred on top — so the rim follows the star's
       // edges. Uses detNeedWeight (same condition as the legend swatch), so the
       // map always matches the legend regardless of the edge toggle.
-      var nw = starred ? detNeedWeight(key) : 0;
+      var nw = (starred && !r._search) ? detNeedWeight(key) : 0;
       if (nw) {
         g.addLayer(detStarMarker([r.lat, r.lon], { radius: 9 + nw, fill: true, fillColor: detNeedColor(key) || NEED_LIFE_COLOR, fillOpacity: 1, stroke: false, interactive: false, bubblingMouseEvents: false, renderer: detRenderer() }));
       }
       var base = { color: edge.color, weight: edge.weight, opacity: strokeOp, fillColor: fill, fillOpacity: fillOp, bubblingMouseEvents: false, renderer: detRenderer() };
-      var m = starred
+      // a search's points: one plain circle in the search's colour, 25 % fill (owner, 2026-10-11)
+      var m = r._search
+        ? L.circleMarker([r.lat, r.lon], { radius: 7, color: r.listColor, weight: 1.5, opacity: strokeOp, fillColor: r.listColor, fillOpacity: 0.25, bubblingMouseEvents: false, renderer: detRenderer() })
+        : starred
         ? detStarMarker([r.lat, r.lon], { radius: 9, fill: true, fillColor: fill, fillOpacity: fillOp, color: "#1a1a1a", weight: 1, opacity: strokeOp, bubblingMouseEvents: false, renderer: detRenderer() })
         : L.circleMarker([r.lat, r.lon], L.extend({ radius: rare ? 6 : 5 }, base));
       // Metadata kept for hover/identify and any future reconstruction; the true
@@ -17869,6 +17872,7 @@
       var lf = mpState.listFilter(c.name);
       parts.push(c.name + "#" + ((c.points || []).length) + "#" + (lf ? JSON.stringify(lf) : ""));
     });
+    parts.push("search#" + mpSearchPins().length);
     return parts.join("\u0002");
   }
   function countListRows() {
@@ -17925,6 +17929,24 @@
         e.rows.push(row);
         changed = true; injected++;
       }
+    });
+    // Map points put there by a search, with a species (owner, 2026-10-11: "the species names should be
+    // parsed correctly and added to legend"): they join the legend like a shown list's records, drawn as
+    // one circle per point in their SEARCH's colour (see the _search branch of the dot drawing).
+    mpSearchPins().forEach(function (p) {
+      var key = mpState.detKeyOf(p); if (!key) return;
+      var col = mpSearchColor(p.fromSearch);
+      var row = _listRowOf && _listRowOf.get(p);
+      if (!row) {
+        row = { lat: +p.lat, lon: +p.lon, date: p.date || "", url: p.url || "", count: p.count, act: p.act || "", src: p.src || "list",
+          observer: p.observer || "", note: p.note || "", place: p.place || "", flags: p.flags || "", _list: true, _search: true,
+          listColor: col, _listName: "\u201c" + p.fromSearch + "\u201d", _mpId: p.id };
+        if (_listRowOf) _listRowOf.set(p, row);
+      }
+      var e = detPlot[key];
+      if (!e) e = detPlot[key] = { key: key, name: (key.indexOf("x:") === 0 ? (p.sci || p.name) : p.name) || key, color: p.spColor || "#888", rows: [], group: null, cls: p.spCls || (taxByCode[key] && taxByCode[key].class_name) || "" };
+      if (row._ts == null) row._ts = Date.now();
+      e.rows.push(row); changed = true; injected++;
     });
     _listSyncSig = sig; _listSyncN = injected;
     if (perfOn) console.log("SYNC list rows: dropped " + dropped + ", injected " + injected + ", skipped by list filters " + skipped + ", changed " + changed);
@@ -18820,6 +18842,9 @@
     return mpListPointIndex()[(+q.lat).toFixed(6) + "," + (+q.lon).toFixed(6) + "|" + (q.name || "")] ? MP_EARLIER : null;
   }
   var MP_OTHER = "#other-map-points#";
+  // The map points a search put there, and that search's colour (stable per search words).
+  function mpSearchPins() { return mpState.mapPoints().filter(function (p) { return p && p.fromSearch; }); }
+  function mpSearchColor(q) { return mpState.mpHashColor("search:" + q); }
   function mpFromSearchHtml() {
     // a list still loading cannot be matched yet → redraw once they all are
     if (mpState.anyLazy && mpState.anyLazy() && !mpFromSearchHtml._wait) { mpFromSearchHtml._wait = true; mpState.whenAllLoaded().then(function () { mpFromSearchHtml._wait = false; refreshMpPanel(); }); }
