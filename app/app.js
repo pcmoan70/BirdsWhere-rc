@@ -18639,7 +18639,9 @@
   // OR the point's species must match: the query is matched against the MODEL LABELS (localised
   // name, English name, scientific name), never against what a file happened to call the bird.
   // A list whose (folder) name matches counts as a whole. Trips (detection sets) are searched too.
-  var mpSearchQ = "", mpSearchT = null, mpSearchRes = null, mpSearchGen = 0;
+  var mpSearchQ = "", mpSearchT = null, mpSearchRes = null, mpSearchGen = 0, mpSearchBusyOn = false;
+  // A flashing ⌛ in the box from the first key until the results are painted (owner, 2026-10-11).
+  function mpSearchBusy(on) { mpSearchBusyOn = !!on; var b = document.getElementById("mp-search-busy"); if (b) b.hidden = !on; }
   function mpSearchSpecies(q) {
     var out = Object.create(null), n = 0;
     if (q.replace(/\s+/g, "").length < 3) return out;
@@ -18653,9 +18655,10 @@
   function mpSearchRun(q) {
     var gen = ++mpSearchGen, res = document.getElementById("mp-search-res");
     q = String(q || "").trim();
-    if (q.length < 2) { mpSearchRes = null; if (res) res.innerHTML = ""; return; }
+    if (q.length < 2) { mpSearchRes = null; if (res) res.innerHTML = ""; mpSearchBusy(false); return; }
     if (res) res.innerHTML = '<p class="dd-empty">' + escapeHtml(t("points.searchBusy")) + "</p>";
-    mpState.whenAllLoaded().then(function () {
+    mpSearchBusy(true);
+    mpState.whenAllLoaded().then(function () { return new Promise(function (r) { setTimeout(r, 30); }); }).then(function () {   // let the ⌛ paint before the work
       if (gen !== mpSearchGen) return;
       var words = textFold(q).split(/\s+/).filter(Boolean), sp = mpSearchSpecies(q), spN = Object.keys(sp).length;
       var hits = function (hay) { var toks = hay.split(/[^a-z0-9]+/); return words.every(function (w) { return textWordHits(w, hay, toks); }); };
@@ -18681,7 +18684,7 @@
       });
       out.sort(function (a, b) { return (b.n - a.n) || a.name.localeCompare(b.name); });
       mpSearchRes = { q: q, list: out, species: spN };
-      mpSearchPaint();
+      mpSearchPaint(); mpSearchBusy(false);
     });
   }
   function mpSearchPaint() {
@@ -18742,6 +18745,7 @@
     inp.addEventListener("click", function (e) { e.stopPropagation(); });
     inp.addEventListener("input", function () {
       mpSearchQ = inp.value;
+      mpSearchBusy(mpSearchQ.trim().length >= 2);
       clearTimeout(mpSearchT); mpSearchT = setTimeout(function () { mpSearchRun(mpSearchQ); }, 1000);   // 1 s after the last key (owner, 2026-10-11)
     });
   }
@@ -18993,7 +18997,8 @@
         '<input type="file" id="share-file-input" accept=".kmz,.kml,.geojson,.json,.share,.mcshare,.txt" multiple style="display:none" />' +
       "</div>" +
       '<div id="mp-backup-line" class="mp-backup-line"></div>' +
-      '<div class="mp-search"><input type="search" id="mp-search-in" autocomplete="off" spellcheck="false" placeholder="' + escapeHtml(t("points.search")) + '" value="' + escapeHtml(mpSearchQ) + '" />' +
+      '<div class="mp-search"><div class="mp-search-box"><input type="search" id="mp-search-in" autocomplete="off" spellcheck="false" placeholder="' + escapeHtml(t("points.search")) + '" value="' + escapeHtml(mpSearchQ) + '" />' +
+        '<span id="mp-search-busy" class="mp-search-busy" aria-hidden="true"' + (mpSearchBusyOn ? "" : " hidden") + '>\u231B</span></div>' +
         '<div id="mp-search-res" class="mp-search-res"></div></div>' +
       collSection +
       (chipsHtml ? '<div class="mp-chips">' + chipsHtml + "</div>" : "") +

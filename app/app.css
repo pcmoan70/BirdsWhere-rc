@@ -4908,6 +4908,10 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 
 /* Points panel: search across all lists */
 .mp-search { padding: 4px 8px 6px; border-bottom: 1px solid var(--border, #e3e8e6); }
+.mp-search-box { position: relative; }
+.mp-search-busy { position: absolute; right: 30px; top: 50%; margin-top: -10px; font-size: 16px; line-height: 20px; pointer-events: none;
+  animation: mp-search-flash .8s steps(2, jump-none) infinite; will-change: opacity; }
+@keyframes mp-search-flash { from { opacity: 1; } to { opacity: .15; } }
 .mp-search input[type=search] { width: 100%; box-sizing: border-box; padding: 6px 9px; border: 1px solid var(--border, #ccc); border-radius: 8px; font: inherit; font-size: var(--fs-s); }
 .mp-search-res:empty { display: none; }
 .mp-search-res { margin-top: 6px; max-height: 40vh; max-height: 40dvh; overflow-y: auto; }

@@ -972,7 +972,7 @@ Right-click / long-press / tap any species name for a menu **led by the species 
   "Words in notes"), and **species via the model's labels** — the localised, English and scientific
   name — so "hubro", "eagle owl" and "Bubo bubo" find the same points even where a file spelled the
   bird differently. Results list the matching lists with how many points matched; tick one to show
-  it, or **Show all**. The search starts 1 s after the last letter; lists still loading are loaded first.
+  it, or **Show all**. The search starts 1 s after the last letter (a flashing ⌛ in the box shows it is working until the results are in); lists still loading are loaded first.
   **Put the N matched points on the map** copies the matched records themselves (list points and trip
   observations) into the map points — the working pins — without changing the lists; a pin already
   there is not added twice. Save them into a list from Points to keep them.

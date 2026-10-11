@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2053";
+var VERSION = "v2054";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The \u24d8 note popup now always opens on top, also from the observation list and list windows, with its \u00d7 to close it.",
-  "\u2022 Points search: put the matched points on the map.",
+  "\u2022 Points search: a flashing \u231b in the box shows the search is working, until the results are in.",
+  "\u2022 The \u24d8 note popup opens on top of every window, with its \u00d7.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
