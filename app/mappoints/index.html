@@ -144,10 +144,10 @@
   <h2><span class="n">7</span>Terrain: nesting habitat, terrain prior, DTM points</h2>
   <p>Kartverket's <b>1 m terrain model</b> (NHM DTM, bare earth, open data © Kartverket) is used out to 1 km around every site — 10 415 tiles of 1 km², fetched only there. Heights are smoothed lightly (σ 1.5 m) before slopes, so a single odd pixel (a road edge) cannot count.</p>
   <ol>
-    <li><b>Nesting cliffs</b> (from notes on Scandinavian eagle-owl nest sites: ledges 10–30 m up a rock face): ground ≥ 50° steep, joined where pieces lie 1–2 m apart, whose own face — inside 500 m of the site — drops <b>≥ 10 m</b> (top minus foot, measured over the face and 3 m round it). Pieces &lt; 25 m² are dropped. Steep ground inside an N250 quarry counts too, even lower (artificial cliffs are used).</li>
+    <li><b>Nesting cliffs</b> (from notes on Scandinavian eagle-owl nest sites: ledges 10–30 m up a rock face): ground ≥ 50° steep, joined where pieces lie 1–2 m apart, <b>facing E, SE, S, SW or W</b> (67.5–292.5°: more sun and earlier snow-melt in the breeding season — N, NE and NW faces are left out), whose own face — inside 500 m of the site — drops <b>≥ 10 m</b> (top minus foot, measured over the face and 3 m round it). Pieces &lt; 25 m² are dropped. Steep ground inside an N250 quarry counts too, even lower (artificial cliffs are used).</li>
     <li><b>Islets</b>: small islands (200 m²–20 ha, no N250 building) — on the outer coast owls nest on the ground there. The 1 m model fills the sea with ~0 m, so sea = ground ≤ 0.6 m.</li>
     <li><b>Description</b> of every cliff: shape (a <i>band</i> = wall, a compact <i>outcrop</i>, or <i>broken</i> steep ground), length × width and the way it runs, the way it faces, the drop with top and foot heights, the sharpest step within 10 m, the share that is near-vertical (≥ 70°), the steepest slope, and the distance to the nearest building and road (N250).</li>
-    <li><b>Fit</b>: 1 point, +1 facing SE / S / SW (warmth when incubating in February–April), +1 face ≥ 20 m high, −1 within 100 m of a building or 50 m of a road → 3 good, 2 fair, ≤ 1 poor. Facing is a bonus, not a requirement: owls also breed on east- and west-facing cliffs.</li>
+    <li><b>Fit</b>: 1 point, +1 facing SE / S / SW (the warmest when incubating in February–April), +1 face ≥ 20 m high, −1 within 100 m of a building or 50 m of a road → 3 good, 2 fair, ≤ 1 poor. (East- and west-facing cliffs are kept but cannot be "good".)</li>
     <li><b>Terrain prior in the site fit</b>: inside each site's ellipse, nesting cliffs count up to 5× as likely as other ground (islets 3×); the site moves to the posterior mean. The 1 m reach (±1 km) is small next to a typical ellipse, so this moves sites only a little (median a few metres).</li>
     <li><b>DTM point</b> (an unfilled red circle): the steepest 1 m pixel <b>on a nesting cliff within 500 m</b> of the map point (the steepest anywhere within 500 m when there is no cliff; DTM10 where the 1 m model has nothing). Sites shared by several maps get one; JRR nests none.</li>
   </ol>
@@ -181,9 +181,9 @@
     <li>True positions vs. the maps' sites: 0.3–2.1 km; every one inside its 95 % ellipse.</li>
     <li>No map positions in a neighbouring country.</li>
     <li>1,383 sites from 4,828 dots; 971 shown by more than one map.</li>
-    <li>DTM points: 4,821 (1 376 sites from the 1 m model, 6 from DTM10); median 0.39 km from their map point (all within 500 m); slope at the chosen pixel median 74°.</li>
-    <li>Nesting habitat: 42 742 areas — 42 105 cliffs (good / fair / poor: 3 880 / 16 690 / 21 535), 605 islets, 32 quarries; the app copy holds 13 823.</li>
-    <li>Terrain prior: sites moved median 3 m, 90 % within 20 m, at most 126 m.</li>
+    <li>DTM points: 4,821 (1 376 sites from the 1 m model, 6 from DTM10); median 0.39 km from their map point (all within 500 m); slope at the chosen pixel median 71°.</li>
+    <li>Nesting habitat (E–S–W faces only): 28 048 areas — 27 405 cliffs (good / fair / poor: 3 871 / 13 117 / 10 417), 616 islets, 27 quarries; the app copy holds 10 412.</li>
+    <li>Terrain prior: sites moved median 2 m, 90 % within 16 m, at most 132 m.</li>
   </ul>
 </section>
 
