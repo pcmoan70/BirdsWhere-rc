@@ -982,7 +982,8 @@ Right-click / long-press / tap any species name for a menu **led by the species 
   records matched — all **selected** to start with; untick a list to leave its records out.
   **Put the N matched points on the map** copies only the matching records of the selected lists into
   the map points (the working pins), without changing the lists; a pin already there is not added
-  twice. Save them into a list from Points to keep them.
+  twice. The source lists are then hidden (un-ticked), so the map — also after a reopen — shows just
+  the matched subset; tick a list again to see all of it. Save the pins into a list to keep them.
 - **Ring markers** — a point whose file carries `marker` = `ring` (also `symbol`) is drawn as an
   unfilled circle in its colour instead of a filled dot (used for the map-dot lists' DTM points).
 - **Areas (polygons)** — a KML/KMZ placemark with a `Polygon` is kept as one of the list's **areas**

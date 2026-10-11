@@ -18757,6 +18757,10 @@
           mp.push(cp); added++;
         });
       });
+      // The source lists are hidden (un-ticked) so the map — now and after a reopen — shows only the
+      // matched subset, not every dot of those lists (owner, 2026-10-11). The lists themselves stay.
+      R.list.forEach(function (r) { if (!r.sel) return; if (r.type === "d") delete mpState.shownDetSets()[r.name]; else delete mpState.shownColls()[r.name]; });
+      saveShownState(); if (typeof updateDetSetOverlays === "function") updateDetSetOverlays();
       saveMapPoints(); renderMapPoints(); refreshMpPanel();
       setStatus(t("points.searchToMapDone", { n: added }));
     });
