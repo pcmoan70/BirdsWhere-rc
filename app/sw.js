@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2043";
+var VERSION = "v2044";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Safer saved lists: a list made while storage was still starting is kept, a rename never loses the old copy when the device is full, and points added to a list that is still loading are saved at once.",
-  "\u2022 Point lists can hold areas (polygons) from KML/KMZ files.",
+  "\u2022 Lists with many areas (e.g. habitat polygons) draw only the areas in view, from street-level zoom \u2014 the map stays quick.",
+  "\u2022 /mappoints: the method page now covers the 1 m terrain model, the nesting-habitat areas and their rules.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

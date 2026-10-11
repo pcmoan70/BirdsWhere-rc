@@ -1535,6 +1535,7 @@
   "points.protectedDesc": "Chráněn před smazáním — odemkněte v ✎ Upravit seznam",
   "kml.nFields": "{n} polí",
   "points.capped": "Zobrazeno {n} z {total} bodů seznamu — přibližte pro zbytek.",
+  "points.areasZoom": "{n} oblastí v zobrazených seznamech — přibližte mapu, abyste je viděli.",
   "points.listTrimmed": "Nejbližších {n} z {total} bodů v zaškrtnutých seznamech.",
   "points.savedHidden": "„{name}“ bylo uloženo, ale aktivní filtry jej skrývají — zrušte je, abyste jej viděli na mapě.",
   "view.unavailable": "Zobrazení seznamu vyžaduje bod nebo načtená pozorování zde.",

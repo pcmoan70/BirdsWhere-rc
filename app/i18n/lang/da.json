@@ -1535,6 +1535,7 @@
   "points.protectedDesc": "Beskyttet mod sletning – lås op under ✎ Rediger liste",
   "kml.nFields": "{n} felter",
   "points.capped": "Viser {n} af {total} listepunkter her — zoom ind for resten.",
+  "points.areasZoom": "{n} områder i viste lister — zoom ind for at se dem.",
   "points.listTrimmed": "Nærmeste {n} af {total} punkter i de markerede lister.",
   "points.savedHidden": "“{name}” er gemt, men de aktive filtre skjuler det — ryd dem for at se det på kortet.",
   "view.unavailable": "Listevisningen kræver et punkt eller hentede observationer her.",

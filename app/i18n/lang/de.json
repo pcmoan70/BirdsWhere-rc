@@ -1535,6 +1535,7 @@
   "points.protectedDesc": "Vor Löschen geschützt — unter ✎ Liste bearbeiten aufheben",
   "kml.nFields": "{n} Felder",
   "points.capped": "Zeigt {n} von {total} Listenpunkten hier — für den Rest hineinzoomen.",
+  "points.areasZoom": "{n} Flächen in angezeigten Listen — zum Anzeigen hineinzoomen.",
   "points.listTrimmed": "Nächste {n} von {total} Punkten in den angehakten Listen.",
   "points.savedHidden": "„{name}“ wurde gespeichert, aber die aktiven Filter verbergen es — setzen Sie sie zurück, um es auf der Karte zu sehen.",
   "view.unavailable": "Die Listenansicht braucht einen Punkt oder abgerufene Beobachtungen hier.",

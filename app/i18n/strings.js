@@ -281,6 +281,7 @@ window.GeoI18N = (function () {
         "points.download": "Download to a file",
         "points.listFilter": "Filter this list",
         "points.capped": "Showing {n} of {total} list points here — zoom in for the rest.",
+        "points.areasZoom": "{n} areas in shown lists — zoom in to see them.",
         "points.listTrimmed": "Nearest {n} of {total} points in the ticked lists.",
         "points.savedHidden": "“{name}” was saved, but the active filters hide it — clear them to see it on the map.",
         "points.syncOn": "Syncing this list",

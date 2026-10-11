@@ -1535,6 +1535,7 @@
   "points.protectedDesc": "Suojattu poistolta – avaa suojaus kohdassa ✎ Muokkaa listaa",
   "kml.nFields": "{n} kenttää",
   "points.capped": "Näytetään {n}/{total} listapistettä täällä — loput näkyvät lähentämällä.",
+  "points.areasZoom": "{n} aluetta näytetyissä listoissa — lähennä nähdäksesi ne.",
   "points.listTrimmed": "Lähimmät {n}/{total} pistettä valituissa listoissa.",
   "points.savedHidden": "”{name}” tallennettiin, mutta aktiiviset suodattimet piilottavat sen — tyhjennä ne nähdäksesi sen kartalla.",
   "view.unavailable": "Listanäkymä vaatii pisteen tai haettuja havaintoja täällä.",

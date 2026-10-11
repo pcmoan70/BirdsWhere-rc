@@ -43,12 +43,12 @@
 
 <nav class="toc">
   <a href="#overview">Overview</a><a href="#geo">1 Georeference</a><a href="#local">2 Local correction</a><a href="#dots">3 Finding dots</a>
-  <a href="#subpx">4 Sub-pixel centres</a><a href="#unc">5 Uncertainty</a><a href="#merge">6 Merging</a><a href="#dtm">7 DTM points</a><a href="#out">8 Output</a><a href="#checks">Checks</a>
+  <a href="#subpx">4 Sub-pixel centres</a><a href="#unc">5 Uncertainty</a><a href="#merge">6 Merging</a><a href="#dtm">7 Terrain &amp; habitat</a><a href="#out">8 Output</a><a href="#checks">Checks</a>
 </nav>
 
 <section id="overview">
   <h2>Overview</h2>
-  <p>Every map colour is one dot list (24 lists). Each list is extracted on its own; the merge then aligns the maps against each other, groups dots that show the same site, and adds a DTM point at the steepest terrain within 500 m.</p>
+  <p>Every map colour is one dot list (24 lists). Each list is extracted on its own; the merge then aligns the maps against each other, groups dots that show the same site, adds nesting-habitat areas from a 1 m terrain model, and a DTM point at the steepest spot on a nesting cliff within 500 m.</p>
   <div class="wrap">
   <svg class="flow" viewBox="0 0 860 210" role="img" aria-label="Pipeline: map image, georeference, local coast correction, dot detection, sub-pixel centres, per-dot position and covariance, merge, cliff points, output">
     <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2e8b74" stroke="none"/></marker></defs>
@@ -141,20 +141,24 @@
 </section>
 
 <section id="dtm">
-  <h2><span class="n">7</span>DTM points (steepest terrain)</h2>
+  <h2><span class="n">7</span>Terrain: nesting habitat, terrain prior, DTM points</h2>
+  <p>Kartverket's <b>1 m terrain model</b> (NHM DTM, bare earth, open data © Kartverket) is used out to 1 km around every site — 10 415 tiles of 1 km², fetched only there. Heights are smoothed lightly (σ 1.5 m) before slopes, so a single odd pixel (a road edge) cannot count.</p>
   <ol>
-    <li>For each map point, a 1 km window of Kartverket's DTM10 (10 m terrain model) is read around it.</li>
-    <li>The slope of every 10 m pixel is computed from its 3×3 neighbourhood (Horn's method). Pixels next to sea or missing data are left out.</li>
-    <li>The DTM point is placed at the <b>steepest pixel within 500 m</b> of the map point — eagle owls nest on cliffs, never on flat land.</li>
-    <li>Map points that several maps share get one DTM point. JRR nests are already exact and get none; a map point with no land data within 500 m gets none.</li>
+    <li><b>Nesting cliffs</b> (from notes on Scandinavian eagle-owl nest sites: ledges 10–30 m up a rock face): ground ≥ 50° steep, joined where pieces lie 1–2 m apart, whose own face — inside 500 m of the site — drops <b>≥ 10 m</b> (top minus foot, measured over the face and 3 m round it). Pieces &lt; 25 m² are dropped. Steep ground inside an N250 quarry counts too, even lower (artificial cliffs are used).</li>
+    <li><b>Islets</b>: small islands (200 m²–20 ha, no N250 building) — on the outer coast owls nest on the ground there. The 1 m model fills the sea with ~0 m, so sea = ground ≤ 0.6 m.</li>
+    <li><b>Description</b> of every cliff: shape (a <i>band</i> = wall, a compact <i>outcrop</i>, or <i>broken</i> steep ground), length × width and the way it runs, the way it faces, the drop with top and foot heights, the sharpest step within 10 m, the share that is near-vertical (≥ 70°), the steepest slope, and the distance to the nearest building and road (N250).</li>
+    <li><b>Fit</b>: 1 point, +1 facing SE / S / SW (warmth when incubating in February–April), +1 face ≥ 20 m high, −1 within 100 m of a building or 50 m of a road → 3 good, 2 fair, ≤ 1 poor. Facing is a bonus, not a requirement: owls also breed on east- and west-facing cliffs.</li>
+    <li><b>Terrain prior in the site fit</b>: inside each site's ellipse, nesting cliffs count up to 5× as likely as other ground (islets 3×); the site moves to the posterior mean. The 1 m reach (±1 km) is small next to a typical ellipse, so this moves sites only a little (median a few metres).</li>
+    <li><b>DTM point</b> (an unfilled red circle): the steepest 1 m pixel <b>on a nesting cliff within 500 m</b> of the map point (the steepest anywhere within 500 m when there is no cliff; DTM10 where the 1 m model has nothing). Sites shared by several maps get one; JRR nests none.</li>
   </ol>
-  <p class="note">The DTM point is a habitat-based guess, not a measurement — the map positions stay the primary points and carry the uncertainty ellipses.</p>
+  <p class="note">Not visible in a terrain model, so not used: overhangs, ledges, boulders, root plates, bog hummocks. N250 buildings are a 1:250 000 map — distances to people are approximate. The habitat and DTM points are habitat-based guesses; the map positions stay the primary points and carry the uncertainty ellipses.</p>
 </section>
 
 <section id="out">
   <h2><span class="n">8</span>Output</h2>
   <ul>
     <li><b>Map point:</b> the site position; <code>uncertainty_m</code> = long axis of the 95 % ellipse (2.45 σ), plus short axis and bearing. Tags: image name and status.</li>
+    <li><b>Habitat areas</b> (polygons, their own file): cliffs coloured by fit — dark orange good, orange fair, light orange poor — quarries purple, islets blue; name and description as in step 7. A lighter copy for the app keeps good and fair cliffs, quarries and islets ≥ 100 m²; the app draws a list's areas from street-level zoom, only those in view.</li>
     <li><b>DTM point:</b> an extra point drawn as an <b>unfilled red circle</b> (field <code>marker</code> = <code>ring</code>), tags image name, status and <code>DTM</code>; no radius of its own.</li>
     <li>Uncertainty circles and ellipses are drawn faint (outline ~30 %, fill ~5 %) so the map underneath stays readable.</li>
   </ul>
@@ -177,11 +181,13 @@
     <li>True positions vs. the maps' sites: 0.3–2.1 km; every one inside its 95 % ellipse.</li>
     <li>No map positions in a neighbouring country.</li>
     <li>1,383 sites from 4,828 dots; 971 shown by more than one map.</li>
-    <li>DTM points: 4,821; median 0.39 km from their map point (all within 500 m); slope at the chosen pixel median 50°.</li>
+    <li>DTM points: 4,821 (1 376 sites from the 1 m model, 6 from DTM10); median 0.39 km from their map point (all within 500 m); slope at the chosen pixel median 74°.</li>
+    <li>Nesting habitat: 42 742 areas — 42 105 cliffs (good / fair / poor: 3 880 / 16 690 / 21 535), 605 islets, 32 quarries; the app copy holds 13 823.</li>
+    <li>Terrain prior: sites moved median 3 m, 90 % within 20 m, at most 126 m.</li>
   </ul>
 </section>
 
-<footer>Method as of 2026-10-10 · <a href="../">BirdsWhere</a></footer>
+<footer>Method as of 2026-10-11 · <a href="../">BirdsWhere</a></footer>
 </main>
 </body>
 </html>

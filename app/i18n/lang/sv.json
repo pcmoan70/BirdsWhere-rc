@@ -1535,6 +1535,7 @@
   "points.protectedDesc": "Skyddad mot radering – lås upp under ✎ Redigera lista",
   "kml.nFields": "{n} fält",
   "points.capped": "Visar {n} av {total} listpunkter här — zooma in för resten.",
+  "points.areasZoom": "{n} områden i visade listor — zooma in för att se dem.",
   "points.listTrimmed": "Närmaste {n} av {total} punkter i de markerade listorna.",
   "points.savedHidden": "”{name}” är sparad, men de aktiva filtren döljer den — rensa dem för att se den på kartan.",
   "view.unavailable": "Listvyn kräver en punkt eller hämtade observationer här.",
