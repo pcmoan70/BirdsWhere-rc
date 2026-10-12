@@ -69,7 +69,7 @@
       <div class="row w">URL <input id="furl" type="text" placeholder="https://…/scenes/name/" style="flex:1;width:auto"><button id="openurl">Open</button></div>
       <div class="row w">Google Drive <input id="gurl" type="text" placeholder="shared folder or file link" style="flex:1;width:auto"><button id="gopen">Sign in &amp; open</button></div>
       <div class="row w">Centre <input id="clat" type="number" step="0.00001" placeholder="lat"><input id="clon" type="number" step="0.00001" placeholder="lon"></div>
-      <div class="row w">Radius m <input id="crad" type="number" min="100" max="1500" step="50" value="1000"></div>
+      <div class="row w">Radius m <input id="crad" type="number" min="100" max="5000" step="50" value="1000"></div>
       <div class="row w"><button id="render">Render</button><button id="share" title="A link to this terrain for someone else">Share…</button></div>
       <div class="sub" id="shr" hidden></div>
       <div class="sub" id="dsrc"></div>
@@ -1311,8 +1311,11 @@ async function loadFolder(items) {
 // ======================================================================= build the scene from SRC
 async function render() {
   if (!SRC) return;
-  const lat = +$("clat").value, lon = +$("clon").value, R = Math.max(100, Math.min(1500, Math.round(+$("crad").value || 1000))), sig = $("csmooth").checked ? Math.max(0, +$("csig").value || 0) : 0;
-  const [X, Y] = UTM.fwd(lat, lon, SRC.zone), n = 2 * R;
+  const lat = +$("clat").value, lon = +$("clon").value, R = Math.max(100, Math.min(5000, Math.round(+$("crad").value || 1000))), sig = $("csmooth").checked ? Math.max(0, +$("csig").value || 0) : 0;
+  // the grid cell (m): the tiles' own resolution, coarser for a big view so the grid stays ≤ 3000 × 3000
+  // (owner, 2026-10-13: a 3 km radius — 6000² cells at 1 m would not fit a phone's memory or textures)
+  const c = Math.max(Math.max(1, Math.round(Math.min.apply(null, SRC.tiles.map(t => t.res[0])))), Math.ceil(2 * R / 3000));
+  const [X, Y] = UTM.fwd(lat, lon, SRC.zone), n = Math.round(2 * R / c);
   busy("Reading the terrain…"); await tick();
   // ---- heights: the ±R square at 1 m, nearest sample from every tile that touches it
   const h = new Float32Array(n * n).fill(NaN), x0 = X - R, y1 = Y + R;
@@ -1324,9 +1327,9 @@ async function render() {
     if (c1 <= c0 || r1 <= r0) continue;
     const ras = (await t.img.readRasters({ window: [c0, r0, c1, r1], samples: [0] }))[0], ww = c1 - c0;
     for (let j = 0; j < n; j++) {
-      const yy = y1 - j - 0.5, rr = Math.floor((b[3] - yy) / ry) - r0; if (rr < 0 || rr >= r1 - r0) continue;
+      const yy = y1 - (j + 0.5) * c, rr = Math.floor((b[3] - yy) / ry) - r0; if (rr < 0 || rr >= r1 - r0) continue;
       for (let i = 0; i < n; i++) {
-        const xx = x0 + i + 0.5, cc = Math.floor((xx - b[0]) / rx) - c0; if (cc < 0 || cc >= ww) continue;
+        const xx = x0 + (i + 0.5) * c, cc = Math.floor((xx - b[0]) / rx) - c0; if (cc < 0 || cc >= ww) continue;
         const v = ras[rr * ww + cc]; if (v > -1000 && v < 9000 && v !== t.nodata) h[j * n + i] = v;
       }
     }
@@ -1340,11 +1343,11 @@ async function render() {
   // ---- smoothing (Gaussian σ m, separable) and gradients
   const bad = new Uint8Array(n * n); let hs = new Float32Array(n * n);
   for (let k = 0; k < n * n; k++) { bad[k] = h[k] === h[k] ? 0 : 1; hs[k] = bad[k] ? mean : h[k]; }
-  if (sig > 0) hs = gauss(hs, n, sig);
+  if (sig / c >= 0.3) hs = gauss(hs, n, sig / c);
   const gx = new Float32Array(n * n), gyN = new Float32Array(n * n), slope = new Float32Array(n * n);
   for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
     const k = j * n + i, iL = i ? k - 1 : k, iR = i < n - 1 ? k + 1 : k, jU = j ? k - n : k, jD = j < n - 1 ? k + n : k;
-    gx[k] = (hs[iR] - hs[iL]) / ((iR - iL) || 1); gyN[k] = (hs[jU] - hs[jD]) / (((jD - jU) / n) || 1);   // dh/dEast, dh/dNorth
+    gx[k] = (hs[iR] - hs[iL]) / (((iR - iL) || 1) * c); gyN[k] = (hs[jU] - hs[jD]) / ((((jD - jU) / n) || 1) * c);   // dh/dEast, dh/dNorth (per metre)
     slope[k] = Math.atan(Math.hypot(gx[k], gyN[k])) / RAD;
   }
   // ---- overlays in the grid frame (m from the centre: x east, y north)
@@ -1366,16 +1369,16 @@ async function render() {
   if (best) pts.splice(pts.indexOf(best), 1);
   else {
     let bk = -1, bv = -1;
-    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { const k = j * n + i; if (bad[k]) continue; if (Math.hypot(i + 0.5 - R, R - j - 0.5) <= 500 && slope[k] > bv) { bv = slope[k]; bk = k; } }
-    if (bk >= 0) best = { x: bk % n + 0.5 - R, y: R - Math.floor(bk / n) - 0.5, name: "steepest pixel within 500 m, " + Math.round(bv) + "°" };
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { const k = j * n + i; if (bad[k]) continue; if (Math.hypot((i + 0.5) * c - R, R - (j + 0.5) * c) <= 500 && slope[k] > bv) { bv = slope[k]; bk = k; } }
+    if (bk >= 0) best = { x: (bk % n + 0.5) * c - R, y: R - (Math.floor(bk / n) + 0.5) * c, name: "steepest pixel within 500 m, " + Math.round(bv) + "°" };
   }
   // ---- true north on the grid (convergence) and the compass spot
   const [la2, lo2] = UTM.inv(X, Y, SRC.zone), [x2, y2] = UTM.fwd(la2 + 0.01, lo2, SRC.zone), gam = Math.atan2(x2 - X, y2 - Y) / RAD;
   const comp = placeCompass(best || { x: 0, y: 0 }, areas, pts, R, gam);
   busy("Painting…"); await tick();
-  const tex = paintBase(hs, slope, bad, n, R, areas, comp, gam);
+  const tex = paintBase(hs, slope, bad, n, R, areas, comp, gam, c);
   const nrm = paintNormals(gx, gyN, n);
-  const S = { lat, lon, X, Y, R, n, hs, bad, lo, hi, gam, areas, pts, best, comp, tex, nrm, zone: SRC.zone,
+  const S = { lat, lon, X, Y, R, n, c, hs, bad, lo, hi, gam, areas, pts, best, comp, tex, nrm, zone: SRC.zone,
               title: SRC.scene.title || (lat.toFixed(5) + ", " + lon.toFixed(5)) };
   busy(false);
   build(S);
@@ -1395,7 +1398,7 @@ function polyDist(x, y, ring) {
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) { const a = ring[j], b = ring[i], vx = b[0] - a[0], vy = b[1] - a[1], L = vx * vx + vy * vy || 1, t = Math.max(0, Math.min(1, ((x - a[0]) * vx + (y - a[1]) * vy) / L)); d = Math.min(d, Math.hypot(x - a[0] - t * vx, y - a[1] - t * vy)); }
   return d;
 }
-const RC = 30, COMPASS_S = 250;
+const RC = 30, RCm = RC, COMPASS_S = 250;
 function placeCompass(best, areas, pts, R, gam) {
   // 250 m TRUE south of the ring, clear of every other indicator; else further south, then round the ring
   const td = (b, d) => [best.x + d * Math.sin((b + gam) * RAD), best.y + d * Math.cos((b + gam) * RAD)];
@@ -1412,7 +1415,7 @@ function placeCompass(best, areas, pts, R, gam) {
   }
   return null;
 }
-function paintBase(hs, slope, bad, n, R, areas, comp, gam) {
+function paintBase(hs, slope, bad, n, R, areas, comp, gam, c) {
   const cv = document.createElement("canvas"); cv.width = cv.height = n; const cx = cv.getContext("2d");
   const im = cx.createImageData(n, n), d = im.data;
   for (let k = 0; k < n * n; k++) {
@@ -1431,7 +1434,7 @@ function paintBase(hs, slope, bad, n, R, areas, comp, gam) {
     }
   }
   cx.putImageData(im, 0, 0);
-  const px = (x, y) => [x + R, R - y];
+  const px = (x, y) => [(x + R) / c, (R - y) / c], H2 = n / 2, L = 180 / c;
   for (const a of areas) {
     cx.beginPath(); a.ring.forEach((p, i) => { const [u, v] = px(p[0], p[1]); i ? cx.lineTo(u, v) : cx.moveTo(u, v); }); cx.closePath();
     cx.globalAlpha = .75; cx.fillStyle = a.col; cx.fill(); cx.globalAlpha = 1; cx.lineWidth = 3; cx.strokeStyle = "#0f0f0f"; cx.stroke();
@@ -1442,17 +1445,17 @@ function paintBase(hs, slope, bad, n, R, areas, comp, gam) {
   for (let t = 0; t < 40000 && placed.length < 400; t++) {
     const i = 6 * Math.floor(rnd() * (n / 6 - 1)), j = 6 * Math.floor(rnd() * (n / 6 - 1)), k = j * n + i;
     if (bad[k] || Math.floor(hs[k] / 25) === Math.floor(hs[k + 1] / 25) && Math.floor(hs[k] / 25) === Math.floor(hs[k + n] / 25)) continue;
-    if (Math.hypot(i - R, j - R) > R - 30 || placed.some(p => Math.abs(p[0] - i) < 180 && Math.abs(p[1] - j) < 180)) continue;
-    if (comp && Math.hypot(i - (comp.x + R), j - (R - comp.y)) < RC + 40) continue;
+    if (Math.hypot(i - H2, j - H2) > (R - 30) / c || placed.some(p => Math.abs(p[0] - i) < L && Math.abs(p[1] - j) < L)) continue;
+    if (comp && Math.hypot(i - (comp.x + R) / c, j - (R - comp.y) / c) < (RC + 40) / c) continue;
     const t_ = String(Math.round(hs[k] / 25) * 25), w = cx.measureText(t_).width;
     cx.fillStyle = "#faf8eb"; cx.fillRect(i - w / 2 - 3, j - 9, w + 6, 18); cx.fillStyle = "#5a2d0f"; cx.fillText(t_, i, j + 1); placed.push([i, j]);
   }
   // centre mark, 500 m and R circles
-  cx.strokeStyle = "#fff"; cx.lineWidth = 3; cx.beginPath(); cx.arc(R, R, 6, 0, 7); cx.stroke();
-  cx.lineWidth = 2; for (const rr of [500, R - 1]) { cx.beginPath(); cx.arc(R, R, rr, 0, 7); cx.stroke(); }
+  cx.strokeStyle = "#fff"; cx.lineWidth = 3; cx.beginPath(); cx.arc(H2, H2, 6, 0, 7); cx.stroke();
+  cx.lineWidth = 2; for (const rr of [500, R - c]) { cx.beginPath(); cx.arc(H2, H2, rr / c, 0, 7); cx.stroke(); }
   // compass rose (true north = gam ° clockwise of the grid's north; image rows run south)
   if (comp) {
-    const [u, v] = px(comp.x, comp.y);
+    const [u, v] = px(comp.x, comp.y), RC = RCm / c;
     cx.fillStyle = "#faf8eb"; cx.strokeStyle = "#1e1e1e"; cx.lineWidth = 3; cx.beginPath(); cx.arc(u, v, RC, 0, 7); cx.fill(); cx.stroke();
     cx.strokeStyle = "#787878"; cx.lineWidth = 1; cx.beginPath(); cx.arc(u, v, RC * .55, 0, 7); cx.stroke();
     for (const [ang, col] of [[0, "#c81e1e"], [90, "#282828"], [180, "#282828"], [270, "#282828"]]) {
@@ -1522,21 +1525,21 @@ const amb = new THREE.AmbientLight(0xffffff, 0.75), sun = new THREE.DirectionalL
 scene.add(amb, sun, sun.target);
 let S = null, world = null, terrain = null, needles = [], flags = [], letters = [];
 const ray = new THREE.Raycaster(), mv = new THREE.Vector2();
-function sample(x, y) { if (!S) return 0; const n = S.n, i = Math.max(0, Math.min(n - 1, Math.floor(x + S.R))), j = Math.max(0, Math.min(n - 1, Math.floor(S.R - y))); return S.hs[j * n + i]; }
+function sample(x, y) { if (!S) return 0; const n = S.n, i = Math.max(0, Math.min(n - 1, Math.floor((x + S.R) / S.c))), j = Math.max(0, Math.min(n - 1, Math.floor((S.R - y) / S.c))); return S.hs[j * n + i]; }
 
 function build(s) {
   if (world) { scene.remove(world); world.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); if (o.material.normalMap) o.material.normalMap.dispose(); o.material.dispose(); } }); letters.forEach(l => scene.remove(l)); }
   S = s; S.h0 = S.lo; measObj = []; measPts = []; if ($("meas")) $("meas").hidden = !measOn;
-  const n = S.n, R = S.R, st = 2, m = Math.floor((n - 1) / st) + 1;
+  const n = S.n, R = S.R, cm = S.c, st = Math.max(1, Math.ceil(n / 1000)), m = Math.floor((n - 1) / st) + 1;   // ≤ ~1000² vertices
   const pos = new Float32Array(m * m * 3), uv = new Float32Array(m * m * 2);
   for (let r = 0; r < m; r++) for (let c = 0; c < m; c++) {
     const k = r * m + c, i = c * st, j = r * st;
-    pos[3 * k] = i + 0.5 - R; pos[3 * k + 1] = S.hs[j * n + i] - S.h0; pos[3 * k + 2] = j + 0.5 - R;
+    pos[3 * k] = (i + 0.5) * cm - R; pos[3 * k + 1] = S.hs[j * n + i] - S.h0; pos[3 * k + 2] = (j + 0.5) * cm - R;
     uv[2 * k] = (i + 0.5) / n; uv[2 * k + 1] = 1 - (j + 0.5) / n;
   }
   const idx = [];
   for (let r = 0; r < m - 1; r++) for (let c = 0; c < m - 1; c++) {
-    const x = (c + 0.5) * st - R, z = (r + 0.5) * st - R; if (x * x + z * z > R * R) continue;
+    const x = (c + 0.5) * st * cm - R, z = (r + 0.5) * st * cm - R; if (x * x + z * z > R * R) continue;
     const a = r * m + c, b = a + 1, d = a + m, e = d + 1; idx.push(a, d, b, b, d, e);
   }
   const g = new THREE.BufferGeometry();
@@ -1582,7 +1585,7 @@ function build(s) {
   na.position.set(0, sample(Math.sin(gr) * (R - 4), Math.cos(gr) * (R - 4)) - S.h0 + 25, -R - 30); world.add(naG);
   // panels
   $("ttl").textContent = "Terrain 3D — " + S.title;
-  $("sub").textContent = "1 m DTM, " + R + " m radius, " + Math.round(S.lo) + "–" + Math.round(S.hi) + " m a.s.l. · " + S.areas.length + " areas, " + S.pts.length + " points";
+  $("sub").textContent = S.c + " m grid, " + R + " m radius, " + Math.round(S.lo) + "–" + Math.round(S.hi) + " m a.s.l. · " + S.areas.length + " areas, " + S.pts.length + " points";
   const views = S.areas.map(a => Object.assign({ kind_: "area" }, a)).concat(S.pts.map(p => Object.assign({ kind_: "point" }, p))).sort((p, q) => p.d - q.d);
   $("listh").textContent = "Views (" + views.length + ")";
   const L = $("items"); L.innerHTML = views.length ? "" : "Nothing marked within the radius.";
@@ -1675,7 +1678,7 @@ function shaded(x, y, sv) {
 }
 function surfIrr(x, y, el, az, Ib) {
   if (el <= 0 || Ib <= 0) return { w: 0, sh: false };
-  const e = 1, a = (sample(x + e, y) - sample(x - e, y)) / (2 * e), b = (sample(x, y + e) - sample(x, y - e)) / (2 * e), L = Math.hypot(a, b, 1);
+  const e = S.c, a = (sample(x + e, y) - sample(x - e, y)) / (2 * e), b = (sample(x, y + e) - sample(x, y - e)) / (2 * e), L = Math.hypot(a, b, 1);
   const sv = sunVec(el, az), ci = (-a * sv[0] - b * sv[1] + sv[2]) / L;
   if (ci <= 0) return { w: 0, sh: false, self: true };
   const sh = shaded(x, y, sv); return { w: sh ? 0 : Ib * ci, sh };
@@ -1691,7 +1694,7 @@ canvas.addEventListener("pointermove", ev => {
   if (!S) return; const now = performance.now(); if (now - lastTip < 60) return; lastTip = now;
   mv.x = ev.clientX / innerWidth * 2 - 1; mv.y = -ev.clientY / innerHeight * 2 + 1; ray.setFromCamera(mv, camera);
   const hit = ray.intersectObject(terrain)[0]; if (!hit) { tip.style.display = "none"; return; }
-  const x = hit.point.x, y = -hit.point.z, e = 1;
+  const x = hit.point.x, y = -hit.point.z, e = S.c;
   const sl = Math.atan(Math.hypot(sample(x + e, y) - sample(x - e, y), sample(x, y + e) - sample(x, y - e)) / (2 * e)) / RAD;
   let html = Math.round(sample(x, y)) + " m a.s.l. · slope " + Math.round(sl) + "° · " + Math.round(Math.hypot(x, y)) + " m from centre";
   if (SUN && $("lmode").value === "sun") {

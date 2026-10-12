@@ -1467,7 +1467,7 @@ app/
 ### Terrain 3D viewer (`/terrain3d/`)
 
 A stand-alone page (not part of the app shell; the service worker leaves it to the network) that
-draws a 1 m terrain model in 3-D from a **folder**: 1 m DTM GeoTIFF tiles (one UTM zone, EPSG 258xx /
+draws a 1 m terrain model in 3-D from a **folder** (radius up to 5 km: beyond 1.5 km the grid coarsens to ⌈2R / 3000⌉ m so it stays ≤ 3000 × 3000 — a 3 km view is a 2 m grid): 1 m DTM GeoTIFF tiles (one UTM zone, EPSG 258xx /
 326xx, Float32 or integer) plus any `.geojson` / `.kml` / `.kmz` overlays (polygons draped on the
 terrain, points as needles; a point with `role` = `steepest` is the red ring) and an optional
 `scene.json` (`title`, `lat`, `lon`, `radius`, `sigma` — the suggested smoothing in m, 0 = off; older folders' `smoothed_sigma` 0 = already smoothed).
