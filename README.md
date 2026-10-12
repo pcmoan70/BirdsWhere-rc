@@ -972,8 +972,8 @@ Right-click / long-press / tap any species name for a menu **led by the species 
 - **This observation** (bottom, when opened from a record with a location) — **Show on map**,
   **Navigate here** and **Add to route**.
 - **Uncertainty circles** — a point whose file carries `uncertainty_m` (also `radius_m`, `radius`,
-  `coordinateUncertaintyInMeters`, `accuracy`) is drawn with a faint, see-through circle of that
-  radius in metres around it, in the list's colour.
+  `coordinateUncertaintyInMeters`, `accuracy`) is drawn with a see-through circle of that
+  radius in metres around it: a thin black edge and a faint fill in the list's colour.
 - **Hide / Show lists** — the toggle at the end of the Points panel's top row: **Hide lists** takes every
   ticked list and trip off the map but remembers them — their checkboxes stay ticked, greyed out and
   locked — and **Show lists** puts exactly those back. The hidden state survives a reopen.

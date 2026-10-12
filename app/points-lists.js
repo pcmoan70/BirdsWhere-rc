@@ -2001,8 +2001,9 @@ window.AppPoints = (function () {
   function renderMpPin(p, editable, color) {
     if (+p.radius > 0) {   // the position's uncertainty: a transparent circle in metres, under the pin
       var rc = p.color || color || mpColorFor(p);
-      // faint, so the map stays readable under many overlapping circles (owner, 2026-10-10)
-      mpLayer.addLayer(L.circle([p.lat, p.lon], { radius: +p.radius, color: rc, weight: 1, opacity: 0.3, fillColor: rc, fillOpacity: 0.04, interactive: false }));
+      // faint fill, so the map stays readable under many overlapping circles (owner, 2026-10-10), with a
+      // thin black edge so the circle itself is easy to see (owner, 2026-10-12)
+      mpLayer.addLayer(L.circle([p.lat, p.lon], { radius: +p.radius, color: "#000", weight: 0.8, opacity: 0.55, fillColor: rc, fillOpacity: 0.04, interactive: false }));
     }
     // A detection-saved pin (read-only, carries the species' colour) is drawn
     // like the plotted detection — species colour + ★ for interesting + a black
