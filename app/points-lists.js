@@ -370,7 +370,7 @@ window.AppPoints = (function () {
       // reload must never quietly drop it (owner, 2026-10-10: "make sure user created lists are
       // never deleted").
       var fromBlob = Object.create(null); (Array.isArray(blobSets) ? blobSets : []).forEach(function (c) { if (c && c.name) fromBlob[c.name] = 1; });
-      var orphans = wasReady ? [] : (mpCollections || []).filter(function (c) { return c && c.name && !c._lazy && (c.points || []).length && !fromBlob[c.name]; });   // blob lists were just moved into the store — the same data, not orphans
+      var orphans = wasReady ? [] : (mpCollections || []).filter(function (c) { return c && c.name && !c._lazy && !c.viewOnly && (c.points || []).length && !fromBlob[c.name]; });   // blob lists were just moved into the store — the same data, not orphans
       var names = Object.create(null); out.forEach(function (c) { names[c.name] = 1; });
       orphans.forEach(function (c) {
         if (out.indexOf(c) >= 0) return;
@@ -460,6 +460,7 @@ window.AppPoints = (function () {
     } catch (e) {}
   }
   function writeIfChanged(c, fast) {
+    if (isViewOnly(c)) return null;   // never stored
     if (fast && !shownColls[c.name] && mpCheap[c.name] === cheapSig(c)) return null;
     var sig;
     try { sig = fullSig(c); } catch (e) { sig = null; }
@@ -547,6 +548,8 @@ window.AppPoints = (function () {
         // empty MIRROR, not the truth — writing it into the blob would record "no lists"
         // over the top of lists that are sitting safely in IndexedDB.
         patch.mapPointSets = undefined;
+      } else if (Array.isArray(patch.mapPointSets)) {
+        patch.mapPointSets = patch.mapPointSets.filter(function (c) { return !isViewOnly(c); });   // no store: the blob, without view-only lists
       }
     }
     window.GeoState.save(patch);
@@ -568,6 +571,7 @@ window.AppPoints = (function () {
   // Replace the working set with a named list and make it the active list.
   function loadCollection(name) {
     var c = mpCollections.filter(function (x) { return x.name === name; })[0]; if (!c) return;
+    if (c.viewOnly) return;   // making it the working set would copy its points into the user's own pins
     mapPoints = (c.points || []).map(function (p) { return Object.assign({}, p); });
     mpActiveName = name; mpFilter = [];
     saveMapPoints(); renderMapPoints();
@@ -577,6 +581,11 @@ window.AppPoints = (function () {
   // Point-lists flagged "protected" can't be deleted (a guard against losing a
   // curated list to a stray ×). Stored as a name list in GeoState.
   function protectedColls() { return window.GeoState.get("mapPointsProtected", []) || []; }
+  // A VIEW-ONLY list (owner, 2026-10-12): someone else's file opened from a Google Drive share link.
+  // It is shown for this session only — never written to the store, synced, exported, shared, or
+  // copied into the user's own lists — and gone after a reload (open the link again to see it).
+  function isViewOnly(c) { return !!(c && c.viewOnly); }
+  function ownColls() { return mpCollections.filter(function (c) { return !c.viewOnly; }); }
   function isCollProtected(name) { return protectedColls().indexOf(name) >= 0; }
   function setCollProtected(name, on) {
     var list = protectedColls().slice(), i = list.indexOf(name);
@@ -599,7 +608,7 @@ window.AppPoints = (function () {
   // colls/loose default to "everything" — the per-list download passes just one list.
   function buildPointsKml(colls, loose) {
     var xml = function (s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); };
-    colls = colls || mpCollections;
+    colls = (colls || mpCollections).filter(function (c) { return !isViewOnly(c); });   // a view-only list is never exported
     loose = loose !== undefined ? loose : (mpActiveName ? [] : mapPoints);
     var parts = ['<?xml version="1.0" encoding="UTF-8"?>',
       '<kml xmlns="http://www.opengis.net/kml/2.2">', "<Document>", "<name>Map points</name>"];
@@ -650,7 +659,7 @@ window.AppPoints = (function () {
   // and species key survive in each feature's properties; the saved-list name goes in
   // "list". (KML flattens these into folders + description; GeoJSON keeps them exact.)
   function buildPointsGeoJson(colls, loose) {
-    colls = colls || mpCollections;
+    colls = (colls || mpCollections).filter(function (c) { return !isViewOnly(c); });   // a view-only list is never exported
     loose = loose !== undefined ? loose : (mpActiveName ? [] : mapPoints);
     var feats = [];
     function feat(p, listName) {
@@ -1022,7 +1031,8 @@ window.AppPoints = (function () {
       if (taken.indexOf(cand) < 0) return cand;
     }
   }
-  async function startMultiImport(files) {
+  async function startMultiImport(files, opts) {
+    var viewOnly = !!(opts && opts.viewOnly);
     var items = [], failed = [], shares = [];
     var taken = mpCollections.map(function (c) { return c.name; });
     for (var i = 0; i < files.length; i++) {
@@ -1036,6 +1046,7 @@ window.AppPoints = (function () {
         // import, saved as a point list like a single .share, without a prompt per file.
         var h = new Uint8Array(buf, 0, Math.min(2, buf.byteLength || 0)), c0 = h.length ? String.fromCharCode(h[0]) : "";
         if ((c0 === "0" || c0 === "1") && !(h.length > 1 && h[1] === 0x4B)) {
+          if (viewOnly) { failed.push(f.name); continue; }   // a .share list would be SAVED: not from someone else's Drive share
           shares.push({ name: f.name, txt: new TextDecoder().decode(new Uint8Array(buf)).replace(/^\uFEFF/, "").trim() });
           continue;
         }
@@ -1068,7 +1079,7 @@ window.AppPoints = (function () {
       marks = marks.concat(it.parsed.marks);
       batch.push({ name: it.name, marks: it.parsed.marks, polys: it.parsed.polys || [], lines: it.parsed.lines || [] });
     });
-    kmlImport = { marks: marks, fields: Object.keys(fieldSet), folders: Object.keys(folderSet), files: batch };
+    kmlImport = { marks: marks, fields: Object.keys(fieldSet), folders: Object.keys(folderSet), files: batch, viewOnly: viewOnly };
     setStatus(failed.length ? t("kml.someFailed", { n: failed.length }) : "");
     openKmlImportDialog();
   }
@@ -1104,7 +1115,7 @@ window.AppPoints = (function () {
         }).join("") + "</div></div>";
     }
     var listItems = [{ v: "__new__", l: t("detmenu.newList") }].concat(
-      mpCollections.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (c) { return { v: c.name, l: c.name }; }));
+      ownColls().sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (c) { return { v: c.name, l: c.name }; }));
     // A batch has no target picker: the list names are the file names, shown so the user
     // can see what they are about to get (and what each file contributed) before importing.
     var multi = !!(p.files && p.files.length > 1);
@@ -1430,8 +1441,9 @@ window.AppPoints = (function () {
         if (noteIsHtml && pt.note && !droppedTable) pt.noteHtml = true;
         return pt;
       });
-      var c = mpCollections.filter(function (x) { return x.name === listName; })[0];
-      if (!c) { c = { name: listName, points: [] }; mpCollections.push(c); }
+      if (p.viewOnly) pts.forEach(function (q) { q.viewOnly = true; });
+      var c = p.viewOnly ? null : mpCollections.filter(function (x) { return x.name === listName && !x.viewOnly; })[0];
+      if (!c) { c = { name: listName, points: [] }; if (p.viewOnly) c.viewOnly = true; mpCollections.push(c); }
       c.points = c.points.concat(pts);
       polys = polys || (marks ? [] : (p.polys || []));
       if (polys.length) c.polys = (c.polys || []).concat(polys);   // areas travel with the list (drawn when it is ticked)
@@ -1450,8 +1462,9 @@ window.AppPoints = (function () {
     }
     if (p.files && p.files.length) {
       var total = 0;
-      p.files.forEach(function (b) { total += finish(b.name, b.marks, p.files.length === 1, b.polys || [], b.lines || []); });
+      p.files.forEach(function (b) { total += finish(b.name, b.marks, p.viewOnly || p.files.length === 1, b.polys || [], b.lines || []); });
       commit();
+      if (p.viewOnly) { setStatus(t("drive.openedViewOnly", { n: total })); return; }
       setStatus(p.files.length > 1 ? t("kml.importedN", { n: total, lists: p.files.length })
                                    : t("kml.imported", { n: total, name: p.files[0].name }));
       return;
@@ -2156,6 +2169,8 @@ window.AppPoints = (function () {
   // The card's tag row: the point's tags as removable chips, then ＋ to open the picker.
   function pointTagsHtml(p) {
     var tags = (p.tags || []).filter(function (x) { return !!x; });
+    if (p.viewOnly) return '<div class="mp-tagrow">' + tags.map(function (tg) { return '<span class="mp-tag-chip">' + escapeHtml(tagDisplay(tg)) + "</span>"; }).join("") +
+      '<span class="mp-card-acts mp-viewonly">' + escapeHtml(t("drive.viewOnly")) + "</span></div>";   // someone else's shared list: look, don't copy
     return '<div class="mp-tagrow">' +
       tags.map(function (tg) {
         return '<button type="button" class="mp-tag-chip" data-tag="' + escapeHtml(tg) + '" title="' +
@@ -2481,7 +2496,7 @@ window.AppPoints = (function () {
     saveShownState: saveShownState, addMapPoint: addMapPoint, updateMapPoint: updateMapPoint,
     deleteMapPoint: deleteMapPoint, mpHasUnsaved: mpHasUnsaved, mpVisible: mpVisible,
     mpAllTags: mpAllTags, mpUid: mpUid, mpParseTags: mpParseTags,
-    deleteCollection: deleteCollection, isCollProtected: isCollProtected, mpLoading: mpLoading,
+    deleteCollection: deleteCollection, isCollProtected: isCollProtected, isViewOnly: isViewOnly, ownColls: ownColls, mpLoading: mpLoading,
     setCollProtected: setCollProtected, isRouteColl: isRouteColl,
     openCollEditModal: openCollEditModal, collColor: collColor,
     // ---- colours ----

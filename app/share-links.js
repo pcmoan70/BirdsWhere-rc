@@ -222,6 +222,7 @@ window.AppShare = (function () {
   // Only the points currently ON SCREEN are shared, not the whole list.
   function sharePointList(name) {
     var c = mpState.mpCollections().filter(function (x) { return x.name === name; })[0]; if (!c) return;
+    if (c.viewOnly) { setStatus(t("drive.noCopy")); return; }   // someone else's list, opened view-only from Drive
     var col = collColor(c), isRoute = mpState.isRouteColl ? mpState.isRouteColl(c) : !!c.route;
     // A ROUTE travels whole and in order (owner, 2026-10-04: a synced route "lost the
     // navigation direction"): never sliced to the viewport, and flagged so the recipient
@@ -364,7 +365,7 @@ window.AppShare = (function () {
   // in the detections via detPlot).
   function allShownUserPoints() {
     var out = (mpState.mapPoints() || []).slice();
-    (mpState.mpCollections() || []).forEach(function (c) { if (mpState.shownColls()[c.name]) (c.points || []).forEach(function (p) { if (p && !p.spKey) out.push(p); }); });
+    (mpState.mpCollections() || []).forEach(function (c) { if (mpState.shownColls()[c.name] && !c.viewOnly) (c.points || []).forEach(function (p) { if (p && !p.spKey) out.push(p); }); });
     return out;
   }
   // Reverse compactDet (v2) back into the { type:"det", name, detections } shape the

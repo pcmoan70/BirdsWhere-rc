@@ -4937,3 +4937,6 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .mp-fs-n { flex: 0 0 auto; color: var(--ink-muted, #667); font-size: var(--fs-xs); }
 .mp-fs-del { flex: 0 0 auto; border: 0; background: transparent; color: #c62828; cursor: pointer; padding: 3px 5px; border-radius: 5px; display: inline-flex; }
 .mp-fs-del:hover { background: var(--hover, #fdecea); }
+
+/* a view-only (received from Drive) list point: a quiet label instead of the edit / copy / route / delete buttons */
+.mp-card-acts.mp-viewonly { font-size: 12px; font-style: italic; color: #777; padding: 2px 4px; }

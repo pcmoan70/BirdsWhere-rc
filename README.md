@@ -718,6 +718,13 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   paste the share link into *Load from file* and press **🔗 App link** — it copies a BirdsWhere link
   (`…/?drive=<share link>`) that opens the file for them after they sign in. Opening the app with
   `?drive=<share link>` asks once (Sign in & open / Cancel) and drops the parameter.
+  **Someone else's file opens view-only:** a file you own (or may edit) on Drive imports as your own
+  list; any other — a file shared *with* you — becomes a **view-only list**: on the map, in the legend
+  and the record popups for this session only, and **never** written to the device's store, synced,
+  exported (downloads, KML/KMZ/GeoJSON, backups, map shares) or copied — no copy / edit / route on its
+  points, it is not a target in any list picker, its records cannot be saved into a list, and search
+  skips it. Its ⋯ menu offers only "Remove from the map". After a reload it is gone; opening the link
+  again fetches it afresh, so the owner can withdraw it by unsharing the file.
   Import from either the Settings
   *Import* button or *Load from file* in the Points menu — or simply **drag the file onto the page**
   (one file is shown; several at once are saved as lists without being shown) — both

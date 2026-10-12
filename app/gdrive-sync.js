@@ -802,17 +802,21 @@ window.GDriveSync = (function () {
       if (!r.ok) throw new Error("http " + r.status);
       return r;
     }
-    var meta = await (await get(api + "/" + id + "?fields=id,name,mimeType&supportsAllDrives=true")).json();
+    // ownedByMe: a file the signed-in account owns imports as its own list; anything else is someone
+    // else's share and opens view-only (owner, 2026-10-12: block copying into the receiver's lists)
+    var FIELDS = "id,name,mimeType,ownedByMe,capabilities(canEdit)";
+    var meta = await (await get(api + "/" + id + "?fields=" + FIELDS + "&supportsAllDrives=true")).json();
     var files = [meta];
     if (meta.mimeType === "application/vnd.google-apps.folder") {
       var q = encodeURIComponent("'" + id + "' in parents and trashed = false");
-      files = ((await (await get(api + "?q=" + q + "&fields=files(id,name,mimeType)&pageSize=200&supportsAllDrives=true&includeItemsFromAllDrives=true")).json()).files || [])
+      files = ((await (await get(api + "?q=" + q + "&fields=files(" + FIELDS + ")&pageSize=200&supportsAllDrives=true&includeItemsFromAllDrives=true")).json()).files || [])
         .filter(function (f) { return SHARED_EXT.test(f.name || ""); });
     }
     var out = [];
     for (var i = 0; i < files.length; i++) {
       var b = await (await get(api + "/" + files[i].id + "?alt=media&supportsAllDrives=true")).blob();
-      out.push({ name: files[i].name || ("drive-" + i), blob: b });
+      // owner, or an editor (a shared drive's own files have no single owner): the file is theirs to keep
+      out.push({ name: files[i].name || ("drive-" + i), blob: b, owned: !!(files[i].ownedByMe || (files[i].capabilities && files[i].capabilities.canEdit)) });
     }
     token = null;   // dropped: nothing kept after the read
     return { name: meta.name || "", folder: meta.mimeType === "application/vnd.google-apps.folder", files: out };

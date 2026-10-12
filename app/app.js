@@ -4680,7 +4680,7 @@
     var el = document.getElementById("mp-admin-list"); if (!el) return;
     if (!mpState.mpCollections().length) { el.innerHTML = '<p class="dd-empty">' + escapeHtml(t("points.empty")) + "</p>"; return; }
     var rows = [];
-    mpState.mpCollections().slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (c) {
+    mpState.mpCollections().filter(function (c) { return !c.viewOnly; }).sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (c) {   // the admin manages the user's own lists
       var prot = isCollProtected(c.name), n = mpState.collCount(c);
       var cid = "coll:" + c.name, open = !!listsExpanded[cid] && n > 0;
       rows.push('<tr class="lists-row"><td class="dset-name">' +
@@ -6017,7 +6017,7 @@
     // should not travel. The biggest generated list alone is over half the payload.
     try {
       if (mpState.mpIdbReady && mpState.mpIdbReady())
-        state.mapPointSets = mpState.mpCollections().filter(function (c) { return c && c.name && !c.noSync; });
+        state.mapPointSets = mpState.mpCollections().filter(function (c) { return c && c.name && !c.noSync && !c.viewOnly; });   // a view-only (received) list never leaves the device
     } catch (e) {}
     // Names the user's own use has accumulated — harvested from iNaturalist, and the
     // extra vernaculars — live in IndexedDB and were never in the payload, so every
@@ -6350,7 +6350,8 @@
     try { if (typeof detSetStore !== "undefined") local.mapDetectionSets = detSetStore.filter(function (s) { return s && s.name; }); } catch (e) {}
     // Named point lists too: without this the merge would see NO local lists (the blob
     // no longer carries them) and "merge" would mean "replace with the other device's".
-    try { if (mpState.mpIdbReady && mpState.mpIdbReady()) local.mapPointSets = mpState.mpCollections().filter(function (c) { return c && c.name; }); } catch (e) {}
+    try { if (mpState.mpIdbReady && mpState.mpIdbReady()) local.mapPointSets = mpState.mpCollections().filter(function (c) { return c && c.name && !c.viewOnly; }); } catch (e) {}
+    var viewOnlyKept = mpState.mpCollections().filter(function (c) { return c && c.viewOnly; });   // session-only received lists: kept on screen, never merged or stored
     var incoming = data.state || {};
     var mergedCl = mergeChecklists(local.fieldChecklists, incoming.fieldChecklists);
     // Map points: merge rather than overwrite. Loose pins from both sides are
@@ -6459,7 +6460,7 @@
     // Merged lists go to IndexedDB (and out of the blob) when that is the store — the
     // union of two devices' lists is exactly the write that used to break the sync.
     if (mpState.mpIdbReady && mpState.mpIdbReady()) {
-      mpState.setMpCollections(mergedSets);
+      mpState.setMpCollections(mergedSets.concat(viewOnlyKept));
       // Collected, not fired and forgotten: a caller about to reload (or a user about to
       // close the app) waits on these through AppData.flushWrites(), or the synced lists
       // are lost with the transaction.
@@ -13039,8 +13040,20 @@
   // observation (record-specific, only when opened from a dot/pin) · Lists &
   // actions (your data). `d` = { key, name, sci?, and for a record lat/lon/url/
   // date/listName/mpId }.
+  // Is this menu's record one of a view-only (received) list's? Flagged rows say so; otherwise the
+  // record is matched by its list name, or by its spot (and date) among the view-only lists' points.
+  function isViewOnlyRecord(d) {
+    if (!d) return false;
+    if (d._vo || d.viewOnly) return true;
+    var vos = mpState.mpCollections().filter(function (c) { return c && c.viewOnly; });
+    if (!vos.length) return false;
+    if (d.listName && vos.some(function (c) { return c.name === d.listName; })) return true;
+    var la = +d.lat, lo = +d.lon; if (!isFinite(la) || !isFinite(lo)) return false;
+    return vos.some(function (c) { return (c.points || []).some(function (p) { return p && Math.abs(+p.lat - la) < 1e-6 && Math.abs(+p.lon - lo) < 1e-6 && (!d.date || !p.date || p.date === d.date); }); });
+  }
   function drmRenderMain(el, d, refresh) {
     el.innerHTML = "";
+    var vo = isViewOnlyRecord(d);   // a record of a view-only (received) list: look, don't copy
     var redraw = refresh || renderDetListModal;   // detection-list / stored-pin refresh
     var key = d.key, lbl = key && labelsByKey[key];
     var isExtra = key && key.indexOf("x:") === 0;   // non-model species (plants/fungi/other) keyed "x:<sci>"
@@ -13178,7 +13191,7 @@
       // counterpart to the transient selection filter above. Works for any keyed species.
       el.appendChild(drmBtn(tLabel("spmenu.addList"), function () { drmRenderSpLists(el, d); }, "dotsplus"));
       // "Add point to list" sits right under it (owner, 2026-10-05) — the two list actions together.
-      if (hasObs) { el.appendChild(drmBtn(tLabel("detmenu.addList"), function () { drmRenderLists(el, d); }, "dotsplus")); addPtPlaced = true; }
+      if (hasObs && !vo) { el.appendChild(drmBtn(tLabel("detmenu.addList"), function () { drmRenderLists(el, d); }, "dotsplus")); addPtPlaced = true; }
       // Each row is a toggle drawn with the app's own monochrome line icons (not the
       // colour emoji the list columns use); the active state reads via the icon's
       // full-strength (vs dimmed) rendering — see .drm-toggle .drm-ico-svg.
@@ -13196,16 +13209,16 @@
       if (hasLoc) {
         if (!d.fromPin) el.appendChild(drmBtn(tLabel("detmenu.focusMap"), function () { focusPointOnMap(+d.lat, +d.lon); }, "pin"));   // green pin icon only (strip the 🎯 emoji); a map pin is already on the map
         el.appendChild(drmBtn(t("nav.here"), function () { closeDetRowMenu(); navigatePoints([{ lat: +d.lat, lon: +d.lon }]); }, "nav"));
-        el.appendChild(drmBtn(tLabel("route.add"), function () { closeDetRowMenu(); addToRoute(+d.lat, +d.lon, name); }, "navplus"));
+        if (!vo) el.appendChild(drmBtn(tLabel("route.add"), function () { closeDetRowMenu(); addToRoute(+d.lat, +d.lon, name); }, "navplus"));
       }
-      if (!addPtPlaced) el.appendChild(drmBtn(tLabel("detmenu.addList"), function () { drmRenderLists(el, d); }, "dotsplus"));   // green dots+ icon only (strip the 📍 emoji)
+      if (!addPtPlaced && !vo) el.appendChild(drmBtn(tLabel("detmenu.addList"), function () { drmRenderLists(el, d); }, "dotsplus"));   // green dots+ icon only (strip the 📍 emoji)
     }
   }
   function drmRenderLists(el, d) {
     var rect = el.getBoundingClientRect();
     el.innerHTML = "";
     var hdr = document.createElement("div"); hdr.className = "detrow-menu-hdr"; hdr.textContent = t("detmenu.addList"); el.appendChild(hdr);
-    lastListFirst(mpState.mpCollections().slice()).forEach(function (c) { el.appendChild(drmBtn(c.name, function () { addDetPoint(d, c.name); }, "pin", lastListCls(c.name))); });
+    lastListFirst(mpState.mpCollections().filter(function (c) { return !c.viewOnly; })).forEach(function (c) { el.appendChild(drmBtn(c.name, function () { addDetPoint(d, c.name); }, "pin", lastListCls(c.name))); });
     el.appendChild(drmBtn(t("detmenu.newList"), function () {
       closeDetRowMenu();
       modalPrompt(t("detmenu.newListPrompt"), "").then(function (n) { if (n && n.trim()) addDetPoint(d, n.trim()); });
@@ -13247,6 +13260,7 @@
   // Batched into a single save (unlike per-point addPointToCollection).
   function saveDetRowsToCollection(name, rows, color) {
     name = String(name || "").trim(); if (!name) return 0;
+    rows = (rows || []).filter(function (r) { return !(r && r._vo); });   // a view-only (received) list's records are not copied
     rememberSaveList(name);
     var c = mpState.mpCollections().filter(function (x) { return x.name === name; })[0];
     if (!c) { c = { name: name, points: [] }; mpState.mpCollections().push(c); }
@@ -17701,7 +17715,7 @@
   function chooseListThen(anchor, then, title, skip) {
     var br = anchor.getBoundingClientRect();
     var lists = lastListFirst(mpState.mpCollections().slice()
-      .filter(function (c) { return c.name !== skip; })
+      .filter(function (c) { return c.name !== skip && !c.viewOnly; })
       .sort(function (a, b) { return a.name.localeCompare(b.name); }));
     var then0 = then; then = function (nm) { rememberSaveList(nm); then0(nm); };
     var el = openAnchoredMenu("detrow-menu mp-saveinto-menu", anchor);
@@ -17730,6 +17744,7 @@
   // a ringing site); a move is a copy followed by a delete, both of which are here.
   function copyPointToList(anchor, p) {
     if (!p) return;
+    if (p.viewOnly) { setStatus(t("drive.noCopy")); return; }
     chooseListThen(anchor, function (name) {
       var c = mpState.mpCollections().filter(function (x) { return x.name === name; })[0];
       if (!c) { c = { name: name, points: [] }; mpState.mpCollections().push(c); }
@@ -17928,7 +17943,7 @@
         if (!row) {
           row = { lat: +p.lat, lon: +p.lon, date: p.date || "", url: p.url || "", count: p.count, act: p.act || "", src: p.src || "list",
             observer: p.observer || "", note: p.note || "", place: p.place || "", flags: p.flags || "", origin: p.origin || "",
-            placeCoarse: !!p.placeCoarse, posFuzzM: +p.posFuzzM || 0, _list: true, listColor: col, _listName: c.name, _mpId: p.id };
+            placeCoarse: !!p.placeCoarse, posFuzzM: +p.posFuzzM || 0, _list: true, listColor: col, _listName: c.name, _mpId: p.id, _vo: !!c.viewOnly };
           if (p.prob != null && +p.prob >= 0) { row._prob = +p.prob; seedObsProb(key, row); }   // probability stored on the list point → no inference again
           if (_listRowOf) _listRowOf.set(p, row);
         } else { row.listColor = col; row._listName = c.name; }
@@ -18133,7 +18148,8 @@
   // A KMZ / KML / GeoJSON (or a folder of them) shared on Google Drive (owner, 2026-10-12): Drive
   // refuses a plain fetch of a share link, so it is read through the Drive API after the user signs
   // in with the Google account it is shared with (read-only, token dropped after). The dialog's
-  // button is the user gesture the Google popup needs. Each file takes the normal import path.
+  // button is the user gesture the Google popup needs. A file the user owns (or may edit) takes the
+  // normal import path; someone else's opens view-only (session only, never stored or copied).
   function importPointsDrive(link) {
     if (importBusy) { setStatus(t("kml.busy")); return; }
     uiDialog({ message: t("drive.openBody"), okLabel: t("drive.openBtn"), xLater: true }).then(function (ok) {
@@ -18142,7 +18158,20 @@
       window.GDriveSync.readShared(link).then(function (res) {
         mpState.mpLoading(null);
         if (!res.files.length) { setStatus(t("drive.noFiles")); return; }
-        importPointsFile(res.files.map(function (f) { return new File([f.blob], f.name, { type: f.blob.type || "" }); }), true);
+        var asFile = function (f) { return new File([f.blob], f.name, { type: f.blob.type || "" }); };
+        var mine = res.files.filter(function (f) { return f.owned; }), theirs = res.files.filter(function (f) { return !f.owned; });
+        // Someone else's file opens VIEW-ONLY (owner, 2026-10-12: "block copying of the points to
+        // receiving users point lists"): shown this session, never saved, synced, exported or copied.
+        // The user's own files (owner or editor on Drive) import like a picked file.
+        if (theirs.length) {
+          importBusy = true;
+          mpState.mpLoading(t("kml.reading", { name: theirs[0].name }));
+          Promise.resolve(startMultiImport(theirs.map(asFile), { viewOnly: true }))
+            .then(function () { importBusy = false; if (mine.length) importPointsFile(mine.map(asFile), true); },
+                  function () { importBusy = false; mpState.mpLoading(null); setStatus(t("kml.parseErr")); });
+          return;
+        }
+        importPointsFile(mine.map(asFile), true);
       }).catch(function (e) {
         mpState.mpLoading(null);
         setStatus(e && e.code ? t("drive.notShared") : t("drive.failed", { msg: (e && e.message) || "" }));
@@ -18338,6 +18367,7 @@
   // NOT just by it being non-null — a fresh add still passes {lat,lon,...} so
   // truthiness would mis-detect it as an edit and silently no-op the save.
   function openPointEditor(existing) {
+    if (existing && existing.viewOnly) { setStatus(t("drive.noCopy")); return; }
     var p = existing || { lat: null, lon: null, name: "", tags: [], note: "" };
     var isEdit = !!(existing && existing.id);
     // Re-use a single working popup; close any other detail popups first.
@@ -18362,7 +18392,7 @@
       '<label>' + esc(t("points.saveToList")) +
         '<select id="mp-listsel">' +
           '<option value=""' + ((mpState.mpActiveName() || lastSaveList()) ? "" : " selected") + ">" + esc(t("points.listNone")) + "</option>" +
-          mpState.mpCollections().slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (c) {
+          mpState.mpCollections().filter(function (c) { return !c.viewOnly; }).sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (c) {
             return '<option value="' + esc(c.name) + '"' + (c.name === (mpState.mpActiveName() || lastSaveList()) ? " selected" : "") + ">" + esc(c.name) + "</option>";
           }).join("") +
           '<option value="__new__">' + esc(t("points.listNew")) + "</option>" +
@@ -18771,7 +18801,7 @@
       var hits = function (hay) { return mpAllIn(words, hay); };
       var out = [];
       mpState.mpCollections().forEach(function (c) {
-        if (!c || !c.name) return;
+        if (!c || !c.name || c.viewOnly) return;   // received view-only lists are not searched (search → map → own list would copy them)
         var pts = c.points || [], n = 0, got = [];
         for (var i = 0; i < pts.length; i++) { var pt = pts[i]; if (!pt) continue; var key = mpState.detKeyOf(pt); if ((key && sp[key]) || hits(mpPointText(pt))) { n++; got.push(pt); } }
         if (n) out.push({ type: "p", name: c.name, n: n, total: pts.length, pts: got });
@@ -19325,7 +19355,7 @@
     // The list chooser, drawn exactly like "add this observation to a list".
     function chooseListThen(anchor, then) {
       var br = anchor.getBoundingClientRect();
-      var lists = lastListFirst(mpState.mpCollections().slice().sort(function (a, b) { return a.name.localeCompare(b.name); }));
+      var lists = lastListFirst(mpState.mpCollections().filter(function (c) { return !c.viewOnly; }).sort(function (a, b) { return a.name.localeCompare(b.name); }));
       var then1 = then; then = function (nm) { rememberSaveList(nm); then1(nm); };
       // Built exactly like the "add this observation to a list" menu (drmRenderLists):
       // the same .detrow-menu-hdr heading and the same drmBtn rows with the pin icon, so
@@ -19579,6 +19609,17 @@
             (desc ? '<span class="mp-more-desc">' + escapeHtml(desc) + "</span>" : "") + "</span></button>";
       }
       var html = '<div class="dd-head">' + escapeHtml(name) + "</div>";
+      // A view-only list (someone else's, from a Drive share link): no navigate / share / edit /
+      // download / move / sync — only "remove from the map" (owner, 2026-10-12: block copying).
+      var voC = type === "p" && mpState.mpCollections().filter(function (x) { return x.name === name && x.viewOnly; })[0];
+      if (voC) {
+        html += row("mp-more-locked", ico("lock"), t("drive.viewOnly"), t("drive.viewOnlyDesc"), 'disabled');
+        html += row("mp-coll-del", "\u00D7", t("drive.removeView"), t("drive.removeViewDesc"));
+        var elV = openAnchoredMenu("detrow-menu mp-more-menu", anchor);
+        elV.innerHTML = html; wireCollActions(elV);
+        positionAnchoredMenu(elV, br.right - elV.offsetWidth, br.bottom + 4);
+        return;
+      }
       html += row("mp-coll-nav", ico("nav"), isRoute ? t("nav.title") : t("nav.send"),
                   t(isRoute ? "points.navDescRoute" : "points.navDesc"));
       html += row("mp-coll-share", ico("share"), t("share.link"), t("points.shareDesc"));
