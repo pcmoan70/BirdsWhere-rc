@@ -158,7 +158,7 @@
   <h2><span class="n">8</span>Output</h2>
   <ul>
     <li><b>Map point:</b> the site position; <code>uncertainty_m</code> = long axis of the 95 % ellipse (2.45 σ), plus short axis and bearing. Tags: image name and status.</li>
-    <li><b>Habitat areas</b> (polygons, their own file): cliffs coloured by fit — dark orange good, orange fair, light orange poor — quarries purple, islets blue; name and description as in step 7. A lighter copy for the app keeps <b>every south-exposed (SE / S / SW) steep area</b> whatever its fit or size, plus good and fair E- and W-facing cliffs ≥ 100 m², quarries and islets; the app draws a list's areas from street-level zoom, only those in view.</li>
+    <li><b>Habitat areas</b> (polygons): cliffs coloured by the way they face, so the south-facing ones stand out — <b>S dark orange-red</b>, SE / SW orange, E / W pale orange — quarries purple, islets blue; the fit (good / fair / poor) is in the name and description as in step 7. The habitat files also carry the map points and their DTM rings, so one file shows it all. A lighter copy for the app keeps <b>every south-exposed (SE / S / SW) steep area</b> whatever its fit or size, plus good and fair E- and W-facing cliffs ≥ 100 m², quarries and islets; the app draws a list's areas from street-level zoom, only those in view.</li>
     <li><b>DTM point:</b> an extra point drawn as an <b>unfilled red circle</b> (field <code>marker</code> = <code>ring</code>), tags image name, status and <code>DTM</code>; no radius of its own.</li>
     <li>Uncertainty circles and ellipses are drawn faint (outline ~30 %, fill ~5 %) so the map underneath stays readable.</li>
   </ul>

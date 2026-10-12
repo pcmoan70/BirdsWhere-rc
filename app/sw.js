@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2071";
+var VERSION = "v2072";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 /mappoints: the app copy of the habitat areas now holds every south-facing steep area.",
-  "\u2022 Loaded lists no longer turn non-bird records into birds.",
+  "\u2022 /mappoints: habitat areas are coloured by the way they face (south strongest), and the habitat files carry the map points too.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
