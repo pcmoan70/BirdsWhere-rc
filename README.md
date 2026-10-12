@@ -1469,7 +1469,7 @@ app/
 A stand-alone page (not part of the app shell; the service worker leaves it to the network) that
 draws a 1 m terrain model in 3-D from a **folder** (radius up to 5 km: beyond 1.5 km the grid coarsens to ⌈2R / 3000⌉ m so it stays ≤ 3000 × 3000 — a 3 km view is a 2 m grid): 1 m DTM GeoTIFF tiles (one UTM zone, EPSG 258xx /
 326xx, Float32 or integer) plus any `.geojson` / `.kml` / `.kmz` overlays (polygons draped on the
-terrain, points as needles; a point with `role` = `steepest` is the red ring) and an optional
+terrain, points as needles; a point with `role` = `steepest` is the red ring; without one the viewer takes the steepest cell within 500 m, never within 25 m of the data's edge) and an optional
 `scene.json` (`title`, `lat`, `lon`, `radius`, `sigma` — the suggested smoothing in m, 0 = off; older folders' `smoothed_sigma` 0 = already smoothed).
 - **Open** a folder or files from the device, a folder on the same site from the picker
   (`scenes/index.json` = `[{name, title, path}]`), or any folder URL (`?folder=<url>` too). A web

@@ -1376,7 +1376,8 @@ async function render() {
   if (best) pts.splice(pts.indexOf(best), 1);
   else {
     let bk = -1, bv = -1;
-    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { const k = j * n + i; if (bad[k]) continue; if (Math.hypot((i + 0.5) * c - R, R - (j + 0.5) * c) <= 500 && slope[k] > bv) { bv = slope[k]; bk = k; } }
+    const nearEdge = edgeBand(bad, n, Math.ceil(25 / c));   // never within 25 m of the data's edge (owner, 2026-10-13)
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { const k = j * n + i; if (nearEdge[k]) continue; if (Math.hypot((i + 0.5) * c - R, R - (j + 0.5) * c) <= 500 && slope[k] > bv) { bv = slope[k]; bk = k; } }
     if (bk >= 0) best = { x: (bk % n + 0.5) * c - R, y: R - (Math.floor(bk / n) + 0.5) * c, name: "steepest pixel within 500 m, " + Math.round(bv) + "°" };
   }
   // ---- true north on the grid (convergence) and the compass spot
@@ -1393,6 +1394,17 @@ async function render() {
 }
 // the block shows the whole ±R square; the round cut-out the circle inside it
 function inView(x, y, R) { return $("shape").value === "disc" ? Math.hypot(x, y) <= R : Math.max(Math.abs(x), Math.abs(y)) <= R; }
+// within r cells of no-data or of the window's border (box dilation by running sums, O(n²))
+function edgeBand(bad, n, r) {
+  const t = new Uint16Array(n * n), out = new Uint8Array(n * n);
+  for (let j = 0; j < n; j++) { let sum = 0; for (let i = -r; i < n + r; i++) {
+    const add = i + r < n ? bad[j * n + Math.max(0, i + r)] && i + r >= 0 : 0, rem = i - r - 1 >= 0 ? bad[j * n + i - r - 1] : 0;
+    sum += (add ? 1 : 0) - (rem ? 1 : 0); if (i >= 0 && i < n) t[j * n + i] = sum; } }
+  for (let i = 0; i < n; i++) { let sum = 0; for (let j = -r; j < n + r; j++) {
+    const add = j + r < n && j + r >= 0 ? t[(j + r) * n + i] : 0, rem = j - r - 1 >= 0 ? t[(j - r - 1) * n + i] : 0;
+    sum += add - rem; if (j >= 0 && j < n) out[j * n + i] = sum > 0 || i < r || j < r || i >= n - r || j >= n - r ? 1 : 0; } }
+  return out;
+}
 function gauss(a, n, s) {
   const r = Math.ceil(3 * s), w = []; let sum = 0;
   for (let i = -r; i <= r; i++) { const v = Math.exp(-i * i / (2 * s * s)); w.push(v); sum += v; }
