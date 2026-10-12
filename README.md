@@ -1444,7 +1444,31 @@ app/
   taxonomy.csv          Source for the two above (not loaded by the app — tools/split-taxonomy.mjs)
   countries-lite.json   Simplified country borders (source gating)
   vendor/               ORT wasm, Leaflet, h3-js (vendored for offline)
+  terrain3d/            Stand-alone 3-D terrain viewer (see below); scenes/ = folders it offers
 ```
+
+### Terrain 3D viewer (`/terrain3d/`)
+
+A stand-alone page (not part of the app shell; the service worker leaves it to the network) that
+draws a 1 m terrain model in 3-D from a **folder**: 1 m DTM GeoTIFF tiles (one UTM zone, EPSG 258xx /
+326xx, Float32 or integer) plus any `.geojson` / `.kml` / `.kmz` overlays (polygons draped on the
+terrain, points as needles; a point with `role` = `steepest` is the red ring) and an optional
+`scene.json` (`title`, `lat`, `lon`, `radius`, `smoothed_sigma` — 0 when the DTM is already smoothed).
+- **Open** a folder or files from the device, a folder on the same site from the picker
+  (`scenes/index.json` = `[{name, title, path}]`), or any folder URL (`?folder=<url>` too). A web
+  server cannot list a directory, so a folder served over HTTP needs an `index.json` =
+  `{"files": ["dtm.tif", "habitat.geojson", …]}` (or a plain array).
+- **Shown:** contours every 5 m (25 m labelled), slope tint, the overlays, a centre pin with 500 m /
+  radius circles, the steepest point, a compass to true north (UTM grid convergence corrected) 250 m
+  south of it, a height slider (×1–3), pan / zoom (buttons, keys, touch), top view.
+- **Sun:** date and time sliders (Norway time CET/CEST or UTC), the NOAA solar-position equations →
+  directional light with cast terrain shadows; sun elevation / azimuth, sunrise / solar noon /
+  sunset; hovering shows the clear-sky direct irradiance on the surface (W/m², incidence on the
+  1 m slope, terrain shadow) and the day's direct total (kWh/m²). "▶ Day" animates the day.
+- **Panels:** the info panel and the list of views both minimise; a minimised list also hides every
+  needle on the map.
+- The demo folder is Preikestolen. Sites with sensitive data (e.g. eagle-owl nests) are never put on
+  the public site — they are built locally (private `viz3d.py`) as stand-alone files.
 
 ## Attribution & licensing
 
