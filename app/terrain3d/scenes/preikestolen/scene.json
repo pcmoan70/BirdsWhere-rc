@@ -1,1 +1,1 @@
-{"title": "Preikestolen (demo)", "lat": 58.98634, "lon": 6.19051, "radius": 1000.0, "smoothed_sigma": 0, "source": "Kartverket NHM DTM 1 m (CC BY 4.0), smoothed \u03c3 1.5 m"}
+{"title": "Preikestolen (demo)", "lat": 58.98634, "lon": 6.19051, "radius": 1000.0, "sigma": 1.5, "source": "Kartverket NHM DTM 1 m (CC BY 4.0)"}

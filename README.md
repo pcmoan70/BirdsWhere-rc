@@ -1470,7 +1470,7 @@ A stand-alone page (not part of the app shell; the service worker leaves it to t
 draws a 1 m terrain model in 3-D from a **folder**: 1 m DTM GeoTIFF tiles (one UTM zone, EPSG 258xx /
 326xx, Float32 or integer) plus any `.geojson` / `.kml` / `.kmz` overlays (polygons draped on the
 terrain, points as needles; a point with `role` = `steepest` is the red ring) and an optional
-`scene.json` (`title`, `lat`, `lon`, `radius`, `smoothed_sigma` — 0 when the DTM is already smoothed).
+`scene.json` (`title`, `lat`, `lon`, `radius`, `sigma` — the suggested smoothing in m, 0 = off; older folders' `smoothed_sigma` 0 = already smoothed).
 - **Open** a folder or files from the device, a folder on the same site from the picker
   (`scenes/index.json` = `[{name, title, path}]`), or any folder URL (`?folder=<url>` too). A web
   server cannot list a directory, so a folder served over HTTP needs an `index.json` =
@@ -1486,7 +1486,7 @@ terrain, points as needles; a point with `role` = `steepest` is the red ring) an
   other person's Google account (Viewer); they open the link and sign in with their own account.
 - **Shown:** contours every 5 m (25 m labelled), slope tint, the overlays, a centre pin with 500 m /
   radius circles, the steepest point, a compass to true north (UTM grid convergence corrected) 250 m
-  south of it, a height slider (×1–3), map-style controls like the app (drag moves the map, right-drag / two fingers rotate and tilt, wheel / pinch / +− zoom, arrow keys pan), top view; it opens looking down at the area, in daylight (at night: today's solar noon), with needles sized to the radius.
+  south of it, a height slider (×1–3), map-style controls like the app (drag moves the map; rotate by twisting two fingers, right-drag / Shift+drag, the ✋ → ⟳ drag-mode button, or the ⟲ ⟳ ▲ ▼ buttons, N = north up; wheel / pinch / +− zoom, arrow keys pan), top view; **optional smoothing** (☑ Smooth terrain, σ m — on at 1.5 m by default; off shows the raw 1 m model; re-renders in place); it opens looking down at the area, in daylight (at night: today's solar noon), with needles sized to the radius.
 - **Sun:** date and time sliders (Norway time CET/CEST or UTC), the NOAA solar-position equations →
   directional light with cast terrain shadows; sun elevation / azimuth, sunrise / solar noon /
   sunset; hovering shows the clear-sky direct irradiance on the surface (W/m², incidence on the
