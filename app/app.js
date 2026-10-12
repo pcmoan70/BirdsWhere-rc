@@ -18166,9 +18166,14 @@
         if (theirs.length) {
           importBusy = true;
           mpState.mpLoading(t("kml.reading", { name: theirs[0].name }));
-          Promise.resolve(startMultiImport(theirs.map(asFile), { viewOnly: true }))
-            .then(function () { importBusy = false; if (mine.length) importPointsFile(mine.map(asFile), true); },
-                  function () { importBusy = false; mpState.mpLoading(null); setStatus(t("kml.parseErr")); });
+          Promise.all(theirs.map(function (f) { return f.blob.arrayBuffer().then(function (buf) { return { file: f.name, buf: buf, id: f.id }; }); }))
+            .then(function (items) { return window.AppPoints.openViewOnly(items); })
+            .then(function (r) {
+              importBusy = false; mpState.mpLoading(null);
+              try { refreshMpPanel(); } catch (e) {}
+              setStatus(t("drive.openedViewOnly", { n: r.n }));
+              if (mine.length) importPointsFile(mine.map(asFile), true);
+            }, function () { importBusy = false; mpState.mpLoading(null); setStatus(t("kml.parseErr")); });
           return;
         }
         importPointsFile(mine.map(asFile), true);
@@ -18176,6 +18181,29 @@
         mpState.mpLoading(null);
         setStatus(e && e.code ? t("drive.notShared") : t("drive.failed", { msg: (e && e.message) || "" }));
       });
+    });
+  }
+  // Show a shared (view-only) list: EVERY time, ask Drive first whether it is still shared with this
+  // Google account and read it fresh (owner, 2026-10-12: "verify the sharing permissions every time the
+  // list viewed and if the permissions are withdrawn by originating user the app should refuse to load
+  // the list and remove it"). Withdrawn (403 / 404) → the list and its reference are removed; Drive
+  // unreachable → not shown. Runs from the tick (a user gesture, for the Google popup if one is needed).
+  function showViewOnly(c, cb) {
+    if (!window.GDriveSync || !c.driveRef) return;
+    var name = c.name;
+    setStatus(t("drive.verifying", { name: name })); mpState.mpLoading(t("drive.verifying", { name: name }));
+    window.GDriveSync.readSharedFile(c.driveRef.id).then(function (r) {
+      return r.blob.arrayBuffer().then(function (buf) { return window.AppPoints.fillViewOnly(c, buf); });
+    }).then(function () {
+      mpState.mpLoading(null);
+      mpState.shownColls()[name] = true; saveShownState(); renderMapPoints();
+      if (cb && cb.isConnected) cb.checked = true;
+      try { refreshMpPanel(); } catch (e) {}
+      setStatus("");
+    }).catch(function (e) {
+      mpState.mpLoading(null);
+      if (e && e.code) { window.AppPoints.forgetViewOnly(name); try { refreshMpPanel(); } catch (x) {} setStatus(t("drive.withdrawn", { name: name })); }
+      else setStatus(t("drive.verifyFail", { name: name, msg: (e && e.message) || "" }));
     });
   }
   // ?drive=<share link> on the app's address: the same import, offered once at start (a link
@@ -19252,7 +19280,8 @@
       var st = mpHiddenStash();
       if (st) {   // Show: exactly the lists that were hidden come back
         var sc = {}, sd = {};
-        st.p.forEach(function (n) { sc[n] = true; }); st.d.forEach(function (n) { sd[n] = true; });
+        var vo = {}; mpState.mpCollections().forEach(function (c) { if (c.viewOnly) vo[c.name] = 1; });
+        st.p.forEach(function (n) { if (!vo[n]) sc[n] = true; }); st.d.forEach(function (n) { sd[n] = true; });   // a shared list returns only via its tick (which checks Drive)
         mpState.setShownColls(sc); mpState.setShownDetSets(sd);
         window.GeoState.save({ mpHiddenStash: null });
       } else {    // Hide: remember the ticked ones, take them off the map
@@ -19440,6 +19469,8 @@
       cb.addEventListener("change", function () {
         var type = this.getAttribute("data-type"), name = this.getAttribute("data-name");
         var set = type === "d" ? mpState.shownDetSets() : mpState.shownColls();
+        var voc = type === "p" && this.checked && mpState.mpCollections().filter(function (c) { return c.viewOnly && c.name === name; })[0];
+        if (voc) { this.checked = false; showViewOnly(voc, this); return; }   // shown only after Drive confirms it is still shared
         if (this.checked) set[name] = true; else delete set[name];
         saveShownState();
         // Blink the list's own row while its points are drawn or removed.

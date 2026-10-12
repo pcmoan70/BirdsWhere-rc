@@ -377,8 +377,10 @@ window.AppPoints = (function () {
         if (names[c.name]) { var base = c.name + " (unsaved)", nm2 = base, k2 = 2; while (names[nm2]) nm2 = base + " " + (k2++); c.name = nm2; }
         names[c.name] = 1; out.push(c);
       });
+      (mpCollections || []).forEach(function (c) { if (c && c.viewOnly && !out.some(function (o) { return o.name === c.name; })) out.push(c); });   // a shared list shown this session stays (a late store open)
       mpCollections = out;
-      mpCollections.forEach(function (c) { if (!c._lazy) adopt(c); });
+      mpCollections.forEach(function (c) { if (!c._lazy && !c.viewOnly) adopt(c); });
+      addViewOnlyStubs();   // the shared lists' references (no points until shown and checked)
       // First start with this version (or a list written by an older one): one meta each,
       // signed AFTER adopt() so it matches what a later save would serialise.
       needMeta.forEach(function (c) {
@@ -531,6 +533,7 @@ window.AppPoints = (function () {
       mapPoints = []; mpActiveName = "";
       saveChecked({ mapPoints: [], mapPointSetActive: "", mapPointSets: mpCollections, mapPointsShownColls: Object.keys(shownColls) });
     }
+    if (!(window.AppIDB && window.AppIDB.available())) addViewOnlyStubs();   // no store: the shared lists' references come in here (else initMpSetStore adds them)
   }
   // Persist a patch and, if the write hit the localStorage quota (lastSaveOk false),
   // surface a storage-full toast — otherwise these bulky collections (map points /
@@ -557,7 +560,10 @@ window.AppPoints = (function () {
     return true;
   }
   function saveShownState() {
-    saveChecked({ mapPointsShownColls: Object.keys(shownColls), mapDetSetsShown: Object.keys(shownDetSets) });
+    // a shared (view-only) list is never remembered as shown: after a reload it shows only via its tick,
+    // which checks with Google Drive first
+    var vo = {}; mpCollections.forEach(function (c) { if (c && c.viewOnly) vo[c.name] = 1; });
+    saveChecked({ mapPointsShownColls: Object.keys(shownColls).filter(function (n) { return !vo[n]; }), mapDetSetsShown: Object.keys(shownDetSets) });
   }
   function saveMapPoints() {
     // Keep the loaded collection in lock-step with the working set so a list
@@ -586,6 +592,67 @@ window.AppPoints = (function () {
   // copied into the user's own lists — and gone after a reload (open the link again to see it).
   function isViewOnly(c) { return !!(c && c.viewOnly); }
   function ownColls() { return mpCollections.filter(function (c) { return !c.viewOnly; }); }
+  // What IS kept on the device: a reference per shared list (its name and the Drive file id) — never
+  // its points. Each time the list is shown, app.js re-reads the file from Drive with the user's own
+  // Google sign-in (the sharing is checked every time); a refusal removes the list (owner, 2026-10-12:
+  // "if the permissions are withdrawn by originating user the app should refuse to load the list and remove it").
+  var VO_KEY = "driveSharedLists";
+  function saveViewOnlyRefs() {
+    window.GeoState.save({ driveSharedLists: mpCollections.filter(function (c) { return c.viewOnly && c.driveRef; })
+      .map(function (c) { return { name: c.name, id: c.driveRef.id, file: c.driveRef.file || "" }; }) });
+  }
+  // After a reload a shared list is an empty, unticked stub until it is shown (and checked) again.
+  function addViewOnlyStubs() {
+    var refs = window.GeoState.get(VO_KEY, []) || [];
+    refs.forEach(function (r) {
+      if (!r || !r.name || !r.id || mpCollections.some(function (c) { return c.name === r.name; })) return;
+      mpCollections.push({ name: r.name, viewOnly: true, driveRef: { id: r.id, file: r.file || "" }, points: [], _voStub: true });
+      delete shownColls[r.name];   // never shown unchecked
+    });
+  }
+  // A shared file's bytes → the list's points (memory only), read with the default mapping:
+  // the placemark's name, its own ExtendedData fields, its note / description, its colour.
+  async function fillViewOnly(c, buf) {
+    var parsed = await parsePointsBuf(buf);
+    var pts = (parsed.marks || []).map(function (pm) {
+      var pt = { id: mpUid(), lat: pm.lat, lon: pm.lon, name: pm.name || "", tags: [], note: String(pm.desc || "").trim(), source: "kml", viewOnly: true };
+      applyKmlFields(pt, pm.data);
+      if (isGeneratedTable(pt.note)) {
+        fieldsFromTable(pt.note, pt);
+        var remark = ""; try { remark = String((pm.data && (pm.data.notes || pm.data.occurrenceRemarks)) || "").trim(); } catch (e) {}
+        if (remark) pt.note = remark; else delete pt.note;
+      }
+      if (pm.color) pt.color = pm.color;
+      return pt;
+    });
+    c.points = pts; c.polys = parsed.polys || []; c.lines = parsed.lines || [];
+    delete c._voStub; c.viewOnly = true;
+    internPoints([c]);
+    return pts.length;
+  }
+  // Someone else's Drive files → shown view-only lists (one per file; the same file again refreshes
+  // its list). items: [{ file, buf, id }].
+  async function openViewOnly(items) {
+    var total = 0, names = [];
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i], c = mpCollections.filter(function (x) { return x.viewOnly && x.driveRef && x.driveRef.id === it.id; })[0];
+      if (!c) {
+        var nm = uniqueListName(listNameFromFile(it.file) || it.file || "shared", mpCollections.map(function (x) { return x.name; }));
+        c = { name: nm, viewOnly: true, driveRef: { id: it.id, file: it.file || "" }, points: [] };
+        mpCollections.push(c);
+      }
+      total += await fillViewOnly(c, it.buf);
+      shownColls[c.name] = true; names.push(c.name);
+    }
+    saveViewOnlyRefs(); saveShownState(); renderMapPoints();
+    return { n: total, names: names };
+  }
+  // Withdrawn by its owner (or removed by the user): the list and its reference go.
+  function forgetViewOnly(name) {
+    mpCollections = mpCollections.filter(function (x) { return !(x.viewOnly && x.name === name); });
+    delete shownColls[name];
+    saveViewOnlyRefs(); saveShownState(); renderMapPoints();
+  }
   function isCollProtected(name) { return protectedColls().indexOf(name) >= 0; }
   function setCollProtected(name, on) {
     var list = protectedColls().slice(), i = list.indexOf(name);
@@ -594,6 +661,7 @@ window.AppPoints = (function () {
   }
   // Forget a named list. The pins currently on the map are left untouched.
   function deleteCollection(name) {
+    if (mpCollections.some(function (x) { return x.viewOnly && x.name === name; })) { forgetViewOnly(name); return; }
     if (isCollProtected(name)) return;   // protected → never deleted
     mpCollections = mpCollections.filter(function (x) { return x.name !== name; });
     if (mpActiveName === name) mpActiveName = "";
@@ -1031,8 +1099,7 @@ window.AppPoints = (function () {
       if (taken.indexOf(cand) < 0) return cand;
     }
   }
-  async function startMultiImport(files, opts) {
-    var viewOnly = !!(opts && opts.viewOnly);
+  async function startMultiImport(files) {
     var items = [], failed = [], shares = [];
     var taken = mpCollections.map(function (c) { return c.name; });
     for (var i = 0; i < files.length; i++) {
@@ -1046,7 +1113,6 @@ window.AppPoints = (function () {
         // import, saved as a point list like a single .share, without a prompt per file.
         var h = new Uint8Array(buf, 0, Math.min(2, buf.byteLength || 0)), c0 = h.length ? String.fromCharCode(h[0]) : "";
         if ((c0 === "0" || c0 === "1") && !(h.length > 1 && h[1] === 0x4B)) {
-          if (viewOnly) { failed.push(f.name); continue; }   // a .share list would be SAVED: not from someone else's Drive share
           shares.push({ name: f.name, txt: new TextDecoder().decode(new Uint8Array(buf)).replace(/^\uFEFF/, "").trim() });
           continue;
         }
@@ -1079,7 +1145,7 @@ window.AppPoints = (function () {
       marks = marks.concat(it.parsed.marks);
       batch.push({ name: it.name, marks: it.parsed.marks, polys: it.parsed.polys || [], lines: it.parsed.lines || [] });
     });
-    kmlImport = { marks: marks, fields: Object.keys(fieldSet), folders: Object.keys(folderSet), files: batch, viewOnly: viewOnly };
+    kmlImport = { marks: marks, fields: Object.keys(fieldSet), folders: Object.keys(folderSet), files: batch };
     setStatus(failed.length ? t("kml.someFailed", { n: failed.length }) : "");
     openKmlImportDialog();
   }
@@ -1441,9 +1507,8 @@ window.AppPoints = (function () {
         if (noteIsHtml && pt.note && !droppedTable) pt.noteHtml = true;
         return pt;
       });
-      if (p.viewOnly) pts.forEach(function (q) { q.viewOnly = true; });
-      var c = p.viewOnly ? null : mpCollections.filter(function (x) { return x.name === listName && !x.viewOnly; })[0];
-      if (!c) { c = { name: listName, points: [] }; if (p.viewOnly) c.viewOnly = true; mpCollections.push(c); }
+      var c = mpCollections.filter(function (x) { return x.name === listName && !x.viewOnly; })[0];
+      if (!c) { c = { name: listName, points: [] }; mpCollections.push(c); }
       c.points = c.points.concat(pts);
       polys = polys || (marks ? [] : (p.polys || []));
       if (polys.length) c.polys = (c.polys || []).concat(polys);   // areas travel with the list (drawn when it is ticked)
@@ -1462,9 +1527,8 @@ window.AppPoints = (function () {
     }
     if (p.files && p.files.length) {
       var total = 0;
-      p.files.forEach(function (b) { total += finish(b.name, b.marks, p.viewOnly || p.files.length === 1, b.polys || [], b.lines || []); });
+      p.files.forEach(function (b) { total += finish(b.name, b.marks, p.files.length === 1, b.polys || [], b.lines || []); });
       commit();
-      if (p.viewOnly) { setStatus(t("drive.openedViewOnly", { n: total })); return; }
       setStatus(p.files.length > 1 ? t("kml.importedN", { n: total, lists: p.files.length })
                                    : t("kml.imported", { n: total, name: p.files[0].name }));
       return;
@@ -2496,7 +2560,7 @@ window.AppPoints = (function () {
     saveShownState: saveShownState, addMapPoint: addMapPoint, updateMapPoint: updateMapPoint,
     deleteMapPoint: deleteMapPoint, mpHasUnsaved: mpHasUnsaved, mpVisible: mpVisible,
     mpAllTags: mpAllTags, mpUid: mpUid, mpParseTags: mpParseTags,
-    deleteCollection: deleteCollection, isCollProtected: isCollProtected, isViewOnly: isViewOnly, ownColls: ownColls, mpLoading: mpLoading,
+    deleteCollection: deleteCollection, isCollProtected: isCollProtected, isViewOnly: isViewOnly, ownColls: ownColls, openViewOnly: openViewOnly, fillViewOnly: fillViewOnly, forgetViewOnly: forgetViewOnly, mpLoading: mpLoading,
     setCollProtected: setCollProtected, isRouteColl: isRouteColl,
     openCollEditModal: openCollEditModal, collColor: collColor,
     // ---- colours ----

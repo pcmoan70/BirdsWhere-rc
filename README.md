@@ -719,12 +719,16 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   (`…/?drive=<share link>`) that opens the file for them after they sign in. Opening the app with
   `?drive=<share link>` asks once (Sign in & open / Cancel) and drops the parameter.
   **Someone else's file opens view-only:** a file you own (or may edit) on Drive imports as your own
-  list; any other — a file shared *with* you — becomes a **view-only list**: on the map, in the legend
-  and the record popups for this session only, and **never** written to the device's store, synced,
-  exported (downloads, KML/KMZ/GeoJSON, backups, map shares) or copied — no copy / edit / route on its
-  points, it is not a target in any list picker, its records cannot be saved into a list, and search
-  skips it. Its ⋯ menu offers only "Remove from the map". After a reload it is gone; opening the link
-  again fetches it afresh, so the owner can withdraw it by unsharing the file.
+  list; any other — a file shared *with* you — becomes a **read-only shared list**: on the map, in the
+  legend and the record popups, and **never** written to the device's store, synced, exported
+  (downloads, KML/KMZ/GeoJSON, backups, map shares) or copied — no copy / edit / route on its points,
+  it is not a target in any list picker, its records cannot be saved into a list, and search skips it.
+  The device keeps only a **reference** (the list's name and the Drive file id, never the points).
+  **Every time the list is shown** (its tick), the app asks Google Drive whether the file is still
+  shared with your account and reads it fresh; if the owner has **withdrawn** it (Drive answers
+  403 / 404) the app refuses to show it and **removes the list**; if Drive cannot be reached it is not
+  shown. After a reload it is there unticked, with no points, until shown (and checked) again. Its
+  ⋯ menu offers only "Remove the shared list".
   Import from either the Settings
   *Import* button or *Load from file* in the Points menu — or simply **drag the file onto the page**
   (one file is shown; several at once are saved as lists without being shown) — both
