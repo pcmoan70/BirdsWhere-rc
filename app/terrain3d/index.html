@@ -67,7 +67,7 @@
       <div class="sub" id="shr" hidden></div>
       <div class="sub" id="dsrc"></div>
     </div>
-    <div class="sub">Drag to rotate · right-drag, two fingers or arrow keys to pan · wheel, pinch or +/− to zoom. Tap a list item (or a flag) to fly there. Shadows are exact at height ×1.</div>
+    <div class="sub">Drag to move the map · right-drag or two fingers to rotate and tilt · wheel, pinch or +/− to zoom · arrow keys pan. Tap a list item (or a flag) to fly there. Shadows are exact at height ×1.</div>
   </div>
 </div>
 <div id="list" class="panel"><button class="minb" id="listMin" title="Minimise (also hides every needle)">−</button><h2 id="listh">Views</h2><div class="body"><div class="items" id="items"></div></div></div>
@@ -1469,9 +1469,9 @@ renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0x1d2228);
 const camera = new THREE.PerspectiveCamera(45, 1, 1, 30000);
-const controls = new THREE.OrbitControls(camera, canvas);
+const controls = new THREE.MapControls(camera, canvas);   // map-style (owner, 2026-10-12: "like the app"): drag = pan, right-drag / two fingers = rotate & tilt, wheel / pinch = zoom
 controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.495;
-controls.enablePan = true; controls.enableZoom = true; controls.screenSpacePanning = true;
+controls.enablePan = true; controls.enableZoom = true; controls.screenSpacePanning = false;   // pan across the ground, as on a map
 controls.minDistance = 15; controls.maxDistance = 12000; controls.zoomSpeed = 1.2; controls.keyPanSpeed = 40;
 controls.listenToKeyEvents(window);
 const amb = new THREE.AmbientLight(0xffffff, 0.75), sun = new THREE.DirectionalLight(0xffffff, 0.5);
@@ -1512,16 +1512,17 @@ function build(s) {
     ball.position.set(x, z + hgt, -y); world.add(ball); needles.push(pole, ball);
     if (data) { ball.userData.v = data; flags.push(ball); }
   };
-  pin(0, 0, "#ffffff", 60, 7);                                                  // centre
+  const ns = Math.max(0.35, Math.min(1.5, S.R / 1000));                         // needle size follows the view's radius
+  pin(0, 0, "#ffffff", 60 * ns, 7 * ns);                                        // centre
   if (S.best) {
     const z = sample(S.best.x, S.best.y) - S.h0;
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(10, 2.2, 8, 32), new THREE.MeshBasicMaterial({ color: 0xdc1414 }));
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(10 * Math.max(0.5, S.R / 1000), 2.2 * Math.max(0.5, S.R / 1000), 8, 32), new THREE.MeshBasicMaterial({ color: 0xdc1414 }));
     ring.rotation.x = Math.PI / 2; ring.position.set(S.best.x, z + 4, -S.best.y); world.add(ring);
     const bp = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 40, 6), new THREE.MeshBasicMaterial({ color: 0xdc1414 }));
     bp.position.set(S.best.x, z + 24, -S.best.y); world.add(bp); needles.push(bp);
   }
-  S.areas.forEach(a => pin(a.x, a.y, a.col, 45, 6, a));
-  S.pts.forEach(p => pin(p.x, p.y, p.col, 28, 4, p));
+  S.areas.forEach(a => pin(a.x, a.y, a.col, 45 * ns, 6 * ns, a));
+  S.pts.forEach(p => pin(p.x, p.y, p.col, 28 * ns, 4 * ns, p));
   // compass letters (sprites: always face the viewer; outside the height-scaled group)
   if (S.comp) [["N", 0, "#c81e1e"], ["E", 90, "#222"], ["S", 180, "#222"], ["W", 270, "#222"]].forEach(L => {
     const cv = document.createElement("canvas"); cv.width = cv.height = 64; const c2 = cv.getContext("2d");
@@ -1547,7 +1548,7 @@ function build(s) {
     el.title = v.desc || ""; el.onclick = () => fly(v); L.appendChild(el);
   }
   applyListMin();
-  shadowFrame(); setEx(); home(); updateSun(); resize();
+  shadowFrame(); setEx(); home(); updateSun(); daylightIfNight(); resize();
 }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 function fly(v) { const hy = (sample(v.x, v.y) - S.h0) * world.scale.y; controls.target.set(v.x, hy, -v.y); camera.position.set(v.x + 120, hy + 110, -v.y + 160); controls.update(); draw(); }
@@ -1559,7 +1560,7 @@ function shadowFrame() {
 const ex = $("ex");
 function setEx() { if (!world) return; world.scale.y = +ex.value; $("exv").textContent = (+ex.value).toFixed(1); letters.forEach(sp => sp.position.set(sp.userData.x, (sp.userData.z - 9) * world.scale.y + 9, -sp.userData.y)); draw(); }
 ex.oninput = setEx;
-function home() { const k = Math.max(1, 1.0 / camera.aspect), R = S.R; camera.position.set(R * .9 * k, R * 1.1 * k, R * 1.5 * k); controls.target.set(0, (sample(0, 0) - S.h0) * world.scale.y, 0); controls.update(); draw(); }
+function home() { const k = Math.max(1, 1.0 / camera.aspect), R = S.R, cz0 = (sample(0, 0) - S.h0) * world.scale.y; camera.position.set(0, cz0 + R * 1.9 * k, R * 0.9 * k); controls.target.set(0, (sample(0, 0) - S.h0) * world.scale.y, 0); controls.update(); draw(); }
 $("reset").onclick = () => S && home();
 $("top").onclick = () => { if (!S) return; const cz = (sample(0, 0) - S.h0) * world.scale.y; camera.position.set(0, cz + S.R * 2.6, 0.01); controls.target.set(0, cz, 0); controls.update(); draw(); };
 function zoomBy(f) { const v = camera.position.clone().sub(controls.target).multiplyScalar(f); if (v.length() < controls.minDistance || v.length() > controls.maxDistance) return; camera.position.copy(controls.target).add(v); controls.update(); draw(); }
@@ -1576,6 +1577,13 @@ if (innerWidth < 600) $("infoMin").onclick();
 const now0 = new Date();
 function doyOf(d) { return Math.floor((Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - Date.UTC(d.getUTCFullYear(), 0, 1)) / 86400000) + 1; }
 function setNow() { const off = $("tz").value === "eu" ? euOffset(new Date()) : 0, t = new Date(Date.now() + off * 3600000); $("day").value = doyOf(t); $("tod").value = Math.round((t.getUTCHours() * 60 + t.getUTCMinutes()) / 5) * 5; updateSun(); }
+let daySet = false;
+function daylightIfNight() {   // first view of a scene: at night, open at today's solar noon instead (a black terrain shows nothing)
+  if (daySet || !S || new URL(location.href).searchParams.get("tod")) return; daySet = true;
+  const p = sunPos(chosenUTC(), S.lat, S.lon); if (p.el > 3) return;
+  const off = $("tz").value === "eu" ? euOffset(chosenUTC()) : 0;
+  $("tod").value = Math.round(((p.noon + off * 60) % 1440) / 5) * 5; updateSun();
+}
 const YEAR = now0.getFullYear();
 function chosenUTC() {   // the date + local time on the sliders → a UTC instant
   const day = +$("day").value, tod = +$("tod").value, base = Date.UTC(YEAR, 0, day, 0, tod);

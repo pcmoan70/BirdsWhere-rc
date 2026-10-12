@@ -1486,7 +1486,7 @@ terrain, points as needles; a point with `role` = `steepest` is the red ring) an
   other person's Google account (Viewer); they open the link and sign in with their own account.
 - **Shown:** contours every 5 m (25 m labelled), slope tint, the overlays, a centre pin with 500 m /
   radius circles, the steepest point, a compass to true north (UTM grid convergence corrected) 250 m
-  south of it, a height slider (×1–3), pan / zoom (buttons, keys, touch), top view.
+  south of it, a height slider (×1–3), map-style controls like the app (drag moves the map, right-drag / two fingers rotate and tilt, wheel / pinch / +− zoom, arrow keys pan), top view; it opens looking down at the area, in daylight (at night: today's solar noon), with needles sized to the radius.
 - **Sun:** date and time sliders (Norway time CET/CEST or UTC), the NOAA solar-position equations →
   directional light with cast terrain shadows; sun elevation / azimuth, sunrise / solar noon /
   sunset; hovering shows the clear-sky direct irradiance on the surface (W/m², incidence on the
