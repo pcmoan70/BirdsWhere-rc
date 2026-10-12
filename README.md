@@ -1458,6 +1458,14 @@ terrain, points as needles; a point with `role` = `steepest` is the red ring) an
   (`scenes/index.json` = `[{name, title, path}]`), or any folder URL (`?folder=<url>` too). A web
   server cannot list a directory, so a folder served over HTTP needs an `index.json` =
   `{"files": ["dtm.tif", "habitat.geojson", …]}` (or a plain array).
+- **Google Drive:** paste a shared Drive folder (or file) link → **Sign in & open**. Signs in with
+  Google (the BirdsWhere OAuth client, read-only Drive access; token in memory only), lists the folder
+  through the Drive API (sub-folders two levels down; no `index.json` needed) and reads the files with
+  the token — so the data stays private to the accounts it is shared with. Needs the page opened from
+  its web address (not a downloaded copy).
+- **Sharing a terrain between two users:** **Share…** makes a link (`?drive=<folder link>` or
+  `?folder=<url>`, plus the date and time). For a Drive folder, share the folder in Drive with the
+  other person's Google account (Viewer); they open the link and sign in with their own account.
 - **Shown:** contours every 5 m (25 m labelled), slope tint, the overlays, a centre pin with 500 m /
   radius circles, the steepest point, a compass to true north (UTM grid convergence corrected) 250 m
   south of it, a height slider (×1–3), pan / zoom (buttons, keys, touch), top view.

@@ -60,9 +60,11 @@
         <label class="file">Open files…<input id="ffiles" type="file" multiple accept=".tif,.tiff,.json,.geojson,.kml,.kmz"></label></div>
       <div class="row w" id="catrow" hidden>Folder on this site <select id="cat" style="width:auto;max-width:180px"></select></div>
       <div class="row w">URL <input id="furl" type="text" placeholder="https://…/scenes/name/" style="flex:1;width:auto"><button id="openurl">Open</button></div>
+      <div class="row w">Google Drive <input id="gurl" type="text" placeholder="shared folder or file link" style="flex:1;width:auto"><button id="gopen">Sign in &amp; open</button></div>
       <div class="row w">Centre <input id="clat" type="number" step="0.00001" placeholder="lat"><input id="clon" type="number" step="0.00001" placeholder="lon"></div>
       <div class="row w">Radius m <input id="crad" type="number" min="100" max="1500" step="50" value="1000"> Smooth σ m <input id="csig" type="number" min="0" max="5" step="0.5" value="1.5" style="width:56px"></div>
-      <div class="row"><button id="render">Render</button></div>
+      <div class="row w"><button id="render">Render</button><button id="share" title="A link to this terrain for someone else">Share…</button></div>
+      <div class="sub" id="shr" hidden></div>
       <div class="sub" id="dsrc"></div>
     </div>
     <div class="sub">Drag to rotate · right-drag, two fingers or arrow keys to pan · wheel, pinch or +/− to zoom. Tap a list item (or a flag) to fly there. Shadows are exact at height ×1.</div>
@@ -1258,15 +1260,15 @@ async function loadFolder(items) {
   busy("Reading " + items.length + " files…");
   const tiles = [], overlays = []; let scene = {};
   let k = 0;
-  for (const it of items) if (it.url && !/\.tiff?$/i.test(it.name)) { const r = await fetch(it.url); if (!r.ok) throw new Error(it.name + ": HTTP " + r.status); it.blob = await r.blob(); }
+  for (const it of items) if (it.url && !/\.tiff?$/i.test(it.name) && /\.(json|geojson|kml|kmz)$/i.test(it.name)) { const r = await fetch(it.url, { headers: it.headers || {} }); if (!r.ok) throw new Error(it.name + ": HTTP " + r.status); it.blob = await r.blob(); }
   for (const it of items) {
     const nm = it.name.toLowerCase();
     try {
       if (/\.tiff?$/.test(nm)) {
         let tif, img;
         if (it.url) {   // ranged reads (GitHub Pages serves byte ranges); a server without them: the whole file
-          try { tif = await GeoTIFF.fromUrl(it.url); img = await tif.getImage(); await img.readRasters({ window: [0, 0, 1, 1] }); }
-          catch (e) { const r = await fetch(it.url); if (!r.ok) throw new Error("HTTP " + r.status); tif = await GeoTIFF.fromBlob(await r.blob()); img = await tif.getImage(); }
+          try { tif = await GeoTIFF.fromUrl(it.url, { headers: it.headers || {}, allowFullFile: false }); img = await tif.getImage(); await img.readRasters({ window: [0, 0, 1, 1] }); }
+          catch (e) { const r = await fetch(it.url, { headers: it.headers || {} }); if (!r.ok) throw new Error("HTTP " + r.status); tif = await GeoTIFF.fromBlob(await r.blob()); img = await tif.getImage(); }
         } else { tif = await GeoTIFF.fromBlob(it.blob); img = await tif.getImage(); }
         const gk = img.getGeoKeys() || {}, epsg = gk.ProjectedCSTypeGeoKey || 25833;
         tiles.push({ img, bbox: img.getBoundingBox(), res: img.getResolution(), zone: zoneOf(epsg), epsg, nodata: img.getGDALNoData() });
@@ -1676,6 +1678,66 @@ async function loadURL(base) {
   } catch (e) { busy(false); $("dsrc").textContent = "Could not open " + base + ": " + e.message; }
 }
 $("openurl").onclick = () => loadURL($("furl").value.trim());
+
+// ---- Google Drive (owner 2026-10-12: "support loading from a shared google drive link"): sign in with
+// Google (the BirdsWhere OAuth client, read-only Drive), list a shared folder through the Drive API and read
+// its files with the token — the files stay private to the accounts they are shared with. The token lives
+// in memory only. Needs a page served from an origin the OAuth client allows (not a file:// copy).
+const GCLIENT = "309967713424-o0vgr5cgb1t8bvc9pk78br2mmo4v8kkm.apps.googleusercontent.com";
+const GSCOPE = "https://www.googleapis.com/auth/drive.readonly";
+let gToken = null;
+function driveId(link) {
+  const m = /\/folders\/([\w-]{10,})/.exec(link) || /\/file\/d\/([\w-]{10,})/.exec(link) || /[?&]id=([\w-]{10,})/.exec(link) || /^([\w-]{20,})$/.exec(link.trim());
+  return m ? m[1] : null;
+}
+function gsiLoad() {
+  if (window.google && google.accounts && google.accounts.oauth2) return Promise.resolve();
+  return new Promise((ok, no) => { const sc = document.createElement("script"); sc.src = "https://accounts.google.com/gsi/client"; sc.onload = ok; sc.onerror = () => no(new Error("could not load Google sign-in")); document.head.appendChild(sc); });
+}
+function gSignIn() {
+  return gsiLoad().then(() => new Promise((ok, no) => {
+    const tc = google.accounts.oauth2.initTokenClient({ client_id: GCLIENT, scope: GSCOPE,
+      callback: r => r && r.access_token ? ok(gToken = r.access_token) : no(new Error((r && r.error) || "sign-in cancelled")),
+      error_callback: e => no(new Error((e && e.message) || (e && e.type) || "sign-in failed")) });
+    tc.requestAccessToken({ prompt: gToken ? "" : "consent" });
+  }));
+}
+async function gapi(path) {
+  const r = await fetch("https://www.googleapis.com/drive/v3/" + path, { headers: { Authorization: "Bearer " + gToken } });
+  if (!r.ok) { const t = await r.text(); throw new Error("Drive " + r.status + (/insufficient|scope/i.test(t) ? " — the sign-in did not grant Drive read access" : r.status === 404 ? " — not found, or not shared with this Google account" : "")); }
+  return r.json();
+}
+async function gList(folder, depth) {   // a folder's files (sub-folders two levels down), name → id
+  const out = []; let tok = "";
+  do {
+    const q = encodeURIComponent("'" + folder + "' in parents and trashed = false");
+    const j = await gapi("files?q=" + q + "&fields=nextPageToken,files(id,name,mimeType)&pageSize=1000&supportsAllDrives=true&includeItemsFromAllDrives=true" + (tok ? "&pageToken=" + tok : ""));
+    for (const f of j.files) {
+      if (f.mimeType === "application/vnd.google-apps.folder") { if (depth < 2) out.push(...await gList(f.id, depth + 1)); }
+      else out.push(f);
+    }
+    tok = j.nextPageToken || "";
+  } while (tok);
+  return out;
+}
+$("gopen").onclick = async () => {
+  const link = $("gurl").value.trim(), id = driveId(link);
+  if (!id) { $("dsrc").textContent = "That does not look like a Google Drive file or folder link."; return; }
+  try {
+    if (location.protocol === "file:") throw new Error("Google sign-in needs the viewer opened from its web address, not from a downloaded file");
+    await gSignIn();
+    busy("Listing the Drive folder…");
+    const meta = await gapi("files/" + id + "?fields=id,name,mimeType&supportsAllDrives=true");
+    const files = meta.mimeType === "application/vnd.google-apps.folder" ? await gList(id, 0) : [meta];
+    const hdr = { Authorization: "Bearer " + gToken };
+    const items = files.filter(f => /\.(tiff?|json|geojson|kml|kmz)$/i.test(f.name))
+      .map(f => ({ name: f.name, url: "https://www.googleapis.com/drive/v3/files/" + f.id + "?alt=media&supportsAllDrives=true", headers: hdr }));
+    if (!items.length) throw new Error("no .tif / .geojson / .kml / .kmz files in “" + meta.name + "”");
+    SRC = null; await loadFolder(items);
+    $("dsrc").textContent = "Google Drive: “" + meta.name + "” · " + $("dsrc").textContent;
+    const q = new URL(location.href); q.searchParams.delete("folder"); q.searchParams.set("drive", link); history.replaceState(null, "", q);
+  } catch (e) { busy(false); $("dsrc").textContent = "Google Drive: " + e.message; }
+};
 async function catalog() {   // scenes/index.json next to the viewer: the folders it offers
   try {
     const r = await fetch("scenes/index.json"); if (!r.ok) return null;
@@ -1685,6 +1747,21 @@ async function catalog() {   // scenes/index.json next to the viewer: the folder
     $("catrow").hidden = false; return cat;
   } catch (e) { return null; }
 }
+// ---- sharing (owner 2026-10-12: "it must allow sharing of terrains between two users"): the link opens the
+// same folder for someone else — a Drive folder (they sign in with their own Google account; the folder
+// must be shared with it in Drive) or a folder URL — at the same date and time
+$("share").onclick = async () => {
+  const u = new URL(location.href.split("?")[0]), drv = new URL(location.href).searchParams.get("drive"), fol = new URL(location.href).searchParams.get("folder");
+  if (drv) u.searchParams.set("drive", drv); else if (fol) u.searchParams.set("folder", fol);
+  else { $("shr").hidden = false; $("shr").textContent = "Only a terrain opened from Google Drive or a web folder can be shared as a link — files from this device stay here."; return; }
+  u.searchParams.set("day", $("day").value); u.searchParams.set("tod", $("tod").value);
+  const link = u.href; let how = "";
+  try { if (navigator.share) { await navigator.share({ title: "Terrain 3D", url: link }); how = "Shared."; } } catch (e) {}
+  if (!how) { try { await navigator.clipboard.writeText(link); how = "Link copied."; } catch (e) { how = "Copy this link:"; } }
+  $("shr").hidden = false;
+  $("shr").innerHTML = esc(how) + " " + (drv ? "The other person signs in with their own Google account — share the Drive folder with it first (Drive → Share → their address, Viewer)." : "") +
+    '<br><input type="text" readonly style="width:100%" value="' + esc(link) + '">';
+};
 // ---- inputs
 const pick = ev => { const fs = [...ev.target.files].map(f => ({ name: f.name, blob: f })); if (fs.length) { SRC = null; loadFolder(fs); } };
 $("fdir").onchange = pick; $("ffiles").onchange = pick;
@@ -1694,7 +1771,9 @@ setNow();
 (async function () {
   const raw = $("embed").textContent.trim();
   if (!raw || raw[0] !== "{") {     // the plain viewer: ?folder=URL, else the site's own catalog
-    const f = new URL(location.href).searchParams.get("folder");
+    const sp = new URL(location.href).searchParams, f = sp.get("folder"), dl = sp.get("drive");
+    if (sp.get("day")) { $("day").value = sp.get("day"); $("tod").value = sp.get("tod") || 720; updateSun(); }
+    if (dl) { $("gurl").value = dl; $("dsrc").textContent = "A Google Drive link is filled in: press “Sign in & open”."; if ($("info").classList.contains("min")) $("infoMin").onclick(); }
     await catalog();
     if (f) { $("furl").value = f; await loadURL(f); }
     return;
