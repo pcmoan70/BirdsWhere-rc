@@ -52,6 +52,9 @@
     <div class="row"><span class="sw" style="background:#5a2d0f;height:3px;border:0"></span>contours every 5 m, labelled every 25 m</div>
     <div class="row"><span class="sw" style="background:#faf8eb;border-radius:50%"></span>compass, true north (250 m south of the red ring)</div>
     <div class="row">Height ×<input id="ex" type="range" min="1" max="3" step="0.1" value="1.5"><span id="exv">1.5</span></div>
+    <div class="row w">Map <select id="basemap" style="width:auto"><option value="slope">Slope tint</option><option value="kv_topo">Kartverket topo</option><option value="kv_grey">Kartverket greyscale</option><option value="osm">OpenStreetMap</option><option value="esri">Aerial (Esri)</option></select>
+      <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="ovl" checked> contours &amp; habitat</label></div>
+    <div class="row w">Shape <select id="shape" style="width:auto"><option value="block">Block with side walls</option><option value="disc">Round cut-out</option></select></div>
     <div class="row"><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="csmooth" checked> Smooth terrain, σ</label><input id="csig" type="number" min="0.5" max="5" step="0.5" value="1.5" style="width:56px"> m</div>
     <div class="row"><button id="reset">Reset view</button><button id="top">Top view</button></div>
     <div class="sec"><h2>Sun</h2>
@@ -79,6 +82,7 @@
 </div>
 <div id="list" class="panel"><button class="minb" id="listMin" title="Minimise (also hides every needle)">−</button><h2 id="listh">Views</h2><div class="body"><div class="items" id="items"></div></div></div>
 <div id="tip"></div>
+<div id="attr" style="position:absolute;left:50%;transform:translateX(-50%);bottom:4px;font-size:10px;color:#ccc;background:rgba(0,0,0,.45);padding:1px 6px;border-radius:4px;pointer-events:none;white-space:nowrap;max-width:60%;overflow:hidden;text-overflow:ellipsis"></div>
 <div id="zoom"><button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button></div>
 <div id="meas" class="panel" hidden><button class="minb" id="measX" title="Close the measurement">×</button><div id="measT" style="padding-right:30px"></div></div>
 <div id="rot"><button id="measure" title="Measure: tap two points on the terrain">📏</button><button id="dragmode" title="One-finger / left drag: move the map (tap for rotate)">✋</button><button id="rotl" title="Rotate left 15°">⟲</button><button id="rotr" title="Rotate right 15°">⟳</button><button id="tiltu" title="Tilt up (look more from above)">▲</button><button id="tiltd" title="Tilt down (look more from the side)">▼</button><button id="north" title="North up">N</button></div>
@@ -1268,9 +1272,9 @@ function parseGeoJSON(obj) {
 let SRC = null;                   // { tiles:[{img, bbox, res, zone, nodata}], overlays:[...], scene:{} }
 async function loadFolder(items) {
   busy("Reading " + items.length + " files…");
-  const tiles = [], overlays = []; let scene = {};
+  const tiles = [], overlays = [], basemaps = {}; let scene = {};
   let k = 0;
-  for (const it of items) if (it.url && !/\.tiff?$/i.test(it.name) && /\.(json|geojson|kml|kmz)$/i.test(it.name)) { const r = await fetch(it.url, { headers: it.headers || {} }); if (!r.ok) throw new Error(it.name + ": HTTP " + r.status); it.blob = await r.blob(); }
+  for (const it of items) if (it.url && !/\.tiff?$/i.test(it.name) && /\.(json|geojson|kml|kmz|jpe?g|png)$/i.test(it.name)) { const r = await fetch(it.url, { headers: it.headers || {} }); if (!r.ok) throw new Error(it.name + ": HTTP " + r.status); it.blob = await r.blob(); }
   for (const it of items) {
     const nm = it.name.toLowerCase();
     try {
@@ -1283,6 +1287,7 @@ async function loadFolder(items) {
         const gk = img.getGeoKeys() || {}, epsg = gk.ProjectedCSTypeGeoKey || 25833;
         tiles.push({ img, bbox: img.getBoundingBox(), res: img.getResolution(), zone: zoneOf(epsg), epsg, nodata: img.getGDALNoData() });
       } else if (nm === "scene.json") scene = JSON.parse(await it.blob.text());
+      else if (/^basemap_[\w-]+\.(jpe?g|png)$/.test(nm)) { basemaps[nm] = it.blob; }
       else if (/\.(geo)?json$/.test(nm)) overlays.push(...parseGeoJSON(JSON.parse(await it.blob.text())));
       else if (nm.endsWith(".kml")) overlays.push(...parseKML(await it.blob.text()));
       else if (nm.endsWith(".kmz")) { const z = await unzip(await it.blob.arrayBuffer()); for (const f in z) if (f.toLowerCase().endsWith(".kml")) overlays.push(...parseKML(new TextDecoder().decode(z[f]))); }
@@ -1294,6 +1299,8 @@ async function loadFolder(items) {
   const zones = [...new Set(tiles.map(t => t.zone))];
   if (zones.length > 1 || !zones[0]) { $("dsrc").textContent = "The tiles must share one UTM zone (EPSG 258xx / 326xx); found " + [...new Set(tiles.map(t => t.epsg))].join(", "); return; }
   SRC = { tiles, overlays, scene, zone: zones[0] };
+  // a packaged map draped onto this very view (offline): offered first
+  if (scene.basemap && basemaps[String(scene.basemap.file || "").toLowerCase()]) { SRC.basemapBlob = basemaps[String(scene.basemap.file).toLowerCase()]; $("basemap").value = scene.basemap.id; }
   // the centre: scene.json, else what is typed, else the middle of the tiles
   let lat = scene.lat, lon = scene.lon;
   if (lat == null) {
@@ -1357,10 +1364,10 @@ async function render() {
     if (o.type === "poly") {
       const ring = o.rings[0].map(c => P(c[0], c[1]));
       let cx = 0, cy = 0; ring.forEach(p => { cx += p[0]; cy += p[1]; }); cx /= ring.length; cy /= ring.length;
-      if (!ring.some(p => Math.hypot(p[0], p[1]) <= R)) continue;
+      if (!ring.some(p => inView(p[0], p[1], R))) continue;
       areas.push({ ring, x: cx, y: cy, d: Math.hypot(cx, cy), name: o.name, desc: o.desc, col: o.color || "#f57c00", kind: o.kind });
     } else {
-      const [x, y] = P(o.lon, o.lat); if (Math.hypot(x, y) > R) continue;
+      const [x, y] = P(o.lon, o.lat); if (!inView(x, y, R)) continue;
       pts.push({ x, y, d: Math.hypot(x, y), name: o.name, desc: o.desc, col: o.color || "#ffffff", role: o.role, folder: o.folder });
     }
   }
@@ -1376,13 +1383,16 @@ async function render() {
   const [la2, lo2] = UTM.inv(X, Y, SRC.zone), [x2, y2] = UTM.fwd(la2 + 0.01, lo2, SRC.zone), gam = Math.atan2(x2 - X, y2 - Y) / RAD;
   const comp = placeCompass(best || { x: 0, y: 0 }, areas, pts, R, gam);
   busy("Painting…"); await tick();
-  const tex = paintBase(hs, slope, bad, n, R, areas, comp, gam, c);
   const nrm = paintNormals(gx, gyN, n);
-  const S = { lat, lon, X, Y, R, n, c, hs, bad, lo, hi, gam, areas, pts, best, comp, tex, nrm, zone: SRC.zone,
+  const S2 = { lat, lon, X, Y, R, n, c, hs, bad, slope, lo, hi, gam, areas, pts, best, comp, nrm, zone: SRC.zone, bases: {},
               title: SRC.scene.title || (lat.toFixed(5) + ", " + lon.toFixed(5)) };
+  const base = await getBase(S2, $("basemap").value);
+  S2.tex = paintBase(S2, base);
   busy(false);
-  build(S);
+  build(S2);
 }
+// the block shows the whole ±R square; the round cut-out the circle inside it
+function inView(x, y, R) { return $("shape").value === "disc" ? Math.hypot(x, y) <= R : Math.max(Math.abs(x), Math.abs(y)) <= R; }
 function gauss(a, n, s) {
   const r = Math.ceil(3 * s), w = []; let sum = 0;
   for (let i = -r; i <= r; i++) { const v = Math.exp(-i * i / (2 * s * s)); w.push(v); sum += v; }
@@ -1415,16 +1425,23 @@ function placeCompass(best, areas, pts, R, gam) {
   }
   return null;
 }
-function paintBase(hs, slope, bad, n, R, areas, comp, gam, c) {
+// The terrain's picture: the base (slope tint, or a map draped onto the grid), then — with the overlay
+// on — contours, habitat areas and contour labels; the markers (centre, circles, compass) always.
+function paintBase(S, base) {
+  const { hs, slope, bad, n, R, areas, comp, gam, c } = S, ovl = $("ovl").checked;
   const cv = document.createElement("canvas"); cv.width = cv.height = n; const cx = cv.getContext("2d");
-  const im = cx.createImageData(n, n), d = im.data;
-  for (let k = 0; k < n * n; k++) {
-    let r, g, b; const s = slope[k];
-    if (bad[k]) { r = 120; g = 165; b = 205; } else if (s < 30) { r = 205; g = 214; b = 180; } else if (s < 45) { r = 196; g = 186; b = 160; } else { r = 170; g = 160; b = 150; }
-    d[4 * k] = r; d[4 * k + 1] = g; d[4 * k + 2] = b; d[4 * k + 3] = 255;
+  let im, d;
+  if (base) { cx.drawImage(base, 0, 0, n, n); im = cx.getImageData(0, 0, n, n); d = im.data; }
+  else {
+    im = cx.createImageData(n, n); d = im.data;
+    for (let k = 0; k < n * n; k++) {
+      let r, g, b; const s = slope[k];
+      if (bad[k]) { r = 120; g = 165; b = 205; } else if (s < 30) { r = 205; g = 214; b = 180; } else if (s < 45) { r = 196; g = 186; b = 160; } else { r = 170; g = 160; b = 150; }
+      d[4 * k] = r; d[4 * k + 1] = g; d[4 * k + 2] = b; d[4 * k + 3] = 255;
+    }
   }
   // contours: 5 m thin, 25 m bold
-  for (let j = 0; j < n - 1; j++) for (let i = 0; i < n - 1; i++) {
+  if (ovl) for (let j = 0; j < n - 1; j++) for (let i = 0; i < n - 1; i++) {
     const k = j * n + i; if (bad[k]) continue;
     const q = Math.floor(hs[k] / 5), qr = Math.floor(hs[k + 1] / 5), qd = Math.floor(hs[k + n] / 5);
     if (q !== qr || q !== qd) {
@@ -1435,17 +1452,17 @@ function paintBase(hs, slope, bad, n, R, areas, comp, gam, c) {
   }
   cx.putImageData(im, 0, 0);
   const px = (x, y) => [(x + R) / c, (R - y) / c], H2 = n / 2, L = 180 / c;
-  for (const a of areas) {
+  if (ovl) for (const a of areas) {
     cx.beginPath(); a.ring.forEach((p, i) => { const [u, v] = px(p[0], p[1]); i ? cx.lineTo(u, v) : cx.moveTo(u, v); }); cx.closePath();
     cx.globalAlpha = .75; cx.fillStyle = a.col; cx.fill(); cx.globalAlpha = 1; cx.lineWidth = 3; cx.strokeStyle = "#0f0f0f"; cx.stroke();
   }
   // labels on the 25 m contours, ~180 m apart, never over the compass
   cx.font = "bold 15px sans-serif"; cx.textAlign = "center"; cx.textBaseline = "middle";
   const placed = []; let seed = 1; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  for (let t = 0; t < 40000 && placed.length < 400; t++) {
+  for (let t = 0; ovl && t < 40000 && placed.length < 400; t++) {
     const i = 6 * Math.floor(rnd() * (n / 6 - 1)), j = 6 * Math.floor(rnd() * (n / 6 - 1)), k = j * n + i;
     if (bad[k] || Math.floor(hs[k] / 25) === Math.floor(hs[k + 1] / 25) && Math.floor(hs[k] / 25) === Math.floor(hs[k + n] / 25)) continue;
-    if (Math.hypot(i - H2, j - H2) > (R - 30) / c || placed.some(p => Math.abs(p[0] - i) < L && Math.abs(p[1] - j) < L)) continue;
+    if ((($("shape").value === "disc") ? Math.hypot(i - H2, j - H2) : Math.max(Math.abs(i - H2), Math.abs(j - H2))) > (R - 30) / c || placed.some(p => Math.abs(p[0] - i) < L && Math.abs(p[1] - j) < L)) continue;
     if (comp && Math.hypot(i - (comp.x + R) / c, j - (R - comp.y) / c) < (RC + 40) / c) continue;
     const t_ = String(Math.round(hs[k] / 25) * 25), w = cx.measureText(t_).width;
     cx.fillStyle = "#faf8eb"; cx.fillRect(i - w / 2 - 3, j - 9, w + 6, 18); cx.fillStyle = "#5a2d0f"; cx.fillText(t_, i, j + 1); placed.push([i, j]);
@@ -1465,6 +1482,127 @@ function paintBase(hs, slope, bad, n, R, areas, comp, gam, c) {
     cx.fillStyle = "#1e1e1e"; cx.beginPath(); cx.arc(u, v, 3, 0, 7); cx.fill();
   }
   return cv;
+}
+// ---- base maps (owner, 2026-10-13: "lay the OSM streets map or other tiled maps on top"). A map is
+// fetched as Web-Mercator XYZ tiles for the view's box, at the zoom whose pixel is about one grid cell,
+// mosaicked, and resampled onto the UTM grid (a coarse lattice of exact UTM → lat/lon, interpolated) —
+// so roads and streams sit exactly on the terrain. A standalone file carries a Kartverket topo map
+// already draped (basemap_<id>.jpg + scene.json "basemap") and needs no network for it.
+const BASEMAPS = {
+  kv_topo: { url: "https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png", max: 18, attr: "Map © Kartverket (CC BY 4.0)" },
+  kv_grey: { url: "https://cache.kartverket.no/v1/wmts/1.0.0/topograatone/default/webmercator/{z}/{y}/{x}.png", max: 18, attr: "Map © Kartverket (CC BY 4.0)" },
+  osm:     { url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", max: 19, attr: "Map © OpenStreetMap contributors" },
+  esri:    { url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", max: 19, attr: "Imagery: Esri, Maxar, Earthstar Geographics, and the GIS User Community · Powered by Esri" }
+};
+function setAttr(id) { $("attr").textContent = "Terrain: Kartverket NHM DTM (CC BY 4.0)" + (BASEMAPS[id] ? " · " + BASEMAPS[id].attr : ""); }
+async function getBase(S, id) {
+  setAttr(id);
+  if (!BASEMAPS[id]) return null;
+  if (S.bases[id]) return S.bases[id];
+  const sc = SRC && SRC.scene, bm = sc && sc.basemap;
+  if (bm && bm.id === id && SRC.basemapBlob && Math.abs(sc.lat - S.lat) < 1e-7 && Math.abs(sc.lon - S.lon) < 1e-7 && +sc.radius === S.R) {
+    const img = await createImageBitmap(SRC.basemapBlob);
+    const cv = document.createElement("canvas"); cv.width = cv.height = S.n; cv.getContext("2d").drawImage(img, 0, 0, S.n, S.n);
+    return S.bases[id] = cv;
+  }
+  if (!navigator.onLine) { $("dsrc").textContent = "No network: the map needs the internet (only a packaged map works offline)."; return null; }
+  busy("Loading the map…"); await tick();
+  try { return S.bases[id] = await drapeTiles(S, BASEMAPS[id]); }
+  catch (e) { $("dsrc").textContent = "Map not loaded: " + e.message; return null; }
+  finally { busy(false); }
+}
+async function drapeTiles(S, B) {
+  const n = S.n, c = S.c, R = S.R, x0 = S.X - R, y1 = S.Y + R;
+  const ll = (i, j) => UTM.inv(x0 + (i + 0.5) * c, y1 - (j + 0.5) * c, S.zone);
+  const cs = [ll(0, 0), ll(n - 1, 0), ll(0, n - 1), ll(n - 1, n - 1)];
+  const lat0 = cs.reduce((a, p) => a + p[0], 0) / 4;
+  let z = Math.max(1, Math.min(B.max, Math.ceil(Math.log2(156543.03 * Math.cos(lat0 * RAD) / (c * 1.25)))));
+  const mx = (lon, zz) => (lon + 180) / 360 * Math.pow(2, zz) * 256;
+  const my = (lat, zz) => (1 - Math.log(Math.tan(lat * RAD) + 1 / Math.cos(lat * RAD)) / Math.PI) / 2 * Math.pow(2, zz) * 256;
+  let tx0, tx1, ty0, ty1;
+  for (;;) {
+    tx0 = Math.floor(Math.min(...cs.map(p => mx(p[1], z))) / 256); tx1 = Math.floor(Math.max(...cs.map(p => mx(p[1], z))) / 256);
+    ty0 = Math.floor(Math.min(...cs.map(p => my(p[0], z))) / 256); ty1 = Math.floor(Math.max(...cs.map(p => my(p[0], z))) / 256);
+    if ((tx1 - tx0 + 1) * (ty1 - ty0 + 1) <= 300 || z <= 1) break;
+    z--;
+  }
+  const tw = tx1 - tx0 + 1, th = ty1 - ty0 + 1, mos = document.createElement("canvas"); mos.width = tw * 256; mos.height = th * 256;
+  const mc = mos.getContext("2d"); mc.fillStyle = "#d8d8d0"; mc.fillRect(0, 0, mos.width, mos.height);
+  let done = 0, failed = 0; const jobs = [];
+  for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) jobs.push([tx, ty]);
+  await Promise.all(jobs.map(([tx, ty]) => new Promise(res => {
+    const img = new Image(); img.crossOrigin = "anonymous";
+    img.onload = () => { mc.drawImage(img, (tx - tx0) * 256, (ty - ty0) * 256); if (++done % 20 === 0) busy("Loading the map… " + done + " / " + jobs.length); res(); };
+    img.onerror = () => { failed++; res(); };
+    img.src = B.url.replace("{z}", z).replace("{x}", tx).replace("{y}", ty);
+  })));
+  if (failed === jobs.length) throw new Error("no tiles could be fetched");
+  busy("Draping the map…"); await tick();
+  const md = mc.getImageData(0, 0, mos.width, mos.height).data, MW = mos.width, MH = mos.height;
+  // exact UTM → Mercator on a lattice every L cells, bilinear in between (the mapping is smooth)
+  const L = 16, gn = Math.ceil(n / L) + 1, gxm = new Float64Array(gn * gn), gym = new Float64Array(gn * gn);
+  for (let J = 0; J < gn; J++) for (let I = 0; I < gn; I++) { const [la, lo] = ll(I * L, J * L); gxm[J * gn + I] = mx(lo, z) - tx0 * 256; gym[J * gn + I] = my(la, z) - ty0 * 256; }
+  const cv = document.createElement("canvas"); cv.width = cv.height = n; const cx = cv.getContext("2d"), im = cx.createImageData(n, n), d = im.data;
+  for (let j = 0; j < n; j++) {
+    const J = Math.min(gn - 2, Math.floor(j / L)), fy = j / L - J;
+    for (let i = 0; i < n; i++) {
+      const I = Math.min(gn - 2, Math.floor(i / L)), fx = i / L - I, k0 = J * gn + I;
+      const u = (gxm[k0] * (1 - fx) + gxm[k0 + 1] * fx) * (1 - fy) + (gxm[k0 + gn] * (1 - fx) + gxm[k0 + gn + 1] * fx) * fy;
+      const v = (gym[k0] * (1 - fx) + gym[k0 + 1] * fx) * (1 - fy) + (gym[k0 + gn] * (1 - fx) + gym[k0 + gn + 1] * fx) * fy;
+      const uu = Math.max(0, Math.min(MW - 1, Math.floor(u))), vv = Math.max(0, Math.min(MH - 1, Math.floor(v))), q = 4 * (vv * MW + uu), k = 4 * (j * n + i);
+      d[k] = md[q]; d[k + 1] = md[q + 1]; d[k + 2] = md[q + 2]; d[k + 3] = 255;
+    }
+  }
+  cx.putImageData(im, 0, 0);
+  return cv;
+}
+// ---- side walls of the block (owner, 2026-10-13: "sidewalls (color the sides so that colors are
+// continuous along cartesian axis)"): four walls along the grid axes, from the terrain's edge down to a
+// base below the lowest point, closed underneath. Every vertex is coloured by ONE smooth function of
+// its position — an earth gradient with height (z), gently graded along x and y — so the colour runs on
+// without a seam round the corners, like a cut through one coloured block; faint bands every 25 m match
+// the bold contours. Lit by the sun like the terrain.
+function wallColor(x, y, z, zb, ztop, R, out) {
+  const t = Math.max(0, Math.min(1, (z - zb) / Math.max(1, ztop - zb)));
+  const st = [[0, [58, 42, 30]], [0.35, [112, 84, 56]], [0.7, [168, 138, 96]], [1, [205, 196, 176]]];
+  let k = 0; while (k < st.length - 2 && t > st[k + 1][0]) k++;
+  const f = (t - st[k][0]) / (st[k + 1][0] - st[k][0]), a = st[k][1], b = st[k + 1][1];
+  const g = 1 + 0.07 * (x / R) - 0.07 * (y / R);                       // continuous along the two horizontal axes
+  const band = 1 - 0.07 * Math.pow(Math.cos(Math.PI * (z + S.h0) / 25), 40);   // a faint line at every 25 m
+  for (let i = 0; i < 3; i++) out[i] = Math.min(1, (a[i] + (b[i] - a[i]) * f) / 255 * g * band);
+}
+function buildWalls(pos, m) {
+  const R = S.R, zb = -Math.max(20, 0.15 * (S.hi - S.lo)), ztop = S.hi - S.h0, ROWS = 48, P = [], C = [], I = [], col = [0, 0, 0];
+  const edge = (ks) => {   // one wall along the given top vertices (in order), down to zb
+    const base = P.length / 3;
+    for (const k of ks) {
+      const x = pos[3 * k], h = pos[3 * k + 1], z = pos[3 * k + 2];
+      for (let r = 0; r <= ROWS; r++) { const hh = h + (zb - h) * r / ROWS; P.push(x, hh, z); wallColor(x, -z, hh, zb, ztop, R, col); C.push(col[0], col[1], col[2]); }
+    }
+    for (let a = 0; a < ks.length - 1; a++) for (let r = 0; r < ROWS; r++) {
+      const p = base + a * (ROWS + 1) + r, q = p + ROWS + 1; I.push(p, p + 1, q, q, p + 1, q + 1);
+    }
+  };
+  const row = r => Array.from({ length: m }, (_, c) => r * m + c), colm = c => Array.from({ length: m }, (_, r) => r * m + c);
+  edge(row(0)); edge(row(m - 1).reverse()); edge(colm(0).reverse()); edge(colm(m - 1));
+  // the floor
+  const f0 = P.length / 3, corners = [0, m - 1, m * m - 1, m * (m - 1)];
+  for (const k of corners) { P.push(pos[3 * k], zb, pos[3 * k + 2]); wallColor(pos[3 * k], -pos[3 * k + 2], zb, zb, ztop, R, col); C.push(col[0] * .8, col[1] * .8, col[2] * .8); }
+  I.push(f0, f0 + 1, f0 + 2, f0, f0 + 2, f0 + 3);
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); g.setAttribute("color", new THREE.Float32BufferAttribute(C, 3));
+  g.setIndex(I); g.computeVertexNormals();
+  const w = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }));
+  w.castShadow = w.receiveShadow = true;
+  return w;
+}
+// repaint the terrain's picture in place (map / overlay changed)
+async function repaint() {
+  if (!S || !terrain) return;
+  const base = await getBase(S, $("basemap").value);
+  S.tex = paintBase(S, base);
+  const old = terrain.material.map; terrain.material.map = new THREE.CanvasTexture(S.tex); terrain.material.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  terrain.material.needsUpdate = true; if (old) old.dispose(); draw();
 }
 function paintNormals(gx, gyN, n) {
   // object-space normals (x east, y up, z south): (−dh/dE, 1, dh/dN), so the 1 m relief shades under any light
@@ -1531,6 +1669,7 @@ function build(s) {
   if (world) { scene.remove(world); world.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); if (o.material.normalMap) o.material.normalMap.dispose(); o.material.dispose(); } }); letters.forEach(l => scene.remove(l)); }
   S = s; S.h0 = S.lo; measObj = []; measPts = []; if ($("meas")) $("meas").hidden = !measOn;
   const n = S.n, R = S.R, cm = S.c, st = Math.max(1, Math.ceil(n / 1000)), m = Math.floor((n - 1) / st) + 1;   // ≤ ~1000² vertices
+  const disc = $("shape").value === "disc";
   const pos = new Float32Array(m * m * 3), uv = new Float32Array(m * m * 2);
   for (let r = 0; r < m; r++) for (let c = 0; c < m; c++) {
     const k = r * m + c, i = c * st, j = r * st;
@@ -1539,7 +1678,7 @@ function build(s) {
   }
   const idx = [];
   for (let r = 0; r < m - 1; r++) for (let c = 0; c < m - 1; c++) {
-    const x = (c + 0.5) * st * cm - R, z = (r + 0.5) * st * cm - R; if (x * x + z * z > R * R) continue;
+    const x = (c + 0.5) * st * cm - R, z = (r + 0.5) * st * cm - R; if (disc && x * x + z * z > R * R) continue;
     const a = r * m + c, b = a + 1, d = a + m, e = d + 1; idx.push(a, d, b, b, d, e);
   }
   const g = new THREE.BufferGeometry();
@@ -1550,6 +1689,7 @@ function build(s) {
   const mat = new THREE.MeshPhongMaterial({ map: tex, normalMap: ntex, normalMapType: THREE.ObjectSpaceNormalMap, shininess: 0, specular: 0x000000 });
   terrain = new THREE.Mesh(g, mat); terrain.castShadow = terrain.receiveShadow = true;
   world = new THREE.Group(); world.add(terrain); scene.add(world);
+  if (!disc) world.add(buildWalls(pos, m));
   needles = []; flags = []; letters = [];
   const pin = (x, y, col, hgt, rad, data) => {
     const z = sample(x, y) - S.h0, c = new THREE.Color(col);
@@ -1815,7 +1955,7 @@ $("gopen").onclick = async () => {
     const meta = await gapi("files/" + id + "?fields=id,name,mimeType&supportsAllDrives=true");
     const files = meta.mimeType === "application/vnd.google-apps.folder" ? await gList(id, 0) : [meta];
     const hdr = { Authorization: "Bearer " + gToken };
-    const items = files.filter(f => /\.(tiff?|json|geojson|kml|kmz)$/i.test(f.name))
+    const items = files.filter(f => /\.(tiff?|json|geojson|kml|kmz|jpe?g|png)$/i.test(f.name))
       .map(f => ({ name: f.name, url: "https://www.googleapis.com/drive/v3/files/" + f.id + "?alt=media&supportsAllDrives=true", headers: hdr }));
     if (!items.length) throw new Error("no .tif / .geojson / .kml / .kmz files in “" + meta.name + "”");
     SRC = null; await loadFolder(items);
@@ -1852,6 +1992,9 @@ const pick = ev => { const fs = [...ev.target.files].map(f => ({ name: f.name, b
 $("fdir").onchange = pick; $("ffiles").onchange = pick;
 $("render").onclick = () => render();
 let keepCam = false;
+$("basemap").onchange = () => repaint();
+$("ovl").onchange = () => repaint();
+$("shape").onchange = () => { if (SRC) { keepCam = true; render(); } };
 $("csmooth").onchange = $("csig").onchange = () => { if (SRC) { keepCam = true; render(); } };
 setNow();
 // a standalone file carries its folder inside
