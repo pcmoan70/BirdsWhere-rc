@@ -52,7 +52,7 @@
     <div class="row"><span class="sw" style="background:#5a2d0f;height:3px;border:0"></span>contours every 5 m, labelled every 25 m</div>
     <div class="row"><span class="sw" style="background:#faf8eb;border-radius:50%"></span>compass, true north (250 m south of the red ring)</div>
     <div class="row">Height ×<input id="ex" type="range" min="1" max="3" step="0.1" value="1.5"><span id="exv">1.5</span></div>
-    <div class="row w">Map <select id="basemap" style="width:auto"><option value="slope">Slope tint</option><option value="kv_topo">Kartverket topo</option><option value="kv_grey">Kartverket greyscale</option><option value="osm">OpenStreetMap</option><option value="esri">Aerial (Esri)</option></select>
+    <div class="row w">Map <select id="basemap" style="width:auto"><option value="slope">Slope tint</option><option value="kv_topo">Kartverket topo</option><option value="kv_grey">Kartverket greyscale</option><option value="osm">OpenStreetMap (OpenTopoMap)</option><option value="esri_st">Streets (Esri)</option><option value="esri">Aerial (Esri)</option></select>
       <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="ovl" checked> contours &amp; habitat</label></div>
     <div class="row w">Shape <select id="shape" style="width:auto"><option value="block">Block with side walls</option><option value="disc">Round cut-out</option></select></div>
     <div class="row"><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="csmooth" checked> Smooth terrain, σ</label><input id="csig" type="number" min="0.5" max="5" step="0.5" value="1.5" style="width:56px"> m</div>
@@ -1491,7 +1491,11 @@ function paintBase(S, base) {
 const BASEMAPS = {
   kv_topo: { url: "https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png", max: 18, attr: "Map © Kartverket (CC BY 4.0)" },
   kv_grey: { url: "https://cache.kartverket.no/v1/wmts/1.0.0/topograatone/default/webmercator/{z}/{y}/{x}.png", max: 18, attr: "Map © Kartverket (CC BY 4.0)" },
-  osm:     { url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", max: 19, attr: "Map © OpenStreetMap contributors" },
+  // OpenStreetMap data, drawn by OpenTopoMap: tile.openstreetmap.org refuses an app that fetches a view's
+  // ~100 tiles at once (its usage policy: an "Access blocked" tile — owner, 2026-10-13), and CARTO now wants
+  // an API key; OpenTopoMap allows moderate use with attribution
+  osm:     { url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", sub: "abc", max: 17, attr: "Map data © OpenStreetMap contributors, SRTM · style © OpenTopoMap (CC BY-SA)" },
+  esri_st: { url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", max: 19, attr: "Map: Esri, HERE, Garmin, © OpenStreetMap contributors, and the GIS user community · Powered by Esri" },
   esri:    { url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", max: 19, attr: "Imagery: Esri, Maxar, Earthstar Geographics, and the GIS User Community · Powered by Esri" }
 };
 function setAttr(id) { $("attr").textContent = "Terrain: Kartverket NHM DTM (CC BY 4.0)" + (BASEMAPS[id] ? " · " + BASEMAPS[id].attr : ""); }
@@ -1534,7 +1538,7 @@ async function drapeTiles(S, B) {
     const img = new Image(); img.crossOrigin = "anonymous";
     img.onload = () => { mc.drawImage(img, (tx - tx0) * 256, (ty - ty0) * 256); if (++done % 20 === 0) busy("Loading the map… " + done + " / " + jobs.length); res(); };
     img.onerror = () => { failed++; res(); };
-    img.src = B.url.replace("{z}", z).replace("{x}", tx).replace("{y}", ty);
+    img.src = B.url.replace("{s}", (B.sub || "a")[(tx + ty) % (B.sub || "a").length]).replace("{z}", z).replace("{x}", tx).replace("{y}", ty);
   })));
   if (failed === jobs.length) throw new Error("no tiles could be fetched");
   busy("Draping the map…"); await tick();
