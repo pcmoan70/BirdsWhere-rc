@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2078";
+var VERSION = "v2079";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 /terrain3d/: open a terrain folder from a shared Google Drive link (sign in with Google), and share a terrain with someone else as a link.",
+  "\u2022 Load from file takes a Google Drive share link (sign in with the account it is shared with); \ud83d\udd17 App link makes a link that opens it for someone else.",
+  "\u2022 /terrain3d/: a ?drive= link shows a Sign in button to open the shared terrain.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -710,8 +710,14 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   link to the original record, in the list's colour halo. A shared *link* (`?s=`) still plots once
   without saving. Fetched observations you **Save** from the Points menu become the same kind of
   list, with the whole record kept; saved "trips" from earlier versions are converted into such
-  lists on the first start. Google Drive share links cannot be fetched by a web page
-  (Drive refuses cross-site browser requests), so download such a file and choose it instead.
+  lists on the first start. **Google Drive share links** work too, for a file or a folder of
+  .kmz / .kml / .geojson / .share files: Drive refuses a plain cross-site fetch, so the app asks you
+  to **sign in with the Google account the file is shared with** (read-only Drive access, a separate
+  token from Sync, dropped right after) and reads it through the Drive API; each file then imports
+  like a picked one. To share a KMZ with someone: put it on Drive, share it with their Google account,
+  paste the share link into *Load from file* and press **🔗 App link** — it copies a BirdsWhere link
+  (`…/?drive=<share link>`) that opens the file for them after they sign in. Opening the app with
+  `?drive=<share link>` asks once (Sign in & open / Cancel) and drops the parameter.
   Import from either the Settings
   *Import* button or *Load from file* in the Points menu — or simply **drag the file onto the page**
   (one file is shown; several at once are saved as lists without being shown) — both
@@ -1458,7 +1464,8 @@ terrain, points as needles; a point with `role` = `steepest` is the red ring) an
   (`scenes/index.json` = `[{name, title, path}]`), or any folder URL (`?folder=<url>` too). A web
   server cannot list a directory, so a folder served over HTTP needs an `index.json` =
   `{"files": ["dtm.tif", "habitat.geojson", …]}` (or a plain array).
-- **Google Drive:** paste a shared Drive folder (or file) link → **Sign in & open**. Signs in with
+- **Google Drive:** paste a shared Drive folder (or file) link → **Sign in & open** (or open the
+  viewer with `?drive=<link>`: a "Sign in with Google to open" button comes up — the popup needs a tap). Signs in with
   Google (the BirdsWhere OAuth client, read-only Drive access; token in memory only), lists the folder
   through the Drive API (sub-folders two levels down; no `index.json` needed) and reads the files with
   the token — so the data stays private to the accounts it is shared with. Needs the page opened from

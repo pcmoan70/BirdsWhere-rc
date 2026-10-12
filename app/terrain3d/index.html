@@ -27,7 +27,7 @@
   button{background:#2e8b74;color:#fff;border:0;border-radius:5px;padding:4px 9px;cursor:pointer;font:inherit}
   #zoom{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:6px}
   #zoom button{width:40px;height:40px;font-size:22px;padding:0}
-  #busy[hidden]{display:none}
+  #busy[hidden],#gate[hidden]{display:none!important}
   #busy{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
   #busy span{background:rgba(0,0,0,.8);padding:12px 18px;border-radius:8px}
   label.file{display:inline-block;background:#3d5a80;color:#fff;border-radius:5px;padding:4px 9px;cursor:pointer}
@@ -73,6 +73,7 @@
 <div id="list" class="panel"><button class="minb" id="listMin" title="Minimise (also hides every needle)">−</button><h2 id="listh">Views</h2><div class="body"><div class="items" id="items"></div></div></div>
 <div id="tip"></div>
 <div id="zoom"><button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button></div>
+<div id="gate" hidden style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,12,16,.6)"><div class="panel" style="position:static;max-width:340px;text-align:center"><div style="margin-bottom:10px">A terrain shared on Google Drive. Sign in with the Google account it is shared with to open it.</div><button id="gateGo" style="font-size:16px;padding:8px 14px">Sign in with Google to open</button><div style="margin-top:8px"><button id="gateX" style="background:#555">Not now</button></div></div></div>
 <div id="busy" hidden><span id="busyt">Working…</span></div>
 <script>/**
  * @license
@@ -1773,7 +1774,12 @@ setNow();
   if (!raw || raw[0] !== "{") {     // the plain viewer: ?folder=URL, else the site's own catalog
     const sp = new URL(location.href).searchParams, f = sp.get("folder"), dl = sp.get("drive");
     if (sp.get("day")) { $("day").value = sp.get("day"); $("tod").value = sp.get("tod") || 720; updateSun(); }
-    if (dl) { $("gurl").value = dl; $("dsrc").textContent = "A Google Drive link is filled in: press “Sign in & open”."; if ($("info").classList.contains("min")) $("infoMin").onclick(); }
+    if (dl) {   // the sign-in popup needs a tap: one big button for it
+      $("gurl").value = dl; $("dsrc").textContent = "A Google Drive link is filled in: press “Sign in & open”.";
+      $("gate").hidden = false;
+      $("gateGo").onclick = () => { $("gate").hidden = true; $("gopen").onclick(); };
+      $("gateX").onclick = () => { $("gate").hidden = true; if ($("info").classList.contains("min")) $("infoMin").onclick(); };
+    }
     await catalog();
     if (f) { $("furl").value = f; await loadURL(f); }
     return;

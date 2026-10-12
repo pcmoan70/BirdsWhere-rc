@@ -8394,6 +8394,7 @@
       consumeLaunchFiles();
       wireFileDrop();
       consumeSharedFiles();
+      consumeDriveParam();
       initInstall();
       initRarityAlerts();
       // Keyless first tap on the rarity bell → the one-time eBird-key nudge
@@ -18073,6 +18074,7 @@
   // browser request with 403, measured 2026-10-01). The bytes take the single-file import path.
   function importPointsUrl(url) {
     url = String(url || "").trim(); if (!url) return;
+    if (window.GDriveSync && window.GDriveSync.driveLinkId(url)) { importPointsDrive(url); return; }
     var name = "";
     try { var u = new URL(url); if (!/^https?:$/.test(u.protocol)) throw new Error("scheme"); name = decodeURIComponent(u.pathname.split("/").pop() || ""); }
     catch (e) { setStatus(t("points.linkFail")); return; }
@@ -18127,6 +18129,35 @@
       else doneKml(txt);
     };
     rd.readAsArrayBuffer(f);
+  }
+  // A KMZ / KML / GeoJSON (or a folder of them) shared on Google Drive (owner, 2026-10-12): Drive
+  // refuses a plain fetch of a share link, so it is read through the Drive API after the user signs
+  // in with the Google account it is shared with (read-only, token dropped after). The dialog's
+  // button is the user gesture the Google popup needs. Each file takes the normal import path.
+  function importPointsDrive(link) {
+    if (importBusy) { setStatus(t("kml.busy")); return; }
+    uiDialog({ message: t("drive.openBody"), okLabel: t("drive.openBtn"), xLater: true }).then(function (ok) {
+      if (!ok) return;
+      setStatus(t("drive.fetching")); mpState.mpLoading(t("drive.fetching"));
+      window.GDriveSync.readShared(link).then(function (res) {
+        mpState.mpLoading(null);
+        if (!res.files.length) { setStatus(t("drive.noFiles")); return; }
+        importPointsFile(res.files.map(function (f) { return new File([f.blob], f.name, { type: f.blob.type || "" }); }), true);
+      }).catch(function (e) {
+        mpState.mpLoading(null);
+        setStatus(e && e.code ? t("drive.notShared") : t("drive.failed", { msg: (e && e.message) || "" }));
+      });
+    });
+  }
+  // ?drive=<share link> on the app's address: the same import, offered once at start (a link
+  // someone sent is the user's own request; the parameter is dropped so a reload asks nothing).
+  function consumeDriveParam() {
+    var link = "";
+    try { link = new URLSearchParams(location.search).get("drive") || ""; } catch (e) { return; }
+    if (!link) return;
+    try { var u = new URL(location.href); u.searchParams.delete("drive"); history.replaceState(null, "", u.pathname + u.search + u.hash); } catch (e) {}
+    if (!window.GDriveSync || !window.GDriveSync.driveLinkId(link)) { setStatus(t("drive.badLink")); return; }
+    importPointsDrive(link);
   }
   function renderDetSetOverlay(set) {
     var g = L.layerGroup();
@@ -19211,13 +19242,27 @@
         var el = openAnchoredMenu("detrow-menu mp-link-menu");
         el.innerHTML = '<div class="detrow-menu-hdr detrow-menu-name">' + escapeHtml(t("points.loadFile")) + "</div>" +
           '<div class="mp-link-row"><input type="url" id="mp-link-url" autocomplete="off" spellcheck="false" placeholder="' + escapeHtml(t("points.linkPh")) + '" />' +
-          '<button type="button" id="mp-link-go" class="btn">' + escapeHtml(t("points.load").replace(/^\S+\s*/, "")) + "</button></div>" +
+          '<button type="button" id="mp-link-go" class="btn">' + escapeHtml(t("points.load").replace(/^\S+\s*/, "")) + "</button>" +
+          '<button type="button" id="mp-link-app" class="btn btn-light" title="' + escapeHtml(t("drive.linkCopied")) + '">' + escapeHtml(t("drive.makeLink")) + "</button></div>" +
           '<p class="cu-hint">' + escapeHtml(t("points.linkHint")) + "</p>";
         var inp = el.querySelector("#mp-link-url");
         // A link loads that link; no link opens the file chooser (owner, 2026-10-07: one way in,
         // no separate "Choose file…" row).
         function go() { var u = inp.value.trim(); closeAnchoredMenu(); if (u) importPointsUrl(u); else shareFileInput.click(); }
         el.querySelector("#mp-link-go").addEventListener("click", function (ev) { ev.stopPropagation(); go(); });
+        // A Drive share link → a BirdsWhere link that opens it for someone else (they sign in
+        // with the Google account the file is shared with): …/?drive=<link>
+        el.querySelector("#mp-link-app").addEventListener("click", function (ev) {
+          ev.stopPropagation();
+          var u = inp.value.trim();
+          if (!window.GDriveSync || !window.GDriveSync.driveLinkId(u)) { setStatus(t("drive.linkNeedsDrive")); inp.focus(); return; }
+          var app = location.origin + location.pathname + "?drive=" + encodeURIComponent(u);
+          closeAnchoredMenu();
+          var copied = function () { setStatus(t("drive.linkCopied")); };
+          if (navigator.share) navigator.share({ title: "BirdsWhere", url: app }).catch(function () {});
+          else if (navigator.clipboard) navigator.clipboard.writeText(app).then(copied, function () { modalPrompt(t("drive.linkCopied"), app); });
+          else modalPrompt(t("drive.linkCopied"), app);
+        });
         inp.addEventListener("keydown", function (ev) { if (ev.key === "Enter") { ev.preventDefault(); go(); } });
         positionAnchoredMenu(el, Math.round(r.left), Math.round(r.bottom + 4));
       });

@@ -765,8 +765,63 @@ window.GDriveSync = (function () {
     try { localStorage.removeItem(LS_TOKEN); localStorage.removeItem(LS_TOKEN_EXP); localStorage.removeItem(LS_CONNECTED); localStorage.removeItem(LS_FILE_ID); } catch (e) {}
   }
 
+  // ---- shared files (owner, 2026-10-12: "gdrive share links on the main app … for sharing kmz
+  // files"): a file or folder someone shared on Drive, read with a SEPARATE read-only token —
+  // the sync's own token and scopes are untouched. Drive refuses a plain browser fetch of a
+  // share link (403), so the file comes through the Drive API with the token, which is held in
+  // memory for this one read only. Must start from a user gesture (the Google popup).
+  var RO_SCOPE = "https://www.googleapis.com/auth/drive.readonly";
+  var SHARED_EXT = /\.(kmz|kml|geojson|json|share)$/i;
+  function driveLinkId(link) {
+    link = String(link || "").trim();
+    if (!/^https:\/\/(drive|docs)\.google\.com\//.test(link)) return null;
+    var m = /\/folders\/([\w-]{10,})/.exec(link) || /\/(?:file|document|spreadsheets)\/d\/([\w-]{10,})/.exec(link) || /[?&]id=([\w-]{10,})/.exec(link);
+    return m ? m[1] : null;
+  }
+  function roToken() {
+    return waitForGis().then(function () {
+      return new Promise(function (resolve, reject) {
+        if (!clientId()) return reject(new Error("no client id"));
+        var tc = google.accounts.oauth2.initTokenClient({
+          client_id: clientId(), scope: RO_SCOPE,
+          callback: function (r) { if (r && r.access_token) resolve(r.access_token); else reject(new Error((r && r.error) || "no access token")); },
+          error_callback: function (e) { reject(new Error((e && (e.message || e.type)) || "auth failed")); }
+        });
+        tc.requestAccessToken({ prompt: "" });
+      });
+    });
+  }
+  async function readShared(link) {
+    var id = driveLinkId(link);
+    if (!id) throw new Error("not a drive link");
+    var token = await roToken(), H = { headers: { Authorization: "Bearer " + token } };
+    var api = "https://www.googleapis.com/drive/v3/files";
+    async function get(url) {
+      var r = await fetch(url, H);
+      if (r.status === 404 || r.status === 403) { var e = new Error("not shared"); e.code = r.status; throw e; }
+      if (!r.ok) throw new Error("http " + r.status);
+      return r;
+    }
+    var meta = await (await get(api + "/" + id + "?fields=id,name,mimeType&supportsAllDrives=true")).json();
+    var files = [meta];
+    if (meta.mimeType === "application/vnd.google-apps.folder") {
+      var q = encodeURIComponent("'" + id + "' in parents and trashed = false");
+      files = ((await (await get(api + "?q=" + q + "&fields=files(id,name,mimeType)&pageSize=200&supportsAllDrives=true&includeItemsFromAllDrives=true")).json()).files || [])
+        .filter(function (f) { return SHARED_EXT.test(f.name || ""); });
+    }
+    var out = [];
+    for (var i = 0; i < files.length; i++) {
+      var b = await (await get(api + "/" + files[i].id + "?alt=media&supportsAllDrives=true")).blob();
+      out.push({ name: files[i].name || ("drive-" + i), blob: b });
+    }
+    token = null;   // dropped: nothing kept after the read
+    return { name: meta.name || "", folder: meta.mimeType === "application/vnd.google-apps.folder", files: out };
+  }
+
   // ---- public API -----------------------------------------------------------
   return {
+    driveLinkId: driveLinkId,
+    readShared: readShared,
     // Called once by app.js at the end of init. Sync is MANUAL + one-shot —
     // nothing here reaches out to Google or runs a sync; we just track whether
     // the user changed anything this session (so the sync lets local win) and
