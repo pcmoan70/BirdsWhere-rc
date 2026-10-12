@@ -662,6 +662,7 @@ window.AppPoints = (function () {
       if (p.color) props.color = p.color;
       if (+p.radius > 0) props.uncertainty_m = +p.radius;
       if (p.marker) props.marker = p.marker;
+      if (+p.edge > 0) props.unc_edge = +p.edge;
       if (p.spKey) props.spKey = p.spKey;
       if (p.spColor) props.spColor = p.spColor;
       if (p.date) props.date = p.date;
@@ -1199,7 +1200,10 @@ window.AppPoints = (function () {
     radius: ["uncertainty_m", "radius_m", "radius", "coordinateUncertaintyInMeters", "uncertainty", "accuracy"],
     // The pin's symbol: "ring" = an unfilled circle in the point's colour (owner, 2026-10-10: the
     // terrain-placed DTM points of the map-dot lists are "unfilled red circles")
-    marker: ["marker", "symbol"]
+    marker: ["marker", "symbol"],
+    // The uncertainty circle's edge width in px (default 0.8): a list's best-estimate points draw theirs
+    // bolder than the many single readings round them (owner, 2026-10-12)
+    edge: ["unc_edge", "circle_edge"]
   };
   // Our own point builders write the whole record as an HTML <table> into <description>:
   // species, date, place, country, evidence, count, notes, observer, dataset, a GBIF link.
@@ -1335,7 +1339,7 @@ window.AppPoints = (function () {
         if (v == null || String(v).trim() === "") continue;
         v = String(v).trim();
         if (field === "date") { var m = /\d{4}-\d{2}-\d{2}/.exec(v); v = m ? m[0] : v.slice(0, 10); }
-        if (field === "radius") { v = parseFloat(v); if (!(v > 0)) continue; }
+        if (field === "radius" || field === "edge") { v = parseFloat(v); if (!(v > 0)) continue; }
         pt[field] = v;
         return;
       }
@@ -2003,7 +2007,7 @@ window.AppPoints = (function () {
       var rc = p.color || color || mpColorFor(p);
       // faint fill, so the map stays readable under many overlapping circles (owner, 2026-10-10), with a
       // thin black edge so the circle itself is easy to see (owner, 2026-10-12)
-      mpLayer.addLayer(L.circle([p.lat, p.lon], { radius: +p.radius, color: "#000", weight: 0.8, opacity: 0.55, fillColor: rc, fillOpacity: 0.04, interactive: false }));
+      mpLayer.addLayer(L.circle([p.lat, p.lon], { radius: +p.radius, color: "#000", weight: +p.edge > 0 ? +p.edge : 0.8, opacity: +p.edge > 0 ? 0.8 : 0.55, fillColor: rc, fillOpacity: 0.04, interactive: false }));
     }
     // A detection-saved pin (read-only, carries the species' colour) is drawn
     // like the plotted detection — species colour + ★ for interesting + a black
