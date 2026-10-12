@@ -94,6 +94,7 @@
     <li>A pixel belongs to a dot when every colour channel is within the list's tolerance of the dot colour; specks are removed and blobs labelled.</li>
     <li>One dot's area is the median of the small blobs (set by hand where a colour is often half-covered by others).</li>
     <li>Each blob is <b>lone</b> (one dot), a <b>cluster</b> (touching dots — one per peak of the distance transform), or <b>massed</b> (a solid patch: area ÷ 80 % of one dot's area gives the count, k-means places the centres).</li>
+    <li><b>Hidden</b> dots: a dot mostly under a dot of another colour shows only as a crescent. A crescent of the dot colour that touches another symbol, is at least 1.5 px thick and 12 % of a dot, and is not part of a dot already found, counts as one more dot; its centre is fitted with the covered pixels left out and is trusted to about half a dot radius.</li>
   </ol>
 </section>
 
@@ -159,7 +160,7 @@
   <ul>
     <li><b>Map point:</b> the site position; <code>uncertainty_m</code> = long axis of the 95 % ellipse (2.45 σ), plus short axis and bearing. Tags: image name and status.</li>
     <li><b>Habitat areas</b> (polygons): cliffs coloured by the way they face, so the south-facing ones stand out — <b>S dark orange-red</b>, SE / SW orange, E / W pale orange — quarries purple, islets blue; the fit (good / fair / poor) is in the name and description as in step 7. The habitat files also carry every image dot, the sites and the DTM rings, so one file shows it all (below). A lighter copy for the app keeps <b>every south-exposed (SE / S / SW) steep area</b> whatever its fit or size, plus good and fair E- and W-facing cliffs ≥ 100 m², quarries and islets; the app draws a list's areas from street-level zoom, only those in view.</li>
-    <li><b>In the habitat files</b> the points are drawn differently: each <b>image dot</b> (all 4 828) is a <b>grey ring</b> at that image's own aligned position, with a thin grey circle for its own 95 % accuracy; each <b>site</b> (the uncertainty-weighted best estimate of its dots) is a <b>filled dot coloured by how many of its dots say active</b>, its uncertainty circle drawn with a <b>thick black edge</b> (field <code>unc_edge</code>) — grey (none) through greens to full green (all; a nest counts as active). Tags: the image file names, plus <code>active</code> (any dot active) or <code>inactive</code>; an image dot's tags are its file name and status.</li>
+    <li><b>In the habitat files</b> the points are drawn differently: each <b>image dot</b> (all 4 855) is a <b>grey ring</b> at that image's own aligned position, with a thin grey circle for its own 95 % accuracy; each <b>site</b> (the uncertainty-weighted best estimate of its dots) is a <b>filled dot coloured by how many of its dots say active</b>, its uncertainty circle drawn with a <b>thick black edge</b> (field <code>unc_edge</code>) — grey (none) through greens to full green (all; a nest counts as active). Tags: the image file names, plus <code>active</code> (any dot active) or <code>inactive</code>; an image dot's tags are its file name and status.</li>
     <li><b>DTM point:</b> an extra point drawn as an <b>unfilled red circle</b> (field <code>marker</code> = <code>ring</code>), tags image name, status and <code>DTM</code>; no radius of its own.</li>
     <li>Uncertainty circles and ellipses have a thin black edge, so they are easy to see, and a faint fill (~5 %), so the map underneath stays readable.</li>
   </ul>
@@ -183,10 +184,10 @@
     <li>Cross-map disagreement of shared sites: 3.2 → 2.0 km RMS after local alignment.</li>
     <li>True positions vs. the maps' sites: 0.3–2.1 km; every one inside its 95 % ellipse.</li>
     <li>No map positions in a neighbouring country.</li>
-    <li>1,383 sites from 4,828 dots; 971 shown by more than one map.</li>
-    <li>DTM points: 4,821 (1 376 sites from the 1 m model, 6 from DTM10); median 0.39 km from their map point (all within 500 m); slope at the chosen pixel median 71°.</li>
-    <li>Nesting habitat (E–S–W faces only): 28 039 areas — 27 396 cliffs (good / fair / poor: 3 870 / 13 110 / 10 416), 616 islets, 27 quarries; the app copy holds 18 933 (all 15 592 south-exposed areas).</li>
-    <li>Sites with an active dot: 565 of 1,383 (160 with every dot active).</li>
+    <li>1,395 sites from 4,855 dots (27 of them recovered from under other dots); 975 shown by more than one map.</li>
+    <li>DTM points: 4,848 (1 388 sites from the 1 m model, 6 from DTM10); median 0.39 km from their map point (all within 500 m); slope at the chosen pixel median 71°.</li>
+    <li>Nesting habitat (E–S–W faces only): 28 201 areas — 27 560 cliffs (good / fair / poor: 3 911 / 13 207 / 10 442), 614 islets, 27 quarries; the app copy holds 19 083 (all 15 721 south-exposed areas).</li>
+    <li>Sites with an active dot: 571 of 1,395 (164 with every dot active).</li>
     <li>Terrain prior: sites moved median 2 m, 90 % within 16 m, at most 132 m.</li>
   </ul>
 </section>
