@@ -58,7 +58,7 @@
   <div class="body">
     <div class="sub" id="sub">A viewer for 1 m terrain models (DTM) of Norway: open a folder with DTM GeoTIFF tiles (Kartverket, any UTM zone) and any .geojson / .kml / .kmz overlays.</div>
     <div class="row">Height ×<input id="ex" type="range" min="1" max="3" step="0.1" value="1.5"><span id="exv">1.5</span></div>
-    <div class="row w">Map <select id="basemap" style="width:auto"><option value="slope">Plain</option><option value="kv_topo">Kartverket topo</option><option value="kv_grey">Kartverket greyscale</option><option value="osm">OpenStreetMap (OpenTopoMap)</option><option value="esri_st">Streets (Esri)</option><option value="esri">Aerial (Esri)</option></select>
+    <div class="row w">Map <select id="basemap" style="width:auto"><option value="slope">Plain</option><option value="kv_topo">Kartverket topo</option><option value="kv_grey">Kartverket greyscale</option><option value="osm">OpenStreetMap (OpenTopoMap)</option><option value="cyclosm">Paths &amp; cycling (CyclOSM)</option><option value="esri_st">Streets (Esri)</option><option value="esri">Aerial (Esri)</option></select>
 </div>
     <div class="row w">Shape <select id="shape" style="width:auto"><option value="block">Block with side walls</option><option value="disc">Round cut-out</option></select></div>
     <div class="row"><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="csmooth" checked> Smooth terrain, σ</label><input id="csig" type="number" min="0.5" max="5" step="0.5" value="1.5" style="width:56px"> m</div>
@@ -1733,6 +1733,9 @@ const BASEMAPS = {
   // ~100 tiles at once (its usage policy: an "Access blocked" tile — owner, 2026-10-13), and CARTO now wants
   // an API key; OpenTopoMap allows moderate use with attribution
   osm:     { url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", sub: "abc", max: 17, attr: "Map data © OpenStreetMap contributors, SRTM · style © OpenTopoMap (CC BY-SA)" },
+  // walking paths, tracks and cycle routes (owner, 2026-10-13: "a map option showing walking and bicycle tracks
+  // like CyclOSM"): CyclOSM, hosted by OpenStreetMap France (CORS *, attribution required)
+  cyclosm: { url: "https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png", sub: "abc", max: 20, attr: "Map data © OpenStreetMap contributors · style CyclOSM (CC BY-SA), tiles OpenStreetMap France" },
   esri_st: { url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", max: 19, attr: "Map: Esri, HERE, Garmin, © OpenStreetMap contributors, and the GIS user community · Powered by Esri" },
   esri:    { url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", max: 19, attr: "Imagery: Esri, Maxar, Earthstar Geographics, and the GIS User Community · Powered by Esri" }
 };
