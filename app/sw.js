@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2091";
+var VERSION = "v2092";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Saved and shared point lists keep everything \u2014 colours, uncertainty, markers, areas, tracks and every field; a file saved by the app loads back exactly as it was.",
+  "\u2022 Hide observers: tap an observer\u2019s name \u2192 \ud83d\ude48 Hide this observer. Their records disappear everywhere; manage the exclude list in \u270e Observer lists.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -470,7 +470,7 @@
   "maphelp.search": "Wyszukiwanie miejsc. Wpisz co najmniej dwie litery, aby wyszukać nazwy miejsc (wyświetlane są też ostatnie wyszukiwania). Przytrzymaj, aby przywołać zapisane lokalizacje i przelecieć do jednej. Działają też współrzędne – stopnie dziesiętne (59.9139, 10.7522), stopnie-minuty-sekundy (59°54'50\"N 10°45'08\"E) lub wklejony link do mapy – a Enter przenosi prosto tam. Działa też UTM z pasem strefy, np. 33V 357344 6731644.",
   "maphelp.offline": "Mapy offline. Pobierz kafelki bieżącego widoku, aby obszar działał bez połączenia. Przytrzymaj (lub kliknij prawym), aby otworzyć menedżera — pobrane obszary pokazują się jako kolorowe ramki z × do usunięcia, a aplikacja ponownie proponuje pobranie, jeśli przeglądarka je usunie. Pobrane obszary nie liczą się do pamięci podręcznej map.",
   "maphelp.legend": "Legenda. Naniesione gatunki, uporządkowane według przewidywanego przez model prawdopodobieństwa (niskie → wysokie). Górne przyciski: − zminimalizuj do narożnego znacznika; ☰ otwórz listę obserwacji (gdzie są filtry czasu, gatunku i obserwatora); czarny × czyści aktywne filtry; czerwony × usuwa wszystkie naniesione obserwacje (uzbraja usuwanie wg obszaru, gdy istnieją pobrane obszary); ⚠ pojawia się, gdy limit rysowania (Ustawienia → Maks. punktów) ukrywa punkty. Dotknij wiersza gatunku, aby go włączyć/wyłączyć — wybory się kumulują; najedź na wiersz, aby wyodrębnić ten gatunek na mapie. Przytrzymaj (lub kliknij prawym) nazwę gatunku, aby otworzyć jej menu.",
-  "maphelp.detlist": "Lista obserwacji. Lista dużym tekstem naniesionych obserwacji, posortowana według czasu (pogrupowana według daty i obserwatora) lub według gatunku, nazwy w 2. języku, liczby lub rzadkości. Jej wiersz filtrów zawiera okno czasowe (dni / tygodnie / miesiące, zakres od–do i znaczniki miesięcy), filtr gatunków (★ oznaczony · ◉ lokalnie rzadki · 🟡 spoza listy roku · 🔴 spoza listy życia) i filtr 👤 obserwatora. Rozmyte wyszukiwanie gatunku pojawia się, gdy lista jest długa; podczas wyszukiwania „Zaznacz na mapie” dodaje trafienia do legendy. 🎯 każdego wiersza przelatuje do rekordu; dotknięcie wiersza otwiera menu gatunku. „Zapisz jako listę” i „Nawiguj” budują trasę przez punkty. Lista pokazuje tylko obserwacje w bieżącym widoku mapy i podąża za mapą przy przesuwaniu lub powiększaniu; po wyczyszczeniu filtrów mapa wraca do wszystkich pobranych punktów.",
+  "maphelp.detlist": "Lista obserwacji. Lista dużym tekstem naniesionych obserwacji, posortowana według czasu (pogrupowana według daty i obserwatora) lub według gatunku, nazwy w 2. języku, liczby lub rzadkości. Jej wiersz filtrów zawiera okno czasowe (dni / tygodnie / miesiące, zakres od–do i znaczniki miesięcy), filtr gatunków (★ oznaczony · ◉ lokalnie rzadki · 🟡 spoza listy roku · 🔴 spoza listy życia) i filtr 👤 obserwatora. Rozmyte wyszukiwanie gatunku pojawia się, gdy lista jest długa; podczas wyszukiwania „Zaznacz na mapie” dodaje trafienia do legendy. 🎯 każdego wiersza przelatuje do rekordu; dotknięcie wiersza otwiera menu gatunku. „Zapisz jako listę” i „Nawiguj” budują trasę przez punkty. Lista pokazuje tylko obserwacje w bieżącym widoku mapy i podąża za mapą przy przesuwaniu lub powiększaniu; po wyczyszczeniu filtrów mapa wraca do wszystkich pobranych punktów. Dotknij nazwiska obserwatora, aby wybrać 🙈 Ukryj tego obserwatora: jego obserwacje znikają wszędzie — trafia na listę wykluczeń, którą zarządza się (i wyłącza) w ✎ Listy obserwatorów.",
   "ctrl.nearbycount": "W pobliżu — liczba wierszy",
   "ctrl.nearbycounthint": "Ile najbliższych obserwacji pokazuje lista W pobliżu, posortowanych według odległości od niebieskiego/czerwonego krzyżyka lub umieszczonej pinezki.",
   "ctrl.nearbypoints": "Uwzględnij także aktywne punkty na mapie",
@@ -1646,5 +1646,13 @@
   "points.tagsAll": "Wszystkie",
   "points.chipHint": "Kliknij, aby przełączać: bez wpływu → pokaż tylko te → ukryj te (przekreślone)",
   "points.tagsAllHint": "Zaznacz wszystkie tagi — albo żaden, gdy wszystkie są zaznaczone",
-  "photo.holdBig": "Przytrzymaj, aby zobaczyć zdjęcie w pełnym rozmiarze"
+  "photo.holdBig": "Przytrzymaj, aby zobaczyć zdjęcie w pełnym rozmiarze",
+  "obs.exclude": "🙈 Ukryj tego obserwatora (lista wykluczeń)",
+  "obs.unexclude": "👁 Przestań ukrywać tego obserwatora",
+  "obs.excludeListName": "Ukryci obserwatorzy",
+  "obs.excluded": "{name}: obserwacje ukryte — zarządzaj w ✎ Listy obserwatorów",
+  "obs.unexcluded": "{name}: obserwacje znów widoczne",
+  "obs.excludedTip": "Ukryty — na liście wykluczeń (✎ Listy obserwatorów)",
+  "obs.excludeToggle": "Lista wykluczeń — ukryj obserwacje tych obserwatorów",
+  "obs.excludeToggleHint": "Obserwacje wszystkich z tej listy są ukryte wszędzie: mapa, listy i liczniki"
 }

@@ -3512,6 +3512,8 @@ tr.row-list-only .prob-na { color: var(--ink-muted, #999); }
 .obs-ed-ldel { flex: 0 0 auto; border: none; background: transparent; font-size: var(--fs-h); line-height: 1; cursor: pointer; padding: 0 4px; }
 .obs-ed-empty { font-size: var(--fs-s); color: var(--ink-muted, #999); padding: 4px 2px; }
 /* Members table. */
+.obs-ed-excl { display: flex; gap: 6px; align-items: center; margin: 0 0 7px; font-size: .92em; }
+.det-obs-excl { opacity: .6; text-decoration: line-through; }   /* on an exclude list: its records are hidden */
 .obs-ed-mwrap { max-height: 30vh; max-height: 30dvh; overflow-y: auto; }   /* long member lists scroll on their own */
 .obs-ed-mtable { width: 100%; border-collapse: collapse; }
 .obs-ed-mtable td { padding: 3px 4px; border-bottom: 1px solid var(--border, #eee); font-size: var(--fs-b); }

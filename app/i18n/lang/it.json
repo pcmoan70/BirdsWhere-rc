@@ -470,7 +470,7 @@
   "maphelp.search": "Ricerca luoghi. Digita almeno due lettere per cercare nomi di luoghi (sono elencate anche le ricerche recenti). Tieni premuto per richiamare i luoghi salvati e volare a uno. Funzionano anche le coordinate – gradi decimali (59.9139, 10.7522), gradi-minuti-secondi (59°54'50\"N 10°45'08\"E) o un link di mappa incollato – e Invio porta direttamente lì. Funziona anche l’UTM con fascia di zona, es. 33V 357344 6731644.",
   "maphelp.offline": "Mappe offline. Scarica le tessere della vista corrente per usare l'area senza connessione. Tieni premuto (o clic destro) per aprire il gestore — le aree scaricate appaiono come cornici colorate con una × per eliminarle, e l'app rioffre il download se il browser le rimuove. Le aree scaricate non contano per la cache delle mappe.",
   "maphelp.legend": "Legenda. Le specie tracciate, ordinate per la probabilità prevista dal modello (bassa → alta). Pulsanti in alto: − riduci a una scheda d'angolo; ☰ apri l'elenco delle rilevazioni (dove sono i filtri tempo, specie e osservatore); una × nera cancella i filtri attivi; una × rossa rimuove tutte le rilevazioni tracciate (attiva l'eliminazione per area quando esistono aree recuperate); ⚠ appare quando il limite di disegno (Impostazioni → Max punti) nasconde punti. Tocca una riga di specie per attivarla/disattivarla — le selezioni si accumulano; passa sopra una riga per isolare quella specie sulla mappa. Tieni premuto (o fai clic destro su) un nome di specie per il suo menu.",
-  "maphelp.detlist": "Elenco rilevazioni. Un elenco a caratteri grandi delle rilevazioni tracciate, ordinato per tempo (raggruppato per data e osservatore) o per specie, nome nella 2ª lingua, conteggio o rarità. La riga dei filtri contiene la finestra temporale (giorni / settimane / mesi, un intervallo da–a e le pastiglie dei mesi), il filtro specie (★ contrassegnata · ◉ localmente rara · 🟡 non nella lista dell'anno · 🔴 non nella tua lista della vita) e il filtro 👤 osservatore. Una ricerca fuzzy di specie appare quando l'elenco è lungo; durante la ricerca, «Seleziona sulla mappa» aggiunge le corrispondenze alla legenda. Il 🎯 di ogni riga vola al record; toccare una riga apre il menu della specie. «Salva come elenco» e «Naviga» creano un percorso tra i punti. L'elenco mostra solo le osservazioni dentro la vista attuale della mappa e segue la mappa quando la sposti o ingrandisci; azzerando i filtri la mappa torna a mostrare tutti i punti scaricati.",
+  "maphelp.detlist": "Elenco rilevazioni. Un elenco a caratteri grandi delle rilevazioni tracciate, ordinato per tempo (raggruppato per data e osservatore) o per specie, nome nella 2ª lingua, conteggio o rarità. La riga dei filtri contiene la finestra temporale (giorni / settimane / mesi, un intervallo da–a e le pastiglie dei mesi), il filtro specie (★ contrassegnata · ◉ localmente rara · 🟡 non nella lista dell'anno · 🔴 non nella tua lista della vita) e il filtro 👤 osservatore. Una ricerca fuzzy di specie appare quando l'elenco è lungo; durante la ricerca, «Seleziona sulla mappa» aggiunge le corrispondenze alla legenda. Il 🎯 di ogni riga vola al record; toccare una riga apre il menu della specie. «Salva come elenco» e «Naviga» creano un percorso tra i punti. L'elenco mostra solo le osservazioni dentro la vista attuale della mappa e segue la mappa quando la sposti o ingrandisci; azzerando i filtri la mappa torna a mostrare tutti i punti scaricati. Tocca il nome di un osservatore per 🙈 Nascondi questo osservatore: le sue osservazioni spariscono ovunque — finisce in una lista di esclusione, gestita (e disattivabile) in ✎ Elenchi osservatori.",
   "ctrl.nearbycount": "Nelle vicinanze — righe mostrate",
   "ctrl.nearbycounthint": "Quante delle rilevazioni più vicine mostra l'elenco Nelle vicinanze, ordinate per distanza dalla croce blu/rossa o dallo spillo posizionato.",
   "ctrl.nearbypoints": "Includi anche i punti attivi della mappa",
@@ -1186,7 +1186,7 @@
   "lists.title": "Gestisci liste",
   "lists.manage": "🐦 Liste…",
   "lists.speciesLists": "Liste di specie…",
-  "lists.observerLists": "Liste di osservatori…",
+  "lists.observerLists": "Elenchi osservatori…",
   "lists.hint": "Aggiungi specie da un menu di specie o da una checklist sul campo. Le specie mancanti dalla lista di quest’anno hanno un bordo giallo sottile sulla mappa; se mancano dalla life list, spesso. Le vecchie liste annuali restano finché non le elimini.",
   "lists.edgesToggle": "Mostra i bordi delle liste annuale/della vita sui segnaposti",
   "lists.life": "Life list",
@@ -1646,5 +1646,13 @@
   "points.tagsAll": "Tutti",
   "points.chipHint": "Clic per alternare: nessun effetto → mostra solo questi → nascondi questi (barrato)",
   "points.tagsAllHint": "Seleziona tutti i tag — o nessuno quando sono tutti selezionati",
-  "photo.holdBig": "Tieni premuto per l’immagine a grandezza intera"
+  "photo.holdBig": "Tieni premuto per l’immagine a grandezza intera",
+  "obs.exclude": "🙈 Nascondi questo osservatore (lista di esclusione)",
+  "obs.unexclude": "👁 Non nascondere più questo osservatore",
+  "obs.excludeListName": "Osservatori nascosti",
+  "obs.excluded": "{name}: osservazioni nascoste — gestisci in ✎ Elenchi osservatori",
+  "obs.unexcluded": "{name}: osservazioni di nuovo visibili",
+  "obs.excludedTip": "Nascosto — in una lista di esclusione (✎ Elenchi osservatori)",
+  "obs.excludeToggle": "Lista di esclusione — nascondi le osservazioni di questi osservatori",
+  "obs.excludeToggleHint": "Le osservazioni di chiunque sia in questa lista sono nascoste ovunque: mappa, liste e conteggi"
 }

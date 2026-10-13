@@ -10457,8 +10457,29 @@
     if (present) { detObsRestored = false; return false; }   // it fits the plotted data → treat as confirmed
     setDetObsFilter(null); saveLegendState(); return true;
   }
+  // Observers hidden everywhere (owner, 2026-10-13: "when clicking an observer, give possibility to add
+  // to exclude list (filter out members). this list is managed in lists"): the members of every observer
+  // list flagged `exclude`. A record with any of them among its observers never shows, whatever the
+  // observer filter says. Rebuilt whenever the stored lists change (save, sync, import).
+  var detObsExcl = null, detObsExclSrc = null;
+  function obsExclSet() {
+    var lists = getObserverLists();
+    if (lists !== detObsExclSrc) {
+      detObsExclSrc = lists; var s = new Set();
+      lists.forEach(function (L) { if (L.exclude) (L.observers || []).forEach(function (n) { s.add(n); }); });
+      detObsExcl = s.size ? s : null;
+    }
+    return detObsExcl;
+  }
+  function detObsExcluded(r) {
+    var ex = obsExclSet(); if (!ex) return false;
+    var nm = rowMemo(r, "_obsN", function (x) { return detObsRealNames((x.observer || "").trim()); });
+    for (var i = 0; i < nm.length; i++) if (ex.has(nm[i])) return true;
+    return false;
+  }
   function detObsPasses(r) {
     if (detDupHidden.has(r)) return false;   // hidden cross-database duplicate (dedup setting)
+    if (detObsExcluded(r)) return false;     // an observer on an exclude list
     if (detFocusObs) return (r.observer || "").indexOf(detFocusObs) >= 0;   // legend hover isolates one observer
     if (!detObsFilter) return true;
     var obs = (r.observer || "").trim();
@@ -15276,7 +15297,7 @@
   // ---- Observer lists -------------------------------------------------------
   // Saved sets of observer names (to filter by).
   function getObserverLists() { return window.GeoState.get("observerLists", []) || []; }
-  function saveObserverLists(a) { window.GeoState.save({ observerLists: a }); }
+  function saveObserverLists(a) { window.GeoState.save({ observerLists: a }); detObsExclSrc = null; }   // (the lists are edited in place: rebuild the exclude set)
   var obsListsDdOpen = false;   // keep the observer-lists dropdown open across re-renders
   // The location checklist is as long as the fetch has distinct place names — hundreds
   // after a wide fetch, which buried every other filter under it. It is a dropdown now,
@@ -15525,7 +15546,13 @@
     return out;
   }
   function openObserverEditor() {
-    var m = createModal({ boxClass: "obs-editor", onClose: function () { if (document.getElementById("det-legend")) updateDetLegend(); } });
+    // who is hidden when the editor opens: if that changed, every surface is re-filtered on close
+    function exclSig() { var x = obsExclSet(); return x ? Array.from(x).sort().join("\n") : ""; }
+    var excl0 = exclSig();
+    var m = createModal({ boxClass: "obs-editor", onClose: function () {
+      if (exclSig() !== excl0) detFiltersRefresh();
+      else if (document.getElementById("det-legend")) updateDetLegend();
+    } });
     var box = m.box, close = m.close;
     var selLi = 0;                         // which list is currently being edited
     function esc(s) { return escapeHtml(s); }
@@ -15572,7 +15599,7 @@
           '<button type="button" class="obs-ed-close" aria-label="' + esc(t("btn.close")) + '">×</button></div>' +
         '<div class="obs-ed-top">' +
           (lists.length ? '<select class="obs-ed-pick">' + lists.map(function (Lx, i) {
-            return '<option value="' + i + '"' + (i === selLi ? " selected" : "") + ">" + esc(Lx.name) + "</option>";
+            return '<option value="' + i + '"' + (i === selLi ? " selected" : "") + ">" + (Lx.exclude ? "🙈 " : "") + esc(Lx.name) + "</option>";
           }).join("") + "</select>" : "") +
           '<button type="button" class="obs-ed-new btn btn-light">＋ ' + esc(t("obs.newList")) + "</button>" +
           '<button type="button" class="obs-ed-import btn btn-light" title="' + esc(t("obs.importHint")) + '">' + esc(t("obs.importList")) + "</button>" +
@@ -15582,6 +15609,7 @@
         html += '<div class="obs-ed-list">' +
           '<div class="obs-ed-lhead"><input type="text" class="obs-ed-lname" value="' + esc(L.name) + '" />' +
             '<button type="button" class="obs-ed-ldel" aria-label="' + esc(t("btn.delete")) + '" title="' + esc(t("btn.delete")) + '">🗑</button></div>' +
+          '<label class="obs-ed-excl" title="' + esc(t("obs.excludeToggleHint")) + '"><input type="checkbox" class="obs-ed-exclcb"' + (L.exclude ? " checked" : "") + " /> " + esc(t("obs.excludeToggle")) + "</label>" +
           '<div class="obs-ed-mwrap"></div>' +
           '<div class="obs-ed-search"><input type="text" class="obs-ed-sinput" placeholder="' + esc(t("obs.searchPh")) + '" />' +
             '<div class="obs-ed-sresults"></div></div>' +
@@ -15625,6 +15653,8 @@
       }
       var nameInp = box.querySelector(".obs-ed-lname");
       if (nameInp) nameInp.addEventListener("change", function () { var a = getObserverLists(); if (a[selLi]) { a[selLi].name = this.value.trim() || a[selLi].name; saveObserverLists(a); } });
+      var exclCb = box.querySelector(".obs-ed-exclcb");
+      if (exclCb) exclCb.addEventListener("change", function () { var a = getObserverLists(); if (a[selLi]) { if (this.checked) a[selLi].exclude = true; else delete a[selLi].exclude; saveObserverLists(a); render(); } });
       var del = box.querySelector(".obs-ed-ldel");
       if (del) del.addEventListener("click", function () { var a = getObserverLists(); a.splice(selLi, 1); saveObserverLists(a); render(); });
       var sinput = box.querySelector(".obs-ed-sinput");
@@ -15688,10 +15718,23 @@
                 : '<button type="button" class="obs-addmenu-item obs-act-filter">' + escapeHtml(t("obs.filterOnly")) + "</button>" +
                   (detObsFilter ? '<button type="button" class="obs-addmenu-item obs-act-addfilter">' + escapeHtml(t("obs.addToFilter")) + "</button>" : "")) +
       (detObsFilter ? '<button type="button" class="obs-addmenu-item obs-act-all">' + escapeHtml(t("obs.removeAll")) + "</button>" : "") +
-      (getObserverLists().length ? '<button type="button" class="obs-addmenu-item obs-act-bylist">' + escapeHtml(t("obs.filterByList")) + " ▸</button>" : "") +
+      (getObserverLists().some(function (l) { return !l.exclude; }) ? '<button type="button" class="obs-addmenu-item obs-act-bylist">' + escapeHtml(t("obs.filterByList")) + " ▸</button>" : "") +
       '<button type="button" class="obs-addmenu-item obs-act-add">' + escapeHtml(t("obs.addToListAct")) + "</button>" +
+      '<button type="button" class="obs-addmenu-item obs-act-excl">' + escapeHtml(t((obsExclSet() && obsExclSet().has(name)) ? "obs.unexclude" : "obs.exclude")) + "</button>" +
       '<button type="button" class="obs-addmenu-item obs-act-editlists">' + escapeHtml(t("obs.editLists")) + "</button>";
     positionAnchoredMenu(menu, r.left, r.bottom + 2);
+    menu.querySelector(".obs-act-excl").addEventListener("click", function (e) {
+      e.stopPropagation(); closeAnchoredMenu();
+      var a = getObserverLists(), was = !!(obsExclSet() && obsExclSet().has(name));
+      if (was) a.forEach(function (L) { if (L.exclude) L.observers = (L.observers || []).filter(function (n) { return n !== name; }); });
+      else {
+        var L = null; a.forEach(function (x) { if (!L && x.exclude) L = x; });
+        if (!L) { L = { name: t("obs.excludeListName"), observers: [], exclude: true }; a.push(L); }   // the first time: the exclude list itself
+        if (L.observers.indexOf(name) < 0) L.observers.push(name);
+      }
+      saveObserverLists(a); detFiltersRefresh();
+      setStatus(t(was ? "obs.unexcluded" : "obs.excluded", { name: name }));
+    });
     var unBtn = menu.querySelector(".obs-act-unfilter");
     if (unBtn) unBtn.addEventListener("click", function (e) {
       e.stopPropagation(); closeAnchoredMenu();
@@ -15719,7 +15762,7 @@
       e.stopPropagation();
       var lists = getObserverLists();
       menu.innerHTML = '<div class="obs-addmenu-head">' + escapeHtml(t("obs.filterByList")) + "</div>" +
-        lists.map(function (l, i) { return '<button type="button" class="obs-addmenu-item obs-bylist-item" data-i="' + i + '">' + escapeHtml(l.name) + " (" + ((l.observers || []).length) + ")</button>"; }).join("");
+        lists.map(function (l, i) { return l.exclude ? "" : '<button type="button" class="obs-addmenu-item obs-bylist-item" data-i="' + i + '">' + escapeHtml(l.name) + " (" + ((l.observers || []).length) + ")</button>"; }).join("");
       positionAnchoredMenu(menu, r.left, r.bottom + 2);
       menu.querySelectorAll(".obs-bylist-item").forEach(function (b) {
         b.addEventListener("click", function (ev) {
@@ -15776,8 +15819,9 @@
       // target that opens the usual observer popup (Show only / Add / Remove / lists) —
       // so tapping the name doesn't just toggle the checkbox. The "(no observer)" row
       // has no popup, so its name is inert.
+      var hid = !!key && !!obsExclSet() && obsExclSet().has(key);   // on an exclude list: its records never show
       var span = key
-        ? '<span class="det-obs-name det-obs-addable" data-obs="' + escapeHtml(key) + '" title="' + escapeHtml(t("obs.addToList")) + '">' + escapeHtml(label) + "</span>"
+        ? '<span class="det-obs-name det-obs-addable' + (hid ? " det-obs-excl" : "") + '" data-obs="' + escapeHtml(key) + '" title="' + escapeHtml(t(hid ? "obs.excludedTip" : "obs.addToList")) + '">' + (hid ? "🙈 " : "") + escapeHtml(label) + "</span>"
         : '<span class="det-obs-name">' + escapeHtml(label) + "</span>";
       return '<div class="det-obs-row"><input type="checkbox" class="det-obs-cb" data-obs="' + escapeHtml(key) + '"' + (on ? " checked" : "") + ' aria-label="' + escapeHtml(label) + '">' + span + "</div>";
     }
@@ -15791,6 +15835,7 @@
     if (oLists.length) {
       head = '<details class="det-obslists-dd"' + (obsListsDdOpen ? " open" : "") + '><summary>' + escapeHtml(t("obs.lists") + ": " + obsFilterLabel()) + "</summary>" +
         '<div class="det-obslists-menu">' + oLists.map(function (L, i) {
+          if (L.exclude) return "";   // an exclude list hides its members; it is not a filter to tick
           return '<label class="sp-list-row"><input type="checkbox" class="det-obslist-tick" data-i="' + i + '"' + (obsListTicked(L) ? " checked" : "") + " /> <span class=\"sp-list-nm\">" + escapeHtml(L.name) + '</span> <span class="sp-list-n">(' + ((L.observers || []).length) + ")</span></label>";
         }).join("") + "</div></details>";
     } else {
