@@ -1349,7 +1349,9 @@ async function render() {
   busy("Shading…"); await tick();
   // ---- smoothing (Gaussian σ m, separable) and gradients
   const bad = new Uint8Array(n * n); let hs = new Float32Array(n * n);
-  for (let k = 0; k < n * n; k++) { bad[k] = h[k] === h[k] ? 0 : 1; hs[k] = bad[k] ? mean : h[k]; }
+  let nMiss = 0;
+  for (let k = 0; k < n * n; k++) { bad[k] = h[k] === h[k] ? 0 : 1; hs[k] = bad[k] ? NaN : h[k]; nMiss += bad[k]; }
+  if (nMiss) { busy("Filling missing DTM tiles…"); await tick(); fillHoles(hs, n); }
   if (sig / c >= 0.3) hs = gauss(hs, n, sig / c);
   const gx = new Float32Array(n * n), gyN = new Float32Array(n * n), slope = new Float32Array(n * n);
   for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
@@ -1385,7 +1387,7 @@ async function render() {
   const comp = placeCompass(best || { x: 0, y: 0 }, areas, pts, R, gam);
   busy("Painting…"); await tick();
   const nrm = paintNormals(gx, gyN, n);
-  const S2 = { lat, lon, X, Y, R, n, c, hs, bad, slope, lo, hi, gam, areas, pts, best, comp, nrm, zone: SRC.zone, bases: {},
+  const S2 = { lat, lon, X, Y, R, n, c, hs, bad, nMiss, slope, lo, hi, gam, areas, pts, best, comp, nrm, zone: SRC.zone, bases: {},
               title: SRC.scene.title || (lat.toFixed(5) + ", " + lon.toFixed(5)) };
   const base = await getBase(S2, $("basemap").value);
   S2.tex = paintBase(S2, base);
@@ -1394,6 +1396,42 @@ async function render() {
 }
 // the block shows the whole ±R square; the round cut-out the circle inside it
 function inView(x, y, R) { return $("shape").value === "disc" ? Math.hypot(x, y) <= R : Math.max(Math.abs(x), Math.abs(y)) <= R; }
+// Missing DTM (tiles that do not exist, or were not fetched) filled with the SMOOTHEST surface that meets
+// the known ground: each missing cell = the mean of its 4 neighbours, i.e. the surface minimising the sum
+// of squared height steps between neighbouring cells (least squares, owner 2026-10-13: "make sure the jump
+// is minimised on average") — no step where it meets real data. Solved coarse to fine: a pyramid of
+// means of known cells, relaxed at the coarsest level, then each finer level starts from the one above
+// and is relaxed (Gauss–Seidel) on its missing cells only.
+function fillHoles(a, n) {
+  const levels = [{ v: a, n }];
+  while (levels[levels.length - 1].n > 48) {
+    const L = levels[levels.length - 1], m = Math.ceil(L.n / 2), v = new Float32Array(m * m);
+    for (let J = 0; J < m; J++) for (let I = 0; I < m; I++) {
+      let s = 0, c = 0;
+      for (let dj = 0; dj < 2; dj++) for (let di = 0; di < 2; di++) { const j = 2 * J + dj, i = 2 * I + di; if (j < L.n && i < L.n) { const x = L.v[j * L.n + i]; if (x === x) { s += x; c++; } } }
+      v[J * m + I] = c ? s / c : NaN;
+    }
+    levels.push({ v, n: m });
+  }
+  const relax = (L, miss, it) => {
+    const v = L.v, m = L.n;
+    for (let t = 0; t < it; t++) for (const k of miss) {
+      const i = k % m, j = (k - i) / m;
+      let s = 0, c = 0;
+      if (i > 0) { s += v[k - 1]; c++; } if (i < m - 1) { s += v[k + 1]; c++; }
+      if (j > 0) { s += v[k - m]; c++; } if (j < m - 1) { s += v[k + m]; c++; }
+      v[k] = s / c;
+    }
+  };
+  for (let li = levels.length - 1; li >= 0; li--) {
+    const L = levels[li], v = L.v, m = L.n, miss = [];
+    for (let k = 0; k < m * m; k++) if (v[k] !== v[k]) miss.push(k);
+    if (!miss.length) continue;
+    if (li === levels.length - 1) { let s = 0, c = 0; for (const x of v) if (x === x) { s += x; c++; } const mu = c ? s / c : 0; for (const k of miss) v[k] = mu; }
+    else { const U = levels[li + 1]; for (const k of miss) { const i = k % m, j = (k - i) / m; v[k] = U.v[Math.min(U.n - 1, j >> 1) * U.n + Math.min(U.n - 1, i >> 1)]; } }
+    relax(L, miss, li === levels.length - 1 ? 400 : 40);
+  }
+}
 // within r cells of no-data or of the window's border (box dilation by running sums, O(n²))
 function edgeBand(bad, n, r) {
   const t = new Uint16Array(n * n), out = new Uint8Array(n * n);
@@ -1448,7 +1486,7 @@ function paintBase(S, base) {
     im = cx.createImageData(n, n); d = im.data;
     for (let k = 0; k < n * n; k++) {
       let r, g, b; const s = slope[k];
-      if (bad[k]) { r = 120; g = 165; b = 205; } else if (s < 30) { r = 205; g = 214; b = 180; } else if (s < 45) { r = 196; g = 186; b = 160; } else { r = 170; g = 160; b = 150; }
+      if (bad[k]) { r = 150; g = 150; b = 150; } else if (s < 30) { r = 205; g = 214; b = 180; } else if (s < 45) { r = 196; g = 186; b = 160; } else { r = 170; g = 160; b = 150; }
       d[4 * k] = r; d[4 * k + 1] = g; d[4 * k + 2] = b; d[4 * k + 3] = 255;
     }
   }
@@ -1478,6 +1516,16 @@ function paintBase(S, base) {
     if (comp && Math.hypot(i - (comp.x + R) / c, j - (R - comp.y) / c) < (RC + 40) / c) continue;
     const t_ = String(Math.round(hs[k] / 25) * 25), w = cx.measureText(t_).width;
     cx.fillStyle = "#faf8eb"; cx.fillRect(i - w / 2 - 3, j - 9, w + 6, 18); cx.fillStyle = "#5a2d0f"; cx.fillText(t_, i, j + 1); placed.push([i, j]);
+  }
+  // where the DTM is missing (filled), everything is greyed and hatched — the shape there is made up
+  if (S.nMiss) {
+    const g = cx.getImageData(0, 0, n, n), q = g.data;
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+      const k = j * n + i; if (!bad[k]) continue;
+      const o = 4 * k, hatch = ((i + j) % 12) < 2 ? 0.55 : 1, gy = (0.3 * q[o] + 0.59 * q[o + 1] + 0.11 * q[o + 2]) * 0.35 + 150 * 0.65;
+      q[o] = q[o + 1] = q[o + 2] = gy * hatch;
+    }
+    cx.putImageData(g, 0, 0);
   }
   // centre mark, 500 m and R circles
   cx.strokeStyle = "#fff"; cx.lineWidth = 3; cx.beginPath(); cx.arc(H2, H2, 6, 0, 7); cx.stroke();
@@ -1741,7 +1789,8 @@ function build(s) {
   na.position.set(0, sample(Math.sin(gr) * (R - 4), Math.cos(gr) * (R - 4)) - S.h0 + 25, -R - 30); world.add(naG);
   // panels
   $("ttl").textContent = "Terrain 3D — " + S.title;
-  $("sub").textContent = S.c + " m grid, " + R + " m radius, " + Math.round(S.lo) + "–" + Math.round(S.hi) + " m a.s.l. · " + S.areas.length + " areas, " + S.pts.length + " points";
+  $("sub").textContent = S.c + " m grid, " + R + " m radius, " + Math.round(S.lo) + "–" + Math.round(S.hi) + " m a.s.l. · " + S.areas.length + " areas, " + S.pts.length + " points" +
+    (S.nMiss ? " · " + (100 * S.nMiss / (S.n * S.n)).toFixed(1) + " % without DTM (filled smoothly, greyed)" : "");
   const views = S.areas.map(a => Object.assign({ kind_: "area" }, a)).concat(S.pts.map(p => Object.assign({ kind_: "point" }, p))).sort((p, q) => p.d - q.d);
   $("listh").textContent = "Views (" + views.length + ")";
   const L = $("items"); L.innerHTML = views.length ? "" : "Nothing marked within the radius.";
@@ -1852,7 +1901,8 @@ canvas.addEventListener("pointermove", ev => {
   const hit = ray.intersectObject(terrain)[0]; if (!hit) { tip.style.display = "none"; return; }
   const x = hit.point.x, y = -hit.point.z, e = S.c;
   const sl = Math.atan(Math.hypot(sample(x + e, y) - sample(x - e, y), sample(x, y + e) - sample(x, y - e)) / (2 * e)) / RAD;
-  let html = Math.round(sample(x, y)) + " m a.s.l. · slope " + Math.round(sl) + "° · " + Math.round(Math.hypot(x, y)) + " m from centre";
+  const ci = Math.floor((x + S.R) / S.c), cj = Math.floor((S.R - y) / S.c), miss = ci >= 0 && cj >= 0 && ci < S.n && cj < S.n && S.bad[cj * S.n + ci];
+  let html = (miss ? "<b>No DTM data here</b> — the surface is a smooth fill · " : "") + Math.round(sample(x, y)) + " m a.s.l. · slope " + Math.round(sl) + "° · " + Math.round(Math.hypot(x, y)) + " m from centre";
   if (SUN && $("lmode").value === "sun") {
     const r = surfIrr(x, y, SUN.p.el, SUN.p.az, SUN.Ib);
     html += "<br>Sun now: " + (SUN.p.el <= 0 ? "below the horizon" : r.sh ? "in terrain shadow" : r.self ? "face turned away" : Math.round(r.w) + " W/m² direct") + " · day total " + dayTotal(x, y).toFixed(1) + " kWh/m² (clear sky, direct)";
