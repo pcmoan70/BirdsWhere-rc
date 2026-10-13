@@ -38,25 +38,48 @@
   #busy span{background:rgba(0,0,0,.8);padding:12px 18px;border-radius:8px}
   label.file{display:inline-block;background:#3d5a80;color:#fff;border-radius:5px;padding:4px 9px;cursor:pointer}
   label.file input{display:none}
+  label.ly{display:flex;align-items:center;gap:6px}
+  .row.lg{flex-wrap:wrap;gap:4px 10px;padding-left:24px;font-size:12px;color:#ccd}
+  .row.lg[hidden]{display:none}
+  #sunBox[hidden]{display:none}
+  .mrange{position:relative;height:26px;margin:4px 0 0}
+  .mrange input[type=range]{position:absolute;left:0;top:4px;width:100%;margin:0;pointer-events:none;background:none;-webkit-appearance:none;appearance:none;height:18px}
+  .mrange input[type=range]::-webkit-slider-thumb{pointer-events:auto;-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#ffd54f;border:2px solid #222;cursor:pointer}
+  .mrange input[type=range]::-moz-range-thumb{pointer-events:auto;width:16px;height:16px;border-radius:50%;background:#ffd54f;border:2px solid #222;cursor:pointer}
+  .mrange input[type=range]::-webkit-slider-runnable-track{background:none}
+  .mrange input[type=range]::-moz-range-track{background:none}
+  .mtrack{position:absolute;left:9px;right:9px;top:11px;height:4px;background:#445;border-radius:2px}
+  .mfill{position:absolute;top:0;height:4px;background:#ffd54f;border-radius:2px}
 </style></head><body>
 <canvas id="c"></canvas>
 <div id="info" class="panel">
   <button class="minb" id="infoMin" title="Minimise / restore">−</button>
   <h1 id="ttl">Terrain 3D</h1>
   <div class="body">
-    <div class="sub" id="sub">Open a folder with 1 m DTM GeoTIFF tiles (and any .geojson / .kml / .kmz overlays).</div>
-    <div class="row"><span class="sw" style="background:#fff;border-radius:50%"></span>centre (white pin, white circles 500 m / radius)</div>
-    <div class="row"><span class="sw" style="background:transparent;border:3px solid #dc1414;border-radius:50%"></span>steepest point</div>
-    <div class="row"><span class="sw" style="background:#bf360c"></span>faces S <span class="sw" style="background:#f57c00"></span>SE / SW <span class="sw" style="background:#ffcc80"></span>E / W</div>
-    <div class="row"><span class="sw" style="background:#7b1fa2"></span>quarry <span class="sw" style="background:#1e88e5"></span>islet <span class="sw" style="background:#9e9e9e;border-radius:50%"></span>point</div>
-    <div class="row"><span class="sw" style="background:#5a2d0f;height:3px;border:0"></span>contours every 5 m, labelled every 25 m</div>
-    <div class="row"><span class="sw" style="background:#faf8eb;border-radius:50%"></span>compass, true north (250 m south of the red ring)</div>
+    <div class="sub" id="sub">A viewer for 1 m terrain models (DTM) of Norway: open a folder with DTM GeoTIFF tiles (Kartverket, any UTM zone) and any .geojson / .kml / .kmz overlays.</div>
     <div class="row">Height ×<input id="ex" type="range" min="1" max="3" step="0.1" value="1.5"><span id="exv">1.5</span></div>
-    <div class="row w">Map <select id="basemap" style="width:auto"><option value="slope">Slope tint</option><option value="kv_topo">Kartverket topo</option><option value="kv_grey">Kartverket greyscale</option><option value="osm">OpenStreetMap (OpenTopoMap)</option><option value="esri_st">Streets (Esri)</option><option value="esri">Aerial (Esri)</option></select>
-      <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="ovl" checked> contours &amp; habitat</label></div>
+    <div class="row w">Map <select id="basemap" style="width:auto"><option value="slope">Plain</option><option value="kv_topo">Kartverket topo</option><option value="kv_grey">Kartverket greyscale</option><option value="osm">OpenStreetMap (OpenTopoMap)</option><option value="esri_st">Streets (Esri)</option><option value="esri">Aerial (Esri)</option></select>
+</div>
     <div class="row w">Shape <select id="shape" style="width:auto"><option value="block">Block with side walls</option><option value="disc">Round cut-out</option></select></div>
     <div class="row"><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="csmooth" checked> Smooth terrain, σ</label><input id="csig" type="number" min="0.5" max="5" step="0.5" value="1.5" style="width:56px"> m</div>
     <div class="row"><button id="reset">Reset view</button><button id="top">Top view</button></div>
+    <div class="sec"><h2>Layers</h2>
+      <div class="row"><label class="ly"><input type="checkbox" id="lyContours" checked> Contours (5 m, labelled every 25 m)</label></div>
+      <div class="row"><label class="ly"><input type="checkbox" id="lySlope"> Slope (NVE steepness classes)</label></div>
+      <div class="row lg" id="lgSlope" hidden></div>
+      <div class="row"><label class="ly"><input type="checkbox" id="lyFacing"> Facing (the way slopes ≥ 15° face)</label></div>
+      <div class="row lg" id="lgFacing" hidden></div>
+      <div class="row"><label class="ly"><input type="checkbox" id="lySun"> Sun: average direct radiation</label></div>
+      <div id="sunBox" hidden style="padding-left:24px">
+        <div class="mrange"><div class="mtrack"><div class="mfill" id="mFill"></div><div class="mfill" id="mFill2"></div></div>
+          <input type="range" id="mFrom" min="1" max="12" step="1" value="1"><input type="range" id="mTo" min="1" max="12" step="1" value="12"></div>
+        <div class="row" style="font-size:12px;justify-content:space-between"><span id="mLbl">Jan – Dec (whole year)</span><button id="mAll" style="padding:1px 7px;font-size:12px">Whole year</button></div>
+        <div class="row lg" style="padding-left:0"><span id="sunLeg"></span></div>
+      </div>
+      <div id="lyFiles"></div>
+      <div class="row"><label class="ly"><input type="checkbox" id="lyMarkers" checked> Centre, circles &amp; steepest point</label></div>
+      <div class="row"><label class="ly"><input type="checkbox" id="lyCompass" checked> Compass (true north)</label></div>
+    </div>
     <div class="sec"><h2>Sun</h2>
       <div class="row w"><select id="lmode" style="width:auto"><option value="sun">Sun at date and time</option><option value="fixed">Fixed light (NW)</option></select>
         <select id="tz" style="width:auto"><option value="eu">Norway time (CET/CEST)</option><option value="utc">UTC</option></select></div>
@@ -1288,9 +1311,9 @@ async function loadFolder(items) {
         tiles.push({ img, bbox: img.getBoundingBox(), res: img.getResolution(), zone: zoneOf(epsg), epsg, nodata: img.getGDALNoData() });
       } else if (nm === "scene.json") scene = JSON.parse(await it.blob.text());
       else if (/^basemap_[\w-]+\.(jpe?g|png)$/.test(nm)) { basemaps[nm] = it.blob; }
-      else if (/\.(geo)?json$/.test(nm)) overlays.push(...parseGeoJSON(JSON.parse(await it.blob.text())));
-      else if (nm.endsWith(".kml")) overlays.push(...parseKML(await it.blob.text()));
-      else if (nm.endsWith(".kmz")) { const z = await unzip(await it.blob.arrayBuffer()); for (const f in z) if (f.toLowerCase().endsWith(".kml")) overlays.push(...parseKML(new TextDecoder().decode(z[f]))); }
+      else if (/\.(geo)?json$/.test(nm)) overlays.push(...parseGeoJSON(JSON.parse(await it.blob.text())).map(o => (o.src = it.name, o)));
+      else if (nm.endsWith(".kml")) overlays.push(...parseKML(await it.blob.text()).map(o => (o.src = it.name, o)));
+      else if (nm.endsWith(".kmz")) { const z = await unzip(await it.blob.arrayBuffer()); for (const f in z) if (f.toLowerCase().endsWith(".kml")) overlays.push(...parseKML(new TextDecoder().decode(z[f])).map(o => (o.src = it.name, o))); }
     } catch (e) { console.warn("skipped", it.name, e); }
     if (++k % 50 === 0) { busy("Reading files… " + k + " / " + items.length); await tick(); }
   }
@@ -1367,10 +1390,10 @@ async function render() {
       const ring = o.rings[0].map(c => P(c[0], c[1]));
       let cx = 0, cy = 0; ring.forEach(p => { cx += p[0]; cy += p[1]; }); cx /= ring.length; cy /= ring.length;
       if (!ring.some(p => inView(p[0], p[1], R))) continue;
-      areas.push({ ring, x: cx, y: cy, d: Math.hypot(cx, cy), name: o.name, desc: o.desc, col: o.color || "#f57c00", kind: o.kind });
+      areas.push({ ring, x: cx, y: cy, d: Math.hypot(cx, cy), name: o.name, desc: o.desc, col: o.color || "#f57c00", kind: o.kind, src: o.src || "" });
     } else {
       const [x, y] = P(o.lon, o.lat); if (!inView(x, y, R)) continue;
-      pts.push({ x, y, d: Math.hypot(x, y), name: o.name, desc: o.desc, col: o.color || "#ffffff", role: o.role, folder: o.folder });
+      pts.push({ x, y, d: Math.hypot(x, y), name: o.name, desc: o.desc, col: o.color || "#ffffff", role: o.role, folder: o.folder, src: o.src || "" });
     }
   }
   // the steepest point: an overlay point with role "steepest" (the habitat rules), else the steepest pixel within 500 m
@@ -1387,7 +1410,7 @@ async function render() {
   const comp = placeCompass(best || { x: 0, y: 0 }, areas, pts, R, gam);
   busy("Painting…"); await tick();
   const nrm = paintNormals(gx, gyN, n);
-  const S2 = { lat, lon, X, Y, R, n, c, hs, bad, nMiss, slope, lo, hi, gam, areas, pts, best, comp, nrm, zone: SRC.zone, bases: {},
+  const S2 = { lat, lon, X, Y, R, n, c, hs, bad, nMiss, slope, gx, gyN, lo, hi, gam, areas, pts, best, comp, nrm, zone: SRC.zone, bases: {},
               title: SRC.scene.title || (lat.toFixed(5) + ", " + lon.toFixed(5)) };
   const base = await getBase(S2, $("basemap").value);
   S2.tex = paintBase(S2, base);
@@ -1478,7 +1501,8 @@ function placeCompass(best, areas, pts, R, gam) {
 // The terrain's picture: the base (slope tint, or a map draped onto the grid), then — with the overlay
 // on — contours, habitat areas and contour labels; the markers (centre, circles, compass) always.
 function paintBase(S, base) {
-  const { hs, slope, bad, n, R, areas, comp, gam, c } = S, ovl = $("ovl").checked;
+  const { hs, slope, bad, n, R, areas, comp, gam, c, gx, gyN } = S;
+  const ovl = $("lyContours").checked, lyS = $("lySlope").checked, lyF = $("lyFacing").checked;
   const cv = document.createElement("canvas"); cv.width = cv.height = n; const cx = cv.getContext("2d");
   let im, d;
   if (base) { cx.drawImage(base, 0, 0, n, n); im = cx.getImageData(0, 0, n, n); d = im.data; }
@@ -1486,8 +1510,28 @@ function paintBase(S, base) {
     im = cx.createImageData(n, n); d = im.data;
     for (let k = 0; k < n * n; k++) {
       let r, g, b; const s = slope[k];
-      if (bad[k]) { r = 150; g = 150; b = 150; } else if (s < 30) { r = 205; g = 214; b = 180; } else if (s < 45) { r = 196; g = 186; b = 160; } else { r = 170; g = 160; b = 150; }
+      if (bad[k]) { r = 150; g = 150; b = 150; } else { r = 214; g = 216; b = 200; }   // plain: the light and the layers do the rest
       d[4 * k] = r; d[4 * k + 1] = g; d[4 * k + 2] = b; d[4 * k + 3] = 255;
+    }
+  }
+  const sunA = $("lySun").checked && S.sunM ? sunAverage(S) : null;
+  if (sunA) {
+    const M = S.sunM, sp = (S.sunHi - S.sunLo) || 1;
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+      const k = j * n + i; if (bad[k]) continue;
+      const v = sunAt(S, (i + 0.5) * c - R, R - (j + 0.5) * c), col = sunRamp((v - S.sunLo) / sp), o = 4 * k, al = 0.68;
+      d[o] = d[o] * (1 - al) + col[0] * al; d[o + 1] = d[o + 1] * (1 - al) + col[1] * al; d[o + 2] = d[o + 2] * (1 - al) + col[2] * al;
+    }
+  }
+  if (lyS || lyF) {
+    const SC = SLOPE_CL.map(x => hexRgb(x[1])), FC = FACE_CL.map(x => hexRgb(x[1]));
+    for (let k = 0; k < n * n; k++) {
+      if (bad[k]) continue;
+      const sl = slope[k]; let col = null, al = 0;
+      if (lyF && sl >= FACE_MIN) { col = FC[Math.round(facingOf(gx[k], gyN[k], gam) / 45) % 8]; al = 0.55; }
+      if (lyS && sl >= 27) { let i = SLOPE_CL.length - 1; while (i > 0 && sl < SLOPE_CL[i][0]) i--; col = SC[i]; al = 0.62; }
+      if (!col) continue;
+      const o = 4 * k; d[o] = d[o] * (1 - al) + col[0] * al; d[o + 1] = d[o + 1] * (1 - al) + col[1] * al; d[o + 2] = d[o + 2] * (1 - al) + col[2] * al;
     }
   }
   // contours: 5 m thin, 25 m bold
@@ -1502,7 +1546,8 @@ function paintBase(S, base) {
   }
   cx.putImageData(im, 0, 0);
   const px = (x, y) => [(x + R) / c, (R - y) / c], H2 = n / 2, L = 180 / c;
-  if (ovl) for (const a of areas) {
+  for (const a of areas) {
+    if (!layerOn(a.src)) continue;
     cx.beginPath(); a.ring.forEach((p, i) => { const [u, v] = px(p[0], p[1]); i ? cx.lineTo(u, v) : cx.moveTo(u, v); }); cx.closePath();
     cx.globalAlpha = .75; cx.fillStyle = a.col; cx.fill(); cx.globalAlpha = 1; cx.lineWidth = 3; cx.strokeStyle = "#0f0f0f"; cx.stroke();
   }
@@ -1528,10 +1573,12 @@ function paintBase(S, base) {
     cx.putImageData(g, 0, 0);
   }
   // centre mark, 500 m and R circles
-  cx.strokeStyle = "#fff"; cx.lineWidth = 3; cx.beginPath(); cx.arc(H2, H2, 6, 0, 7); cx.stroke();
-  cx.lineWidth = 2; for (const rr of [500, R - c]) { cx.beginPath(); cx.arc(H2, H2, rr / c, 0, 7); cx.stroke(); }
+  if ($("lyMarkers").checked) {
+    cx.strokeStyle = "#fff"; cx.lineWidth = 3; cx.beginPath(); cx.arc(H2, H2, 6, 0, 7); cx.stroke();
+    cx.lineWidth = 2; for (const rr of [500, R - c]) { cx.beginPath(); cx.arc(H2, H2, rr / c, 0, 7); cx.stroke(); }
+  }
   // compass rose (true north = gam ° clockwise of the grid's north; image rows run south)
-  if (comp) {
+  if (comp && $("lyCompass").checked) {
     const [u, v] = px(comp.x, comp.y), RC = RCm / c;
     cx.fillStyle = "#faf8eb"; cx.strokeStyle = "#1e1e1e"; cx.lineWidth = 3; cx.beginPath(); cx.arc(u, v, RC, 0, 7); cx.fill(); cx.stroke();
     cx.strokeStyle = "#787878"; cx.lineWidth = 1; cx.beginPath(); cx.arc(u, v, RC * .55, 0, 7); cx.stroke();
@@ -1542,6 +1589,137 @@ function paintBase(S, base) {
     cx.fillStyle = "#1e1e1e"; cx.beginPath(); cx.arc(u, v, 3, 0, 7); cx.fill();
   }
   return cv;
+}
+// ---- layers (owner, 2026-10-13: "allow turning face coloring on and off as general layers in the viewer, —
+// the viewer should be a generic tool for viewing 3d 1m dtm-maps in norway"). Computed from the DTM:
+// contours, slope in NVE's steepness classes (the avalanche-terrain map's colours), and facing (aspect,
+// true directions) for slopes ≥ 15°; plus one layer per loaded overlay file (its polygons and needles),
+// and the markers. A folder's scene.json may name and explain its files: "layers": {file: {title, legend: [[colour, label]…]}}.
+const SLOPE_CL = [[27, "#ffe600", "27–30°"], [30, "#ff9900", "30–35°"], [35, "#ff2a00", "35–40°"], [40, "#b026ff", "40–45°"], [45, "#4a4a4a", "≥ 45°"]];
+const FACE_CL = [["N", "#1e40af"], ["NE", "#0ea5e9"], ["E", "#16a34a"], ["SE", "#ca8a04"], ["S", "#dc2626"], ["SW", "#ea580c"], ["W", "#9333ea"], ["NW", "#4f46e5"]];
+const FACE_MIN = 15;
+const hexRgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+const fileOn = {};                                  // overlay file → shown (default on)
+const layerOn = src => src === "__markers" ? $("lyMarkers").checked : src === "__compass" ? $("lyCompass").checked : fileOn[src || ""] !== false;
+$("lgSlope").innerHTML = SLOPE_CL.map(c => '<span><span class="sw" style="background:' + c[1] + '"></span> ' + c[2] + "</span>").join("");
+$("lgFacing").innerHTML = FACE_CL.map(c => '<span><span class="sw" style="background:' + c[1] + '"></span> ' + c[0] + "</span>").join("");
+function facingOf(gx, gyN, gam) {   // the way the slope faces (downhill), true bearing 0–360
+  return ((Math.atan2(-gx, -gyN) / RAD - gam) % 360 + 360) % 360;
+}
+function fileLayersUI() {
+  const box = $("lyFiles"); box.innerHTML = "";
+  if (!S) return;
+  const meta = (SRC && SRC.scene && SRC.scene.layers) || {}, files = {};
+  S.areas.forEach(a => { (files[a.src] = files[a.src] || { a: 0, p: 0 }).a++; });
+  S.pts.forEach(p => { (files[p.src] = files[p.src] || { a: 0, p: 0 }).p++; });
+  Object.keys(files).sort().forEach(f => {
+    const m = meta[f] || {}, row = document.createElement("div");
+    const cnt = [files[f].a ? files[f].a + " areas" : "", files[f].p ? files[f].p + " points" : ""].filter(Boolean).join(", ");
+    row.innerHTML = '<div class="row"><label class="ly"><input type="checkbox"' + (fileOn[f] !== false ? " checked" : "") + "> " + esc(m.title || f) + ' <span style="color:#99a">(' + cnt + ")</span></label></div>" +
+      (m.legend && m.legend.length ? '<div class="row lg">' + m.legend.map(l => '<span><span class="sw" style="background:' + esc(l[0]) + '"></span> ' + esc(l[1]) + "</span>").join("") + "</div>" : "");
+    row.querySelector("input").onchange = e => { fileOn[f] = e.target.checked; repaint(); applyVis(); renderViews(); };
+    box.appendChild(row);
+  });
+}
+// ---- average sun (owner, 2026-10-13: "a average sun/radiation measure overlay; averaging over dates & time
+// (hourly), user should be able to choose a month-range and get average for that interval (default = whole
+// year) … a slider with two endpoints (do allow december-january as an interval)"). Clear-sky DIRECT radiation
+// on the ground, as kWh/m² per day: for each hour (sun position from the NOAA equations) of two days in each
+// month, beam × cos(incidence on the cell's slope), 0 when the sun is below the cell's own horizon. On a grid
+// of ≤ 250 × 250 cells: each cell's horizon in 32 directions (marched over the terrain inside the view; the
+// world beyond the edge is taken as open), twelve monthly maps computed once, any month range combined from
+// them at once (weighted by the days in each month).
+const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], MDAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+const SUN_RAMP = [[0, [33, 25, 72]], [0.25, [70, 60, 160]], [0.5, [60, 160, 160]], [0.75, [240, 200, 60]], [1, [220, 50, 30]]];
+function sunRamp(t) { t = Math.max(0, Math.min(1, t)); let k = 0; while (k < SUN_RAMP.length - 2 && t > SUN_RAMP[k + 1][0]) k++; const a = SUN_RAMP[k], b = SUN_RAMP[k + 1], f = (t - a[0]) / (b[0] - a[0]); return [0, 1, 2].map(i => a[1][i] + (b[1][i] - a[1][i]) * f); }
+async function sunMonthly(S) {
+  if (S.sunM) return S.sunM;
+  const cs = Math.max(S.c, Math.ceil(2 * S.R / 250)), m = Math.floor(2 * S.R / cs), R = S.R, NS = 32;
+  busy("Sun: the terrain's horizons…"); await tick();
+  const H = new Float32Array(m * m);   // the cells' mean heights
+  for (let J = 0; J < m; J++) for (let I = 0; I < m; I++) {
+    let s = 0, c = 0;
+    for (let y = J * cs; y < (J + 1) * cs; y += S.c) for (let x = I * cs; x < (I + 1) * cs; x += S.c) { s += sample(x + S.c / 2 - R, R - y - S.c / 2); c++; }
+    H[J * m + I] = s / c;
+  }
+  const hz = new Float32Array(m * m * NS), dirs = [];
+  for (let k = 0; k < NS; k++) { const a = 2 * Math.PI * k / NS; dirs.push([Math.sin(a), Math.cos(a)]); }   // grid bearing → (east, north)
+  for (let J = 0; J < m; J++) {
+    for (let I = 0; I < m; I++) {
+      const h0 = H[J * m + I];
+      for (let k = 0; k < NS; k++) {
+        let best = 0; const [dx, dy] = dirs[k];
+        for (let d = 1; ; d++) {
+          const ii = Math.round(I + dx * d), jj = Math.round(J - dy * d);
+          if (ii < 0 || jj < 0 || ii >= m || jj >= m) break;
+          const t = (H[jj * m + ii] - h0) / (d * cs); if (t > best) best = t;
+        }
+        hz[(J * m + I) * NS + k] = best;   // tan of the horizon's elevation
+      }
+    }
+    if (J % 25 === 0) { busy("Sun: the terrain's horizons… " + Math.round(100 * J / m) + " %"); await tick(); }
+  }
+  // the cells' normals (per metre)
+  const nx = new Float32Array(m * m), ny = new Float32Array(m * m), nz = new Float32Array(m * m);
+  for (let J = 0; J < m; J++) for (let I = 0; I < m; I++) {
+    const k = J * m + I, a = (H[J * m + Math.min(m - 1, I + 1)] - H[J * m + Math.max(0, I - 1)]) / (cs * (Math.min(m - 1, I + 1) - Math.max(0, I - 1)));
+    const b = (H[Math.max(0, J - 1) * m + I] - H[Math.min(m - 1, J + 1) * m + I]) / (cs * (Math.min(m - 1, J + 1) - Math.max(0, J - 1)));
+    const L = Math.hypot(a, b, 1); nx[k] = -a / L; ny[k] = -b / L; nz[k] = 1 / L;
+  }
+  const months = [];
+  for (let mo = 0; mo < 12; mo++) {
+    busy("Sun: " + MON[mo] + " …"); await tick();
+    const acc = new Float32Array(m * m), days = [8, 22];
+    for (const dd of days) for (let hr = 0; hr < 24; hr++) {
+      const t = new Date(Date.UTC(YEAR, mo, dd, hr, 30)), p = sunPos(t, S.lat, S.lon);
+      if (p.el <= 0) continue;
+      const doy = doyOf(t), Ib = beam(p.el, doy); if (Ib <= 0) continue;
+      const gb = (p.az + S.gam) * RAD, ce = Math.cos(p.el * RAD), sx = Math.sin(gb) * ce, sy = Math.cos(gb) * ce, sz = Math.sin(p.el * RAD), te = Math.tan(p.el * RAD);
+      let sec = Math.round(((p.az + S.gam) % 360 + 360) % 360 / (360 / NS)) % NS;
+      for (let k = 0; k < m * m; k++) {
+        if (hz[k * NS + sec] >= te) continue;                         // the terrain hides the sun
+        const ci = nx[k] * sx + ny[k] * sy + nz[k] * sz; if (ci > 0) acc[k] += Ib * ci;   // W/m² for one hour = Wh/m²
+      }
+    }
+    for (let k = 0; k < m * m; k++) acc[k] /= days.length;              // Wh/m² per day
+    months.push(acc);
+  }
+  busy(false);
+  return S.sunM = { m, cs, months };
+}
+function monthsChosen() {   // the interval on the two-handle slider, wrapping the new year when From > To
+  const a = +$("mFrom").value, b = +$("mTo").value, out = [];
+  if (a <= b) for (let i = a; i <= b; i++) out.push(i - 1); else { for (let i = a; i <= 12; i++) out.push(i - 1); for (let i = 1; i <= b; i++) out.push(i - 1); }
+  return out;
+}
+function sunAverage(S) {   // kWh/m² per day over the chosen months (day-weighted)
+  const M = S.sunM; if (!M) return null;
+  const ms = monthsChosen(), key = ms.join(","); if (S.sunAvgKey === key) return S.sunAvg;
+  const out = new Float32Array(M.m * M.m); let wd = 0;
+  for (const mo of ms) { const w = MDAYS[mo]; wd += w; const a = M.months[mo]; for (let k = 0; k < out.length; k++) out[k] += a[k] * w; }
+  let lo = Infinity, hi = -Infinity;
+  for (let k = 0; k < out.length; k++) { out[k] /= wd * 1000; if (out[k] < lo) lo = out[k]; if (out[k] > hi) hi = out[k]; }
+  S.sunAvgKey = key; S.sunAvg = out; S.sunLo = lo; S.sunHi = hi;
+  return out;
+}
+function sunAt(S, x, y) {   // the average at a point (bilinear)
+  const M = S.sunM, A = S.sunAvg; if (!M || !A) return null;
+  const u = (x + S.R) / M.cs - 0.5, v = (S.R - y) / M.cs - 0.5, i = Math.max(0, Math.min(M.m - 2, Math.floor(u))), j = Math.max(0, Math.min(M.m - 2, Math.floor(v)));
+  const fx = Math.max(0, Math.min(1, u - i)), fy = Math.max(0, Math.min(1, v - j)), k = j * M.m + i;
+  return (A[k] * (1 - fx) + A[k + 1] * fx) * (1 - fy) + (A[k + M.m] * (1 - fx) + A[k + M.m + 1] * fx) * fy;
+}
+function monthUI() {
+  const a = +$("mFrom").value, b = +$("mTo").value, whole = (a === 1 && b === 12) || (a === b + 1);
+  $("mLbl").textContent = MON[a - 1] + " – " + MON[b - 1] + (whole ? " (whole year)" : a > b ? " (over the new year)" : "");
+  const pc = v => (v - 1) / 11 * 100, f1 = $("mFill"), f2 = $("mFill2");
+  if (a <= b) { f1.style.left = pc(a) + "%"; f1.style.width = (pc(b) - pc(a)) + "%"; f2.style.width = "0"; }
+  else { f1.style.left = pc(a) + "%"; f1.style.width = (100 - pc(a)) + "%"; f2.style.left = "0"; f2.style.width = pc(b) + "%"; }
+}
+function sunLegend(S) {
+  if (!S || !S.sunAvg) { $("sunLeg").textContent = ""; return; }
+  const g = "linear-gradient(90deg," + [0, .25, .5, .75, 1].map(t => "rgb(" + sunRamp(t).map(Math.round).join(",") + ")").join(",") + ")";
+  $("sunLeg").innerHTML = '<span style="display:inline-block;width:110px;height:10px;vertical-align:middle;border-radius:2px;background:' + g + '"></span> ' +
+    S.sunLo.toFixed(1) + " – " + S.sunHi.toFixed(1) + " kWh/m² per day (clear sky, direct)";
 }
 // ---- base maps (owner, 2026-10-13: "lay the OSM streets map or other tiled maps on top"). A map is
 // fetched as Web-Mercator XYZ tiles for the view's box, at the zoom whose pixel is about one grid cell,
@@ -1725,7 +1903,7 @@ canvas.addEventListener("touchmove", ev => {
 canvas.addEventListener("touchend", ev => { if (ev.touches.length < 2) twist = null; }, { passive: true });
 const amb = new THREE.AmbientLight(0xffffff, 0.75), sun = new THREE.DirectionalLight(0xffffff, 0.5);
 scene.add(amb, sun, sun.target);
-let S = null, world = null, terrain = null, needles = [], flags = [], letters = [];
+let S = null, world = null, terrain = null, needles = [], flags = [], letters = [], markers = [], compassObj = null;
 const ray = new THREE.Raycaster(), mv = new THREE.Vector2();
 function sample(x, y) { if (!S) return 0; const n = S.n, i = Math.max(0, Math.min(n - 1, Math.floor((x + S.R) / S.c))), j = Math.max(0, Math.min(n - 1, Math.floor((S.R - y) / S.c))); return S.hs[j * n + i]; }
 
@@ -1754,13 +1932,14 @@ function build(s) {
   terrain = new THREE.Mesh(g, mat); terrain.castShadow = terrain.receiveShadow = true;
   world = new THREE.Group(); world.add(terrain); scene.add(world);
   if (!disc) world.add(buildWalls(pos, m));
-  needles = []; flags = []; letters = [];
-  const pin = (x, y, col, hgt, rad, data) => {
+  needles = []; flags = []; letters = []; markers = [];
+  const pin = (x, y, col, hgt, rad, data, src) => {
     const z = sample(x, y) - S.h0, c = new THREE.Color(col);
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(rad * .15, rad * .15, hgt, 6), new THREE.MeshBasicMaterial({ color: c }));
     pole.position.set(x, z + hgt / 2, -y); world.add(pole);
     const ball = new THREE.Mesh(new THREE.SphereGeometry(rad, 14, 10), new THREE.MeshBasicMaterial({ color: c }));
     ball.position.set(x, z + hgt, -y); world.add(ball); needles.push(pole, ball);
+    pole.userData.src = ball.userData.src = src || (data && data.src) || "__markers";
     if (data) { ball.userData.v = data; flags.push(ball); }
   };
   const ns = Math.max(0.35, Math.min(1.5, S.R / 1000));                         // needle size follows the view's radius
@@ -1768,9 +1947,9 @@ function build(s) {
   if (S.best) {
     const z = sample(S.best.x, S.best.y) - S.h0;
     const ring = new THREE.Mesh(new THREE.TorusGeometry(10 * Math.max(0.5, S.R / 1000), 2.2 * Math.max(0.5, S.R / 1000), 8, 32), new THREE.MeshBasicMaterial({ color: 0xdc1414 }));
-    ring.rotation.x = Math.PI / 2; ring.position.set(S.best.x, z + 4, -S.best.y); world.add(ring);
+    ring.rotation.x = Math.PI / 2; ring.position.set(S.best.x, z + 4, -S.best.y); world.add(ring); markers.push(ring);
     const bp = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 40, 6), new THREE.MeshBasicMaterial({ color: 0xdc1414 }));
-    bp.position.set(S.best.x, z + 24, -S.best.y); world.add(bp); needles.push(bp);
+    bp.position.set(S.best.x, z + 24, -S.best.y); world.add(bp); needles.push(bp); bp.userData.src = "__markers";
   }
   S.areas.forEach(a => pin(a.x, a.y, a.col, 45 * ns, 6 * ns, a));
   S.pts.forEach(p => pin(p.x, p.y, p.col, 28 * ns, 4 * ns, p));
@@ -1786,21 +1965,28 @@ function build(s) {
   // north arrow at the rim (true north)
   const gr = S.gam * RAD, na = new THREE.Mesh(new THREE.ConeGeometry(14, 40, 12), new THREE.MeshBasicMaterial({ color: 0xff5252 }));
   na.rotation.x = -Math.PI / 2; const naG = new THREE.Group(); naG.add(na); naG.rotation.y = -gr;
-  na.position.set(0, sample(Math.sin(gr) * (R - 4), Math.cos(gr) * (R - 4)) - S.h0 + 25, -R - 30); world.add(naG);
+  na.position.set(0, sample(Math.sin(gr) * (R - 4), Math.cos(gr) * (R - 4)) - S.h0 + 25, -R - 30); world.add(naG); compassObj = naG;
   // panels
   $("ttl").textContent = "Terrain 3D — " + S.title;
   $("sub").textContent = S.c + " m grid, " + R + " m radius, " + Math.round(S.lo) + "–" + Math.round(S.hi) + " m a.s.l. · " + S.areas.length + " areas, " + S.pts.length + " points" +
     (S.nMiss ? " · " + (100 * S.nMiss / (S.n * S.n)).toFixed(1) + " % without DTM (filled smoothly, greyed)" : "");
-  const views = S.areas.map(a => Object.assign({ kind_: "area" }, a)).concat(S.pts.map(p => Object.assign({ kind_: "point" }, p))).sort((p, q) => p.d - q.d);
+  fileLayersUI(); renderViews();
+  if ($("lySun").checked) setTimeout(() => $("lySun").onchange(), 0);
+  applyListMin();
+  shadowFrame(); setEx(); if (!keepCam) home(); keepCam = false; updateSun(); daylightIfNight(); resize();
+}
+// the list of views: what the layers that are on show
+function renderViews() {
+  if (!S) return;
+  const views = S.areas.filter(a => layerOn(a.src)).map(a => Object.assign({ kind_: "area" }, a))
+    .concat(S.pts.filter(p => layerOn(p.src)).map(p => Object.assign({ kind_: "point" }, p))).sort((p, q) => p.d - q.d);
   $("listh").textContent = "Views (" + views.length + ")";
-  const L = $("items"); L.innerHTML = views.length ? "" : "Nothing marked within the radius.";
+  const L = $("items"); L.innerHTML = views.length ? "" : "Nothing shown within the view.";
   for (const v of views) {
     const el = document.createElement("div"); el.className = "a";
     el.innerHTML = '<span class="sw" style="margin-right:6px;background:' + v.col + (v.kind_ === "point" ? ';border-radius:50%' : '') + '"></span>' + esc(v.name || (v.kind_ === "area" ? "area" : "point")) + " · " + Math.round(v.d) + " m";
     el.title = v.desc || ""; el.onclick = () => fly(v); L.appendChild(el);
   }
-  applyListMin();
-  shadowFrame(); setEx(); if (!keepCam) home(); keepCam = false; updateSun(); daylightIfNight(); resize();
 }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 function fly(v) { const hy = (sample(v.x, v.y) - S.h0) * world.scale.y; controls.target.set(v.x, hy, -v.y); camera.position.set(v.x + 120, hy + 110, -v.y + 160); controls.update(); draw(); }
@@ -1822,7 +2008,15 @@ $("zin").onclick = () => zoomBy(0.7); $("zout").onclick = () => zoomBy(1 / 0.7);
 function minToggle(panel, btn, after) { btn.onclick = () => { panel.classList.toggle("min"); btn.textContent = panel.classList.contains("min") ? "+" : "−"; if (after) after(); }; }
 minToggle($("info"), $("infoMin"));
 minToggle($("list"), $("listMin"), applyListMin);
-function applyListMin() { const hide = $("list").classList.contains("min"); needles.forEach(o => o.visible = !hide); draw(); }
+// needles: hidden by a minimised list, or by their layer; markers and compass by theirs
+function applyVis() {
+  const hide = $("list").classList.contains("min");
+  needles.forEach(o => o.visible = !hide && layerOn(o.userData.src));
+  markers.forEach(o => o.visible = $("lyMarkers").checked);
+  letters.forEach(o => o.visible = $("lyCompass").checked); if (compassObj) compassObj.visible = $("lyCompass").checked;
+  draw();
+}
+function applyListMin() { applyVis(); }
 if (innerWidth < 600) $("infoMin").onclick();
 
 // ---- the sun
@@ -1902,7 +2096,10 @@ canvas.addEventListener("pointermove", ev => {
   const x = hit.point.x, y = -hit.point.z, e = S.c;
   const sl = Math.atan(Math.hypot(sample(x + e, y) - sample(x - e, y), sample(x, y + e) - sample(x, y - e)) / (2 * e)) / RAD;
   const ci = Math.floor((x + S.R) / S.c), cj = Math.floor((S.R - y) / S.c), miss = ci >= 0 && cj >= 0 && ci < S.n && cj < S.n && S.bad[cj * S.n + ci];
-  let html = (miss ? "<b>No DTM data here</b> — the surface is a smooth fill · " : "") + Math.round(sample(x, y)) + " m a.s.l. · slope " + Math.round(sl) + "° · " + Math.round(Math.hypot(x, y)) + " m from centre";
+  const fx = (sample(x + e, y) - sample(x - e, y)) / (2 * e), fy = (sample(x, y + e) - sample(x, y - e)) / (2 * e);
+  const face = sl >= 3 ? " facing " + FACE_CL[Math.round(facingOf(fx, fy, S.gam) / 45) % 8][0] + " (" + Math.round(facingOf(fx, fy, S.gam)) + "°)" : "";
+  let html = (miss ? "<b>No DTM data here</b> — the surface is a smooth fill · " : "") + Math.round(sample(x, y)) + " m a.s.l. · slope " + Math.round(sl) + "°" + face + " · " + Math.round(Math.hypot(x, y)) + " m from centre";
+  if ($("lySun").checked && S.sunAvg) html += "<br>Sun, average " + $("mLbl").textContent.replace(/ \(.*\)/, "") + ": <b>" + sunAt(S, x, y).toFixed(2) + " kWh/m² per day</b> (clear sky, direct)";
   if (SUN && $("lmode").value === "sun") {
     const r = surfIrr(x, y, SUN.p.el, SUN.p.az, SUN.Ib);
     html += "<br>Sun now: " + (SUN.p.el <= 0 ? "below the horizon" : r.sh ? "in terrain shadow" : r.self ? "face turned away" : Math.round(r.w) + " W/m² direct") + " · day total " + dayTotal(x, y).toFixed(1) + " kWh/m² (clear sky, direct)";
@@ -2059,7 +2256,19 @@ $("fdir").onchange = pick; $("ffiles").onchange = pick;
 $("render").onclick = () => render();
 let keepCam = false;
 $("basemap").onchange = () => repaint();
-$("ovl").onchange = () => repaint();
+$("lyContours").onchange = $("lySlope").onchange = $("lyFacing").onchange = () => { $("lgSlope").hidden = !$("lySlope").checked; $("lgFacing").hidden = !$("lyFacing").checked; repaint(); };
+$("lyMarkers").onchange = $("lyCompass").onchange = () => { repaint(); applyVis(); renderViews(); };
+$("lySun").onchange = async () => {
+  $("sunBox").hidden = !$("lySun").checked;
+  if ($("lySun").checked && S && !S.sunM) await sunMonthly(S);
+  if (S) { sunAverage(S); sunLegend(S); }
+  repaint();
+};
+let sunT = null;
+const sunRange = () => { monthUI(); if (!S || !S.sunM) return; sunAverage(S); sunLegend(S); clearTimeout(sunT); sunT = setTimeout(repaint, 150); };
+$("mFrom").oninput = $("mTo").oninput = sunRange;
+$("mAll").onclick = () => { $("mFrom").value = 1; $("mTo").value = 12; sunRange(); };
+monthUI();
 $("shape").onchange = () => { if (SRC) { keepCam = true; render(); } };
 $("csmooth").onchange = $("csig").onchange = () => { if (SRC) { keepCam = true; render(); } };
 setNow();

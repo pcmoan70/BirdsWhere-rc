@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2089";
+var VERSION = "v2090";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 /terrain3d/: where DTM tiles are missing the surface is filled smoothly (no jumps at the edges) and greyed out.",
+  "\u2022 /terrain3d/ is a general 1 m terrain viewer for Norway: switchable layers \u2014 contours, slope (NVE classes), facing, and the average sun on the ground for any range of months.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
