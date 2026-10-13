@@ -708,6 +708,7 @@
   "kml.fNone": "(ei mitään)",
   "kml.import": "Tuo",
   "kml.imported": "Tuotiin {n} pistettä listaan ”{name}”.",
+  "kml.exactImported": "Ladattiin {lists} lista(a) täsmälleen tallennetun mukaisina: {n} pistettä — värit, epävarmuus, merkit, alueet ja kaikki kentät säilyivät.",
   "kml.none": "Koordinaatteja sisältäviä paikkamerkkejä ei löytynyt.",
   "kml.parseErr": "KML-tiedoston lukeminen epäonnistui.",
   "points.exportEmpty": "Ei vietäviä karttapisteitä.",

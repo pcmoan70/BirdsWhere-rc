@@ -718,6 +718,7 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   paste the share link into *Load from file* and press **🔗 App link** — it copies a BirdsWhere link
   (`…/?drive=<share link>`) that opens the file for them after they sign in. Opening the app with
   `?drive=<share link>` asks once (Sign in & open / Cancel) and drops the parameter.
+- **Saved and shared lists keep everything.** A downloaded KML / KMZ carries each list exactly (a `birdswhere-list` JSON block per list folder — every point field: colour, uncertainty radius, ring marker, circle edge, species, observer, count, place, link, notes, tags — plus the list's areas, tracks, colour and route flag) and, for other apps, each point's colour as an icon style and its fields as ExtendedData (`uncertainty_m`, `unc_edge`, `marker`, …). A GeoJSON download carries the same lists as a `birdswhere-lists` member. Loading such a file (Load from file, drag and drop, several at once, a link, or a Drive share) restores the lists **exactly as saved** — no field-mapping dialog. A share link carries every point field plus the list's areas and tracks on screen.
   **Someone else's file opens view-only:** a file you own (or may edit) on Drive imports as your own
   list; any other — a file shared *with* you — becomes a **read-only shared list**: on the map, in the
   legend and the record popups, and **never** written to the device's store, synced, exported

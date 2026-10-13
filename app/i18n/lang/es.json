@@ -708,6 +708,7 @@
   "kml.fNone": "(ninguno)",
   "kml.import": "Importar",
   "kml.imported": "Se importaron {n} puntos a «{name}».",
+  "kml.exactImported": "Se cargaron {lists} lista(s) tal como se guardaron: {n} puntos — colores, incertidumbre, marcadores, áreas y todos los campos se conservan.",
   "kml.none": "No se encontraron marcadores con coordenadas.",
   "kml.parseErr": "No se pudo leer ese archivo KML.",
   "points.exportEmpty": "No hay puntos del mapa para exportar.",

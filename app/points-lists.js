@@ -613,6 +613,14 @@ window.AppPoints = (function () {
   // A shared file's bytes → the list's points (memory only), read with the default mapping:
   // the placemark's name, its own ExtendedData fields, its note / description, its colour.
   async function fillViewOnly(c, buf) {
+    // a file saved by this app carries its lists exactly (colours, uncertainty, areas, every field)
+    var ex = await exactListsOfBuf(buf);
+    if (ex && ex.length) {
+      var all = [], polys = [], lines = [];
+      ex.forEach(function (o) { (o.points || []).forEach(function (p) { var q = Object.assign({}, p); q.id = mpUid(); q.viewOnly = true; delete q.shared; all.push(q); }); polys = polys.concat(o.polys || []); lines = lines.concat(o.lines || []); if (o.color && !c.color) c.color = o.color; });
+      c.points = all; c.polys = polys; c.lines = lines; delete c._voStub; c.viewOnly = true; internPoints([c]);
+      return all.length;
+    }
     var parsed = await parsePointsBuf(buf);
     var pts = (parsed.marks || []).map(function (pm) {
       var pt = { id: mpUid(), lat: pm.lat, lon: pm.lon, name: pm.name || "", tags: [], note: String(pm.desc || "").trim(), source: "kml", viewOnly: true };
@@ -674,9 +682,66 @@ window.AppPoints = (function () {
   // named lists become <Folder>s, loose pins sit at the document root. Just
   // name / description / Point — no app-specific extensions.
   // colls/loose default to "everything" — the per-list download passes just one list.
-  function buildPointsKml(colls, loose) {
+  // A list exactly as it is stored — every point field (colour, uncertainty, marker, edge, species,
+  // observer, …), its areas and tracks, its colour and route flag — as one JSON block in the KML (or a
+  // foreign member of a GeoJSON). The same block Drive sync's list files carry; a file holding it loads
+  // back exactly as it was saved (owner, 2026-10-13: "when saving and sharing lists … preserve coloring,
+  // uncertainty and all other aspects").
+  var LIST_BLOCK_OPEN = '<Data name="birdswhere-list"><value><![CDATA[', LIST_BLOCK_CLOSE = "]]></value></Data>";
+  function listBody(c) {
+    var body = { v: 1, name: c.name, points: c.points || [] };
+    if (c.polys && c.polys.length) body.polys = c.polys;
+    if (c.lines && c.lines.length) body.lines = c.lines;
+    if (c.color) body.color = c.color;
+    if (c.route) body.route = true;
+    return body;
+  }
+  var bodyJson = function (b) { return JSON.stringify(b, function (k, v) { return k.charAt(0) === "_" || k === "viewOnly" ? undefined : v; }); };
+  function listsFromText(text) {   // every list block in a KML / KMZ text → [{name, points, polys, lines, color, route}]
+    var out = [], at = 0;
+    for (;;) {
+      var a = text.indexOf(LIST_BLOCK_OPEN, at); if (a < 0) break;
+      a += LIST_BLOCK_OPEN.length; var b = text.indexOf(LIST_BLOCK_CLOSE, a); if (b < 0) break;
+      try { var o = JSON.parse(text.slice(a, b).split("]]]]><![CDATA[>").join("]]>")); if (o && Array.isArray(o.points)) out.push(o); } catch (e) {}
+      at = b + LIST_BLOCK_CLOSE.length;
+    }
+    return out;
+  }
+  // Lists loaded exactly as saved: each a new list (its own name, made unique), shown.
+  function importListsExact(lists) {
+    var names = mpCollections.map(function (c) { return c.name; }), n = 0, made = [];
+    lists.forEach(function (o) {
+      var nm = uniqueListName(String(o.name || "list"), names); names.push(nm);
+      var c = { name: nm, points: (o.points || []).map(function (p) { var q = Object.assign({}, p); q.id = mpUid(); delete q.viewOnly; delete q.shared; return q; }) };
+      if (Array.isArray(o.polys) && o.polys.length) c.polys = o.polys;
+      if (Array.isArray(o.lines) && o.lines.length) c.lines = o.lines;
+      if (o.color) c.color = o.color;
+      if (o.route) c.route = true;
+      internPoints([c]); mpCollections.push(c); shownColls[nm] = true; n += c.points.length; made.push(nm);
+    });
+    saveShownState(); saveMapPoints(); renderMapPoints();
+    return { lists: made, points: n };
+  }
+  // a point's own fields as KML ExtendedData, under the names the importer (and other apps) know
+  var ED_SKIP = { id: 1, createdAt: 1, lat: 1, lon: 1, name: 1, note: 1, noteHtml: 1, tags: 1, shared: 1, viewOnly: 1, color: 1 };
+  var ED_NAME = { radius: "uncertainty_m", edge: "unc_edge" };
+  function pointData(p, xml) {
+    var out = "";
+    Object.keys(p).forEach(function (k) {
+      if (ED_SKIP[k] || k.charAt(0) === "_") return;
+      var v = p[k]; if (v == null || v === "" || typeof v === "object") return;
+      out += '<Data name="' + (ED_NAME[k] || k) + '"><value>' + xml(v) + "</value></Data>";
+    });
+    if (p.color) out += '<Data name="color"><value>' + xml(p.color) + "</value></Data>";
+    return out;
+  }
+  function kmlColor(hex) {   // #rrggbb → KML aabbggrr
+    var m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(hex || "")); return m ? "ff" + m[3] + m[2] + m[1] : "";
+  }
+  function buildPointsKml(colls, loose, opts) {
     var xml = function (s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); };
     colls = (colls || mpCollections).filter(function (c) { return !isViewOnly(c); });   // a view-only list is never exported
+    var block = !(opts && opts.noBlock), rich = true;
     loose = loose !== undefined ? loose : (mpActiveName ? [] : mapPoints);
     var parts = ['<?xml version="1.0" encoding="UTF-8"?>',
       '<kml xmlns="http://www.opengis.net/kml/2.2">', "<Document>", "<name>Map points</name>"];
@@ -687,6 +752,11 @@ window.AppPoints = (function () {
       if (tags) desc += (desc ? (isHtml ? "<br>" : "\n") : "") + "Tags: " + tags;
       parts.push("<Placemark>");
       parts.push("<name>" + xml(p.name || "Point") + "</name>");
+      if (rich) {   // other apps (Google Earth …): the point's colour and its fields
+        var kc = kmlColor(p.color || p.spColor);
+        if (kc) parts.push("<Style><IconStyle><color>" + kc + "</color></IconStyle></Style>");
+        var ed = pointData(p, xml); if (ed) parts.push("<ExtendedData>" + ed + "</ExtendedData>");
+      }
       // HTML notes are emitted in a CDATA block (KML's convention for rich text) so
       // they survive the round-trip; plain notes are XML-escaped as before.
       if (desc) parts.push("<description>" + (isHtml ? "<![CDATA[" + desc.replace(/]]>/g, "]]&gt;") + "]]>" : xml(desc)) + "</description>");
@@ -695,7 +765,11 @@ window.AppPoints = (function () {
     };
     colls.forEach(function (c) {
       parts.push("<Folder><name>" + xml(c.name) + "</name>");
+      // the whole list, exactly — what makes the file load back as it was saved
+      if (block) parts.push("<ExtendedData>" + LIST_BLOCK_OPEN + bodyJson(listBody(c)).replace(/]]>/g, "]]]]><![CDATA[>") + LIST_BLOCK_CLOSE + "</ExtendedData>");
+      rich = (c.points || []).length <= 20000;   // a huge list: bare placemarks for other apps (the block above is complete)
       (c.points || []).forEach(placemark);
+      rich = true;
       (c.lines || []).forEach(function (ln) {
         if (!ln || !ln.r || ln.r.length < 2) return;
         parts.push("<Placemark><name>" + xml(ln.n || "Track") + "</name>" + (ln.c ? '<ExtendedData><Data name="color"><value>' + xml(ln.c) + "</value></Data></ExtendedData>" : "") +
@@ -743,13 +817,19 @@ window.AppPoints = (function () {
       if (p.spKey) props.spKey = p.spKey;
       if (p.spColor) props.spColor = p.spColor;
       if (p.date) props.date = p.date;
+      Object.keys(p).forEach(function (k) {   // every other field of the point (observer, count, place, url, …)
+        if (ED_SKIP[k] || k.charAt(0) === "_" || k in props || k === "radius" || k === "edge") return;
+        var v = p[k]; if (v != null && v !== "" && typeof v !== "object") props[k] = v;
+      });
       if (listName) props.list = listName;
       if (p.source === "route" || p._route) props.route = true;   // a route stop stays one through a download + load (owner, 2026-10-04)
       return { type: "Feature", properties: props, geometry: { type: "Point", coordinates: [+(+p.lon).toFixed(6), +(+p.lat).toFixed(6)] } };
     }
     colls.forEach(function (c) { var rt = isRouteColl(c); (c.points || []).forEach(function (p) { if (isFinite(+p.lat) && isFinite(+p.lon)) feats.push(feat(rt ? Object.assign({}, p, { _route: true }) : p, c.name)); }); });
     loose.forEach(function (p) { if (isFinite(+p.lat) && isFinite(+p.lon)) feats.push(feat(p, "")); });
-    return JSON.stringify({ type: "FeatureCollection", features: feats }, null, 2);
+    // the lists exactly as stored ride along as a GeoJSON foreign member (other apps ignore it; this one
+    // loads the file back as it was saved)
+    return JSON.stringify({ type: "FeatureCollection", features: feats, "birdswhere-lists": colls.map(function (c) { return JSON.parse(bodyJson(listBody(c))); }) }, null, 2);
   }
   function exportPointsGeoJson() {
     if (!pointsHasAny()) { setStatus(t("points.exportEmpty")); return; }
@@ -1071,6 +1151,19 @@ window.AppPoints = (function () {
       rd.readAsArrayBuffer(f);
     });
   }
+  // The exact lists a file carries (KML / KMZ list blocks, or a GeoJSON's "birdswhere-lists"), or null.
+  async function exactListsOfBuf(buf) {
+    var h = new Uint8Array(buf, 0, Math.min(4, buf.byteLength || 0)), txt;
+    if (h.length >= 4 && h[0] === 0x50 && h[1] === 0x4B && h[2] === 0x03 && h[3] === 0x04) { try { txt = await extractKmlFromKmz(buf); } catch (e) { return null; } }
+    else txt = new TextDecoder().decode(new Uint8Array(buf)).replace(/^\uFEFF/, "").trim();
+    return exactListsOfText(txt);
+  }
+  function exactListsOfText(txt) {
+    var c0 = txt.charAt(0);
+    if (c0 === "{") { try { var g = JSON.parse(txt); return Array.isArray(g["birdswhere-lists"]) && g["birdswhere-lists"].length ? g["birdswhere-lists"] : null; } catch (e) { return null; } }
+    if (txt.indexOf(LIST_BLOCK_OPEN) < 0) return null;
+    var l = listsFromText(txt); return l.length ? l : null;
+  }
   // Branch on the bytes, not the extension: ZIP magic → KMZ, a leading { or [ → GeoJSON,
   // anything else → KML. Same test the single-file reader uses, minus the share link
   // (a share link is one pasted list, never one of a batch).
@@ -1100,7 +1193,7 @@ window.AppPoints = (function () {
     }
   }
   async function startMultiImport(files) {
-    var items = [], failed = [], shares = [];
+    var items = [], failed = [], shares = [], exactAll = [];
     var taken = mpCollections.map(function (c) { return c.name; });
     for (var i = 0; i < files.length; i++) {
       var f = files[i];
@@ -1116,6 +1209,8 @@ window.AppPoints = (function () {
           shares.push({ name: f.name, txt: new TextDecoder().decode(new Uint8Array(buf)).replace(/^\uFEFF/, "").trim() });
           continue;
         }
+        var exact = await exactListsOfBuf(buf);
+        if (exact && exact.length) { exactAll = exactAll.concat(exact); continue; }
         var parsed = await parsePointsBuf(buf);
         if (parsed.marks.length || (parsed.polys || []).length || (parsed.lines || []).length) {
           var nm = uniqueListName(listNameFromFile(f.name) || f.name, taken);
@@ -1130,8 +1225,10 @@ window.AppPoints = (function () {
       try { await window.AppShare.importShared(shares[si].txt, { asList: true, fileName: shares[si].name, quiet: true }); }
       catch (e) { failed.push(shares[si].name); }
     }
+    if (exactAll.length) { var rx = importListsExact(exactAll); setStatus(t("kml.exactImported", { n: rx.points, lists: rx.lists.length })); }
     if (!items.length) {
       mpLoading(null);
+      if (exactAll.length) return;
       setStatus(shares.length && failed.length < shares.length ? t("share.importedLists", { n: shares.length - failed.length }) : t("kml.none"));
       return;
     }
@@ -2560,6 +2657,7 @@ window.AppPoints = (function () {
     saveShownState: saveShownState, addMapPoint: addMapPoint, updateMapPoint: updateMapPoint,
     deleteMapPoint: deleteMapPoint, mpHasUnsaved: mpHasUnsaved, mpVisible: mpVisible,
     mpAllTags: mpAllTags, mpUid: mpUid, mpParseTags: mpParseTags,
+    exactListsOfText: exactListsOfText, importListsExact: importListsExact,
     deleteCollection: deleteCollection, isCollProtected: isCollProtected, isViewOnly: isViewOnly, ownColls: ownColls, openViewOnly: openViewOnly, fillViewOnly: fillViewOnly, forgetViewOnly: forgetViewOnly, mpLoading: mpLoading,
     setCollProtected: setCollProtected, isRouteColl: isRouteColl,
     openCollEditModal: openCollEditModal, collColor: collColor,

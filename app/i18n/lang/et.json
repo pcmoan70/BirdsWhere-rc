@@ -708,6 +708,7 @@
   "kml.fNone": "(puudub)",
   "kml.import": "Impordi",
   "kml.imported": "Imporditi {n} punkti loendisse „{name}”.",
+  "kml.exactImported": "Laaditi {lists} loendit täpselt nii, nagu need salvestati: {n} punkti — värvid, ebakindlus, märgid, alad ja kõik väljad säilisid.",
   "kml.none": "Koordinaatidega kohamärgiseid ei leitud.",
   "kml.parseErr": "Seda KML-faili ei õnnestunud lugeda.",
   "points.exportEmpty": "Pole kaardipunkte, mida eksportida.",

@@ -708,6 +708,7 @@
   "kml.fNone": "(ingen)",
   "kml.import": "Importér",
   "kml.imported": "Importerede {n} punkter til ”{name}”.",
+  "kml.exactImported": "Indlæste {lists} liste(r) præcis som de blev gemt: {n} punkter — farver, usikkerhed, markører, områder og alle felter bevaret.",
   "kml.none": "Ingen stedmarkører med koordinater fundet.",
   "kml.parseErr": "Kunne ikke læse den KML-fil.",
   "points.exportEmpty": "Ingen kortpunkter at eksportere.",

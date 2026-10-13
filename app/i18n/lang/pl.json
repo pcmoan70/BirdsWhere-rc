@@ -708,6 +708,7 @@
   "kml.fNone": "(brak)",
   "kml.import": "Importuj",
   "kml.imported": "Zaimportowano punkty ({n}) do „{name}”.",
+  "kml.exactImported": "Wczytano {lists} list(y) dokładnie tak, jak zapisano: {n} punktów — kolory, niepewność, znaczniki, obszary i wszystkie pola zachowane.",
   "kml.none": "Nie znaleziono znaczników ze współrzędnymi.",
   "kml.parseErr": "Nie udało się odczytać tego pliku KML.",
   "points.exportEmpty": "Brak punktów na mapie do wyeksportowania.",

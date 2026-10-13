@@ -708,6 +708,7 @@
   "kml.fNone": "(geen)",
   "kml.import": "Importeren",
   "kml.imported": "{n} punten geïmporteerd naar “{name}”.",
+  "kml.exactImported": "{lists} lijst(en) precies zoals opgeslagen geladen: {n} punten — kleuren, onzekerheid, markeringen, gebieden en alle velden behouden.",
   "kml.none": "Geen plaatsmarkeringen met coördinaten gevonden.",
   "kml.parseErr": "Kan dat KML-bestand niet lezen.",
   "points.exportEmpty": "Geen kaartpunten om te exporteren.",

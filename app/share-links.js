@@ -199,17 +199,16 @@ window.AppShare = (function () {
   }
   function packPoints(list) {
     return (list || []).filter(function (p) { return p && isFinite(+p.lat) && isFinite(+p.lon); }).map(function (p) {
+      // EVERY field the point carries (owner, 2026-10-13: "preserve coloring, uncertainty and all other
+      // aspects") — colour, uncertainty radius, marker, circle edge, species, observer, count, place,
+      // link, … — except the device's own bookkeeping
       var o = { lat: p.lat, lon: p.lon };
-      if (p.name) o.name = p.name;
-      if (p.tags && p.tags.length) o.tags = p.tags;
-      if (p.note) o.note = p.note;
-      if (p.noteHtml) o.noteHtml = true;
-      if (p.spKey) o.spKey = p.spKey;
-      if (p.spColor) o.spColor = p.spColor;
-      if (p.color) o.color = p.color;   // keep the point's on-screen colour so a share looks the same
-      if (p.date) o.date = p.date;
-      if (p.count != null && p.count !== "") o.count = p.count;
-      if (p.source === "route") o.source = "route";   // a route stop stays a route stop
+      Object.keys(p).forEach(function (k) {
+        if (k === "id" || k === "createdAt" || k === "shared" || k === "viewOnly" || k === "prob" || k.charAt(0) === "_") return;
+        var v = p[k]; if (v == null || v === "" || (Array.isArray(v) && !v.length)) return;
+        if (k === "source" && v !== "route") return;   // only a route stop's source matters to the recipient
+        o[k] = v;
+      });
       return o;
     });
   }
@@ -231,6 +230,12 @@ window.AppShare = (function () {
     if (!vis.length) { setStatus(t("share.noneVisible")); return; }
     var pts = packPoints(vis.map(function (p) { return Object.assign({}, p, { color: p.color || col || mpColorFor(p) }); }));
     var payload = { v: 1, type: "points", name: name, points: pts }; if (isRoute) payload.route = 1;
+    // the list's areas and tracks that are on screen ride along (a link too big for them becomes a file)
+    var onScreen = function (r) { return (r || []).some(function (v) { return inMapView(v[0], v[1]); }); };
+    var polys = (c.polys || []).filter(function (pg) { return pg && onScreen(pg.r); }), lines = (c.lines || []).filter(function (ln) { return ln && onScreen(ln.r); });
+    if (polys.length) payload.polys = polys;
+    if (lines.length) payload.lines = lines;
+    if (c.color) payload.color = c.color;
     doShare(payload, name);
   }
   // Per-source record-URL prefixes, so a link is stored as just its ID tail (the
@@ -658,6 +663,11 @@ window.AppShare = (function () {
         modalConfirm(t(upd ? "share.updatePrompt" : "share.importPrompt", { name: nm, n: pts.length })).then(function (ok) {
           if (!ok) return;
           var r = importPointsColl(nm, pts);
+          var rc0 = mpState.mpCollections().filter(function (x) { return x.name === r.name; })[0];
+          if (rc0) {   // the sender's areas, tracks and list colour
+            if (Array.isArray(obj.polys)) rc0.polys = obj.polys; if (Array.isArray(obj.lines)) rc0.lines = obj.lines;
+            if (obj.color && !rc0.color) rc0.color = obj.color;
+          }
           if (obj.route) {   // keep it a route: the flag on the list, the source on every stop (order as sent)
             var rc = mpState.mpCollections().filter(function (x) { return x.name === r.name; })[0];
             if (rc) { rc.route = true; (rc.points || []).forEach(function (p) { p.source = "route"; }); }

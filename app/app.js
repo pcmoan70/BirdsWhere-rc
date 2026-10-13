@@ -6762,7 +6762,7 @@
       parts.push("</Folder>", "</Document>", "</kml>");
       kml = parts.join("\n");
     } else {
-      kml = mpState.buildPointsKml([{ name: c.name, points: pts, polys: c.polys, lines: c.lines }], []);
+      kml = mpState.buildPointsKml([{ name: c.name, points: pts, polys: c.polys, lines: c.lines }], [], { noBlock: true });   // the block is added once, below
       var at = kml.indexOf("<Document>");
       kml = kml.slice(0, at + 10) + "\n" + data + kml.slice(at + 10);
     }
@@ -18129,6 +18129,10 @@
       var h = new Uint8Array(buf, 0, Math.min(4, buf.byteLength || 0));
       var isZip = h.length >= 4 && h[0] === 0x50 && h[1] === 0x4B && h[2] === 0x03 && h[3] === 0x04;
       var doneKml = function (kml) {
+        // a file saved by this app (a list block inside) loads exactly as it was saved — colours,
+        // uncertainty, markers, areas, tracks, every field (owner, 2026-10-13)
+        var exact = window.AppPoints.exactListsOfText(kml);
+        if (exact) { var rx = window.AppPoints.importListsExact(exact); done(); mpState.mpLoading(null); setStatus(t("kml.exactImported", { n: rx.points, lists: rx.lists.length })); return; }
         Promise.resolve(startKmlImport(kml, f.name)).then(done, function () { done(); mpState.mpLoading(null); setStatus(t("kml.parseErr")); });
       };
       if (isZip) {
@@ -18138,7 +18142,12 @@
       }
       var txt = new TextDecoder().decode(new Uint8Array(buf)).replace(/^\uFEFF/, "").trim();
       var c0 = txt.charAt(0);
-      if (c0 === "{" || c0 === "[") { startGeoJsonImport(txt, f.name); mpState.mpLoading(null); done(); }
+      if (c0 === "{" || c0 === "[") {
+        var exG = window.AppPoints.exactListsOfText(txt);
+        if (exG) { var rg = window.AppPoints.importListsExact(exG); setStatus(t("kml.exactImported", { n: rg.points, lists: rg.lists.length })); }
+        else startGeoJsonImport(txt, f.name);
+        mpState.mpLoading(null); done();
+      }
       else if (c0 === "<") doneKml(txt);
       else if (allowShare) { importShared(txt, { asList: true, fileName: f.name }); done(); }   // a .share file → a saved point list (the overlay is its job now: decode → prompt → import)
       else doneKml(txt);

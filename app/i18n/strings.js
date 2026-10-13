@@ -231,6 +231,7 @@ window.GeoI18N = (function () {
         "kml.fNone": "(none)",
         "kml.import": "Import",
         "kml.imported": "Imported {n} points to “{name}”.",
+        "kml.exactImported": "Loaded {lists} list(s) exactly as saved: {n} points — colours, uncertainty, markers, areas and every field kept.",
         "kml.none": "No placemarks with coordinates found.",
         "kml.parseErr": "Couldn’t read that KML file.",
         "ctrl.offline": "Offline maps",

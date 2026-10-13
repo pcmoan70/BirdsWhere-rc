@@ -708,6 +708,7 @@
   "kml.fNone": "(nėra)",
   "kml.import": "Importuoti",
   "kml.imported": "Importuota taškų: {n} į „{name}“.",
+  "kml.exactImported": "Įkelta sąrašų: {lists}, tiksliai kaip išsaugota: {n} taškai — spalvos, neapibrėžtumas, žymekliai, plotai ir visi laukai išsaugoti.",
   "kml.none": "Nerasta vietos žymeklių su koordinatėmis.",
   "kml.parseErr": "Nepavyko nuskaityti šio KML failo.",
   "points.exportEmpty": "Nėra žemėlapio taškų eksportuoti.",

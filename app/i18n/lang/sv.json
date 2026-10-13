@@ -316,6 +316,7 @@
   "kml.fNone": "(ingen)",
   "kml.import": "Importera",
   "kml.imported": "Importerade {n} punkter till ”{name}”.",
+  "kml.exactImported": "Läste in {lists} lista/listor precis som de sparades: {n} punkter — färger, osäkerhet, markörer, områden och alla fält behålls.",
   "kml.none": "Inga platsmarkörer med koordinater hittades.",
   "kml.parseErr": "Kunde inte läsa den KML-filen.",
   "points.exportEmpty": "Inga kartpunkter att exportera.",

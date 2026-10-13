@@ -708,6 +708,7 @@
   "kml.fNone": "(žádné)",
   "kml.import": "Importovat",
   "kml.imported": "Importováno {n} bodů do „{name}“.",
+  "kml.exactImported": "Načteno {lists} seznamů přesně tak, jak byly uloženy: {n} bodů — barvy, nejistota, značky, oblasti a všechna pole zachována.",
   "kml.none": "Nenalezeny žádné značky míst se souřadnicemi.",
   "kml.parseErr": "Tento soubor KML se nepodařilo načíst.",
   "points.exportEmpty": "Žádné body na mapě k exportu.",
