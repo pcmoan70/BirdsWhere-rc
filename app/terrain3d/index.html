@@ -39,6 +39,7 @@
   label.file{display:inline-block;background:#3d5a80;color:#fff;border-radius:5px;padding:4px 9px;cursor:pointer}
   label.file input{display:none}
   label.ly{display:flex;align-items:center;gap:6px}
+  button:disabled,select:disabled,input:disabled{opacity:.45;cursor:not-allowed}
   #pmenu{position:fixed;z-index:20;max-width:min(320px,calc(100vw - 24px));padding:8px 10px;font-size:13px}#pmenu a.pbtn{display:block;margin-top:6px;padding:5px 8px;border-radius:6px;background:#2e7d6b;color:#fff;text-decoration:none}
   details.grp{margin:2px 0 4px}details.grp>summary{cursor:pointer;color:#cfd8dc;padding:2px 0}details.grp>:not(summary){padding-left:14px}
   .row.lg{flex-wrap:wrap;gap:4px 10px;padding-left:24px;font-size:12px;color:#ccd}
@@ -2382,8 +2383,26 @@ $("basemap").onchange = () => repaint();
 $("wbSel").onchange = () => repaint();
 $("lyContours").onchange = $("lySlope").onchange = $("lyFacing").onchange = () => { $("lgSlope").hidden = !$("lySlope").checked; $("lgFacing").hidden = !$("lyFacing").checked; repaint(); };
 $("lyMarkers").onchange = $("lyCompass").onchange = () => { repaint(); applyVis(); renderViews(); };
+// the average sun and the sun at a date and time exclude each other (owner, 2026-10-14: "when user toggles Sun:
+// average direct radiation on, the other sunlight controls should gray out and be turned off"): on → the day
+// play stops, the light goes to the fixed (neutral) light, the date / time controls grey out; off → they come
+// back as they were
+let sunPrevMode = null;
+function sunAvgLock(on) {
+  const ids = ["lmode", "tz", "day", "tod", "now", "play"];
+  if (on) {
+    if (playT) $("play").onclick();                                   // stop the day animation
+    if (sunPrevMode === null) sunPrevMode = $("lmode").value;
+    $("lmode").value = "fixed";
+  } else if (sunPrevMode !== null) { $("lmode").value = sunPrevMode; sunPrevMode = null; }
+  ids.forEach(id => { $(id).disabled = on; });
+  ["day", "tod", "lmode", "now"].forEach(id => { $(id).closest(".row").style.opacity = on ? 0.45 : ""; });   // the whole rows dim, labels too
+  $("sunv").style.opacity = on ? 0.45 : "";
+  updateSun();
+}
 $("lySun").onchange = async () => {
   $("sunBox").hidden = !$("lySun").checked;
+  sunAvgLock($("lySun").checked);
   if ($("lySun").checked && S && !S.sunM) await sunMonthly(S);
   if (S) { sunAverage(S); sunLegend(S); }
   repaint();
