@@ -2052,7 +2052,16 @@ function build(s) {
     bp.position.set(S.best.x, z + 24, -S.best.y); world.add(bp); needles.push(bp); bp.userData.src = "__markers";
   }
   S.areas.forEach(a => pin(a.x, a.y, a.col, 45 * ns, 6 * ns, a));
-  S.pts.forEach(p => pin(p.x, p.y, p.col, 28 * ns, 4 * ns, p));
+  // a file's POINTS stand out (owner, 2026-10-14: "make sure the map points are more vividly marked"): a tall
+  // needle, a big ball with a dark outline (a white one on a dark point), and a ring on the ground at the spot
+  S.pts.forEach(p => {
+    pin(p.x, p.y, p.col, 80 * ns, 14 * ns, p);
+    const z = sample(p.x, p.y) - S.h0, c = new THREE.Color(p.col), dark = c.r + c.g + c.b < 0.6;
+    const halo = new THREE.Mesh(new THREE.SphereGeometry(14 * ns * 1.25, 16, 12), new THREE.MeshBasicMaterial({ color: dark ? 0xffffff : 0x111111, side: THREE.BackSide }));
+    halo.position.set(p.x, z + 80 * ns, -p.y); world.add(halo); needles.push(halo); halo.userData.src = p.src || "__markers";
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(24 * ns, 4 * ns, 8, 40), new THREE.MeshBasicMaterial({ color: c }));
+    ring.rotation.x = Math.PI / 2; ring.position.set(p.x, z + 3, -p.y); world.add(ring); needles.push(ring); ring.userData.src = p.src || "__markers";
+  });
   // compass letters (sprites: always face the viewer; outside the height-scaled group)
   if (S.comp) [["N", 0, "#c81e1e"], ["E", 90, "#222"], ["S", 180, "#222"], ["W", 270, "#222"]].forEach(L => {
     const cv = document.createElement("canvas"); cv.width = cv.height = 64; const c2 = cv.getContext("2d");
