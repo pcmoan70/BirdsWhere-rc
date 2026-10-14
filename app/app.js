@@ -15617,7 +15617,7 @@
           '<button type="button" class="obs-ed-close" aria-label="' + esc(t("btn.close")) + '">×</button></div>' +
         '<div class="obs-ed-top">' +
           (lists.length ? '<select class="obs-ed-pick">' + lists.map(function (Lx, i) {
-            return '<option value="' + i + '"' + (i === selLi ? " selected" : "") + ">" + (Lx.exclude ? "🙈 " : "") + esc(Lx.name) + "</option>";
+            return '<option value="' + i + '"' + (i === selLi ? " selected" : "") + ">" + esc(Lx.name) + "</option>";
           }).join("") + "</select>" : "") +
           '<button type="button" class="obs-ed-new btn btn-light">＋ ' + esc(t("obs.newList")) + "</button>" +
           '<button type="button" class="obs-ed-import btn btn-light" title="' + esc(t("obs.importHint")) + '">' + esc(t("obs.importList")) + "</button>" +
@@ -15839,7 +15839,7 @@
       // has no popup, so its name is inert.
       var hid = !!key && !!obsExclSet() && obsExclSet().has(key);   // on an exclude list: its records never show
       var span = key
-        ? '<span class="det-obs-name det-obs-addable' + (hid ? " det-obs-excl" : "") + '" data-obs="' + escapeHtml(key) + '" title="' + escapeHtml(t(hid ? "obs.excludedTip" : "obs.addToList")) + '">' + (hid ? "🙈 " : "") + escapeHtml(label) + "</span>"
+        ? '<span class="det-obs-name det-obs-addable' + (hid ? " det-obs-excl" : "") + '" data-obs="' + escapeHtml(key) + '" title="' + escapeHtml(t(hid ? "obs.excludedTip" : "obs.addToList")) + '">' + escapeHtml(label) + "</span>"
         : '<span class="det-obs-name">' + escapeHtml(label) + "</span>";
       return '<div class="det-obs-row"><input type="checkbox" class="det-obs-cb" data-obs="' + escapeHtml(key) + '"' + (on ? " checked" : "") + ' aria-label="' + escapeHtml(label) + '">' + span + "</div>";
     }

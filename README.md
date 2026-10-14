@@ -601,7 +601,7 @@ The control line opens three mutually-exclusive **filter subwindows**:
   the point popup's mode buttons — **Historic** (switch to Historic with that spot placed, pick the
   range, Fetch) and **Migration** (the Location analysis for that spot; ‹ returns to the list).
 - **👤 Observers** — a checklist of observers with a scope button that cycles **All → None →
-  each saved observer list**, plus an editor (**✎**). Observers on an exclude list show as 🙈 struck
+  each saved observer list**, plus an editor (**✎**). Observers on an exclude list show struck
   through: their records are hidden (see *Observer lists* below).
 
 **Region / "Far migrants" filter** (the funnel's all-filters pane → *Region*). Every species
@@ -755,9 +755,9 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   legend or the detections list) to add them to a list. *Lists → Observer lists… → Import…* loads a
   list from a .csv / .txt file (one observer per line: the first column, or an "observer" column);
   the list is named after the file, and importing the same file again replaces its members.
-  **Hide an observer:** tap their name → *🙈 Hide this observer* puts them on an **exclude list**
+  **Hide an observer:** tap their name → *Hide observer* puts them on an **exclude list**
   (created as "Hidden observers" the first time): records with them among the observers disappear
-  everywhere — map, legend, lists and counts — whatever the observer filter says (*👁 Stop hiding*
+  everywhere — map, legend, lists and counts — whatever the observer filter says (*Show observer again*
   brings them back). Any observer list can be made an exclude list with its *Exclude list* switch in
   *✎ Observer lists*, and switched off there again; exclude lists are not offered as filters.
 - **Stored locations** — from a point's *Location ▸ → 📍 Save location*, name a spot and give it
