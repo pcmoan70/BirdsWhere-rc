@@ -1654,5 +1654,7 @@
   "obs.unexcluded": "{name}: vaatlused jälle nähtavad",
   "obs.excludedTip": "Peidetud — välistusnimekirjas (✎ Vaatlejate loendid)",
   "obs.excludeToggle": "Välistusnimekiri — peida nende vaatlejate vaatlused",
-  "obs.excludeToggleHint": "Kõigi selles nimekirjas olevate vaatlused peidetakse kõikjal: kaart, nimekirjad ja arvud"
+  "obs.excludeToggleHint": "Kõigi selles nimekirjas olevate vaatlused peidetakse kõikjal: kaart, nimekirjad ja arvud",
+  "confusion.cmpSide": "⇆ Võrdle kõrvuti: {a} ja {b}",
+  "confusion.spMenu": "☰ Liigi menüü"
 }

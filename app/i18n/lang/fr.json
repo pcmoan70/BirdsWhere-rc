@@ -1654,5 +1654,7 @@
   "obs.unexcluded": "{name} : observations de nouveau affichées",
   "obs.excludedTip": "Masqué — sur une liste d’exclusion (✎ Listes d'observateurs)",
   "obs.excludeToggle": "Liste d’exclusion — masquer les observations de ces observateurs",
-  "obs.excludeToggleHint": "Les observations de toute personne de cette liste sont masquées partout : carte, listes et comptages"
+  "obs.excludeToggleHint": "Les observations de toute personne de cette liste sont masquées partout : carte, listes et comptages",
+  "confusion.cmpSide": "⇆ Comparer {a} et {b} côte à côte",
+  "confusion.spMenu": "☰ Menu de l’espèce"
 }

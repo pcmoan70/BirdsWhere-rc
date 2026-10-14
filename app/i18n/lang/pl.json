@@ -1654,5 +1654,7 @@
   "obs.unexcluded": "{name}: obserwacje znów widoczne",
   "obs.excludedTip": "Ukryty — na liście wykluczeń (✎ Listy obserwatorów)",
   "obs.excludeToggle": "Lista wykluczeń — ukryj obserwacje tych obserwatorów",
-  "obs.excludeToggleHint": "Obserwacje wszystkich z tej listy są ukryte wszędzie: mapa, listy i liczniki"
+  "obs.excludeToggleHint": "Obserwacje wszystkich z tej listy są ukryte wszędzie: mapa, listy i liczniki",
+  "confusion.cmpSide": "⇆ Porównaj obok siebie: {a} i {b}",
+  "confusion.spMenu": "☰ Menu gatunku"
 }

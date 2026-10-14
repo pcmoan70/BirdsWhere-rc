@@ -1654,5 +1654,7 @@
   "obs.unexcluded": "{name}: havainnot näytetään taas",
   "obs.excludedTip": "Piilotettu — poissulkulistalla (✎ Havainnoijaluettelot)",
   "obs.excludeToggle": "Poissulkulista — piilota näiden havainnoijien havainnot",
-  "obs.excludeToggleHint": "Kaikkien listalla olevien havainnot piilotetaan kaikkialla: kartta, listat ja määrät"
+  "obs.excludeToggleHint": "Kaikkien listalla olevien havainnot piilotetaan kaikkialla: kartta, listat ja määrät",
+  "confusion.cmpSide": "⇆ Vertaa lajeja {a} ja {b} rinnakkain",
+  "confusion.spMenu": "☰ Lajivalikko"
 }

@@ -1654,5 +1654,7 @@
   "obs.unexcluded": "{name}: observaciones visibles de nuevo",
   "obs.excludedTip": "Oculto — en una lista de exclusión (✎ Listas de observadores)",
   "obs.excludeToggle": "Lista de exclusión — ocultar las observaciones de estos observadores",
-  "obs.excludeToggleHint": "Las observaciones de cualquiera de esta lista se ocultan en todas partes: mapa, listas y recuentos"
+  "obs.excludeToggleHint": "Las observaciones de cualquiera de esta lista se ocultan en todas partes: mapa, listas y recuentos",
+  "confusion.cmpSide": "⇆ Comparar {a} y {b} lado a lado",
+  "confusion.spMenu": "☰ Menú de la especie"
 }

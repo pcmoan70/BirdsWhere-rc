@@ -1654,5 +1654,7 @@
   "obs.unexcluded": "{name}: observationer visas igen",
   "obs.excludedTip": "Dold — på en exkluderingslista (✎ Observatörslistor)",
   "obs.excludeToggle": "Exkluderingslista — dölj dessa observatörers observationer",
-  "obs.excludeToggleHint": "Observationer av alla på listan döljs överallt: karta, listor och antal"
+  "obs.excludeToggleHint": "Observationer av alla på listan döljs överallt: karta, listor och antal",
+  "confusion.cmpSide": "⇆ Jämför {a} och {b} sida vid sida",
+  "confusion.spMenu": "☰ Artmeny"
 }

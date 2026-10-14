@@ -1654,5 +1654,7 @@
   "obs.unexcluded": "{name}: waarnemingen weer zichtbaar",
   "obs.excludedTip": "Verborgen — op een uitsluitlijst (✎ Waarnemerslijsten)",
   "obs.excludeToggle": "Uitsluitlijst — waarnemingen van deze waarnemers verbergen",
-  "obs.excludeToggleHint": "Waarnemingen van iedereen op deze lijst worden overal verborgen: kaart, lijsten en tellingen"
+  "obs.excludeToggleHint": "Waarnemingen van iedereen op deze lijst worden overal verborgen: kaart, lijsten en tellingen",
+  "confusion.cmpSide": "⇆ {a} en {b} naast elkaar vergelijken",
+  "confusion.spMenu": "☰ Soortmenu"
 }

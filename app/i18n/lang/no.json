@@ -1654,5 +1654,7 @@
   "obs.unexcluded": "{name}: observasjoner vises igjen",
   "obs.excludedTip": "Skjult — på en ekskluderingsliste (✎ Observatørlister)",
   "obs.excludeToggle": "Ekskluderingsliste — skjul disse observatørenes observasjoner",
-  "obs.excludeToggleHint": "Observasjoner fra alle på denne listen skjules overalt: kart, lister og tellinger"
+  "obs.excludeToggleHint": "Observasjoner fra alle på denne listen skjules overalt: kart, lister og tellinger",
+  "confusion.cmpSide": "⇆ Sammenlign {a} og {b} side om side",
+  "confusion.spMenu": "☰ Artsmeny"
 }

@@ -635,6 +635,8 @@ window.GeoI18N = (function () {
         "confusion.tipHere": "The AI model's probability that this look-alike occurs at the exact location and week you're viewing — so species that aren't around here drop down the list.",
         "confusion.legend": "{match}: the misID model's chance (0–100) that the two birds get confused at equal exposure — names, shape, size, niche, colour; no geography · {misid}: share of real iNaturalist misidentifications, corrected for co-occurrence · {here}: the AI model's chance this look-alike is present here this week · {score}: overall chance of mistaking it here = (0.25 × {match} + 0.75 × {misid}) × {here}; {match} under 10 % or {misid} under 5 % counts as 0 · names: cosine similarity of the two birds' BioCLIP 2 embedding vectors, and each one's rank among the other's nearest",
         "confusion.tipScore": "Overall chance you'd mistake this bird here = (0.25 × Match + 0.75 × misID) × Here. Match and misID are location-free; Here brings in where you are, once. Real, locally-likely confusions rank first; the list is sorted by it. Match below 10 % or misID below 5 % counts as nothing — too slight to be a real confusion.",
+        "confusion.cmpSide": "⇆ Compare {a} and {b} side by side",
+        "confusion.spMenu": "☰ Species menu",
         "confusion.openList": "Show this bird's confusion species",
         "confusion.base": "This species",
         "confusion.toText": "Text",

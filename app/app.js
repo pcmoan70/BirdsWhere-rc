@@ -12981,7 +12981,25 @@
       var pk = c.getAttribute("data-key"), w = null;
       for (var i = 0; i < arr.length; i++) if (arr[i].m.key === pk) { w = arr[i]; break; }
       if (!w) return;
-      openTraitCompare(key, pk, speciesName(lbl), speciesName(w.m), x, y, { match: w.w, mid: w.mid, here: out ? w.p : null, score: out ? confScore(w) : null });
+      confPick(key, lbl, w, out, e.clientX, e.clientY);
+    });
+  }
+  // A look-alike tapped in the confusion window (owner, 2026-10-14: "when user clicks the name of a confusor:
+  // give choice of comparing side by side in addition to the normal species name popup"): compare the two
+  // side by side, or that bird's own species menu.
+  function confPick(key, lbl, w, out, x, y) {
+    var nm = speciesName(w.m), menu = openAnchoredMenu("obs-addmenu");
+    menu.innerHTML = '<div class="obs-addmenu-head">' + escapeHtml(nm) + "</div>" +
+      '<button type="button" class="obs-addmenu-item cp-cmp">' + escapeHtml(t("confusion.cmpSide", { a: speciesName(lbl), b: nm })) + "</button>" +
+      '<button type="button" class="obs-addmenu-item cp-sp">' + escapeHtml(t("confusion.spMenu")) + "</button>";
+    positionAnchoredMenu(menu, x, y);
+    menu.querySelector(".cp-cmp").addEventListener("click", function (e) {
+      e.stopPropagation(); closeAnchoredMenu();
+      openTraitCompare(key, w.m.key, speciesName(lbl), nm, x, y, { match: w.w, mid: w.mid, here: out ? w.p : null, score: out ? confScore(w) : null });
+    });
+    menu.querySelector(".cp-sp").addEventListener("click", function (e) {
+      e.stopPropagation(); closeAnchoredMenu();
+      showDetRowMenu({ key: w.m.key, name: nm, sci: w.m.sci || "" }, x, y, function () {});
     });
   }
   async function openConfusionMenu(key, x, y) {
@@ -13046,7 +13064,7 @@
         probBarCell(mv, mv, "", "conf-match") +
         midCell +
         probCell + scoreCell;
-      (function (w2) { tr.addEventListener("click", function () { openTraitCompare(key, m.key, speciesName(lbl), nm, x, y, { match: w2.w, mid: w2.mid, here: out ? w2.p : null, score: out ? confScore(w2) : null }); }); })(w);
+      (function (w2) { tr.addEventListener("click", function (ev) { confPick(key, lbl, w2, out, ev.clientX, ev.clientY); }); })(w);
       tbl.appendChild(tr);
     });
     el.appendChild(tbl);

@@ -1654,5 +1654,7 @@
   "obs.unexcluded": "{name}: pozorování opět zobrazena",
   "obs.excludedTip": "Skrytý — na seznamu vyloučených (✎ Seznamy pozorovatelů)",
   "obs.excludeToggle": "Seznam vyloučených — skrýt pozorování těchto pozorovatelů",
-  "obs.excludeToggleHint": "Pozorování kohokoli z tohoto seznamu jsou skryta všude: mapa, seznamy i počty"
+  "obs.excludeToggleHint": "Pozorování kohokoli z tohoto seznamu jsou skryta všude: mapa, seznamy i počty",
+  "confusion.cmpSide": "⇆ Porovnat vedle sebe: {a} a {b}",
+  "confusion.spMenu": "☰ Nabídka druhu"
 }

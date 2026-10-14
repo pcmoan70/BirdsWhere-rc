@@ -1654,5 +1654,7 @@
   "obs.unexcluded": "{name}: stebėjimai vėl rodomi",
   "obs.excludedTip": "Paslėptas — išimčių sąraše (✎ Stebėtojų sąrašai)",
   "obs.excludeToggle": "Išimčių sąrašas — slėpti šių stebėtojų stebėjimus",
-  "obs.excludeToggleHint": "Visų šiame sąraše esančių stebėjimai slepiami visur: žemėlapyje, sąrašuose ir skaičiuose"
+  "obs.excludeToggleHint": "Visų šiame sąraše esančių stebėjimai slepiami visur: žemėlapyje, sąrašuose ir skaičiuose",
+  "confusion.cmpSide": "⇆ Palyginti greta: {a} ir {b}",
+  "confusion.spMenu": "☰ Rūšies meniu"
 }

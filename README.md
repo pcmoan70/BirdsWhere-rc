@@ -1099,7 +1099,9 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
   cards**: the species itself first (marked by a thicker green frame), then left to right by Score, wrapping
   onto further rows (two per row on narrow phones). Each card carries the Wikipedia/Commons lead photo
   with its credit, the name, the scientific name and **Match · misID · Here · Score** as small bars;
-  tapping a look-alike opens the same compare card. **Settings → Confusion species** switches between
+  tapping a look-alike (card or table row) offers **⇆ Compare … side by side** (the compare card) or that bird's own
+  **☰ Species menu**. The footer explains the columns, including how Match compares the names (the cosine of their
+  BioCLIP 2 embedding vectors). **Settings → Confusion species** switches between
   *Photo cards* (default) and the *Table*; offline the table is used automatically, and each popup has a
   single **Text / Images** button (top right, next to ×) that switches to the other view on the spot. Photos are shared
   with the Images list layout through the on-device photo cache, so a bird seen there needs no new

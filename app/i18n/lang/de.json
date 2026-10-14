@@ -1654,5 +1654,7 @@
   "obs.unexcluded": "{name}: Beobachtungen werden wieder angezeigt",
   "obs.excludedTip": "Ausgeblendet — auf einer Ausschlussliste (✎ Beobachterlisten)",
   "obs.excludeToggle": "Ausschlussliste — Beobachtungen dieser Beobachter ausblenden",
-  "obs.excludeToggleHint": "Beobachtungen aller Personen auf dieser Liste werden überall ausgeblendet: Karte, Listen und Zählungen"
+  "obs.excludeToggleHint": "Beobachtungen aller Personen auf dieser Liste werden überall ausgeblendet: Karte, Listen und Zählungen",
+  "confusion.cmpSide": "⇆ {a} und {b} nebeneinander vergleichen",
+  "confusion.spMenu": "☰ Artmenü"
 }
