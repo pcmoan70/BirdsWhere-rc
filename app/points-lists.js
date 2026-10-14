@@ -54,6 +54,9 @@ window.AppPoints = (function () {
   var mapPoints = [];
   var mpFilter = [];
   var mpExclude = [];   // tags whose points are HIDDEN (the chip's third state: coloured, crossed out) — owner 2026-10-02
+  // Everything switched off with "All" (owner, 2026-10-14: "when all tags are off all the dots show") — an
+  // empty include list alone means "no filter, show all", so "none" needs its own flag.
+  var mpNone = false;
   var mpShown = true;   // master visibility toggle — hides all markers but keeps the data
   var mpLayer = null;
   // Named collections — saveable/retrievable point lists (e.g. "Owl nests",
@@ -514,6 +517,7 @@ window.AppPoints = (function () {
     mapPoints = (window.GeoState.get("mapPoints", []) || []).filter(function (p) { return p && isFinite(p.lat) && isFinite(p.lon); });
     mpFilter = (window.GeoState.get("mapPointsFilter", []) || []).map(normTag).filter(function (t, i, a) { return a.indexOf(t) === i; });
     mpExclude = (window.GeoState.get("mapPointsExclude", []) || []).map(normTag).filter(function (t, i, a) { return a.indexOf(t) === i; });
+    mpNone = !!window.GeoState.get("mapPointsNone", false);
     // With IndexedDB as the store the lists are already hydrated (initMpSetStore) and
     // the blob no longer carries them — reading it here would wipe them.
     if (!mpIdbReady) mpCollections = (window.GeoState.get("mapPointSets", []) || []).filter(function (c) { return c && c.name; });
@@ -579,7 +583,7 @@ window.AppPoints = (function () {
     var c = mpCollections.filter(function (x) { return x.name === name; })[0]; if (!c) return;
     if (c.viewOnly) return;   // making it the working set would copy its points into the user's own pins
     mapPoints = (c.points || []).map(function (p) { return Object.assign({}, p); });
-    mpActiveName = name; mpFilter = [];
+    mpActiveName = name; mpFilter = []; mpNone = false;
     saveMapPoints(); renderMapPoints();
     var pts = mapPoints.filter(function (p) { return isFinite(p.lat) && isFinite(p.lon); });
     if (pts.length && getMap()) { try { getMap().fitBounds(L.latLngBounds(pts.map(function (p) { return [p.lat, p.lon]; })).pad(0.2)); } catch (e) {} }
@@ -779,7 +783,8 @@ window.AppPoints = (function () {
         if (!pg || !pg.r || pg.r.length < 3) return;
         var ring = pg.r.map(function (v) { return Number(v[1]).toFixed(5) + "," + Number(v[0]).toFixed(5) + ",0"; });
         if (ring[0] !== ring[ring.length - 1]) ring.push(ring[0]);
-        var ed = (pg.c ? '<Data name="color"><value>' + xml(pg.c) + "</value></Data>" : "") + (pg.f === 0 ? '<Data name="fill"><value>0</value></Data>' : "");
+        var ed = (pg.c ? '<Data name="color"><value>' + xml(pg.c) + "</value></Data>" : "") + (pg.f === 0 ? '<Data name="fill"><value>0</value></Data>' : "") +
+          (pg.t && pg.t.length ? '<Data name="tags"><value>' + xml(pg.t.join("; ")) + "</value></Data>" : "");
         parts.push("<Placemark><name>" + xml(pg.n || "Area") + "</name>" + (ed ? "<ExtendedData>" + ed + "</ExtendedData>" : "") +
                    "<Polygon><outerBoundaryIs><LinearRing><coordinates>" + ring.join(" ") + "</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>");
       });
@@ -1107,6 +1112,10 @@ window.AppPoints = (function () {
     var nm = pm.getElementsByTagName("name")[0];
     var out = { r: ring, c: col || "", n: nm ? (nm.textContent || "").trim() : "" };
     if (kmlNoFill(pm)) out.f = 0;   // outline only (a search radius, an uncertainty circle)
+    // the area's own tags (<Data name="tags">: "a; b"): it then follows the tag chips like a pin (owner,
+    // 2026-10-14: the owl list's uncertainty circles stayed when a tag was selected)
+    var tg = kmlData(pm, "tags");
+    if (tg) { var ts = []; String(tg).split(/[;,|]/).forEach(function (x) { x = normTag(x); if (x && ts.indexOf(x) < 0) ts.push(x); }); if (ts.length) out.t = ts; }
     return out;
   }
   // One KML <LineString> → { r: [[lat, lon], …], c: colour, n: name } (colour as for an area).
@@ -1982,7 +1991,7 @@ window.AppPoints = (function () {
   function clearMapPoints() {
     // Detach first so we don't sync the now-empty working set onto the saved
     // list — the named list survives "Delete"; only the live pins are cleared.
-    mpActiveName = ""; mapPoints = []; mpFilter = []; saveMapPoints(); renderMapPoints();
+    mpActiveName = ""; mapPoints = []; mpFilter = []; mpNone = false; saveMapPoints(); renderMapPoints();
   }
   // Distinct tag pool across all stored points, alphabetically sorted.
   function mpAllTags() {
@@ -2107,7 +2116,7 @@ window.AppPoints = (function () {
       if (!tags.length) { if (mpExclude.indexOf("") >= 0) return false; }
       else for (var x = 0; x < tags.length; x++) if (mpExclude.indexOf(tags[x]) >= 0) return false;
     }
-    if (!mpFilter.length) return true;
+    if (!mpFilter.length) return !mpNone;   // nothing included: all shown — unless everything was switched off
     if (!tags.length) return mpFilter.indexOf("") >= 0;
     for (var i = 0; i < tags.length; i++) if (mpFilter.indexOf(tags[i]) >= 0) return true;
     return false;
@@ -2617,6 +2626,7 @@ window.AppPoints = (function () {
         if (!pg || !pg.r || pg.r.length < 3) return;
         var bb = pbb;
         if (bb) { var inV = false; for (var q = 0; q < pg.r.length && !inV; q++) { var v = pg.r[q]; if (v[0] >= bb[0] && v[0] <= bb[2] && v[1] >= bb[1] && v[1] <= bb[3]) inV = true; } if (!inV) return; }
+        if (pg.t && pg.t.length && !mpTagPasses({ tags: pg.t })) return;   // a tagged area follows the tag chips; an untagged one always shows
         var pc = pg.c || collColor(c);
         mpLayer.addLayer(L.polygon(pg.r, { color: pc, weight: pg.f === 0 ? 1.5 : 1, opacity: 0.6, fillColor: pc, fillOpacity: pg.f === 0 ? 0 : 0.25, interactive: false }));
       });
@@ -2698,6 +2708,7 @@ window.AppPoints = (function () {
     setMpFilter: function (v) { mpFilter = v; }, detKeyOf: detKeyOf, mpTagPasses: mpTagPasses,
     collCount: collCount, anyLazy: anyLazy, whenAllLoaded: whenAllLoaded, hydrateOne: hydrateOne,
     mpExclude: function () { return mpExclude; }, setMpExclude: function (v) { mpExclude = v; },
+    mpNone: function () { return mpNone; }, setMpNone: function (v) { mpNone = !!v; },
     mpShown: function () { return mpShown; },
     setMpShown: function (v) { mpShown = v; },
     mpLayer: function () { return mpLayer; },

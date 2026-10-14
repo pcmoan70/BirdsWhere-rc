@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2099";
+var VERSION = "v2100";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Imported KML/KMZ areas drawn as outlines only when the file says so, in the file\u2019s own line colour (uncertainty circles no longer filled).",
+  "\u2022 Points tag chips: a lit chip means its points are shown. Tap to hide or show; \u201cAll\u201d switches everything off, then tap the tags to show. A list\u2019s tagged areas follow the chips too.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
