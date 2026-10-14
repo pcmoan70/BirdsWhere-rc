@@ -1,5 +1,5 @@
 {
- "_version": "v2098",
+ "_version": "v2099",
  "./": "b8b6f8532cb02ce5",
  "index.html": "b8b6f8532cb02ce5",
  "f/index.html": "33e8fb93adaefc8c",
@@ -8,7 +8,7 @@
  "app.js": "4f3507c17a86ac57",
  "rarity.js": "7fe4944309aaa9d5",
  "offline-maps.js": "61c707f5cc96f4f7",
- "points-lists.js": "d474bc6a7ec72bac",
+ "points-lists.js": "331cbb6cf36732a4",
  "site-overlays.js": "f965ad7653d886e6",
  "share-links.js": "a461902fd24b4a61",
  "field-checklist.js": "ac84d00227149098",

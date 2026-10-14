@@ -1071,14 +1071,26 @@ window.AppPoints = (function () {
     for (var d = 0; d < ds.length; d++) if (ds[d].getAttribute("name") === name) { var vv = ds[d].getElementsByTagName("value")[0]; return vv ? (vv.textContent || "").trim() : ""; }
     return "";
   }
-  // An area's / line's colour: <Data name="color">, else its style's PolyStyle / LineStyle colour.
+  // A placemark's shared style (<styleUrl>#id → <Style id>) or its own inline <Style>.
+  function kmlStyleOf(pm) {
+    var suEl = pm.getElementsByTagName("styleUrl")[0], sref = suEl ? (suEl.textContent || "").trim().replace(/^#/, "") : "";
+    return (sref ? pm.ownerDocument.querySelector('Style[id="' + sref.replace(/"/g, "") + '"]') : null) || pm.getElementsByTagName("Style")[0] || null;
+  }
+  // An area's / line's colour: <Data name="color">, else its style's PolyStyle colour, else its LineStyle
+  // colour (an outline-only style has a line colour and no fill colour).
   function kmlShapeColor(pm) {
     var col = kmlData(pm, "color"); if (col) return col;
-    var suEl = pm.getElementsByTagName("styleUrl")[0], sref = suEl ? (suEl.textContent || "").trim().replace(/^#/, "") : "";
-    var st = sref ? pm.ownerDocument.querySelector('Style[id="' + sref.replace(/"/g, "") + '"]') : null;
-    var ps = st && (st.getElementsByTagName("PolyStyle")[0] || st.getElementsByTagName("LineStyle")[0]);
-    var pc = ps && ps.getElementsByTagName("color")[0];
+    var st = kmlStyleOf(pm); if (!st) return "";
+    var ps = st.getElementsByTagName("PolyStyle")[0], ls = st.getElementsByTagName("LineStyle")[0];
+    var pc = (ps && ps.getElementsByTagName("color")[0]) || (ls && ls.getElementsByTagName("color")[0]);
     return pc ? kmlColorToHex(pc.textContent) : "";
+  }
+  // Outline only: <Data name="fill">0, or the style's own <PolyStyle><fill>0</fill> (owner, 2026-10-14: "do not
+  // fill the circles of uncertainty, draw only border in color of central dot").
+  function kmlNoFill(pm) {
+    if (kmlData(pm, "fill") === "0") return true;
+    var st = kmlStyleOf(pm), ps = st && st.getElementsByTagName("PolyStyle")[0], f = ps && ps.getElementsByTagName("fill")[0];
+    return !!f && (f.textContent || "").trim() === "0";
   }
   // One KML <Polygon> → { r: [[lat, lon], …] outer ring (5 dp ≈ 1 m), c: colour, n: name }. The
   // colour: a <Data name="color">, else the style's PolyStyle / LineStyle colour, else none.
@@ -1091,10 +1103,10 @@ window.AppPoints = (function () {
       if (isFinite(la) && isFinite(lo)) ring.push([Math.round(la * 1e5) / 1e5, Math.round(lo * 1e5) / 1e5]);
     });
     if (ring.length < 3) return null;
-    var col = kmlShapeColor(pm), fill = kmlData(pm, "fill");
+    var col = kmlShapeColor(pm);
     var nm = pm.getElementsByTagName("name")[0];
     var out = { r: ring, c: col || "", n: nm ? (nm.textContent || "").trim() : "" };
-    if (fill === "0") out.f = 0;   // outline only (e.g. a search radius)
+    if (kmlNoFill(pm)) out.f = 0;   // outline only (a search radius, an uncertainty circle)
     return out;
   }
   // One KML <LineString> → { r: [[lat, lon], …], c: colour, n: name } (colour as for an area).
