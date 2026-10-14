@@ -1330,6 +1330,9 @@ async function loadFolder(items) {
   const zones = [...new Set(tiles.map(t => t.zone))];
   if (zones.length > 1 || !zones[0]) { $("dsrc").textContent = "The tiles must share one UTM zone (EPSG 258xx / 326xx); found " + [...new Set(tiles.map(t => t.epsg))].join(", "); return; }
   SRC = { tiles, overlays, scene, zone: zones[0] };
+  // the Birds group starts switched off (owner, 2026-10-14: "by default all bird settings should be turned off"):
+  // Slope and Facing are off in the page; a file layer the folder files under "birds" starts off too
+  for (const f in (scene.layers || {})) if ((scene.layers[f] || {}).group === "birds" && fileOn[f] === undefined) fileOn[f] = false;
   // a packaged map draped onto this very view (offline): offered first
   if (scene.basemap && basemaps[String(scene.basemap.file || "").toLowerCase()]) { SRC.basemapBlob = basemaps[String(scene.basemap.file).toLowerCase()]; $("basemap").value = scene.basemap.id; }
   // the centre: scene.json, else what is typed, else the middle of the tiles
