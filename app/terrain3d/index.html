@@ -64,7 +64,6 @@
     <div class="row w">Map <select id="basemap" style="width:auto"><option value="slope">Plain</option><option value="kv_topo">Kartverket topo</option><option value="kv_grey">Kartverket greyscale</option><option value="osm">OpenStreetMap (OpenTopoMap)</option><option value="cyclosm">Paths &amp; cycling (CyclOSM)</option><option value="esri_st">Streets (Esri)</option><option value="esri">Aerial (Esri)</option><option value="wayback">Aerial, earlier photos (Esri Wayback)</option></select>
 </div>
     <div class="row w" id="wbRow" hidden>Photo <select id="wbSel" style="width:auto;max-width:230px"></select></div>
-    <div class="row w">Shape <select id="shape" style="width:auto"><option value="block">Block with side walls</option><option value="disc">Round cut-out</option></select></div>
     <div class="row"><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="csmooth" checked> Smooth terrain, σ</label><input id="csig" type="number" min="0.5" max="5" step="0.5" value="1.5" style="width:56px"> m</div>
     <div class="row"><button id="reset">Reset view</button><button id="top">Top view</button></div>
     <div class="sec"><h2>Layers</h2>
@@ -1430,8 +1429,8 @@ async function render() {
   busy(false);
   build(S2);
 }
-// the block shows the whole ±R square; the round cut-out the circle inside it
-function inView(x, y, R) { return $("shape").value === "disc" ? Math.hypot(x, y) <= R : Math.max(Math.abs(x), Math.abs(y)) <= R; }
+// the block shows the whole ±R square
+function inView(x, y, R) { return Math.max(Math.abs(x), Math.abs(y)) <= R; }   // the block: the whole ±R square
 // Missing DTM (tiles that do not exist, or were not fetched) filled with the SMOOTHEST surface that meets
 // the known ground: each missing cell = the mean of its 4 neighbours, i.e. the surface minimising the sum
 // of squared height steps between neighbouring cells (least squares, owner 2026-10-13: "make sure the jump
@@ -1570,7 +1569,7 @@ function paintBase(S, base) {
   for (let t = 0; ovl && t < 40000 && placed.length < 400; t++) {
     const i = 6 * Math.floor(rnd() * (n / 6 - 1)), j = 6 * Math.floor(rnd() * (n / 6 - 1)), k = j * n + i;
     if (bad[k] || Math.floor(hs[k] / 25) === Math.floor(hs[k + 1] / 25) && Math.floor(hs[k] / 25) === Math.floor(hs[k + n] / 25)) continue;
-    if ((($("shape").value === "disc") ? Math.hypot(i - H2, j - H2) : Math.max(Math.abs(i - H2), Math.abs(j - H2))) > (R - 30) / c || placed.some(p => Math.abs(p[0] - i) < L && Math.abs(p[1] - j) < L)) continue;
+    if (Math.max(Math.abs(i - H2), Math.abs(j - H2)) > (R - 30) / c || placed.some(p => Math.abs(p[0] - i) < L && Math.abs(p[1] - j) < L)) continue;
     if (comp && Math.hypot(i - (comp.x + R) / c, j - (R - comp.y) / c) < (RC + 40) / c) continue;
     const t_ = String(Math.round(hs[k] / 25) * 25), w = cx.measureText(t_).width;
     cx.fillStyle = "#faf8eb"; cx.fillRect(i - w / 2 - 3, j - 9, w + 6, 18); cx.fillStyle = "#5a2d0f"; cx.fillText(t_, i, j + 1); placed.push([i, j]);
@@ -2013,7 +2012,6 @@ function build(s) {
   if (world) { scene.remove(world); world.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); if (o.material.normalMap) o.material.normalMap.dispose(); o.material.dispose(); } }); letters.forEach(l => scene.remove(l)); }
   S = s; S.h0 = S.lo; measObj = []; measPts = []; if ($("meas")) $("meas").hidden = !measOn;
   const n = S.n, R = S.R, cm = S.c, st = Math.max(1, Math.ceil(n / 1000)), m = Math.floor((n - 1) / st) + 1;   // ≤ ~1000² vertices
-  const disc = $("shape").value === "disc";
   const pos = new Float32Array(m * m * 3), uv = new Float32Array(m * m * 2);
   for (let r = 0; r < m; r++) for (let c = 0; c < m; c++) {
     const k = r * m + c, i = c * st, j = r * st;
@@ -2022,7 +2020,6 @@ function build(s) {
   }
   const idx = [];
   for (let r = 0; r < m - 1; r++) for (let c = 0; c < m - 1; c++) {
-    const x = (c + 0.5) * st * cm - R, z = (r + 0.5) * st * cm - R; if (disc && x * x + z * z > R * R) continue;
     const a = r * m + c, b = a + 1, d = a + m, e = d + 1; idx.push(a, d, b, b, d, e);
   }
   const g = new THREE.BufferGeometry();
@@ -2033,7 +2030,7 @@ function build(s) {
   const mat = new THREE.MeshPhongMaterial({ map: tex, normalMap: ntex, normalMapType: THREE.ObjectSpaceNormalMap, shininess: 0, specular: 0x000000 });
   terrain = new THREE.Mesh(g, mat); terrain.castShadow = terrain.receiveShadow = true;
   world = new THREE.Group(); world.add(terrain); scene.add(world);
-  if (!disc) world.add(buildWalls(pos, m));
+  world.add(buildWalls(pos, m));   // always the block with side walls
   needles = []; flags = []; letters = []; markers = [];
   const pin = (x, y, col, hgt, rad, data, src) => {
     const z = sample(x, y) - S.h0, c = new THREE.Color(col);
@@ -2412,7 +2409,6 @@ const sunRange = () => { monthUI(); if (!S || !S.sunM) return; sunAverage(S); su
 $("mFrom").oninput = $("mTo").oninput = sunRange;
 $("mAll").onclick = () => { $("mFrom").value = 1; $("mTo").value = 12; sunRange(); };
 monthUI();
-$("shape").onchange = () => { if (SRC) { keepCam = true; render(); } };
 $("csmooth").onchange = $("csig").onchange = () => { if (SRC) { keepCam = true; render(); } };
 setNow();
 // a standalone file carries its folder inside
