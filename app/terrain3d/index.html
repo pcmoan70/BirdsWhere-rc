@@ -76,13 +76,6 @@
       <div class="row lg" id="lgFacing" hidden></div>
       <div id="lyFilesBirds"></div>
       </details>
-      <div class="row"><label class="ly"><input type="checkbox" id="lySun"> Sun: average direct radiation</label></div>
-      <div id="sunBox" hidden style="padding-left:24px">
-        <div class="mrange"><div class="mtrack"><div class="mfill" id="mFill"></div><div class="mfill" id="mFill2"></div></div>
-          <input type="range" id="mFrom" min="1" max="12" step="1" value="1"><input type="range" id="mTo" min="1" max="12" step="1" value="12"></div>
-        <div class="row" style="font-size:12px;justify-content:space-between"><span id="mLbl">Jan – Dec (whole year)</span><button id="mAll" style="padding:1px 7px;font-size:12px">Whole year</button></div>
-        <div class="row lg" style="padding-left:0"><span id="sunLeg"></span></div>
-      </div>
       <div id="lyFiles"></div>
       <div class="row"><label class="ly"><input type="checkbox" id="lyMarkers" checked> Centre, circles &amp; steepest point</label></div>
       <div class="row"><label class="ly"><input type="checkbox" id="lyCompass" checked> Compass (true north)</label></div>
@@ -94,6 +87,14 @@
       <div class="row">Time <input id="tod" type="range" min="0" max="1435" step="5"><span id="todv" style="min-width:52px"></span></div>
       <div class="row"><button id="now">Now</button><button id="play">▶ Day</button></div>
       <div class="sub" id="sunv"></div>
+      <!-- the average over a month range, with the other sun controls (owner, 2026-10-14: "move the control for sun average direction down to the other sun control") -->
+      <div class="row"><label class="ly"><input type="checkbox" id="lySun"> Sun: average direct radiation</label></div>
+      <div id="sunBox" hidden style="padding-left:24px">
+        <div class="mrange"><div class="mtrack"><div class="mfill" id="mFill"></div><div class="mfill" id="mFill2"></div></div>
+          <input type="range" id="mFrom" min="1" max="12" step="1" value="1"><input type="range" id="mTo" min="1" max="12" step="1" value="12"></div>
+        <div class="row" style="font-size:12px;justify-content:space-between"><span id="mLbl">Jan – Dec (whole year)</span><button id="mAll" style="padding:1px 7px;font-size:12px">Whole year</button></div>
+        <div class="row lg" style="padding-left:0"><span id="sunLeg"></span></div>
+      </div>
     </div>
     <div class="sec"><h2>Data</h2>
       <div class="row w"><label class="file">Open folder…<input id="fdir" type="file" webkitdirectory directory multiple></label>
