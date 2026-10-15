@@ -1507,7 +1507,7 @@ terrain, points as needles; a point with `role` = `steepest` is the red ring; wi
   directional light with cast terrain shadows; sun elevation / azimuth, sunrise / solar noon /
   sunset; hovering shows the clear-sky direct irradiance on the surface (W/m², incidence on the
   1 m slope, terrain shadow) and the day's direct total (kWh/m²). "▶ Day" animates the day.
-- **Panels:** one column down the left side — the controls, the list of views under them; **‹** tucks the whole column away (**›** brings it back). The map controls on the right (measure, drag mode, rotate, tilt, north, zoom) are one column too, tucked away with **›** and brought back with **‹**. The info panel and the list of views also minimise; a minimised list also hides every
+- **Panels:** one column down the left side — the controls, the list of views under them; **‹** tucks the whole column away (**›** brings it back). Its **Data** section (open folder / files / URL / Drive, centre and radius, Render, Share) folds away; it starts closed when the view already has its data. The map controls on the right (measure, drag mode, rotate, tilt, north, zoom) are one column too, tucked away with **›** and brought back with **‹**. The info panel and the list of views also minimise; a minimised list also hides every
   needle on the map.
 - The demo folder is Preikestolen. Sites with sensitive data (e.g. eagle-owl nests) are never put on
   the public site — they are built locally (private `viz3d.py`) as stand-alone files.

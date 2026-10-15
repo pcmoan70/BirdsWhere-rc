@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2106";
+var VERSION = "v2107";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Terrain 3D: the controls and the views list form one column on the left, the map buttons one column on the right; each can be tucked away and brought back.",
+  "\u2022 Terrain 3D: the Data section folds away, and starts closed when the view already has its data.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

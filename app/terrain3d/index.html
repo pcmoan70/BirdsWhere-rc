@@ -17,6 +17,7 @@
   input[type=number],input[type=text],select{background:#2a3038;color:#eee;border:1px solid #445;border-radius:4px;padding:2px 4px;font:inherit;width:96px}
   .sec{border-top:1px solid #333;margin-top:8px;padding-top:6px}
   .sec h2{font-size:13px;margin:0 0 4px;color:#cfd8dc}
+  details.sec>summary{font-size:13px;font-weight:bold;margin:0 0 4px;color:#cfd8dc;cursor:pointer}
   #list{bottom:10px;left:10px;width:min(420px,calc(100% - 134px));box-sizing:border-box;font-size:12px}
   #list .items{max-height:30vh;overflow:auto}
   #list div.a{padding:4px 2px;border-bottom:1px solid #333;cursor:pointer}
@@ -110,7 +111,8 @@
         <div class="row lg" style="padding-left:0"><span id="sunLeg"></span></div>
       </div>
     </div>
-    <div class="sec"><h2>Data</h2>
+    <!-- collapsible (owner, 2026-10-15: "the data subsection should be collapsible"): closed when the view already has its data -->
+    <details class="sec" id="dataSec" open><summary>Data</summary>
       <div class="row w"><label class="file">Open folder…<input id="fdir" type="file" webkitdirectory directory multiple></label>
         <label class="file">Open files…<input id="ffiles" type="file" multiple accept=".tif,.tiff,.json,.geojson,.kml,.kmz"></label></div>
       <div class="row w" id="catrow" hidden>Folder on this site <select id="cat" style="width:auto;max-width:180px"></select></div>
@@ -121,7 +123,7 @@
       <div class="row w"><button id="render">Render</button><button id="share" title="A link to this terrain for someone else">Share…</button></div>
       <div class="sub" id="shr" hidden></div>
       <div class="sub" id="dsrc"></div>
-    </div>
+    </details>
     <div class="sub">Drag to move the map (✋ — tap it for ⟳ and drag to rotate / tilt) · twist two fingers, right-drag or Shift+drag to rotate · pinch, wheel or +/− to zoom · ⟲ ⟳ ▲ ▼ N rotate, tilt, north up · 📏 measure: tap two points · arrow keys pan. Tap a list item (or a flag) to fly there. Shadows are exact at height ×1.</div>
   </div>
 </div>
@@ -2437,8 +2439,10 @@ setNow();
 // a standalone file carries its folder inside
 (async function () {
   const raw = $("embed").textContent.trim();
+  if (raw && raw[0] === "{") $("dataSec").open = false;   // a standalone file carries its data: the Data section starts closed
   if (!raw || raw[0] !== "{") {     // the plain viewer: ?folder=URL, else the site's own catalog
     const sp = new URL(location.href).searchParams, f = sp.get("folder"), dl = sp.get("drive");
+    if (f || dl) $("dataSec").open = !!dl && !f;   // opened from a link: closed (a Drive link stays open — its sign-in button is in there)
     if (sp.get("day")) { $("day").value = sp.get("day"); $("tod").value = sp.get("tod") || 720; updateSun(); }
     if (dl) {   // the sign-in popup needs a tap: one big button for it
       $("gurl").value = dl; $("dsrc").textContent = "A Google Drive link is filled in: press “Sign in & open”.";
