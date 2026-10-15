@@ -18,16 +18,10 @@
   .sec{border-top:1px solid #333;margin-top:8px;padding-top:6px}
   .sec h2{font-size:13px;margin:0 0 4px;color:#cfd8dc}
   details.sec>summary{font-size:13px;font-weight:bold;margin:0 0 4px;color:#cfd8dc;cursor:pointer}
-  #list{bottom:10px;left:10px;width:min(420px,calc(100% - 134px));box-sizing:border-box;font-size:12px}
-  #list .items{max-height:30vh;overflow:auto}
-  #list div.a{padding:4px 2px;border-bottom:1px solid #333;cursor:pointer}
-  #list div.a:hover{background:#2c3440}
-  #list h2{font-size:13px;margin:0 0 4px;padding-right:36px}
   .min .body{display:none}
-  #side{position:absolute;top:10px;left:10px;bottom:10px;width:min(380px,calc(100% - 64px));display:flex;flex-direction:column;gap:8px;pointer-events:none;z-index:5}
+  #side{position:absolute;top:10px;left:10px;max-height:calc(100% - 20px);width:min(380px,calc(100% - 64px));display:flex;flex-direction:column;gap:8px;pointer-events:none;z-index:5}
   #side>.panel{position:relative;top:auto;left:auto;bottom:auto;width:auto;max-width:none;pointer-events:auto}
   #side>#info{flex:0 1 auto;min-height:0;max-height:none}
-  #side>#list{flex:0 0 auto}
   #sideX,#sideOpen{position:absolute;width:28px;height:44px;border:1px solid #667;border-radius:6px;background:rgba(20,24,28,.88);color:#eee;font-size:20px;padding:0;cursor:pointer;pointer-events:auto}
   #sideX{top:0;left:100%;margin-left:6px}
   #sideOpen{top:10px;left:10px;z-index:5}
@@ -94,6 +88,8 @@
       <div id="lyFiles"></div>
       <div class="row"><label class="ly"><input type="checkbox" id="lyMarkers" checked> Centre, circles &amp; steepest point</label></div>
       <div class="row"><label class="ly"><input type="checkbox" id="lyCompass" checked> Compass (true north)</label></div>
+      <!-- owner, 2026-10-15: "Add an option to make point, pins and other map objects show better on 3d face" -->
+      <div class="row"><label class="ly"><input type="checkbox" id="lyBold"> Bold markers: bigger, seen through hills; areas outlined</label></div>
     </div>
     <div class="sec"><h2>Sun</h2>
       <div class="row w"><select id="lmode" style="width:auto"><option value="sun">Sun at date and time</option><option value="fixed">Fixed light (NW)</option></select>
@@ -124,10 +120,9 @@
       <div class="sub" id="shr" hidden></div>
       <div class="sub" id="dsrc"></div>
     </details>
-    <div class="sub">Drag to move the map (✋ — tap it for ⟳ and drag to rotate / tilt) · twist two fingers, right-drag or Shift+drag to rotate · pinch, wheel or +/− to zoom · ⟲ ⟳ ▲ ▼ N rotate, tilt, north up · 📏 measure: tap two points · arrow keys pan. Tap a list item (or a flag) to fly there. Shadows are exact at height ×1.</div>
+    <div class="sub">Drag to move the map (✋ — tap it for ⟳ and drag to rotate / tilt) · twist two fingers, right-drag or Shift+drag to rotate · pinch, wheel or +/− to zoom · ⟲ ⟳ ▲ ▼ N rotate, tilt, north up · 📏 measure: tap two points · arrow keys pan. Hover or tap a pin for its text. Shadows are exact at height ×1.</div>
   </div>
 </div>
-<div id="list" class="panel"><button class="minb" id="listMin" title="Minimise (also hides every needle)">−</button><h2 id="listh">Views</h2><div class="body"><div class="items" id="items"></div></div></div>
 </div><button id="sideOpen" title="Show the panels" hidden>›</button>
 <div id="tip"></div>
 <div id="pmenu" class="panel" hidden><button class="minb" id="pmenuX" title="Close">×</button><div id="pmenuT" style="padding-right:30px"></div></div>
@@ -1582,7 +1577,9 @@ function paintBase(S, base) {
   for (const a of areas) {
     if (!layerOn(a.src)) continue;
     cx.beginPath(); a.ring.forEach((p, i) => { const [u, v] = px(p[0], p[1]); i ? cx.lineTo(u, v) : cx.moveTo(u, v); }); cx.closePath();
-    cx.globalAlpha = .75; cx.fillStyle = a.col; cx.fill(); cx.globalAlpha = 1; cx.lineWidth = 3; cx.strokeStyle = "#0f0f0f"; cx.stroke();
+    cx.globalAlpha = .75; cx.fillStyle = a.col; cx.fill(); cx.globalAlpha = 1;
+    if ($("lyBold").checked) { cx.lineWidth = 9; cx.strokeStyle = "#ffffff"; cx.stroke(); cx.lineWidth = 4; cx.strokeStyle = a.col; cx.stroke(); }
+    cx.lineWidth = 3; cx.strokeStyle = "#0f0f0f"; cx.stroke();
   }
   // labels on the 25 m contours, ~180 m apart, never over the compass
   cx.font = "bold 15px sans-serif"; cx.textAlign = "center"; cx.textBaseline = "middle";
@@ -1653,7 +1650,7 @@ function fileLayersUI() {
     const cnt = [files[f].a ? files[f].a + " areas" : "", files[f].p ? files[f].p + " points" : ""].filter(Boolean).join(", ");
     row.innerHTML = '<div class="row"><label class="ly"><input type="checkbox"' + (fileOn[f] !== false ? " checked" : "") + "> " + esc(m.title || f) + ' <span style="color:#99a">(' + cnt + ")</span></label></div>" +
       (m.legend && m.legend.length ? '<div class="row lg">' + m.legend.map(l => '<span><span class="sw" style="background:' + esc(l[0]) + '"></span> ' + esc(l[1]) + "</span>").join("") + "</div>" : "");
-    row.querySelector("input").onchange = e => { fileOn[f] = e.target.checked; repaint(); applyVis(); renderViews(); };
+    row.querySelector("input").onchange = e => { fileOn[f] = e.target.checked; repaint(); applyVis(); };
     (m.group === "birds" ? boxB : box).appendChild(row);   // scene.json: a file's layer can sit in the Birds group
   });
 }
@@ -2078,7 +2075,7 @@ function build(s) {
     pin(p.x, p.y, p.col, 80 * ns, 14 * ns, p);
     const z = sample(p.x, p.y) - S.h0, c = new THREE.Color(p.col), dark = c.r + c.g + c.b < 0.6;
     const halo = new THREE.Mesh(new THREE.SphereGeometry(14 * ns * 1.25, 16, 12), new THREE.MeshBasicMaterial({ color: dark ? 0xffffff : 0x111111, side: THREE.BackSide }));
-    halo.position.set(p.x, z + 80 * ns, -p.y); world.add(halo); needles.push(halo); halo.userData.src = p.src || "__markers";
+    halo.position.set(p.x, z + 80 * ns, -p.y); world.add(halo); needles.push(halo); halo.userData.src = p.src || "__markers"; halo.userData.halo = true;
     const ring = new THREE.Mesh(new THREE.TorusGeometry(24 * ns, 4 * ns, 8, 40), new THREE.MeshBasicMaterial({ color: c }));
     ring.rotation.x = Math.PI / 2; ring.position.set(p.x, z + 3, -p.y); world.add(ring); needles.push(ring); ring.userData.src = p.src || "__markers";
   });
@@ -2099,26 +2096,12 @@ function build(s) {
   $("ttl").textContent = "Terrain 3D — " + S.title;
   $("sub").textContent = S.c + " m grid, " + R + " m radius, " + Math.round(S.lo) + "–" + Math.round(S.hi) + " m a.s.l. · " + S.areas.length + " areas, " + S.pts.length + " points" +
     (S.nMiss ? " · " + (100 * S.nMiss / (S.n * S.n)).toFixed(1) + " % without DTM (filled smoothly, greyed)" : "");
-  fileLayersUI(); renderViews();
+  fileLayersUI(); restoreScroll();   // the panel's content is in place: back to where it was scrolled
   if ($("lySun").checked) setTimeout(() => $("lySun").onchange(), 0);
-  applyListMin();
+  applyBold(); applyVis();
   shadowFrame(); setEx(); if (!keepCam) home(); keepCam = false; updateSun(); daylightIfNight(); resize();
 }
-// the list of views: what the layers that are on show
-function renderViews() {
-  if (!S) return;
-  const views = S.areas.filter(a => layerOn(a.src)).map(a => Object.assign({ kind_: "area" }, a))
-    .concat(S.pts.filter(p => layerOn(p.src)).map(p => Object.assign({ kind_: "point" }, p))).sort((p, q) => p.d - q.d);
-  $("listh").textContent = "Views (" + views.length + ")";
-  const L = $("items"); L.innerHTML = views.length ? "" : "Nothing shown within the view.";
-  for (const v of views) {
-    const el = document.createElement("div"); el.className = "a";
-    el.innerHTML = '<span class="sw" style="margin-right:6px;background:' + v.col + (v.kind_ === "point" ? ';border-radius:50%' : '') + '"></span>' + esc(v.name || (v.kind_ === "area" ? "area" : "point")) + " · " + Math.round(v.d) + " m";
-    el.title = v.desc || ""; el.onclick = () => fly(v); L.appendChild(el);
-  }
-}
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-function fly(v) { const hy = (sample(v.x, v.y) - S.h0) * world.scale.y; controls.target.set(v.x, hy, -v.y); camera.position.set(v.x + 120, hy + 110, -v.y + 160); controls.update(); draw(); }
 function shadowFrame() {
   const sc = sun.shadow.camera, R = S.R * 1.15; sc.left = -R; sc.right = R; sc.top = R; sc.bottom = -R; sc.near = 1; sc.far = 12000; sc.updateProjectionMatrix();
   sun.shadow.mapSize.set(4096, 4096); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.5;
@@ -2133,23 +2116,41 @@ $("top").onclick = () => { if (!S) return; const cz = (sample(0, 0) - S.h0) * wo
 function zoomBy(f) { const v = camera.position.clone().sub(controls.target).multiplyScalar(f); if (v.length() < controls.minDistance || v.length() > controls.maxDistance) return; camera.position.copy(controls.target).add(v); controls.update(); draw(); }
 $("zin").onclick = () => zoomBy(0.7); $("zout").onclick = () => zoomBy(1 / 0.7);
 
-// ---- minimise: the info panel; the list (minimised list = no needles on the map)
+// ---- minimise: the info panel
 $("rsideX").onclick = () => { $("rside").hidden = true; $("rsideOpen").hidden = false; };
 $("rsideOpen").onclick = () => { $("rside").hidden = false; $("rsideOpen").hidden = true; };
+// the controls' scroll position is kept (owner, 2026-10-15: "scrollable but remembers it's scroll position")
+const SCROLL_KEY = "terrain3d-scroll:" + location.pathname;
+// The panel fills in after load (layers, photo dates…): the wanted position is held, and re-applied as the content
+// grows, until the user touches the panel — so a clamped early scroll never overwrites the saved one
+let scrollWant = null;
+$("info").addEventListener("scroll", () => { if (scrollWant === null) try { localStorage.setItem(SCROLL_KEY, String($("info").scrollTop)); } catch (e) {} });
+["wheel", "touchstart", "pointerdown", "keydown"].forEach(t => $("info").addEventListener(t, () => { scrollWant = null; }, { passive: true }));
+function restoreScroll() { try { scrollWant = +localStorage.getItem(SCROLL_KEY) || 0; } catch (e) { scrollWant = 0; } $("info").scrollTop = scrollWant; }
+const scrollRO = new ResizeObserver(() => { if (scrollWant) $("info").scrollTop = scrollWant; });
+[...$("info").children].forEach(el => scrollRO.observe(el));
 $("sideX").onclick = () => { $("side").hidden = true; $("sideOpen").hidden = false; };
 $("sideOpen").onclick = () => { $("side").hidden = false; $("sideOpen").hidden = true; };
 function minToggle(panel, btn, after) { btn.onclick = () => { panel.classList.toggle("min"); btn.textContent = panel.classList.contains("min") ? "+" : "−"; if (after) after(); }; }
 minToggle($("info"), $("infoMin"));
-minToggle($("list"), $("listMin"), applyListMin);
-// needles: hidden by a minimised list, or by their layer; markers and compass by theirs
+// needles: hidden by their layer; markers and compass by theirs
 function applyVis() {
-  const hide = $("list").classList.contains("min");
-  needles.forEach(o => o.visible = !hide && layerOn(o.userData.src));
+  needles.forEach(o => o.visible = layerOn(o.userData.src));
   markers.forEach(o => o.visible = $("lyMarkers").checked);
   letters.forEach(o => o.visible = $("lyCompass").checked); if (compassObj) compassObj.visible = $("lyCompass").checked;
   draw();
 }
-function applyListMin() { applyVis(); }
+// bold markers: pins, balls, rings and the steepest-point mark bigger and drawn over the terrain (never hidden
+// behind a ridge) — each halo just under its ball; the areas' outlines are painted on in repaint()
+function applyBold() {
+  const b = $("lyBold").checked;
+  needles.concat(markers).forEach(o => {
+    o.material.depthTest = !b; o.renderOrder = !b ? 0 : o.userData.halo ? 4 : o.geometry.type === "SphereGeometry" ? 5 : 3;
+    const k = b ? 2 : 1; if (o.geometry.type === "CylinderGeometry") o.scale.set(k, 1, k); else o.scale.setScalar(k);   // poles thicker, same height
+  });
+  draw();
+}
+$("lyBold").onchange = () => { applyBold(); repaint(); };
 if (innerWidth < 600) $("infoMin").onclick();
 
 // ---- the sun
@@ -2225,6 +2226,12 @@ let lastTip = 0;
 canvas.addEventListener("pointermove", ev => {
   if (!S) return; const now = performance.now(); if (now - lastTip < 60) return; lastTip = now;
   mv.x = ev.clientX / innerWidth * 2 - 1; mv.y = -ev.clientY / innerHeight * 2 + 1; ray.setFromCamera(mv, camera);
+  const ph = ray.intersectObjects(flags.filter(o => o.visible))[0];
+  if (ph) {   // over a pin's ball (a point or an area): its name and text
+    const v = ph.object.userData.v;
+    tip.innerHTML = "<b>" + esc(v.name || "point") + "</b>" + (v.desc ? "<br>" + esc(v.desc) : "");
+    tip.style.display = "block"; tip.style.left = Math.min(innerWidth - 330, ev.clientX + 14) + "px"; tip.style.top = (ev.clientY + 14) + "px"; return;
+  }
   const hit = ray.intersectObject(terrain)[0]; if (!hit) { tip.style.display = "none"; return; }
   const x = hit.point.x, y = -hit.point.z, e = S.c;
   const sl = Math.atan(Math.hypot(sample(x + e, y) - sample(x - e, y), sample(x, y + e) - sample(x, y - e)) / (2 * e)) / RAD;
@@ -2246,16 +2253,18 @@ canvas.addEventListener("pointerup", ev => {
   if (!down || Math.hypot(ev.clientX - down[0], ev.clientY - down[1]) > 6) return;
   mv.x = ev.clientX / innerWidth * 2 - 1; mv.y = -ev.clientY / innerHeight * 2 + 1; ray.setFromCamera(mv, camera);
   if (measOn) { const hit = ray.intersectObject(terrain)[0]; if (hit) measAdd(hit.point.x, -hit.point.z); return; }
-  const f = ray.intersectObjects(flags.filter(o => o.visible))[0]; if (f) { fly(f.object.userData.v); return; }
+  const f = ray.intersectObjects(flags.filter(o => o.visible))[0];
+  if (f) { pointMenu(f.object.userData.v.x, f.object.userData.v.y, ev.clientX, ev.clientY, f.object.userData.v); return; }
   const hit = ray.intersectObject(terrain)[0]; if (hit) pointMenu(hit.point.x, -hit.point.z, ev.clientX, ev.clientY); else $("pmenu").hidden = true;
 });
 // A tap on the terrain: the point, and links out (owner, 2026-10-13: "let user click on 3d model, select option
 // in popup and go to norgeskart.no … with the correct coordinates for that point"). Norgeskart takes the map
 // centre as UTM 33 (EUREF89) northing (lat) / easting (lon); its aerial background is Norge i bilder.
-function pointMenu(x, y, cx, cy) {
+function pointMenu(x, y, cx, cy, v) {   // v: a file's point → its name and text first
   const [la, lo] = UTM.inv(S.X + x, S.Y + y, S.zone), [e33, n33] = UTM.fwd(la, lo, 33);
   const nk = "https://www.norgeskart.no/?zoom=14&lat=" + n33.toFixed(1) + "&lon=" + e33.toFixed(1) + "&backgroundLayer=Nibcache_UTM33_EUREF89_v2&rotation=0";
-  $("pmenuT").innerHTML = "<b>" + la.toFixed(5) + ", " + lo.toFixed(5) + "</b> · " + Math.round(sample(x, y)) + " m a.s.l." +
+  $("pmenuT").innerHTML = (v ? "<b>" + esc(v.name || "point") + "</b>" + (v.desc ? '<div style="margin:4px 0 6px;white-space:normal">' + esc(v.desc) + "</div>" : "<br>") : "") +
+    (v ? "" : "<b>") + la.toFixed(5) + ", " + lo.toFixed(5) + (v ? "" : "</b>") + " · " + Math.round(sample(x, y)) + " m a.s.l." +
     '<a class="pbtn" href="' + nk + '" target="_blank" rel="noopener">🛰 Aerial photo in Norgeskart</a>';
   const m = $("pmenu"); m.hidden = false;
   m.style.left = Math.max(8, Math.min(innerWidth - m.offsetWidth - 8, cx + 10)) + "px"; m.style.top = Math.max(8, Math.min(innerHeight - m.offsetHeight - 8, cy + 10)) + "px";
@@ -2404,7 +2413,7 @@ let keepCam = false;
 $("basemap").onchange = () => repaint();
 $("wbSel").onchange = () => repaint();
 $("lyContours").onchange = $("lySlope").onchange = $("lyFacing").onchange = () => { $("lgSlope").hidden = !$("lySlope").checked; $("lgFacing").hidden = !$("lyFacing").checked; repaint(); };
-$("lyMarkers").onchange = $("lyCompass").onchange = () => { repaint(); applyVis(); renderViews(); };
+$("lyMarkers").onchange = $("lyCompass").onchange = () => { repaint(); applyVis(); };
 // the average sun and the sun at a date and time exclude each other (owner, 2026-10-14: "when user toggles Sun:
 // average direct radiation on, the other sunlight controls should gray out and be turned off"): on → the day
 // play stops, the light goes to the fixed (neutral) light, the date / time controls grey out; off → they come
