@@ -5,6 +5,7 @@
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#1d2228;font:14px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#eee}
   #c{display:block;width:100%;height:100%}
+  [hidden]{display:none!important}   /* a row hidden in the page stays hidden whatever its display (the Photo row showed) */
   .panel{position:absolute;background:rgba(20,24,28,.88);border-radius:8px;padding:10px 12px;box-shadow:0 2px 10px rgba(0,0,0,.4)}
   #info{top:10px;left:10px;width:min(360px,calc(100% - 44px));max-height:calc(100% - 30vh - 110px);overflow:auto;box-sizing:border-box}
   #info h1{font-size:15px;margin:0 0 4px;padding-right:36px}
@@ -22,12 +23,22 @@
   #list div.a:hover{background:#2c3440}
   #list h2{font-size:13px;margin:0 0 4px;padding-right:36px}
   .min .body{display:none}
+  #side{position:absolute;top:10px;left:10px;bottom:10px;width:min(380px,calc(100% - 64px));display:flex;flex-direction:column;gap:8px;pointer-events:none;z-index:5}
+  #side>.panel{position:relative;top:auto;left:auto;bottom:auto;width:auto;max-width:none;pointer-events:auto}
+  #side>#info{flex:0 1 auto;min-height:0;max-height:none}
+  #side>#list{flex:0 0 auto}
+  #sideX,#sideOpen{position:absolute;width:28px;height:44px;border:1px solid #667;border-radius:6px;background:rgba(20,24,28,.88);color:#eee;font-size:20px;padding:0;cursor:pointer;pointer-events:auto}
+  #sideX{top:0;left:100%;margin-left:6px}
+  #sideOpen{top:10px;left:10px;z-index:5}
+  #rsideX,#rsideOpen{width:40px;height:28px;border:1px solid #667;border-radius:6px;background:rgba(20,24,28,.88);color:#eee;font-size:18px;padding:0;cursor:pointer}
+  #rsideOpen{position:absolute;right:10px;bottom:10px;z-index:5}
   .minb{position:absolute;top:6px;right:6px;width:28px;height:28px;border:1px solid #667;border-radius:6px;background:#2a3038;color:#eee;font-size:18px;line-height:24px;padding:0;cursor:pointer}
   #tip{position:absolute;pointer-events:none;background:rgba(0,0,0,.85);padding:6px 8px;border-radius:6px;font-size:12px;max-width:320px;display:none;line-height:1.4}
   button{background:#2e8b74;color:#fff;border:0;border-radius:5px;padding:4px 9px;cursor:pointer;font:inherit}
-  #zoom{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:6px}
+  #rside{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:6px;align-items:center;z-index:5}
+  #zoom{display:flex;flex-direction:column;gap:6px}
   #zoom button{width:40px;height:40px;font-size:22px;padding:0}
-  #rot{position:absolute;right:58px;bottom:10px;display:flex;flex-direction:column;gap:6px}
+  #rot{display:flex;flex-direction:column;gap:6px}
   #rot button{width:40px;height:40px;font-size:18px;padding:0;background:#3d5a80}
   #rot button.on{background:#c77d12}
   #meas{position:absolute;top:10px;right:10px;max-width:min(300px,calc(100% - 44px));font-size:13px;line-height:1.5}
@@ -55,6 +66,9 @@
   .mfill{position:absolute;top:0;height:4px;background:#ffd54f;border-radius:2px}
 </style></head><body>
 <canvas id="c"></canvas>
+<!-- one column on the left (owner, 2026-10-15: "Let the controls on the left side … be one column, not two. Also make
+     column collapsible"): the controls, the views list under them; ‹ tucks the whole column away, › brings it back -->
+<div id="side"><button id="sideX" title="Hide the panels">‹</button>
 <div id="info" class="panel">
   <button class="minb" id="infoMin" title="Minimise / restore">−</button>
   <h1 id="ttl">Terrain 3D</h1>
@@ -112,12 +126,17 @@
   </div>
 </div>
 <div id="list" class="panel"><button class="minb" id="listMin" title="Minimise (also hides every needle)">−</button><h2 id="listh">Views</h2><div class="body"><div class="items" id="items"></div></div></div>
+</div><button id="sideOpen" title="Show the panels" hidden>›</button>
 <div id="tip"></div>
 <div id="pmenu" class="panel" hidden><button class="minb" id="pmenuX" title="Close">×</button><div id="pmenuT" style="padding-right:30px"></div></div>
 <div id="attr" style="position:absolute;left:50%;transform:translateX(-50%);bottom:4px;font-size:10px;color:#ccc;background:rgba(0,0,0,.45);padding:1px 6px;border-radius:4px;pointer-events:none;white-space:nowrap;max-width:60%;overflow:hidden;text-overflow:ellipsis"></div>
-<div id="zoom"><button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button></div>
 <div id="meas" class="panel" hidden><button class="minb" id="measX" title="Close the measurement">×</button><div id="measT" style="padding-right:30px"></div></div>
+<!-- the map controls in one column on the right (owner, 2026-10-15: "the controls on the right hand side should be one
+     column and collapsible"): › tucks them away, ‹ brings them back -->
+<div id="rside"><button id="rsideX" title="Hide the map controls">›</button>
 <div id="rot"><button id="measure" title="Measure: tap two points on the terrain">📏</button><button id="dragmode" title="One-finger / left drag: move the map (tap for rotate)">✋</button><button id="rotl" title="Rotate left 15°">⟲</button><button id="rotr" title="Rotate right 15°">⟳</button><button id="tiltu" title="Tilt up (look more from above)">▲</button><button id="tiltd" title="Tilt down (look more from the side)">▼</button><button id="north" title="North up">N</button></div>
+<div id="zoom"><button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button></div>
+</div><button id="rsideOpen" title="Show the map controls" hidden>‹</button>
 <div id="gate" hidden style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,12,16,.6)"><div class="panel" style="position:static;max-width:340px;text-align:center"><div style="margin-bottom:10px">A terrain shared on Google Drive. Sign in with the Google account it is shared with to open it.</div><button id="gateGo" style="font-size:16px;padding:8px 14px">Sign in with Google to open</button><div style="margin-top:8px"><button id="gateX" style="background:#555">Not now</button></div></div></div>
 <div id="busy" hidden><span id="busyt">Working…</span></div>
 <script>/**
@@ -2113,6 +2132,10 @@ function zoomBy(f) { const v = camera.position.clone().sub(controls.target).mult
 $("zin").onclick = () => zoomBy(0.7); $("zout").onclick = () => zoomBy(1 / 0.7);
 
 // ---- minimise: the info panel; the list (minimised list = no needles on the map)
+$("rsideX").onclick = () => { $("rside").hidden = true; $("rsideOpen").hidden = false; };
+$("rsideOpen").onclick = () => { $("rside").hidden = false; $("rsideOpen").hidden = true; };
+$("sideX").onclick = () => { $("side").hidden = true; $("sideOpen").hidden = false; };
+$("sideOpen").onclick = () => { $("side").hidden = false; $("sideOpen").hidden = true; };
 function minToggle(panel, btn, after) { btn.onclick = () => { panel.classList.toggle("min"); btn.textContent = panel.classList.contains("min") ? "+" : "−"; if (after) after(); }; }
 minToggle($("info"), $("infoMin"));
 minToggle($("list"), $("listMin"), applyListMin);
