@@ -47,7 +47,6 @@
   label.ly{display:flex;align-items:center;gap:6px}
   button:disabled,select:disabled,input:disabled{opacity:.45;cursor:not-allowed}
   #pmenu{position:fixed;z-index:20;max-width:min(320px,calc(100vw - 24px));padding:8px 10px;font-size:13px}
-  details.grp{margin:2px 0 4px}details.grp>summary{cursor:pointer;color:#cfd8dc;padding:2px 0}details.grp>:not(summary){padding-left:14px}
   .row.lg{flex-wrap:wrap;gap:4px 10px;padding-left:24px;font-size:12px;color:#ccd}
   .row.lg[hidden]{display:none}
   #sunBox[hidden]{display:none}
@@ -70,27 +69,31 @@
   <div class="body">
     <div class="sub" id="sub">A viewer for 1 m terrain models (DTM) of Norway: open a folder with DTM GeoTIFF tiles (Kartverket, any UTM zone) and any .geojson / .kml / .kmz overlays.</div>
     <div class="row">Height ×<input id="ex" type="range" min="1" max="3" step="0.1" value="1.5"><span id="exv">1.5</span></div>
+    <div class="row"><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="csmooth" checked> Smooth terrain, σ</label><input id="csig" type="number" min="0.5" max="5" step="0.5" value="1.5" style="width:56px"> m</div>
+    <div class="row"><button id="reset">Reset view</button><button id="top">Top view</button></div>
+    <!-- collapsible sections (owner, 2026-10-15: "make the subsections: Map, Layers and Sun collapsible like Birds. Default
+         is sun open, while others closed"): Map, Layers, Birds closed, Sun open -->
+    <details class="sec" id="mapSec"><summary>Map</summary>
     <div class="row w">Map <select id="basemap" style="width:auto"><option value="slope">Plain</option><option value="kv_topo">Kartverket topo</option><option value="kv_grey">Kartverket greyscale</option><option value="osm">OpenStreetMap (OpenTopoMap)</option><option value="cyclosm">Paths &amp; cycling (CyclOSM)</option><option value="esri_st">Streets (Esri)</option><option value="esri">Aerial (Esri)</option><option value="wayback">Aerial, earlier photos (Esri Wayback)</option></select>
 </div>
     <div class="row w" id="wbRow" hidden>Photo <select id="wbSel" style="width:auto;max-width:230px"></select></div>
-    <div class="row"><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="csmooth" checked> Smooth terrain, σ</label><input id="csig" type="number" min="0.5" max="5" step="0.5" value="1.5" style="width:56px"> m</div>
-    <div class="row"><button id="reset">Reset view</button><button id="top">Top view</button></div>
-    <div class="sec"><h2>Layers</h2>
+    </details>
+    <details class="sec" id="layersSec"><summary>Layers</summary>
       <div class="row"><label class="ly"><input type="checkbox" id="lyContours" checked> Contours (5 m, labelled every 25 m)</label></div>
-      <!-- owner, 2026-10-13: "Hide the options: Slope, Facing, Eagle-owl nesting behind a drop down called Birds" -->
-      <details class="grp" id="grpBirds"><summary>Birds</summary>
+      <div id="lyFiles"></div>
+      <div class="row"><label class="ly"><input type="checkbox" id="lyMarkers" checked> Centre, circles &amp; steepest point</label></div>
+      <!-- owner, 2026-10-15: "Add an option to make point, pins and other map objects show better on 3d face" -->
+      <div class="row"><label class="ly"><input type="checkbox" id="lyBold"> Bold markers: bigger, seen through hills; areas outlined</label></div>
+    </details>
+    <!-- owner, 2026-10-13: "Hide the options: Slope, Facing, Eagle-owl nesting behind a drop down called Birds"; a section of its own since 2026-10-15 -->
+    <details class="sec" id="grpBirds"><summary>Birds</summary>
       <div class="row"><label class="ly"><input type="checkbox" id="lySlope"> Slope (NVE steepness classes)</label></div>
       <div class="row lg" id="lgSlope" hidden></div>
       <div class="row"><label class="ly"><input type="checkbox" id="lyFacing"> Facing (the way slopes ≥ 15° face)</label></div>
       <div class="row lg" id="lgFacing" hidden></div>
       <div id="lyFilesBirds"></div>
-      </details>
-      <div id="lyFiles"></div>
-      <div class="row"><label class="ly"><input type="checkbox" id="lyMarkers" checked> Centre, circles &amp; steepest point</label></div>
-      <!-- owner, 2026-10-15: "Add an option to make point, pins and other map objects show better on 3d face" -->
-      <div class="row"><label class="ly"><input type="checkbox" id="lyBold"> Bold markers: bigger, seen through hills; areas outlined</label></div>
-    </div>
-    <div class="sec"><h2>Sun</h2>
+    </details>
+    <details class="sec" id="sunSec" open><summary>Sun</summary>
       <div class="row w"><select id="lmode" style="width:auto"><option value="sun">Sun at date and time</option><option value="fixed">Fixed light (NW)</option></select>
         <select id="tz" style="width:auto"><option value="eu">Norway time (CET/CEST)</option><option value="utc">UTC</option></select></div>
       <div class="row">Date <input id="day" type="range" min="1" max="365" step="1"><span id="dayv" style="min-width:52px"></span></div>
@@ -105,7 +108,7 @@
         <div class="row" style="font-size:12px;justify-content:space-between"><span id="mLbl">Jan – Dec (whole year)</span><button id="mAll" style="padding:1px 7px;font-size:12px">Whole year</button></div>
         <div class="row lg" style="padding-left:0"><span id="sunLeg"></span></div>
       </div>
-    </div>
+    </details>
     <!-- collapsible (owner, 2026-10-15: "the data subsection should be collapsible"): closed when the view already has its data -->
     <details class="sec" id="dataSec" open><summary>Data</summary>
       <div class="row w"><label class="file">Open folder…<input id="fdir" type="file" webkitdirectory directory multiple></label>
