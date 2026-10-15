@@ -2528,6 +2528,15 @@ window.AppPoints = (function () {
   // zoom, the old fixed gate, where only the dots showed; regionally a few hundred are in view, cheap to draw)
   var POLY_CULL_MIN = 1500, POLY_VIEW_MAX = 2500;
   var mpAreasMsg = false;
+  // an area under ~6 px across at the current zoom: drawn, it is just a dot — it shows once zoomed in far enough
+  var polyBB = new WeakMap();   // area → its bounding box (kept off the area itself: lists are saved and synced as they are)
+  function polyTiny(pg) {
+    var m = getMap(); if (!m) return false;
+    var bb = polyBB.get(pg);
+    if (!bb) { var a = 90, b = 180, c = -90, d = -180; pg.r.forEach(function (v) { if (v[0] < a) a = v[0]; if (v[0] > c) c = v[0]; if (v[1] < b) b = v[1]; if (v[1] > d) d = v[1]; }); bb = [a, b, c, d]; polyBB.set(pg, bb); }
+    var p1 = m.latLngToContainerPoint([bb[0], bb[1]]), p2 = m.latLngToContainerPoint([bb[2], bb[3]]);
+    return Math.max(Math.abs(p2.x - p1.x), Math.abs(p2.y - p1.y)) < 6;
+  }
   function polyInBox(pg, bb) {
     for (var q = 0; q < pg.r.length; q++) { var v = pg.r[q]; if (v[0] >= bb[0] && v[0] <= bb[2] && v[1] >= bb[1] && v[1] <= bb[3]) return true; }
     return false;
@@ -2635,6 +2644,7 @@ window.AppPoints = (function () {
       (c.polys || []).forEach(function (pg) {
         if (!pg || !pg.r || pg.r.length < 3) return;
         if (pbb && !polyInBox(pg, pbb)) return;
+        if (polyTiny(pg)) return;   // an area a few pixels across would only be a dot (owner, 2026-10-15: "a lot of orange … dots")
         if (pg.t && pg.t.length && !mpTagPasses({ tags: pg.t })) return;   // a tagged area follows the tag chips; an untagged one always shows
         var pc = pg.c || collColor(c);
         mpLayer.addLayer(L.polygon(pg.r, { color: pc, weight: pg.f === 0 ? 1.5 : 1, opacity: 0.6, fillColor: pc, fillOpacity: pg.f === 0 ? 0 : 0.25, interactive: false }));

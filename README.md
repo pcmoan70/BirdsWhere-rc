@@ -1034,7 +1034,7 @@ Right-click / long-press / tap any species name for a menu **led by the species 
   with a faint fill in the area's `color` (ExtendedData) or style colour, else the list's; `fill` = `0`
   draws only the outline. Areas travel with the list through Drive sync and KML export. With many areas
   shown (over 1 500, e.g. the eagle-owl habitat file) only those in view are drawn, as long as at most 2 500
-  are in view — a note says so when more are.
+  are in view — a note says so when more are; an area only a few pixels across is left out until zoomed in.
 - **Last list remembered** — whichever list you last saved a point to comes **first, marked ✓**, in
   every "save to list" picker (observation menu, Save in the detections list, copy / file points),
   and the point editor preselects it. Remembered across visits.
