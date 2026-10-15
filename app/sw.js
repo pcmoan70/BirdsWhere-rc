@@ -21,16 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2108";
+var VERSION = "v2109";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Terrain 3D: the Views list is gone \u2014 hover or tap a pin for its text.",
-  "\u2022 Terrain 3D: new \u201cBold markers\u201d layer makes pins and areas stand out on the terrain.",
-  "\u2022 Terrain 3D: the left panel fits its content and remembers its scroll position.",
+  "\u2022 Terrain 3D: the aerial photo (Norgeskart) is now the \ud83d\udef0 button among the map controls, for the place in view; popups no longer carry the link.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

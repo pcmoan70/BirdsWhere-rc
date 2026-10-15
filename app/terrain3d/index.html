@@ -46,7 +46,7 @@
   label.file input{display:none}
   label.ly{display:flex;align-items:center;gap:6px}
   button:disabled,select:disabled,input:disabled{opacity:.45;cursor:not-allowed}
-  #pmenu{position:fixed;z-index:20;max-width:min(320px,calc(100vw - 24px));padding:8px 10px;font-size:13px}#pmenu a.pbtn{display:block;margin-top:6px;padding:5px 8px;border-radius:6px;background:#2e7d6b;color:#fff;text-decoration:none}
+  #pmenu{position:fixed;z-index:20;max-width:min(320px,calc(100vw - 24px));padding:8px 10px;font-size:13px}
   details.grp{margin:2px 0 4px}details.grp>summary{cursor:pointer;color:#cfd8dc;padding:2px 0}details.grp>:not(summary){padding-left:14px}
   .row.lg{flex-wrap:wrap;gap:4px 10px;padding-left:24px;font-size:12px;color:#ccd}
   .row.lg[hidden]{display:none}
@@ -131,7 +131,7 @@
 <!-- the map controls in one column on the right (owner, 2026-10-15: "the controls on the right hand side should be one
      column and collapsible"): › tucks them away, ‹ brings them back -->
 <div id="rside"><button id="rsideX" title="Hide the map controls">›</button>
-<div id="rot"><button id="measure" title="Measure: tap two points on the terrain">📏</button><button id="dragmode" title="One-finger / left drag: move the map (tap for rotate)">✋</button><button id="rotl" title="Rotate left 15°">⟲</button><button id="rotr" title="Rotate right 15°">⟳</button><button id="tiltu" title="Tilt up (look more from above)">▲</button><button id="tiltd" title="Tilt down (look more from the side)">▼</button><button id="north" title="North up">N</button></div>
+<div id="rot"><button id="measure" title="Measure: tap two points on the terrain">📏</button><button id="dragmode" title="One-finger / left drag: move the map (tap for rotate)">✋</button><button id="rotl" title="Rotate left 15°">⟲</button><button id="rotr" title="Rotate right 15°">⟳</button><button id="tiltu" title="Tilt up (look more from above)">▲</button><button id="tiltd" title="Tilt down (look more from the side)">▼</button><button id="north" title="North up">N</button><button id="aerial" title="Aerial photo of the place in view, in Norgeskart (Norge i bilder)">🛰</button></div>
 <div id="zoom"><button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button></div>
 </div><button id="rsideOpen" title="Show the map controls" hidden>‹</button>
 <div id="gate" hidden style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,12,16,.6)"><div class="panel" style="position:static;max-width:340px;text-align:center"><div style="margin-bottom:10px">A terrain shared on Google Drive. Sign in with the Google account it is shared with to open it.</div><button id="gateGo" style="font-size:16px;padding:8px 14px">Sign in with Google to open</button><div style="margin-top:8px"><button id="gateX" style="background:#555">Not now</button></div></div></div>
@@ -2257,19 +2257,26 @@ canvas.addEventListener("pointerup", ev => {
   if (f) { pointMenu(f.object.userData.v.x, f.object.userData.v.y, ev.clientX, ev.clientY, f.object.userData.v); return; }
   const hit = ray.intersectObject(terrain)[0]; if (hit) pointMenu(hit.point.x, -hit.point.z, ev.clientX, ev.clientY); else $("pmenu").hidden = true;
 });
-// A tap on the terrain: the point, and links out (owner, 2026-10-13: "let user click on 3d model, select option
-// in popup and go to norgeskart.no … with the correct coordinates for that point"). Norgeskart takes the map
-// centre as UTM 33 (EUREF89) northing (lat) / easting (lon); its aerial background is Norge i bilder.
+// A tap on the terrain or a pin: the point (a pin's name and text first), its coordinates and height. The aerial
+// photo is the 🛰 map control (owner, 2026-10-15: "remove the norgeskart click at map point popup. Instead add an
+// air-photo icon to right hand control").
 function pointMenu(x, y, cx, cy, v) {   // v: a file's point → its name and text first
-  const [la, lo] = UTM.inv(S.X + x, S.Y + y, S.zone), [e33, n33] = UTM.fwd(la, lo, 33);
-  const nk = "https://www.norgeskart.no/?zoom=14&lat=" + n33.toFixed(1) + "&lon=" + e33.toFixed(1) + "&backgroundLayer=Nibcache_UTM33_EUREF89_v2&rotation=0";
+  const [la, lo] = UTM.inv(S.X + x, S.Y + y, S.zone);
   $("pmenuT").innerHTML = (v ? "<b>" + esc(v.name || "point") + "</b>" + (v.desc ? '<div style="margin:4px 0 6px;white-space:normal">' + esc(v.desc) + "</div>" : "<br>") : "") +
-    (v ? "" : "<b>") + la.toFixed(5) + ", " + lo.toFixed(5) + (v ? "" : "</b>") + " · " + Math.round(sample(x, y)) + " m a.s.l." +
-    '<a class="pbtn" href="' + nk + '" target="_blank" rel="noopener">🛰 Aerial photo in Norgeskart</a>';
+    (v ? "" : "<b>") + la.toFixed(5) + ", " + lo.toFixed(5) + (v ? "" : "</b>") + " · " + Math.round(sample(x, y)) + " m a.s.l.";
   const m = $("pmenu"); m.hidden = false;
   m.style.left = Math.max(8, Math.min(innerWidth - m.offsetWidth - 8, cx + 10)) + "px"; m.style.top = Math.max(8, Math.min(innerHeight - m.offsetHeight - 8, cy + 10)) + "px";
 }
 $("pmenuX").onclick = () => { $("pmenu").hidden = true; };
+// 🛰: norgeskart.no's aerial photo (Kartverket's Norge i bilder — it cannot be draped here: its tile service needs a
+// Norge digitalt token) centred where the view looks, zoomed to about what is on screen. Norgeskart takes the centre
+// as UTM 33 (EUREF89) northing (lat) / easting (lon).
+$("aerial").onclick = () => {
+  if (!S) return;
+  const x = controls.target.x, y = -controls.target.z, [la, lo] = UTM.inv(S.X + x, S.Y + y, S.zone), [e33, n33] = UTM.fwd(la, lo, 33);
+  const w = 2 * camera.position.distanceTo(controls.target), z = Math.max(8, Math.min(18, Math.round(Math.log2(156543 * Math.cos(la * RAD) * innerWidth / w))));
+  open("https://www.norgeskart.no/?zoom=" + z + "&lat=" + n33.toFixed(1) + "&lon=" + e33.toFixed(1) + "&backgroundLayer=Nibcache_UTM33_EUREF89_v2&rotation=0", "_blank", "noopener");
+};
 
 // ---- measuring (owner, 2026-10-12: "a measuring tool, measuring distance horizontal and vertical"):
 // tap two points on the terrain → horizontal distance, height difference, distance along the line,
