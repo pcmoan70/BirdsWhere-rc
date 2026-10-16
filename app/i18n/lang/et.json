@@ -907,6 +907,7 @@
   "layer.birdSpots": "Vaatluskohad",
   "layer.landcover": "Maakate (CORINE)",
   "birdspot.hide": "Linnuvaatlusonn",
+  "birdspot.wildlifeHide": "Loomavaatlusvarje",
   "birdspot.zoomFrom": "Näita ikoone alates suumitasemest {z}",
   "birdspot.viewpoint": "Vaatepunkt",
   "birdspot.loadFail": "Vaatluskohtade laadimine ebaõnnestus — {err}",

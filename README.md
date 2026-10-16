@@ -106,7 +106,7 @@ birds/mammals/amphibians/insects; **Plants 🌿 and Fungi 🍄 are observation-o
 to Natura 2000), **Land cover** (CORINE / Copernicus-EEA — habitat backdrop, Europe/EEA, with a
 colour-coded class legend in the lower-right while it's on),
 **GBIF occurrence density** (*Experimental* — enable in Settings; a seasonal heatmap of where records concentrate),
-**OSM protected areas**, **Viewpoints** (a **bundled worldwide snapshot** of 71k+ OSM bird hides, bird-watching towers and birdwatching
+**OSM protected areas**, **Viewpoints** (a **bundled worldwide snapshot** of 122k OSM bird and wildlife hides, bird-watching towers and birdwatching
 viewpoints — incl. towers/viewpoints validated by proximity to an eBird hotspot — served from the
 app's own origin as small on-demand tiles, cached for offline; no live Overpass involved. Tap a
 marker for its name, type, coordinates and any OSM details it carries — operator, access, wheelchair,
@@ -699,7 +699,7 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
 - **Import / export** — points import and export as **KML, KMZ and GeoJSON**. Export everything from
   Settings → *Map points*; download a **single list or trip** from the ↓ beside its × — in the Points
   menu and in the lists window (press-and-hold or right-click the Points button) — choosing the format
-  there. *Load from file* opens one box: paste a **direct link** and press Load, or leave it **empty and press Load to choose a file**. The link can point to a .kmz / .kml / .geojson — or a BirdsWhere
+  there. *Load from file* opens one box: paste a **direct link** and press Load, or leave it **empty and press Load to choose a file**. The link can point to a .kmz / .kml / .geojson — or a BirdsWhere A list dropped in or loaded from a file starts with **all its tags shown** (tags picked, excluded or switched off for an earlier list are cleared).
   **.share** file — that the host lets a browser fetch (a GitHub raw link, say); the bytes then take the same import path as a picked file. A **.share observation
   list** loaded this way (a person's records, say) is **saved as a point list** like a KMZ: it appears
   in the Points menu with its tick, year tag chips and ⋯ menu, survives reloads, and while ticked its

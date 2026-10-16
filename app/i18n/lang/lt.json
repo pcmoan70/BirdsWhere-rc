@@ -907,6 +907,7 @@
   "layer.birdSpots": "Stebėjimo vietos",
   "layer.landcover": "Žemės danga (CORINE)",
   "birdspot.hide": "Paukščių stebykla",
+  "birdspot.wildlifeHide": "Gyvūnų stebėjimo slėptuvė",
   "birdspot.zoomFrom": "Rodyti piktogramas nuo mastelio {z}",
   "birdspot.viewpoint": "Apžvalgos taškas",
   "birdspot.loadFail": "Nepavyko įkelti stebėjimo vietų — {err}",

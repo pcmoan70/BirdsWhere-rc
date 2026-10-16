@@ -907,6 +907,7 @@
   "layer.birdSpots": "Beobachtungsplätze",
   "layer.landcover": "Bodenbedeckung (CORINE)",
   "birdspot.hide": "Vogelbeobachtungshütte",
+  "birdspot.wildlifeHide": "Tierbeobachtungshütte",
   "birdspot.zoomFrom": "Symbole ab Zoomstufe {z} anzeigen",
   "birdspot.viewpoint": "Aussichtspunkt",
   "birdspot.loadFail": "Beobachtungsplätze konnten nicht geladen werden — {err}",

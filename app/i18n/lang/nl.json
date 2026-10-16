@@ -907,6 +907,7 @@
   "layer.birdSpots": "Kijkplekken",
   "layer.landcover": "Landbedekking (CORINE)",
   "birdspot.hide": "Vogelkijkhut",
+  "birdspot.wildlifeHide": "Wildkijkhut",
   "birdspot.zoomFrom": "Iconen tonen vanaf zoomniveau {z}",
   "birdspot.viewpoint": "Uitzichtpunt",
   "birdspot.loadFail": "Kijkplekken laden mislukt — {err}",

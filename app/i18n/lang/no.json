@@ -907,6 +907,7 @@
   "layer.birdSpots": "Utkikkspunkter",
   "layer.landcover": "Arealdekke (CORINE)",
   "birdspot.hide": "Fugleskjul",
+  "birdspot.wildlifeHide": "Viltskjul",
   "birdspot.zoomFrom": "Vis ikoner fra zoomnivå {z}",
   "birdspot.viewpoint": "Utsiktspunkt",
   "birdspot.loadFail": "Kunne ikke laste utkikkspunkter — {err}",

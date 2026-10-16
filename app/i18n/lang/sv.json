@@ -531,6 +531,7 @@
   "layer.birdSpots": "Utkiksplatser",
   "layer.landcover": "Marktäcke (CORINE)",
   "birdspot.hide": "Fågelgömsle",
+  "birdspot.wildlifeHide": "Viltgömsle",
   "birdspot.zoomFrom": "Visa ikoner från zoomnivå {z}",
   "birdspot.viewpoint": "Utsiktsplats",
   "birdspot.loadFail": "Utkiksplatser kunde inte laddas — {err}",

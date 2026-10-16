@@ -907,6 +907,7 @@
   "layer.birdSpots": "Tähystyspaikat",
   "layer.landcover": "Maanpeite (CORINE)",
   "birdspot.hide": "Lintupiilo",
+  "birdspot.wildlifeHide": "Eläinten tarkkailukoju",
   "birdspot.zoomFrom": "Näytä kuvakkeet zoomaustasosta {z} alkaen",
   "birdspot.viewpoint": "Näköalapaikka",
   "birdspot.loadFail": "Tähystyspaikkojen lataus epäonnistui — {err}",

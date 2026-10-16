@@ -907,6 +907,7 @@
   "layer.birdSpots": "Punti di osservazione",
   "layer.landcover": "Copertura del suolo (CORINE)",
   "birdspot.hide": "Capanno birdwatching",
+  "birdspot.wildlifeHide": "Capanno di osservazione della fauna",
   "birdspot.zoomFrom": "Mostra icone dal livello di zoom {z}",
   "birdspot.viewpoint": "Punto panoramico",
   "birdspot.loadFail": "Caricamento punti di osservazione non riuscito — {err}",

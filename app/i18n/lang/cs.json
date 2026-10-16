@@ -907,6 +907,7 @@
   "layer.birdSpots": "Pozorovací místa",
   "layer.landcover": "Krajinný pokryv (CORINE)",
   "birdspot.hide": "Pozorovatelna ptáků",
+  "birdspot.wildlifeHide": "Pozorovatelna zvěře",
   "birdspot.zoomFrom": "Zobrazit ikony od úrovně přiblížení {z}",
   "birdspot.viewpoint": "Vyhlídka",
   "birdspot.loadFail": "Pozorovací místa se nepodařilo načíst — {err}",

@@ -689,6 +689,7 @@ window.GeoI18N = (function () {
         "layer.birdSpots": "Viewpoints",
         "layer.landcover": "Land cover (CORINE)",
         "birdspot.hide": "Bird hide",
+        "birdspot.wildlifeHide": "Wildlife hide",
         "birdspot.zoomFrom": "Show icons from zoom level {z}",
         "birdspot.viewpoint": "Viewpoint",
         "birdspot.loadFail": "Viewpoints failed to load — {err}",

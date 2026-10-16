@@ -70,11 +70,13 @@ window.AppSites = (function () {
   // tower, an eye = birdwatching viewpoint (incl. eBird-hotspot-validated ones).
   var BIRD_SPOT_SVG = {
     bird_hide:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="15" r="3.6"/><circle cx="17" cy="15" r="3.6"/><path d="M7 11.4V6.5M17 11.4V6.5M7 6.5h3l1 2.6h2l1-2.6h3"/></svg>',
+    wildlife_hide: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="15" r="3.6"/><circle cx="17" cy="15" r="3.6"/><path d="M7 11.4V6.5M17 11.4V6.5M7 6.5h3l1 2.6h2l1-2.6h3"/></svg>',
     observation: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8.5" y="3" width="7" height="4" rx="1"/><path d="M9 7L6 21M15 7l3 14"/><path d="M8 12h8M7 16.5h10"/></svg>',
     viewpoint:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.6"/></svg>'
   };
   var BIRD_SPOT_KINDS = {
     bird_hide:   { i18n: "birdspot.hide" },
+    wildlife_hide: { i18n: "birdspot.wildlifeHide" },   // leisure=wildlife_hide (owner, 2026-10-16): the same hide glyph
     observation: { i18n: "birdspot.tower" },
     viewpoint:   { i18n: "birdspot.viewpoint" }
   };
