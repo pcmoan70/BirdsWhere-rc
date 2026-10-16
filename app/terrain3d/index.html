@@ -72,13 +72,12 @@
     <div class="row"><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="csmooth" checked> Smooth terrain, σ</label><input id="csig" type="number" min="0.5" max="5" step="0.5" value="1.5" style="width:56px"> m</div>
     <div class="row"><button id="reset">Reset view</button><button id="top">Top view</button></div>
     <!-- collapsible sections (owner, 2026-10-15: "make the subsections: Map, Layers and Sun collapsible like Birds. Default
-         is sun open, while others closed"): Map, Layers, Birds closed, Sun open -->
+         is sun open, while others closed"): Map, Birds closed, Sun open; Map and Layers one Map section (2026-10-16: "merge the
+         Map and Layers subsections into a Map subsection") — the base map, then what is drawn on it -->
     <details class="sec" id="mapSec"><summary>Map</summary>
     <div class="row w">Map <select id="basemap" style="width:auto"><option value="slope">Plain</option><option value="kv_topo">Kartverket topo</option><option value="kv_grey">Kartverket greyscale</option><option value="osm">OpenStreetMap (OpenTopoMap)</option><option value="cyclosm">Paths &amp; cycling (CyclOSM)</option><option value="esri_st">Streets (Esri)</option><option value="esri">Aerial (Esri)</option><option value="wayback">Aerial, earlier photos (Esri Wayback)</option></select>
 </div>
     <div class="row w" id="wbRow" hidden>Photo <select id="wbSel" style="width:auto;max-width:230px"></select></div>
-    </details>
-    <details class="sec" id="layersSec"><summary>Layers</summary>
       <div class="row"><label class="ly"><input type="checkbox" id="lyContours" checked> Contours (5 m, labelled every 25 m)</label></div>
       <div id="lyFiles"></div>
       <div class="row"><label class="ly"><input type="checkbox" id="lyMarkers" checked> Centre, circles &amp; steepest point</label></div>
