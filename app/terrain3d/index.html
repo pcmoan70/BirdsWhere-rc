@@ -2019,7 +2019,7 @@ canvas.addEventListener("touchstart", ev => { twist = ev.touches.length === 2 ? 
 canvas.addEventListener("touchmove", ev => {
   if (ev.touches.length !== 2 || twist === null) return;
   const a = tang(ev); let d = a - twist; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI;
-  twist = a; if (Math.abs(d) > 0.002) rotateBy(-d);
+  twist = a; if (Math.abs(d) > 0.002) rotateBy(d);   // the terrain turns WITH the fingers (owner, 2026-10-16: it turned the opposite way)
 }, { passive: true });
 canvas.addEventListener("touchend", ev => { if (ev.touches.length < 2) twist = null; }, { passive: true });
 const amb = new THREE.AmbientLight(0xffffff, 0.75), sun = new THREE.DirectionalLight(0xffffff, 0.5);
