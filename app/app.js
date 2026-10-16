@@ -924,8 +924,17 @@
     var empty = !el || el.childNodes.length === 0;
     if (empty === statusWasEmpty) return;
     statusWasEmpty = empty;
-    try { fitMapHeight(); } catch (e) {}
-    try { if (map) map.invalidateSize(); } catch (e) {}
+    // Not a move (owner, 2026-10-16: the line above the map "changes back and forth in size every 1 second … depends
+    // on where screenview is placed"): invalidateSize fires move + moveend, so every view-driven reload ran again on
+    // each status edge — a reload that sets or clears a status (or its fetch dots) changed the map's height, which
+    // "moved" the map, which reloaded… The view itself is unchanged, so its move events are held back here.
+    try {
+      if (map) {
+        var fire0 = map.fire;
+        map.fire = function (type) { return type === "move" || type === "moveend" ? this : fire0.apply(this, arguments); };
+        try { fitMapHeight(); map.invalidateSize({ pan: false }); } finally { map.fire = fire0; }
+      } else fitMapHeight();
+    } catch (e) {}
   }
   // Emptying the line collapses it (CSS :empty) and the map — with the zoom buttons
   // and the overlay control drawn inside it — jumps up by a line. Done on the

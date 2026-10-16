@@ -2527,7 +2527,12 @@ window.AppPoints = (function () {
   // (owner, 2026-10-15: the owl list's cliff polygons — 14k areas with the rings — were hidden below street-level
   // zoom, the old fixed gate, where only the dots showed; regionally a few hundred are in view, cheap to draw)
   var POLY_CULL_MIN = 1500, POLY_VIEW_MAX = 2500;
-  var mpAreasMsg = false;
+  var mpAreasMsg = "";   // the "zoom in to see the areas" note while it is up (cleared only if it is still the one shown)
+  function clearAreasMsg() {
+    if (!mpAreasMsg) return;
+    var el = document.getElementById("app-status"); if (el && el.textContent === mpAreasMsg) setStatus("");
+    mpAreasMsg = "";
+  }
   // an area under ~6 px across at the current zoom: drawn, it is just a dot — it shows once zoomed in far enough
   var polyBB = new WeakMap();   // area → its bounding box (kept off the area itself: lists are saved and synced as they are)
   function polyTiny(pg) {
@@ -2637,9 +2642,13 @@ window.AppPoints = (function () {
       var pvb = getMap().getBounds().pad(0.2), inView = 0;
       pbb = [pvb.getSouth(), pvb.getWest(), pvb.getNorth(), pvb.getEast()];
       shownLists.forEach(function (c) { (c.polys || []).forEach(function (pg) { if (pg && pg.r && pg.r.length >= 3 && polyInBox(pg, pbb)) inView++; }); });
-      if (inView > POLY_VIEW_MAX) { pbb = null; setStatus(t("points.areasZoom", { n: nPoly })); mpAreasMsg = true; }
-      else if (mpAreasMsg) { setStatus(""); mpAreasMsg = false; }   // areas drawn again: the "zoom in" note goes
-    }
+      // hysteresis (owner, 2026-10-16: the note above the map "changes back and forth in size every 1 second"): the
+      // note itself changes the map's height, the refit redraws, and near the limit the count in view crossed it
+      // back and forth — so once hidden, the areas come back only below 75 % of the limit
+      var lim = mpAreasMsg ? 0.75 * POLY_VIEW_MAX : POLY_VIEW_MAX;
+      if (inView > lim) { pbb = null; if (!mpAreasMsg) { mpAreasMsg = t("points.areasZoom", { n: nPoly }); setStatus(mpAreasMsg); } }
+      else clearAreasMsg();   // areas drawn again: the "zoom in" note goes
+    } else clearAreasMsg();
     if (!mpPolyCulling || pbb) shownLists.forEach(function (c) {
       (c.polys || []).forEach(function (pg) {
         if (!pg || !pg.r || pg.r.length < 3) return;
