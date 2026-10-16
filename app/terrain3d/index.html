@@ -132,7 +132,7 @@
 <!-- the map controls in one column on the right (owner, 2026-10-15: "the controls on the right hand side should be one
      column and collapsible"): › tucks them away, ‹ brings them back -->
 <div id="rside"><button id="rsideX" title="Hide the map controls">›</button>
-<div id="rot"><button id="measure" title="Measure: tap two points on the terrain">📏</button><button id="dragmode" title="One-finger / left drag: move the map (tap for rotate)">✋</button><button id="rotl" title="Rotate left 15°">⟲</button><button id="rotr" title="Rotate right 15°">⟳</button><button id="tiltu" title="Tilt up (look more from above)">▲</button><button id="tiltd" title="Tilt down (look more from the side)">▼</button><button id="north" title="North up">N</button><button id="aerial" title="Aerial photo of the place in view, in Norgeskart (Norge i bilder)">🛰</button></div>
+<div id="rot"><button id="measure" title="Measure: tap two points on the terrain">📏</button><button id="dragmode" title="One-finger / left drag: move the map (tap for rotate)">✋</button><button id="rotl" title="Rotate left 15°">⟲</button><button id="rotr" title="Rotate right 15°">⟳</button><button id="tiltu" title="Tilt up (look more from above)">▲</button><button id="tiltd" title="Tilt down (look more from the side)">▼</button><button id="north" title="North up">N</button><button id="aerial" title="Aerial photo of the place in view, in Norgeskart (Norge i bilder)">🛰</button><button id="birdswhere" title="Open BirdsWhere (thebirding.site) at this locality">🐦</button></div>
 <div id="zoom"><button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button></div>
 </div><button id="rsideOpen" title="Show the map controls" hidden>‹</button>
 <div id="gate" hidden style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,12,16,.6)"><div class="panel" style="position:static;max-width:340px;text-align:center"><div style="margin-bottom:10px">A terrain shared on Google Drive. Sign in with the Google account it is shared with to open it.</div><button id="gateGo" style="font-size:16px;padding:8px 14px">Sign in with Google to open</button><div style="margin-top:8px"><button id="gateX" style="background:#555">Not now</button></div></div></div>
@@ -2276,6 +2276,14 @@ $("aerial").onclick = () => {
   const x = controls.target.x, y = -controls.target.z, [la, lo] = UTM.inv(S.X + x, S.Y + y, S.zone), [e33, n33] = UTM.fwd(la, lo, 33);
   const w = 2 * camera.position.distanceTo(controls.target), z = Math.max(8, Math.min(18, Math.round(Math.log2(156543 * Math.cos(la * RAD) * innerWidth / w))));
   open("https://www.norgeskart.no/?zoom=" + z + "&lat=" + n33.toFixed(1) + "&lon=" + e33.toFixed(1) + "&backgroundLayer=Nibcache_UTM33_EUREF89_v2&rotation=0", "_blank", "noopener");
+};
+// 🐦: BirdsWhere centred on the locality — the view's own centre, its pin dropped there (?lat=&lon=&zoom=), zoomed so
+// the view's square fits (owner, 2026-10-16: "add a button to open thebirding.site centered on the locality center")
+$("birdswhere").onclick = () => {
+  if (!S) return;
+  const [la, lo] = UTM.inv(S.X, S.Y, S.zone);
+  const z = Math.max(8, Math.min(16, Math.round(Math.log2(156543 * Math.cos(la * RAD) * Math.min(innerWidth, innerHeight) / (2.4 * S.R)))));
+  open("https://thebirding.site/?lat=" + la.toFixed(5) + "&lon=" + lo.toFixed(5) + "&zoom=" + z, "_blank", "noopener");
 };
 
 // ---- measuring (owner, 2026-10-12: "a measuring tool, measuring distance horizontal and vertical"):
