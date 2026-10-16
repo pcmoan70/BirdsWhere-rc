@@ -723,6 +723,7 @@ window.AppPoints = (function () {
       if (o.route) c.route = true;
       internPoints([c]); mpCollections.push(c); shownColls[nm] = true; n += c.points.length; made.push(nm);
     });
+    allTagsOn();
     saveShownState(); saveMapPoints(); renderMapPoints();
     return { lists: made, points: n };
   }
@@ -1575,6 +1576,13 @@ window.AppPoints = (function () {
     mpLoading(t("kml.importing", { name: into || "…" }));
     setTimeout(function () { try { doKmlImportNow(); } finally { mpLoading(null); } }, 30);   // let the overlay paint before the page blocks
   }
+  // A list just dropped or loaded starts with ALL tag chips on (owner, 2026-10-16: "when dropping, or loading a point
+  // list into birdswhere make sure to enable all tags on list initially"): no tag left picked, excluded or switched off
+  // from an earlier list would hide part of it
+  function allTagsOn() {
+    mpFilter = []; mpExclude = []; mpNone = false;
+    try { window.GeoState.save({ mapPointsFilter: [], mapPointsExclude: [], mapPointsNone: false }); } catch (e) {}
+  }
   function doKmlImportNow() {
     var p = kmlImport; if (!p) return;
     var targetEl = document.getElementById("kml-target");
@@ -1640,6 +1648,7 @@ window.AppPoints = (function () {
     // Commit once for the whole batch: one saveMapPoints / renderMapPoints for N lists
     // instead of N of each (a ten-file import re-rendered the map ten times otherwise).
     function commit() {
+      allTagsOn();
       saveShownState(); saveMapPoints(); renderMapPoints();
       closeKmlImportDialog(); kmlImport = null;
     }
