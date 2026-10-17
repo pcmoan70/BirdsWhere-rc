@@ -19229,20 +19229,27 @@
       }, "block"));
       positionAnchoredMenu(el, x, y);
     }
+    // Within a folder the shown (ticked) lists come first, in the user's own order; the rest
+    // follow alphabetically (owner, 2026-10-17).
     function mpSortedColls() {
+      var sc = mpState.shownColls();
       return mpState.mpCollections().slice().sort(function (a, b) {
         var fa = String(a.folder || ""), fb = String(b.folder || "");
         if (fa !== fb) return fa.localeCompare(fb);
-        var oa = (a.order == null) ? 1e9 : +a.order, ob = (b.order == null) ? 1e9 : +b.order;
-        if (oa !== ob) return oa - ob;
+        var va = !!sc[a.name], vb = !!sc[b.name];
+        if (va !== vb) return va ? -1 : 1;
+        if (va) {
+          var oa = (a.order == null) ? 1e9 : +a.order, ob = (b.order == null) ? 1e9 : +b.order;
+          if (oa !== ob) return oa - ob;
+        }
         return a.name.localeCompare(b.name);
       });
     }
-    // Move a list one step within its folder: the folder's lists get explicit orders
+    // Move a shown list one step among the shown lists of its folder: they get explicit orders
     // (their current positions) the first time, then the two neighbours swap.
     function mpMoveColl(name, dir) {
-      var all = mpSortedColls(), c = all.filter(function (x) { return x.name === name; })[0]; if (!c) return;
-      var f = String(c.folder || ""), grp = all.filter(function (x) { return String(x.folder || "") === f; });
+      var sc = mpState.shownColls(), all = mpSortedColls(), c = all.filter(function (x) { return x.name === name; })[0]; if (!c || !sc[name]) return;
+      var f = String(c.folder || ""), grp = all.filter(function (x) { return String(x.folder || "") === f && !!sc[x.name]; });
       grp.forEach(function (x, i) { x.order = i; });
       var i = grp.indexOf(c), j = i + dir; if (j < 0 || j >= grp.length) return;
       grp[i].order = j; grp[j].order = i;
@@ -19748,8 +19755,10 @@
                                     'data-name="' + escapeHtml(name) + '"');
       if (count) html += row("mp-coll-dl", ico("download"), t("points.download"), t("points.downloadDesc"));
       if (type === "p") {
-        html += row("mp-coll-up", "\u25B2", t("points.moveUp"), t("points.moveDesc"), 'data-name="' + escapeHtml(name) + '"');
-        html += row("mp-coll-down", "\u25BC", t("points.moveDown"), t("points.moveDesc"), 'data-name="' + escapeHtml(name) + '"');
+        if (mpState.shownColls()[name]) {   // hidden lists sit alphabetically below the shown ones: nothing to move
+          html += row("mp-coll-up", "\u25B2", t("points.moveUp"), t("points.moveDesc"), 'data-name="' + escapeHtml(name) + '"');
+          html += row("mp-coll-down", "\u25BC", t("points.moveDown"), t("points.moveDesc"), 'data-name="' + escapeHtml(name) + '"');
+        }
         html += row("mp-coll-folder", ico("folder"), t("points.moveFolder"), t("points.moveFolderDesc"), 'data-name="' + escapeHtml(name) + '"');
       }
       if (type === "p") {

@@ -682,7 +682,8 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   areas always show. The filter is applied one second after the last tap and remembered on the device — a one-button Distance ⇄ Name sort toggle, and the merged points sorted by distance. Each saved
   list is one row — **tick · name · funnel · ⋯** — and the **⋯** opens a menu where every action is a
   labelled row that says what it does: navigate, share link, edit list, download, **Move up / Move
-  down** (your own order), **Move to folder…** (lists can be grouped in folders; a folder header folds
+  down** (your own order, for shown lists: within a folder the shown lists come first in that order,
+  the hidden ones below them alphabetically), **Move to folder…** (lists can be grouped in folders; a folder header folds
   away and its tick shows or hides every list in it), — ⋯, right-click or press-and-hold the folder header for rename, download the
   folder, remove it keeping the lists, or delete it with them — delete (a protected
   list shows the lock there instead of delete). **Press-and-hold or
