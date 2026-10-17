@@ -1114,6 +1114,7 @@
   "link.birdlife": "BirdLife",
   "link.aloft": "Radar",
   "link.mapant": "MapAnt",
+  "link.terrain3d": "3D-maastik",
   "link.spInCountry": "Liigid riigis",
   "ctrl.countryres": "Riigi näidistihedus",
   "ctrl.fetchGroups": "Päritavad liigirühmad",

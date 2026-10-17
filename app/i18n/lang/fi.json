@@ -1114,6 +1114,7 @@
   "link.birdlife": "BirdLife",
   "link.aloft": "Radar",
   "link.mapant": "MapAnt",
+  "link.terrain3d": "3D-maasto",
   "link.spInCountry": "Maan lajit",
   "ctrl.countryres": "Maan näytteenoton resoluutio",
   "ctrl.fetchGroups": "Haettavat lajityypit",

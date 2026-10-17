@@ -1181,7 +1181,10 @@ an **eBird Record Format CSV** ready for [ebird.org/import](https://ebird.org/im
   here*, *Add to route* and *Offline maps* (the coordinates line copies them); the click popup adds
   a **Birdingplaces** link (birdingplaces.eu at the point),
   and, for Sweden & Norway, a **Fågelkartan** link to that point's county / fylke page. In Norway,
-  with *Experimental features* on, **More ▸** also carries a **MapAnt** link, opening the
+  with *Experimental features* on, the popup gets a **3-D terrain** button, which opens the
+  [3-D terrain viewer](https://pcmoan70.github.io/3d_terrain/) at the clicked point (it builds a
+  1 m elevation model 2 km around it from Kartverket's height data and lets you move the centre or
+  radius before building), and **More ▸** also carries a **MapAnt** link, opening the
   LiDAR-derived orienteering map of the country (mapant.no) centred on the clicked point — contours,
   boulders, marshes and vegetation density down to ~0.5 m/px, which reads terrain far better than
   any of the basemaps. It is a link rather than a basemap because MapAnt publishes its tiles in

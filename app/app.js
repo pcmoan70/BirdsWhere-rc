@@ -25008,6 +25008,15 @@
       // mapant.no centred on the clicked point instead (their hash is #zoom/lat/lon).
       // Norway-only by coverage, and Experimental-gated like the radar link.
       if (cc === "NO" && experimentalOn()) {
+        // 3-D terrain: the clicked point opens pcmoan70.github.io/3d_terrain, which builds a
+        // 1 m DTM view (Kartverket, Norway only) 2 km around it. MAIN-level, before More.
+        wrap.insertBefore(
+          makePopupBtn(t("link.terrain3d") + " ↗", "btn-green", function () {
+            mk.closePopup();
+            openExternal("https://pcmoan70.github.io/3d_terrain/?lat=" + lat.toFixed(5) + "&lon=" + lon.toFixed(5) + "&r=2000");
+          }),
+          moreBtn
+        );
         moreSub.appendChild(makePopupBtn(t("link.mapant") + " ↗", "btn-light", function () {
           mk.closePopup();
           openExternal("https://mapant.no/#8/" + lat.toFixed(5) + "/" + lon.toFixed(5));

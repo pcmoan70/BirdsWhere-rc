@@ -1129,6 +1129,7 @@ window.GeoI18N = (function () {
         "link.birdlife": "BirdLife",
         "link.aloft": "Radar",
         "link.mapant": "MapAnt",
+        "link.terrain3d": "3-D terrain",
         "link.spInCountry": "Species in country",
         "ctrl.countryres": "Country sampling resolution",
         "ctrl.fetchGroups": "Species types to fetch",

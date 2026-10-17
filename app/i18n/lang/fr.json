@@ -1114,6 +1114,7 @@
   "link.birdlife": "BirdLife",
   "link.aloft": "Radar",
   "link.mapant": "MapAnt",
+  "link.terrain3d": "Terrain 3D",
   "link.spInCountry": "Espèces du pays",
   "ctrl.countryres": "Résolution d’échantillonnage du pays",
   "ctrl.fetchGroups": "Types d’espèces à récupérer",
