@@ -54,6 +54,7 @@
   "settings.updateReady": "Zaktualizuj do {v}",
   "settings.updatedTo": "Zaktualizowano do {v}",
   "settings.updateApplying": "Aktualizowanie…",
+  "settings.updateFailed": "Aktualizacja nie powiodła się, spróbuj ponownie za minutę",
   "inat.colName": "Nazwa",
   "inat.starHint": "* = własne pliki nazw aplikacji na tym urządzeniu również obejmują ten język",
   "confusion.tipMatch": "Match: ocena modelu błędnych oznaczeń (0–100), że obserwatorzy pomyliliby te dwa ptaki przy równej ekspozycji — wyuczona z 20 000 prawdziwych pomyłek na iNaturalist, z nazw ptaków tak, jak czyta je BioCLIP 2, kształtu i wielkości (AVONET), niszy ekologicznej, rodzaju i barwy upierzenia. Gdzie żyją oba ptaki, celowo pominięto: to wchodzi raz, jako Tutaj. Jak porównywane są nazwy: BioCLIP 2, model wytrenowany na milionach opisanych zdjęć przyrody, zamienia naukową nazwę każdego gatunku na wektor osadzenia (embedding) z 768 liczb, leżący blisko wektorów zdjęć tego gatunku. Podobieństwo kosinusowe obu wektorów (1 = ten sam kierunek) i miejsce każdego ptaka wśród najbliższych nazw drugiego to dane modelu o podobieństwie: ptaki, których nazwy wypadają blisko siebie, zwykle są podobne na zdjęciach.",

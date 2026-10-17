@@ -54,6 +54,7 @@
   "settings.updateReady": "Atnaujinti į {v}",
   "settings.updatedTo": "Atnaujinta į {v}",
   "settings.updateApplying": "Atnaujinama…",
+  "settings.updateFailed": "Atnaujinti nepavyko, pabandykite dar kartą po minutės",
   "inat.colName": "Pavadinimas",
   "inat.starHint": "* = šią kalbą taip pat apima programėlės pavadinimų failai šiame įrenginyje",
   "confusion.tipMatch": "Match: klaidingo nustatymo modelio įvertis (0–100), kad stebėtojai šiuos du paukščius supainiotų esant vienodai ekspozicijai — išmoktas iš 20 000 tikrų supainiojimų iNaturalist, iš paukščių pavadinimų, kaip juos skaito BioCLIP 2, formos ir dydžio (AVONET), ekologinės nišos, genties ir plunksnų spalvos. Kur abu paukščiai gyvena, sąmoningai praleista: tai įtraukiama vieną kartą, kaip Čia. Kaip lyginami pavadinimai: BioCLIP 2 – modelis, išmokytas iš milijonų pažymėtų gamtos nuotraukų – kiekvienos rūšies mokslinį pavadinimą paverčia 768 skaičių įterpinio (embedding) vektoriumi, esančiu arti tos rūšies nuotraukų vektorių. Dviejų paukščių vektorių kosinusinis panašumas (1 = ta pati kryptis) ir kiekvieno vieta tarp artimiausių kito pavadinimų yra modelio panašumo įvestys: paukščiai, kurių pavadinimai atsiduria arti, nuotraukose dažnai būna panašūs.",

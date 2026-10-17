@@ -1234,7 +1234,10 @@ size-capped pool, and the species photos of the Images layout in a capped cache 
 **Updates never interrupt you**: when a new version is ready a small **red badge** appears on the
 Settings gear and a *Reload to update* button lights up inside Settings — you reload when you
 choose. The app checks for updates on focus, every 15 minutes, and **immediately whenever you open
-Settings** (a quiet no-op while offline).
+Settings** (a quiet no-op while offline). An update is installed only when every file it downloads
+matches the version's manifest, so a deploy still spreading over the server's caches can never
+leave a mix of old and new code on your device; until it has spread, the button says *Update
+failed, try again in a minute* and the next check tries again.
 
 **Install** — open the app **online at least once** so it can cache itself, then:
 

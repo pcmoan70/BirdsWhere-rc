@@ -54,6 +54,7 @@
   "settings.updateReady": "Uppdatera till {v}",
   "settings.updatedTo": "Uppdaterad till {v}",
   "settings.updateApplying": "Uppdaterar…",
+  "settings.updateFailed": "Uppdateringen misslyckades, försök igen om en minut",
   "inat.colName": "Namn",
   "inat.starHint": "* = appens egna namnfiler på den här enheten täcker också det här språket",
   "confusion.tipMatch": "Match: felbestämningsmodellens skattning (0–100) av att skådare skulle förväxla dessa två vid lika exponering — lärd från 20 000 verkliga förväxlingar på iNaturalist, utifrån fåglarnas namn som BioCLIP 2 läser dem, form och storlek (AVONET), ekologisk nisch, släkte och dräktfärg. Var de två fåglarna lever är medvetet utelämnat: det kommer in en gång, som Här. Så jämförs namnen: BioCLIP 2, en modell tränad på miljontals märkta naturbilder, gör varje arts vetenskapliga namn till en embedding-vektor med 768 tal som ligger nära vektorerna för bilder av arten. Cosinuslikheten mellan de två fåglarnas vektorer (1 = samma riktning) och hur högt var och en rankas bland den andras närmaste namn är modellens förväxlingsdata: fåglar vars namn hamnar nära varandra brukar likna varandra på bild.",

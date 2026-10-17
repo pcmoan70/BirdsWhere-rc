@@ -54,6 +54,7 @@
   "settings.updateReady": "Päivitä versioon {v}",
   "settings.updatedTo": "Päivitetty versioon {v}",
   "settings.updateApplying": "Päivitetään…",
+  "settings.updateFailed": "Päivitys epäonnistui, yritä hetken kuluttua uudelleen",
   "inat.colName": "Nimi",
   "inat.starHint": "* = myös sovelluksen omat nimitiedostot tällä laitteella kattavat tämän kielen",
   "confusion.tipMatch": "Match: virhemääritysmallin arvio (0–100) siitä, että lintuharrastajat sekoittaisivat nämä kaksi yhtä suurella altistuksella — opittu 20 000 todellisesta iNaturalist-sekaannuksesta lintujen nimistä sellaisina kuin BioCLIP 2 ne lukee, muodosta ja koosta (AVONET), ekologisesta lokerosta, suvusta ja höyhenpuvun väristä. Lintujen esiintymisalue on tarkoituksella jätetty pois: se tulee mukaan kerran, kohtana Täällä. Näin nimiä verrataan: BioCLIP 2, miljoonilla merkityillä luontokuvilla opetettu malli, muuttaa kunkin lajin tieteellisen nimen 768 luvun upotusvektoriksi, joka on lähellä lajin kuvien vektoreita. Kahden linnun vektorien kosinisamankaltaisuus (1 = sama suunta) ja kunkin sijoitus toisen lähimpien nimien joukossa ovat mallin sekaantumistietoja: linnut, joiden nimet osuvat lähelle toisiaan, näyttävät usein samanlaisilta kuvissa.",

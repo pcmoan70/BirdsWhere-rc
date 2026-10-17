@@ -545,6 +545,7 @@ window.GeoI18N = (function () {
         "settings.updateReady": "Update to {v}",
         "settings.updatedTo": "Updated to {v}",
         "settings.updateApplying": "Updating…",
+        "settings.updateFailed": "Update failed, try again in a minute",
         "ctrl.savedloc": "Saved locations",
         "ph.savedloc": "No saved locations yet",
         "loc.delete": "Delete location",

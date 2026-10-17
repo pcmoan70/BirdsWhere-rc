@@ -54,6 +54,7 @@
   "settings.updateReady": "Opdater til {v}",
   "settings.updatedTo": "Opdateret til {v}",
   "settings.updateApplying": "Opdaterer…",
+  "settings.updateFailed": "Opdateringen mislykkedes, prøv igen om lidt",
   "inat.colName": "Navn",
   "inat.starHint": "* = appens egne navnefiler på denne enhed dækker også dette sprog",
   "confusion.tipMatch": "Match: fejlbestemmelsesmodellens skøn (0–100) over at fuglekiggere ville forveksle disse to ved lige eksponering — lært af 20.000 reelle forvekslinger på iNaturalist, ud fra fuglenes navne som BioCLIP 2 læser dem, form og størrelse (AVONET), økologisk niche, slægt og fjerdragtsfarve. Hvor de to fugle lever er bevidst udeladt: det kommer ind én gang, som Her. Sådan sammenlignes navnene: BioCLIP 2, en model trænet på millioner af mærkede naturbilleder, gør hver arts videnskabelige navn til en embedding-vektor på 768 tal, der ligger tæt på vektorerne for billeder af arten. Cosinus-ligheden mellem de to fugles vektorer (1 = samme retning) og hvor højt hver af dem rangerer blandt den andens nærmeste navne er modellens forvekslingsdata: fugle, hvis navne lander tæt på hinanden, ligner ofte hinanden på billeder.",

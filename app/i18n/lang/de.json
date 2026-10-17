@@ -54,6 +54,7 @@
   "settings.updateReady": "Auf {v} aktualisieren",
   "settings.updatedTo": "Aktualisiert auf {v}",
   "settings.updateApplying": "Wird aktualisiert…",
+  "settings.updateFailed": "Update fehlgeschlagen, in einer Minute erneut versuchen",
   "inat.colName": "Name",
   "inat.starHint": "* = auch die eigenen Namensdateien der App auf diesem Gerät decken diese Sprache ab",
   "confusion.tipMatch": "Match: die Schätzung des Fehlbestimmungsmodells (0–100), dass Beobachter diese beiden bei gleicher Exposition verwechseln — gelernt aus 20.000 echten Verwechslungen auf iNaturalist, aus den Vogelnamen, wie BioCLIP 2 sie liest, Gestalt und Größe (AVONET), ökologischer Nische, Gattung und Gefiederfarbe. Wo die beiden Vögel leben, bleibt bewusst außen vor: das kommt einmal hinein, als Hier. So werden die Namen verglichen: BioCLIP 2, ein mit Millionen beschrifteter Naturfotos trainiertes Modell, macht aus dem wissenschaftlichen Namen jeder Art einen Embedding-Vektor aus 768 Zahlen, der nahe bei den Vektoren der Fotos dieser Art liegt. Die Kosinus-Ähnlichkeit der beiden Vektoren (1 = gleiche Richtung) und wie weit vorn jede Art unter den nächsten Namen der anderen steht, sind die Verwechslungs-Eingaben des Modells: Vögel, deren Namen nah beieinander liegen, sehen sich auf Fotos meist ähnlich.",

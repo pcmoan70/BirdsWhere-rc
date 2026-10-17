@@ -54,6 +54,7 @@
   "settings.updateReady": "Aggiorna a {v}",
   "settings.updatedTo": "Aggiornato alla {v}",
   "settings.updateApplying": "Aggiornamento…",
+  "settings.updateFailed": "Aggiornamento non riuscito, riprova tra un minuto",
   "inat.colName": "Nome",
   "inat.starHint": "* = anche i file dei nomi dell’app su questo dispositivo coprono questa lingua",
   "confusion.tipMatch": "Match: la stima del modello di errori di identificazione (0–100) che i birdwatcher confonderebbero questi due uccelli a parità di esposizione — appresa da 20.000 confusioni reali su iNaturalist, dai nomi degli uccelli come li legge BioCLIP 2, forma e dimensioni (AVONET), nicchia ecologica, genere e colore del piumaggio. Dove vivono i due uccelli è lasciato fuori di proposito: entra una sola volta, come Qui. Come vengono confrontati i nomi: BioCLIP 2, un modello addestrato su milioni di foto naturalistiche etichettate, trasforma il nome scientifico di ogni specie in un vettore di embedding di 768 numeri, vicino ai vettori delle foto di quella specie. La similarità coseno dei due vettori (1 = stessa direzione) e la posizione di ciascun uccello tra i nomi più vicini dell'altro sono gli input di somiglianza del modello: uccelli i cui nomi cadono vicini tendono ad assomigliarsi in foto.",

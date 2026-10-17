@@ -8450,6 +8450,7 @@
       // when a newer version is known to be waiting on the server, apply it after a moment.
       var bfu = document.getElementById("boot-fail-update");
       if (bfu) bfu.addEventListener("click", function () { bfu.disabled = true; if (window.SWUpdate) window.SWUpdate.apply(); else window.location.reload(); });
+      if (window.SWUpdate) window.SWUpdate.onfail = function () { if (bfu) bfu.disabled = false; };   // the install failed — let them try again
       setTimeout(function () { if (window.SWUpdate && (window.SWUpdate.pending || window.SWUpdate.worker)) window.SWUpdate.apply(); }, 4000);
     }
   }
@@ -21134,6 +21135,9 @@
         upBtn.disabled = true; upBtn.textContent = t("settings.updateApplying");
         SW.apply();   // skipWaiting → controllerchange reloads the page
       });
+      // The install failed (a file still the old version on the server, or offline): say so and
+      // let the user try again — the next automatic check retries too.
+      SW.onfail = function () { if (upBtn) { upBtn.disabled = false; upBtn.textContent = "↻ " + t("settings.updateFailed"); } };
     })();
 
     // ---- Clear cached data (Settings → Storage) ----------------------------

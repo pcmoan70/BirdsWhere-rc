@@ -22,29 +22,40 @@ if ("serviceWorker" in navigator) {
     // just re-serves the old shell (the "falls back to the previous version" bug).
     apply: function () {
       function activate(w) { if (w) { try { w.postMessage({ type: "skipWaiting" }); } catch (e) {} } }
-      // If the worker is still installing, wait for it to finish, then skipWaiting.
-      function onceInstalled(reg, w) {
-        if (!w) return false;
-        if (w.state === "installed") { activate(w); return true; }
-        w.addEventListener("statechange", function () { if (w.state === "installed") activate(reg.waiting || w); });
-        return true;
-      }
+      // The install did not produce a worker to activate — a file missing or still the previous
+      // version's on the server (the worker checks every file against files.json), or offline.
+      // Tell the app (the button says so and re-enables) instead of reloading onto the old shell,
+      // which only re-lit the button and looked like nothing happened (owner, 2026-10-17).
+      function fail(why) { try { if (SWUpdate.onfail) SWUpdate.onfail(why); } catch (e) {} }
       // Belt-and-braces: if controllerchange never fires (skipWaiting silently blocked),
       // reload anyway after a few seconds so the button doesn't sit on "Updating…".
       function fallbackReload() { setTimeout(function () { if (!SWUpdate._reloaded) { SWUpdate._reloaded = true; window.location.reload(); } }, 7000); }
-
-      if (SWUpdate.worker) { activate(SWUpdate.worker); fallbackReload(); return; }
+      // An installing worker: activate it once installed; report when its install fails (redundant).
+      function watch(reg, w) {
+        if (!w) return false;
+        if (w.state === "installed") { activate(w); fallbackReload(); return true; }
+        w.addEventListener("statechange", function () {
+          if (w.state === "installed") { activate(reg.waiting || w); fallbackReload(); }
+          else if (w.state === "redundant" && !reg.waiting && !reg.installing) fail("install");
+        });
+        return true;
+      }
+      // Always the LIVE registration: a remembered waiting worker may have been replaced by a
+      // newer one since (then it is redundant and a message to it does nothing).
       if (!navigator.serviceWorker.getRegistration) { window.location.reload(); return; }
       navigator.serviceWorker.getRegistration().then(function (reg) {
         if (!reg) { window.location.reload(); return; }
         if (reg.waiting) { activate(reg.waiting); fallbackReload(); return; }
-        if (onceInstalled(reg, reg.installing)) { fallbackReload(); return; }
+        if (watch(reg, reg.installing)) return;
         // Nothing pending locally — pull the latest from the server, then activate it.
         Promise.resolve(reg.update()).then(function () {
           if (reg.waiting) { activate(reg.waiting); fallbackReload(); }
-          else if (onceInstalled(reg, reg.installing)) { fallbackReload(); }
-          else window.location.reload();   // genuinely up to date (or offline) → a plain reload is fine
-        }).catch(function () { window.location.reload(); });
+          else if (!watch(reg, reg.installing)) {
+            // No new worker although the server's version differs (that is why the button was
+            // lit): its install failed at once, or the check could not reach sw.js.
+            if (SWUpdate.pending) fail("none"); else window.location.reload();
+          }
+        }).catch(function () { fail("update"); });
       }).catch(function () { window.location.reload(); });
     }
   };

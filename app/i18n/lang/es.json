@@ -54,6 +54,7 @@
   "settings.updateReady": "Actualizar a {v}",
   "settings.updatedTo": "Actualizado a {v}",
   "settings.updateApplying": "Actualizando…",
+  "settings.updateFailed": "La actualización falló, inténtalo de nuevo en un minuto",
   "inat.colName": "Nombre",
   "inat.starHint": "* = los archivos de nombres propios de la app en este dispositivo también cubren este idioma",
   "confusion.tipMatch": "Match: la estimación del modelo de errores de identificación (0–100) de que los observadores confundirían estas dos aves a igual exposición — aprendida de 20 000 confusiones reales en iNaturalist, a partir de los nombres de las aves tal como los lee BioCLIP 2, forma y tamaño (AVONET), nicho ecológico, género y color del plumaje. Dónde viven las dos aves se deja fuera a propósito: eso entra una sola vez, como Aquí. Cómo se comparan los nombres: BioCLIP 2, un modelo entrenado con millones de fotos de naturaleza etiquetadas, convierte el nombre científico de cada especie en un vector de embedding de 768 números, cercano a los vectores de las fotos de esa especie. La similitud coseno de los dos vectores (1 = misma dirección) y el puesto de cada ave entre los nombres más cercanos de la otra son las entradas de parecido del modelo: las aves cuyos nombres quedan cerca suelen parecerse en las fotos.",

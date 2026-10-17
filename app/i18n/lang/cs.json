@@ -54,6 +54,7 @@
   "settings.updateReady": "Aktualizovat na {v}",
   "settings.updatedTo": "Aktualizováno na {v}",
   "settings.updateApplying": "Aktualizace…",
+  "settings.updateFailed": "Aktualizace se nezdařila, zkuste to za chvíli znovu",
   "inat.colName": "Název",
   "inat.starHint": "* = i vlastní soubory názvů aplikace v tomto zařízení pokrývají tento jazyk",
   "confusion.tipMatch": "Match: odhad modelu chybných určení (0–100), že by pozorovatelé tyto dva ptáky při stejné expozici zaměnili — naučený z 20 000 skutečných záměn na iNaturalist, z názvů ptáků, jak je čte BioCLIP 2, tvaru a velikosti (AVONET), ekologické niky, rodu a barvy opeření. Kde oba ptáci žijí, je záměrně vynecháno: to vstupuje jednou, jako Zde. Jak se porovnávají jména: BioCLIP 2, model naučený na milionech popsaných fotografií přírody, převede vědecké jméno každého druhu na vektor embeddingu o 768 číslech, který leží blízko vektorům fotografií daného druhu. Kosinová podobnost obou vektorů (1 = stejný směr) a pořadí každého ptáka mezi nejbližšími jmény toho druhého jsou vstupy modelu o podobnosti: ptáci, jejichž jména leží blízko sebe, si na fotografiích bývají podobní.",

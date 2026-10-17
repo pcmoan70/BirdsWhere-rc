@@ -54,6 +54,7 @@
   "settings.updateReady": "Mettre à jour vers {v}",
   "settings.updatedTo": "Mis à jour vers {v}",
   "settings.updateApplying": "Mise à jour…",
+  "settings.updateFailed": "Échec de la mise à jour, réessayez dans une minute",
   "inat.colName": "Nom",
   "inat.starHint": "* = les fichiers de noms propres à l’application sur cet appareil couvrent aussi cette langue",
   "confusion.tipMatch": "Match : l’estimation du modèle d’erreurs d’identification (0–100) que des ornithologues confondraient ces deux oiseaux à exposition égale — apprise de 20 000 confusions réelles sur iNaturalist, à partir des noms tels que BioCLIP 2 les lit, de la forme et de la taille (AVONET), de la niche écologique, du genre et de la couleur du plumage. Où vivent les deux oiseaux est volontairement laissé de côté : cela entre une seule fois, comme Ici. Comment les noms sont comparés : BioCLIP 2, un modèle entraîné sur des millions de photos naturalistes étiquetées, transforme le nom scientifique de chaque espèce en un vecteur d'embedding de 768 nombres, proche des vecteurs des photos de cette espèce. La similarité cosinus des deux vecteurs (1 = même direction) et le rang de chaque oiseau parmi les noms les plus proches de l'autre sont les entrées « ressemblance » du modèle : des oiseaux dont les noms tombent près l'un de l'autre se ressemblent souvent en photo.",

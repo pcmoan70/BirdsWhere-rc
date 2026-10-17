@@ -54,6 +54,7 @@
   "settings.updateReady": "Uuenda versioonile {v}",
   "settings.updatedTo": "Uuendatud versioonile {v}",
   "settings.updateApplying": "Värskendamine…",
+  "settings.updateFailed": "Uuendamine ebaõnnestus, proovi minuti pärast uuesti",
   "inat.colName": "Nimi",
   "inat.starHint": "* = ka rakenduse enda nimefailid selles seadmes katavad seda keelt",
   "confusion.tipMatch": "Match: väärmäärangumudeli hinnang (0–100), et linnuvaatlejad ajaksid need kaks võrdse kokkupuute korral segi — õpitud 20 000 tõelisest iNaturalisti segiajamisest lindude nimedest, nagu BioCLIP 2 neid loeb, kujust ja suurusest (AVONET), ökoloogilisest nišist, perekonnast ja sulestiku värvist. Kus need kaks lindu elavad, on meelega välja jäetud: see tuleb sisse üks kord, kui Siin. Kuidas nimesid võrreldakse: BioCLIP 2, miljonite märgistatud loodusfotodega õpetatud mudel, teeb iga liigi teaduslikust nimest 768 arvust koosneva sisestusvektori (embedding), mis asub selle liigi fotode vektorite lähedal. Kahe linnu vektorite koosinussarnasus (1 = sama suund) ja kummagi koht teise lähimate nimede seas on mudeli sarnasussisendid: linnud, kelle nimed satuvad üksteise lähedale, on fotodel sageli sarnased.",
