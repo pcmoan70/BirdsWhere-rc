@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2125";
+var VERSION = "v2126";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Updates are checked file by file before they install, so a deploy still spreading can no longer leave a mix of old and new code; when an update cannot install yet, the button says so instead of reloading the old version.",
-  "\u2022 Norway, with Experimental features on: a clicked point can open the 3-D terrain viewer 2 km around it (\u201c3-D terrain\u201d in the popup).",
+  "\u2022 3-D terrain (Norway, Experimental features on): the button now takes the map's dots with it \u2014 your pins with their notes and the plotted observations within 2 km stand in the 3-D view; tap one for its text.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

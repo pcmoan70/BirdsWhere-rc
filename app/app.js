@@ -11557,7 +11557,7 @@
       else if (detFocusKeys) { if (!detFocusKeys.has(k)) return; }   // list/family hover preview
       else if (!detIsVisible(k, selActive)) return;
       var spKey = (detPlot[k] && detPlot[k].key) || k;
-      (detPlot[k].rows || []).forEach(function (r) { if (detDatePasses(r.date) && detPassesNew(r) && detPassesText(r)) fn(r, spKey); });
+      (detPlot[k].rows || []).forEach(function (r) { if (detDatePasses(r.date) && detPassesNew(r) && detPassesText(r)) fn(r, spKey, k); });
     });
   }
   function detDrawableCount() { var n = 0; eachDrawableRow(function () { n++; }); return n; }
@@ -25014,10 +25014,14 @@
       if (cc === "NO" && experimentalOn()) {
         // 3-D terrain: the clicked point opens pcmoan70.github.io/3d_terrain, which builds a
         // 1 m DTM view (Kartverket, Norway only) 2 km around it. MAIN-level, before More.
+        // The dots on the map inside that square go along in the link's hash (owner, 2026-10-18:
+        // "specify dots with descriptive text from BirdsWhere app to be drawn in 3d view").
         wrap.insertBefore(
           makePopupBtn(t("link.terrain3d") + " ↗", "btn-green", function () {
             mk.closePopup();
-            openExternal("https://pcmoan70.github.io/3d_terrain/?lat=" + lat.toFixed(5) + "&lon=" + lon.toFixed(5) + "&r=2000");
+            var pts = terrain3dPoints(lat, lon, 2000);
+            openExternal("https://pcmoan70.github.io/3d_terrain/?lat=" + lat.toFixed(5) + "&lon=" + lon.toFixed(5) + "&r=2000" +
+              (pts.length ? "#pts=" + encodeURIComponent(JSON.stringify(pts)) : ""));
           }),
           moreBtn
         );
@@ -25483,6 +25487,32 @@
     });
   }
 
+  // The dots drawn on the map within ±rM metres of (lat, lon), as the 3-D terrain viewer's
+  // #pts= list: [lat, lon, name, text, colour] per dot. The user's own pins carry their name,
+  // note and colour; the plotted observations (the same rows the map draws: visible species,
+  // the newest-N cap) carry the species, then date · count · place · observer, in the species
+  // colour. Nearest first, at most 300 — a link of a few tens of kB, which every browser opens.
+  function terrain3dPoints(lat, lon, rM) {
+    var out = [], seen = new Set(), mPerDegLon = 111320 * Math.cos(lat * Math.PI / 180);
+    function add(la, lo, name, text, col) {
+      la = +la; lo = +lo; if (!isFinite(la) || !isFinite(lo)) return;
+      var dx = (lo - lon) * mPerDegLon, dy = (la - lat) * 111320;
+      if (Math.abs(dx) > rM || Math.abs(dy) > rM) return;
+      out.push({ d: dx * dx + dy * dy, v: [+la.toFixed(5), +lo.toFixed(5), String(name || ""), String(text || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(), col || ""] });
+    }
+    (mpState.mpPins() || []).forEach(function (rec) {
+      var p = rec.p; if (!p || seen.has(p)) return; seen.add(p);   // a pin can have a halo record too
+      add(p.lat, p.lon, p.name, p.note, p.color || p.spColor);
+    });
+    var allowed = detDrawAllowed();
+    eachDrawableRow(function (r, key, k) {
+      if (allowed && !allowed.has(r)) return;
+      var txt = [r.date, (r.count !== "" && r.count != null) ? "n = " + r.count : "", r.place, r.observer].filter(Boolean).join(" \u00b7 ");
+      add(r.lat, r.lon, detName(detPlot[k]), txt, speciesColor(key));
+    });
+    out.sort(function (a, b) { return a.d - b.d; });
+    return out.slice(0, 300).map(function (o) { return o.v; });
+  }
   function haversineKm(la1, lo1, la2, lo2) {
     var R = 6371, dLa = (la2 - la1) * Math.PI / 180, dLo = (lo2 - lo1) * Math.PI / 180;
     var a = Math.sin(dLa / 2) * Math.sin(dLa / 2) + Math.cos(la1 * Math.PI / 180) * Math.cos(la2 * Math.PI / 180) * Math.sin(dLo / 2) * Math.sin(dLo / 2);
