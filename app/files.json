@@ -1,5 +1,5 @@
 {
- "_version": "v2126",
+ "_version": "v2127",
  "./": "b8b6f8532cb02ce5",
  "index.html": "b8b6f8532cb02ce5",
  "f/index.html": "33e8fb93adaefc8c",
@@ -24,7 +24,7 @@
  "aggregate.js": "d027e8aefa8f04c6",
  "i18n/strings.js": "05294f942dd8d282",
  "app-data.js": "6832429e27a865cc",
- "whats-new.js": "1e445866c85b2aef",
+ "whats-new.js": "01749b233952c758",
  "countries-lite.json": "96206ae7cf02abfc",
  "manifest.webmanifest": "f2da06f4fd2bfeea",
  "icon.svg": "712d6fbd541ebe94",
