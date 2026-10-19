@@ -21,16 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2127";
+var VERSION = "v2128";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 3-D terrain (Norway, Experimental features on): a clicked point gets a 3-D terrain button that opens the terrain 2 km around it, with the map\u2019s dots along \u2014 your pins with their notes and the plotted observations stand in the 3-D view; hover or tap one for its text.",
-  "\u2022 Points panel: the shown lists come first in each folder, in your own order; the hidden ones follow alphabetically.",
-  "\u2022 Updates: every install is checked file by file, so a mixed app can no longer be installed mid-deploy; a failed update says so on the button instead of reloading the old app.",
+  "\u2022 Rarity alerts start switched off for a new user: no bell, no map dots and no background checks until Settings \u2192 Rarity alerts \u2192 Alerts on. Anyone who already had the feature keeps it as it was.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
