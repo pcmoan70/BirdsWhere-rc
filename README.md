@@ -458,7 +458,7 @@ registered in two databases once instead of twice — off by default).
 
 ## Rarity alerts
 
-A standing **subscription to rarities**: mark any stored location with the **🔔** column
+**Off for a first-time user** — switch it on under Settings → Rarity alerts (*Alerts on*); nothing is gathered, plotted or shown until then. A standing **subscription to rarities**: mark any stored location with the **🔔** column
 (press-and-hold the 🔍 search button to open the stored-locations panel) and, while the app
 is open, eBird's **notable-observations** feed is polled around it (max 50 km — the API's
 limit) at a chosen interval (**10/30/60 min or Manual**, Settings → **Rarity alerts**). Needs the

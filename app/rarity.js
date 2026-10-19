@@ -64,8 +64,12 @@ window.AppRarity = (function () {
   var EBIRD_SPP_LOCALE = { en: "en", sv: "sv", de: "de", es: "es", fr: "fr", nl: "nl", no: "no",
     it: "it", pl: "pl", cs: "cs", et: "et", lt: "lt", fi: "fi", da: "da", pt: "pt_PT" };
   function rarityCfg() {
-    var c = window.GeoState.get("rarityAlerts", null) || {};
-    if (c.enabled == null) c.enabled = true;   // master on/off (toggle in the bell popup)
+    var saved = window.GeoState.get("rarityAlerts", null), c = saved || {};
+    // Master on/off (Settings → Rarity alerts, and the stored-locations panel). OFF for a
+    // first-time user (owner, 2026-10-19: "the birdalert feature should be turned off by
+    // default. (First time users should not see it)"); anyone with a saved config or a
+    // rarity list already in hand keeps the old default, on. The first save persists it.
+    if (c.enabled == null) c.enabled = !!(saved || getRarityList().length);
     // intervalMin 0 = MANUAL: no automatic checks; long-press the bell (or ↻ in
     // the pane) fetches the latest alerts on demand.
     if (!isFinite(+c.intervalMin) || (+c.intervalMin !== 0 && +c.intervalMin < 10)) c.intervalMin = 10;   // 10 min = fastest auto interval (5-min option removed); 0 = manual
@@ -446,7 +450,7 @@ window.AppRarity = (function () {
   // seen-set, so refetching the same area doesn't inflate the tallies).
   function harvestLocalRarities(keys) {
     var cfg = rarityCfg();
-    if (!rarityThOn()) return;
+    if (!rarityThOn() || !cfg.enabled) return;   // off: nothing is gathered in the background
     var adds = [], changed = false;
     keys.forEach(function (k) {
       var e = getDetPlot()[k]; if (!e) return;
