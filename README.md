@@ -4,6 +4,8 @@
 
 > Release-candidate test channel. Production: <https://thebirding.site/>
 
+**Licence:** the application code is open source under the **MIT licence** (`LICENSE`); the model, maps and data carry their own licences, listed in the app under *How it works → Credits & licence* and in `THIRD-PARTY-NOTICES.md`.
+
 An interactive, **100% in-browser** explorer of species **distribution, migration and live
 observations**. Everything runs on your device — there is **no server and no backend of our own**;
 live observations are pulled straight from third-party databases in your browser, and around them

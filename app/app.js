@@ -8300,12 +8300,14 @@
         var mo = new MutationObserver(function (muts) {
           muts.forEach(function (m) {
             var p = m.target;
-            if (p.style.display !== "none" && p.classList && p.classList.contains("dd-panel") && hdr.contains(p)) placeHeaderPanel(p);
+            if (p.style.display === "none") return;
+            if (p.classList && p.classList.contains("dd-panel") && hdr.contains(p)) placeHeaderPanel(p);
+            ensureDdClose(p);   // the × survives the panel's innerHTML rebuilds (childList)
           });
         });
         ["checklists-panel", "settings-panel", "mp-panel"].forEach(function (id) {
           var p = document.getElementById(id);
-          if (p) mo.observe(p, { attributes: true, attributeFilter: ["style"] });
+          if (p) mo.observe(p, { attributes: true, attributeFilter: ["style"], childList: true });
         });
         // group-quick-panel is created lazily inside settings-wrap → hook it on creation.
         var swWrap = document.getElementById("settings-wrap");
@@ -8313,8 +8315,8 @@
           var p = document.getElementById("group-quick-panel");
           if (p && !p.__hdrObs) {
             p.__hdrObs = 1;
-            mo.observe(p, { attributes: true, attributeFilter: ["style"] });
-            if (p.style.display !== "none") placeHeaderPanel(p);
+            mo.observe(p, { attributes: true, attributeFilter: ["style"], childList: true });
+            if (p.style.display !== "none") { placeHeaderPanel(p); ensureDdClose(p); }
           }
         }).observe(swWrap, { childList: true });
       })();
@@ -9395,6 +9397,7 @@
     psPanel.style.display = "none";
     psPanel.innerHTML = '<input id="place-search" type="text" autocomplete="off" data-i18n-ph="ph.place" placeholder="' + escapeHtml(t("ph.place")) + '" />' +
       '<div id="place-results"></div>';
+    ensureDdClose(psPanel);
     // iOS Safari scrolls the page to bring a focused input above its keyboard and can
     // leave that scroll (and a keyboard-sized map) behind when the keyboard goes — the
     // map's bottom-right buttons then sit off-screen. Put the page back the moment the
@@ -20766,7 +20769,10 @@
     if (el) { el.textContent = parts.join(" · "); el.style.display = parts.length ? "" : "none"; }
     // The running version also shows in Settings, under "About & how it works".
     var sv = document.getElementById("settings-version");
-    if (sv) { sv.textContent = parts.join(" · "); sv.style.display = parts.length ? "" : "none"; }
+    if (sv) {   // with the code's licence (owner, 2026-10-19: "make it clear that they carry a mit licence")
+      sv.innerHTML = escapeHtml(parts.join(" · ")) + ' · <a href="https://github.com/pcmoan70/BirdsWhere/blob/main/LICENSE" target="_blank" rel="noopener" title="The application code is open source under the MIT licence">MIT</a>';
+      sv.style.display = parts.length ? "" : "none";
+    }
   }
 
   // A ?from=poster launch counts on the anonymous Abacus poster-scan counter (see counterHit)
@@ -24589,6 +24595,7 @@
           '<button type="button" class="slp-go" data-i="' + i + '">' + escapeHtml(l.name) + "</button>" +
           '<input type="number" class="slp-radius" data-i="' + i + '" min="1" max="200" step="1" value="' + (l.radius || recentRadiusKm()) + '" title="' + escapeHtml(t("loc.radius")) + '" /><span class="slp-km">km</span>' +
           '<button type="button" class="slp-del" data-i="' + i + '" aria-label="' + escapeHtml(t("btn.delete")) + '">×</button></div>';
+    ensureDdClose(panel);
       }).join("") +
       // Column legend: one line per checkbox column (tooltips alone are invisible on touch).
       '<div class="slp-openhint">' +
@@ -28194,6 +28201,20 @@
     })();
   }
 
+  // Every popup has a × top-right (owner, 2026-10-19: "Make sure all popup windows eg my points have x in upper
+  // right corner for closing"). The header dropdowns, the stored-locations panel and the place-search box get
+  // theirs here; the header observer puts it back after every innerHTML rebuild, and it is sticky, so a scrolled
+  // panel keeps it in the corner.
+  function ensureDdClose(p) {
+    if (!p || p.querySelector(":scope > .dd-x")) return;
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "dd-x"; b.setAttribute("aria-label", t("btn.close")); b.title = t("btn.close"); b.textContent = "\u00d7";
+    b.addEventListener("click", function (e) {
+      e.preventDefault(); e.stopPropagation();
+      if (p.id === "stored-loc-panel") hideStoredLocations(); else if (p.classList.contains("place-search-panel")) closePlaceSearch(); else p.style.display = "none";
+    });
+    p.insertBefore(b, p.firstChild);
+  }
   function closeDropdowns() {
     ["checklists-panel", "settings-panel", "mp-panel", "group-quick-panel"].forEach(function (idp) {
       var p = document.getElementById(idp);

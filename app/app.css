@@ -4893,6 +4893,12 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 #distmap-box, #detlist-box, #recent-box, #feedback-modal > div, #perf-modal > div {
   max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); overflow-y: auto; overscroll-behavior: contain; }
 .aff-modal, #detlist-box { overflow-y: hidden; }   /* these scroll an inner list themselves */
+/* The × of the header dropdowns, the stored-locations panel and the place-search box (ensureDdClose): sticky in the
+   top-right corner while the panel scrolls under it. */
+.dd-x { position: sticky; top: 0; float: right; z-index: 6; margin: 0 0 0 6px; border: 0; background: var(--surface, #fff); color: var(--ink-muted, #888); font-size: 20px; line-height: 1; padding: 2px 7px; border-radius: 5px; cursor: pointer; }
+.dd-x:hover { background: var(--hover, #eef4f2); color: var(--ink, #222); }
+.place-search-panel > .dd-x { position: absolute; top: 11px; right: 10px; float: none; margin: 0; }   /* beside the search box, whatever the results list below it does */
+.place-search-panel #place-search { padding-right: 30px; }
 .kml-modal-box .kml-actions, .kml-modal-box .cu-actions { position: sticky; bottom: -16px; margin-bottom: -16px; padding-bottom: 16px; background: var(--surface, #fff); }
 #natdb-box .cu-actions { position: sticky; bottom: -20px; margin-bottom: -20px; padding-bottom: 20px; background: var(--surface, #fff); }   /* its custom-URL list is uncapped */
 .leaflet-popup-content { max-height: calc(100vh - 90px); max-height: calc(100dvh - 90px); overflow-y: auto; overscroll-behavior: contain; }
