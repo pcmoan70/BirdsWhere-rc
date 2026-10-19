@@ -106,7 +106,9 @@ birds/mammals/amphibians/insects; **Plants 🌿 and Fungi 🍄 are observation-o
 **Overlay layers** (layer control): **WDPA · Protected Planet** (*Experimental* — enable in Settings), **Ramsar wetlands**,
 **Natura 2000** (EU SPA/SCI; *Experimental* — enable in Settings), **Emerald Network** (Bern Convention — the non-EU counterpart
 to Natura 2000), **Land cover** (CORINE / Copernicus-EEA — habitat backdrop, Europe/EEA, with a
-colour-coded class legend in the lower-right while it's on),
+colour-coded class legend in the lower-right while it's on), **MiS forest habitats** (NIBIO's inventory of Norwegian forest —
+key biotopes and their habitat elements: old trees, dead wood, hollow broadleaves, cliff walls, stream gorges, lichen-hung trees…;
+Norway only; tap the map for what lies at a point; a legend of the symbols lower-right),
 **GBIF occurrence density** (*Experimental* — enable in Settings; a seasonal heatmap of where records concentrate),
 **OSM protected areas**, **Viewpoints** (a **bundled worldwide snapshot** of 122k OSM bird and wildlife hides, bird-watching towers and birdwatching
 viewpoints — incl. towers/viewpoints validated by proximity to an eBird hotspot — served from the
@@ -128,7 +130,7 @@ with an eBird link and *Navigate*; needs the eBird key). All are streamed from t
 nothing is stored. Hover a layer's checkbox for a short tip, or tap the **?** at the right of its row
 for a detailed explanation (what it shows, why it helps birding, how to use it, caveats — English
 for now). Overlays that carry a colour
-key (WDPA, Natura 2000, Emerald, GBIF density, CORINE land cover) show a **legend in the lower-right**;
+key (WDPA, Natura 2000, Emerald, GBIF density, CORINE land cover, MiS forest habitats) show a **legend in the lower-right**;
 with several on, the legends stack as separate cards you can individually **minimise**.
 
 <p align="center">

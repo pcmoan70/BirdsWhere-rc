@@ -501,6 +501,7 @@ input[type="range"] { accent-color: var(--brand); }
 .lg-row { display: flex; align-items: flex-start; gap: 6px; padding: 1px 0; }
 .lg-sw { flex: 0 0 auto; width: 14px; height: 14px; margin-top: 1px; border-radius: 2px; border: 1px solid rgba(0,0,0,.2); image-rendering: pixelated; }
 .lg-sw-color { width: 13px; height: 13px; }
+.lg-sw-mis { width: auto; height: 16px; max-width: 48px; border: 0; background: #fff; image-rendering: auto; }
 .lg-lbl { min-width: 0; word-break: break-word; }
 .lg-note { color: var(--ink-muted, #5b6f69); padding: 2px 0; }
 .lg-card-min { width: auto; }

@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2130";
+var VERSION = "v2131";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Every popup now has a \u00d7 in its top-right corner \u2014 the My points, Checklists and Settings dropdowns, the species-group quick panel, the stored-locations list and the place-search box included.",
-  "\u2022 The Settings version line names the app\u2019s MIT licence, with a link to it.",
+  "\u2022 New overlay: MiS forest habitats (NIBIO) \u2014 Norway\u2019s forest key biotopes and habitat elements (old trees, dead wood, hollow broadleaves, cliff walls, gorges\u2026), with a legend; tap the map to see what lies at a point.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

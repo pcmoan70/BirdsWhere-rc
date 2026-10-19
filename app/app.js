@@ -9935,6 +9935,18 @@
   // the pre-rendered raster (clean filled land cover); same ArcGIS server family as Natura 2000.
   var CLC2018_EXPORT = "https://image.discomap.eea.europa.eu/arcgis/rest/services/Corine/CLC2018_WM/MapServer/export";
   var CLC_ATTR = 'Land cover &copy; <a href="https://land.copernicus.eu/pan-european/corine-land-cover" target="_blank" rel="noopener">Copernicus CORINE Land Cover</a> (EEA)';
+  // MiS forest habitats (NIBIO, Norway) — "Miljøregistrering i Skog": the key biotopes and the
+  // habitat elements mapped in Norwegian forest (owner, 2026-10-19: "add MIS forest habitats to
+  // BirdsWhere map overlays"). NIBIO's MapServer WMS serves EPSG:3857 with CORS open: GetMap
+  // tiles, GetFeatureInfo (GML) names the layers with something at a point, GetLegendGraphic
+  // draws each layer's symbol. Layer names are the service's; the labels are English.
+  var MIS_WMS = "https://wms.nibio.no/cgi-bin/mis";
+  var MIS_ATTR = 'MiS forest habitats &copy; <a href="https://www.nibio.no/" target="_blank" rel="noopener">NIBIO</a>';
+  var MIS_LAYERS = [["Nokkelbiotop", "Key biotopes"], ["Hule_lauvtrar_punkt", "Hollow broadleaf trees"], ["Gamle_trar", "Old trees"], ["Staende_dod_ved", "Standing dead wood"], ["Liggende_dod_ved", "Lying dead wood"],
+    ["Eldre_lauvsuksesjon", "Older broadleaf succession"], ["Bergvegger_alle", "Cliff walls"], ["Bekkeklofter", "Stream gorges"], ["Leirraviner", "Clay ravines"], ["Rik_bakkevegetasjon", "Rich ground vegetation"],
+    ["Trar_m_hengelav_alle", "Trees with hanging lichen"], ["Rikbarkstrar_alle", "Rich-bark trees"], ["Brannflater", "Burnt areas"], ["Kartleggingsomr", "Surveyed area"]];
+  var MIS_LAYER_LIST = MIS_LAYERS.map(function (l) { return l[0]; }).join(",");
+  function misLegendUrl(layer) { return MIS_WMS + "?service=WMS&version=1.3.0&request=GetLegendGraphic&format=image/png&sld_version=1.1.0&layer=" + layer; }
   // CORINE Land Cover legend — the 44 standard classes grouped by their level-1 category,
   // with the exact fill colours the CLC2018 raster renders (decoded from the EEA
   // MapServer legend swatches). Class names are the official CLC nomenclature (kept in
@@ -18671,7 +18683,7 @@
   }
   // ---- Overlay "identify" at a point (for the right-click menu) --------------------
   // The ArcGIS raster overlays that can report a value at a clicked point.
-  var IDENTIFY_OVERLAY_KEYS = ["layer.wdpa", "layer.ramsar", "layer.natura2000", "layer.emerald", "layer.landcover"];
+  var IDENTIFY_OVERLAY_KEYS = ["layer.wdpa", "layer.ramsar", "layer.natura2000", "layer.emerald", "layer.landcover", "layer.mis"];
   function arcPick(a, keys) { for (var i = 0; i < keys.length; i++) { var v = a[keys[i]]; if (v != null && v !== "" && String(v).toLowerCase() !== "null") return v; } return ""; }
   function clcLabelForCode(code) {
     for (var i = 0; i < CLC_LEGEND.length; i++) for (var j = 0; j < CLC_LEGEND[i].items.length; j++) if (CLC_LEGEND[i].items[j][2] === code) return CLC_LEGEND[i].items[j][1];
@@ -18711,11 +18723,26 @@
     return AppFetch.fetchWithTimeout(u, {}, 9000).then(function (r) { return r.json(); }).then(function (j) { return j.results || []; });
   }
   function activeIdentifyOverlays() {
-    return (overlayDefsRef || []).filter(function (d) { return IDENTIFY_OVERLAY_KEYS.indexOf(d.key) >= 0 && d.layer && d.layer._base && map.hasLayer(d.layer); });
+    return (overlayDefsRef || []).filter(function (d) { return IDENTIFY_OVERLAY_KEYS.indexOf(d.key) >= 0 && d.layer && (d.layer._base || d.key === "layer.mis") && map.hasLayer(d.layer); });
+  }
+  // MiS: WMS GetFeatureInfo on the map's own view (EPSG:3857) at the point, 6 px round it (the
+  // features are drawn a few px wide); the GML's <Layer_feature> elements say which layers hit.
+  function misIdentifyAt(latlng) {
+    var sz = map.getSize(), b = map.getBounds(), pt = map.latLngToContainerPoint(latlng);
+    var sw = L.CRS.EPSG3857.project(b.getSouthWest()), ne = L.CRS.EPSG3857.project(b.getNorthEast());
+    var u = MIS_WMS + "?service=WMS&version=1.3.0&request=GetFeatureInfo&layers=" + MIS_LAYER_LIST + "&query_layers=" + MIS_LAYER_LIST + "&styles=&crs=EPSG:3857" +
+      "&bbox=" + sw.x + "," + sw.y + "," + ne.x + "," + ne.y + "&width=" + sz.x + "&height=" + sz.y + "&i=" + Math.round(pt.x) + "&j=" + Math.round(pt.y) +
+      "&info_format=application/vnd.ogc.gml&feature_count=30&radius=6";
+    return AppFetch.fetchWithTimeout(u, {}, 9000).then(function (r) { return r.text(); }).then(function (txt) {
+      var hit = Object.create(null), m, re = /<([A-Za-z_]+)_feature>/g;
+      while ((m = re.exec(txt))) hit[m[1]] = 1;
+      return MIS_LAYERS.filter(function (l) { return hit[l[0]]; }).map(function (l) { return l[1]; }).join(", ");
+    });
   }
   // Query every active identifiable overlay at a point → [{ key, title, value }].
   function identifyOverlayValuesAt(latlng) {
     return Promise.all(activeIdentifyOverlays().map(function (d) {
+      if (d.key === "layer.mis") return misIdentifyAt(latlng).then(function (val) { return { key: d.key, title: t(d.key), value: val }; }).catch(function () { return { key: d.key, title: t(d.key), value: "" }; });
       var defs = d.layer.options && d.layer.options.layerDefs;
       return arcIdentifyAt(d.layer._base, defs, latlng).then(function (results) {
         var val = (d.key === "layer.landcover") ? landcoverValueText(results) : protectedValueText(results);
@@ -20257,6 +20284,7 @@
     { key: "layer.natura2000", arc: N2K_EXPORT, layers: [0] },
     { key: "layer.emerald", arc: EMERALD_EXPORT, layers: [0, 1, 2] },
     { key: "layer.landcover", clc: true },
+    { key: "layer.mis", mis: true },
     { key: "layer.gbif", gbif: true }
   ];
   var legendStackCtrl = null;
@@ -20291,6 +20319,11 @@
       });
     });
     return rows.length ? rows.join("") : '<div class="lg-note">—</div>';
+  }
+  function misLegendBody() {   // each MiS layer's symbol from the service, labelled in English
+    return MIS_LAYERS.map(function (l) {
+      return '<div class="lg-row"><img class="lg-sw lg-sw-mis" src="' + escapeHtml(misLegendUrl(l[0])) + '" alt=""><span class="lg-lbl">' + escapeHtml(l[1]) + "</span></div>";
+    }).join("");
   }
   var gbifLegendRange = null;   // { lo, hi } record counts of the hexes in view, set by the dynamic fit
   function fmtGbifN(n) {
@@ -20337,7 +20370,7 @@
     if (legendMin[def.key]) {
       return '<div class="lg-card lg-card-min" data-key="' + escapeHtml(def.key) + '"><button type="button" class="lg-restore" title="' + escapeHtml(hasTip ? tip : t("det.expand")) + '">' + escapeHtml(title) + "</button></div>";
     }
-    var body = def.clc ? clcLegendBody() : def.gbif ? gbifLegendBody() : arcLegendBody(def);
+    var body = def.clc ? clcLegendBody() : def.mis ? misLegendBody() : def.gbif ? gbifLegendBody() : arcLegendBody(def);
     return '<div class="lg-card" data-key="' + escapeHtml(def.key) + '">' +
       '<div class="lg-head"><span class="lg-title' + (hasTip ? " lg-hashelp" : "") + '"' + (hasTip ? ' title="' + escapeHtml(tip) + '"' : "") + ">" + escapeHtml(title) + "</span>" +
         '<button type="button" class="lg-min" title="' + escapeHtml(t("det.minimise")) + '" aria-label="' + escapeHtml(t("det.minimise")) + '">−</button></div>' +
@@ -20432,6 +20465,7 @@
     // are complementary, so showing both keeps land cover visible at every zoom.
     var landcover = new ArcGISExportLayer(CLC2018_EXPORT, { opacity: 0.55, attribution: CLC_ATTR, maxZoom: MAX_ZOOM, arcLayers: "show:0,1" });
     clcLayerRef = landcover;   // the CORINE legend (bottom-right) shows only while this layer is on
+    var mis = L.tileLayer.wms(MIS_WMS, { layers: MIS_LAYER_LIST, format: "image/png", transparent: true, version: "1.3.0", opacity: 0.9, attribution: MIS_ATTR, maxZoom: MAX_ZOOM });
     arcOverlays = [{ layer: wdpa, kind: "wdpa" },
       { layer: ramsar, kind: "wdpa", defs: ramsar.options.layerDefs },
       { layer: n2k, kind: "natura" },
@@ -20448,6 +20482,7 @@
       { key: "layer.natura2000", layer: n2k },
       { key: "layer.emerald", layer: emerald, tip: "layer.emeraldTip" },
       { key: "layer.landcover", layer: landcover, tip: "layer.landcoverTip" },
+      { key: "layer.mis", layer: mis, tip: "layer.misTip" },
       { key: "layer.gbif", layer: gbif, tip: "layer.gbifTip" },
       { key: "layer.osmpa", layer: osmProtectedLayer(), tip: "layer.osmpaTip" },
       { key: "layer.hotspots", layer: hotspotsLayer, tip: "layer.hotspotsTip" },
