@@ -178,7 +178,7 @@ input[type="range"] { accent-color: var(--brand); }
 /* Stored-locations list — popped up by holding/right-clicking the crosshair. */
 .stored-loc-panel {
   position: absolute; z-index: 1200; display: none;
-  width: min(280px, calc(100vw - 72px)); max-height: 60vh; max-height: 60dvh; overflow: auto;
+  width: min(280px, calc(100vw - 72px)); max-height: calc(100% - 16px); overflow: auto;
   background: var(--md-default-bg-color, #fff); border: 1px solid var(--md-default-fg-color--lightest, #ccc);
   border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.22); padding: 6px;
 }
@@ -824,7 +824,7 @@ input[type="range"] { accent-color: var(--brand); }
 .country-menu .cm-subhead { font-weight: 700; font-size: var(--fs-s); color: var(--ink-muted, #5b6f69); margin: 8px 0 2px; }
 .cu-actions { display: flex; gap: 6px; margin-top: 4px; }
 .cu-actions .btn { font-size: var(--fs-s); padding: 3px 8px; }
-#custom-urls-list { max-height: 40vh; max-height: 40dvh; overflow-y: auto; overflow-x: hidden; }
+#custom-urls-list { overflow-x: hidden; }
 
 /* Probability cell — integer percent, with the bar as a low-opacity overlay
    so the number stays legible and the cell stays narrow. */
@@ -1771,7 +1771,7 @@ table.an-scatter-table td.an-tint { color: #fff; font-weight: 600; text-shadow: 
   margin-top: 3px;
   min-width: 220px;
   max-width: 320px;
-  max-height: 300px;
+  max-height: calc(100vh - 60px); max-height: calc(100dvh - 60px);   /* the header (48 px) and a gap: a dropdown grows with the screen and scrolls only past it (owner, 2026-10-19) */
   overflow-y: auto;
   background: #fff;
   color: var(--ink, #1a1a1a);   /* white bg, so default text to ink — don't inherit the header's light colour */
@@ -1782,11 +1782,8 @@ table.an-scatter-table td.an-tint { color: #fff; font-weight: 600; text-shadow: 
 }
 .dd-empty { color: var(--ink-faint); font-size: var(--fs-s); padding: 8px 10px; }
 /* Quick "Species group" picker on a long-press / right-click of the Settings gear. */
-/* The gear's press-and-hold panel: seven species groups plus the radius slider is
-   taller than .dd-panel's 300 px, and a scrollbar on a menu this small reads as a
-   glitch. Let it size to its content, capped by the viewport (a short screen still
-   scrolls rather than overflowing). */
-.group-quick-panel { min-width: 180px; max-height: min(86vh, 520px); }
+/* The gear's press-and-hold panel: seven species groups plus the radius slider. */
+.group-quick-panel { min-width: 180px; }
 /* Settings species-group picker (custom stand-in for the hidden native select). */
 #group-picker-wrap { position: relative; }
 #group-picker-btn {
@@ -1878,7 +1875,7 @@ button.dd-name:hover { text-decoration: underline; }
 .sp-list-sub { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .04em; color: var(--ink-muted); padding: 5px 4px 2px; }
 .sp-list-empty { font-size: var(--fs-s); color: var(--ink-muted); padding: 4px; }
 .det-obs-scope { font-size: var(--fs-b); color: var(--ink-muted); }
-.list-mgr { width: min(360px, 92vw); max-height: 82vh; max-height: 82dvh; padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+.list-mgr { width: min(360px, 92vw); max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); padding: 0; display: flex; flex-direction: column; overflow: hidden; }
 .list-mgr .lm-body { overflow-y: auto; padding: 8px 12px 12px; }
 .list-mgr .lm-empty { color: var(--ink-muted); font-size: var(--fs-b); padding: 8px 0; }
 .list-mgr .lm-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
@@ -2051,7 +2048,7 @@ button.dd-name:hover { text-decoration: underline; }
 .mp-coll { display: flex; gap: 5px; padding: 2px 6px 6px; align-items: center; }
 .mp-coll select { flex: 1 1 auto; min-width: 0; font-size: var(--fs-xs); padding: 2px 4px; line-height: 1.3; }
 /* Tick-to-show list of saved point-lists + detection sets. */
-.mp-coll-list { padding: 2px 6px 6px; max-height: 30vh; max-height: 30dvh; overflow-y: auto; }
+.mp-coll-list { padding: 2px 6px 6px; }
 .mp-coll-row { display: flex; align-items: center; gap: 6px; padding: 2px 0; font-size: var(--fs-s); }
 .mp-folder { margin: 2px 0; }
 .mp-folder > summary.mp-folder-head { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: var(--fs-s); font-weight: 600; cursor: pointer; list-style: none; }
@@ -2126,7 +2123,6 @@ button.dd-name:hover { text-decoration: underline; }
 }
 .mp-chip.is-active { background: var(--mp-c, var(--brand, #0b3a3a)); color: #fff; border-color: var(--mp-c, var(--brand, #0b3a3a)); }
 .mp-chip.is-excluded { background: var(--mp-c, var(--brand, #0b3a3a)); color: #fff; border-color: var(--mp-c, var(--brand, #0b3a3a)); text-decoration: line-through; text-decoration-thickness: 2px; opacity: .7; }   /* third state: these points are hidden */
-.mp-list { max-height: 32vh; max-height: 32dvh; overflow-y: auto; }
 .mp-list .dd-empty { font-size: var(--fs-s); color: var(--ink-muted, #5b6f69); padding: 8px 10px; margin: 0; }
 .mp-row { display: flex; align-items: center; gap: 6px; }
 .mp-row .dd-name { display: flex; align-items: center; gap: 6px; flex: 1 1 auto; min-width: 0; }
@@ -2187,7 +2183,6 @@ button.dd-name:hover { text-decoration: underline; }
 #settings-panel.settings-panel {
   min-width: 240px;
   max-width: min(94vw, 420px);   /* wider than other dropdowns so URLs fit */
-  max-height: min(80vh, 560px);
   padding: 10px 10px;
   left: 0;           /* drops down from the header bird icon (upper-left) */
   right: auto;
@@ -2361,7 +2356,7 @@ button.dd-name:hover { text-decoration: underline; }
 .lists-managers .btn { flex: 1 1 auto; }
 /* Map-point lists admin popup (press-and-hold the Points button): reuse the lists
    table styling; the ✎ edit button matches the per-point edit look. */
-.mp-admin-box { max-width: 440px; width: 92vw; max-height: 82vh; max-height: 82dvh; overflow-y: auto; }
+.mp-admin-box { max-width: 440px; width: 92vw; max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); overflow-y: auto; }
 #mp-admin-list .lists-coll-edit { background: transparent; border: none; cursor: pointer; padding: 2px; color: var(--ink-muted, #888); display: inline-flex; vertical-align: middle; margin-right: 4px; }
 #mp-admin-list .lists-coll-edit:hover { color: var(--brand, #2e8b74); }
 #mp-admin-list .lists-coll-edit .btn-ico { width: var(--ico-m); height: var(--ico-m); }
@@ -2439,7 +2434,7 @@ button.dd-name:hover { text-decoration: underline; }
 .mp-more-item.mp-coll-del b { color: var(--danger, #c0392b); }
 .mp-more-item.mp-more-locked { opacity: .6; cursor: default; }
 .kml-multi { font-weight: 600; }
-.kml-multi-list { max-height: 30vh; max-height: 30dvh; overflow-y: auto; margin: 2px 0 8px; padding: 6px 8px;
+.kml-multi-list { margin: 2px 0 8px; padding: 6px 8px;
   border: 1px solid var(--border, #ccc); border-radius: 6px; font-size: var(--fs-s); line-height: 1.5;
   word-break: break-all; }
 .kml-check { justify-content: flex-start; gap: 8px; font-size: var(--fs-b); cursor: pointer; }
@@ -2926,7 +2921,7 @@ button.dd-name:hover { text-decoration: underline; }
 /* Dated backups in Drive's app-data folder — Drive's own UI cannot list them, so
    this is the only way to reach the history. */
 .sync-opts-box .so-backups { margin-top: 10px; }
-.sync-opts-box .so-baklist { margin: 8px 0 2px; max-height: 190px; overflow-y: auto; font-size: var(--fs-s); }
+.sync-opts-box .so-baklist { margin: 8px 0 2px; font-size: var(--fs-s); }
 .sync-opts-box .so-bak { display: flex; align-items: center; gap: 8px; padding: 4px 2px; border-top: 1px solid var(--border, rgba(0,0,0,.08)); }
 .sync-opts-box .so-bak-when { flex: 1 1 auto; }
 .sync-opts-box .so-bak-size { color: var(--ink-muted, #777); font-variant-numeric: tabular-nums; }
@@ -2953,7 +2948,7 @@ button.dd-name:hover { text-decoration: underline; }
 .obs-info .btn-ico { width: var(--ico-m); height: var(--ico-m); }
 /* Wide enough for real notes; when a note still exceeds the height cap the popup
    scrolls (hover keep-open lets the wheel work; on touch it stays until tapped away). */
-.obs-info-pop { position: fixed; z-index: 9500; max-width: min(420px, 92vw); max-height: min(60vh, 440px); overflow-y: auto; overscroll-behavior: contain; background: #fff; color: var(--ink, #1a1a1a); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 6px 22px rgba(0,0,0,.22); padding: 9px 11px; font-size: var(--fs-b); }
+.obs-info-pop { position: fixed; z-index: 9500; max-width: min(420px, 92vw); max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); overflow-y: auto; overscroll-behavior: contain; background: #fff; color: var(--ink, #1a1a1a); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 6px 22px rgba(0,0,0,.22); padding: 9px 11px; font-size: var(--fs-b); }
 
 /* Map attribution collapses to a © chip (tap to expand — OSM's sanctioned
    pattern for space-constrained maps); expanded text wraps within the map. */
@@ -3514,7 +3509,6 @@ tr.row-list-only .prob-na { color: var(--ink-muted, #999); }
 /* Members table. */
 .obs-ed-excl { display: flex; gap: 6px; align-items: center; margin: 0 0 7px; font-size: .92em; }
 .det-obs-excl { opacity: .6; text-decoration: line-through; }   /* on an exclude list: its records are hidden */
-.obs-ed-mwrap { max-height: 30vh; max-height: 30dvh; overflow-y: auto; }   /* long member lists scroll on their own */
 .obs-ed-mtable { width: 100%; border-collapse: collapse; }
 .obs-ed-mtable td { padding: 3px 4px; border-bottom: 1px solid var(--border, #eee); font-size: var(--fs-b); }
 .obs-ed-mname { width: 100%; overflow: hidden; text-overflow: ellipsis; }
@@ -3806,7 +3800,7 @@ a.dl-row:hover, .dl-row-menu:hover { background: var(--surface-2, rgba(0,0,0,.05
 .dl-sp-body .dl-row-menu:first-child { border-top: none; }
 /* Small per-record menu: star, add the point to a named list, open the source. */
 .detrow-menu { position: fixed; z-index: 8000; background: #fff; border: 1px solid var(--border); border-radius: 6px;
-  box-shadow: 0 6px 20px rgba(0,0,0,.22); padding: 4px; min-width: 200px; max-height: 80vh; max-height: 80dvh; overflow-y: auto; }
+  box-shadow: 0 6px 20px rgba(0,0,0,.22); padding: 4px; min-width: 200px; max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); overflow-y: auto; }
 /* First section header needs no top border/gap. */
 .detrow-menu-hdr:first-child { padding-top: 4px; margin-top: 0; border-top: 0; }
 .detrow-menu-item { display: block; width: 100%; text-align: left; border: none; background: transparent; padding: 8px 12px;
@@ -3859,7 +3853,7 @@ a.dl-row:hover, .dl-row-menu:hover { background: var(--surface-2, rgba(0,0,0,.05
    inside the popup so a 15-row table never runs off the screen. */
 /* The names panel is wider than an ordinary menu — two names side by side need it. */
 .drm-names-menu { width: min(94vw, 460px); }
-.drm-names { max-height: 46vh; max-height: 46dvh; overflow-y: auto; margin: 2px 4px 6px; }
+.drm-names { margin: 2px 4px 6px; }
 .drm-names-tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-s); }
 .drm-names-tbl th { position: sticky; top: 0; background: var(--surface, #fff); text-align: left;
   font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-muted, #888);
@@ -4475,7 +4469,7 @@ a.place-search-btn.is-open { background: var(--brand-soft, #e6f0ee); }
 }
 #fca-name { font-weight: 600; font-size: var(--fs-h); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #fca-list {
-  overflow-y: auto; -webkit-overflow-scrolling: touch; max-height: 56vh; max-height: 56dvh; margin-top: 8px;
+  overflow-y: auto; -webkit-overflow-scrolling: touch; max-height: calc(100vh - 120px); max-height: calc(100dvh - 120px); margin-top: 8px;   /* the sheet's head and search box above it */
   display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
 }
 .fca-item {
@@ -4502,7 +4496,7 @@ a.place-search-btn.is-open { background: var(--brand-soft, #e6f0ee); }
 }
 #place-picker {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 1600; display: none;
-  max-height: 60vh; max-height: 60dvh; overflow-y: auto;
+  max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); overflow-y: auto;
   background: var(--md-default-bg-color, #fff); color: var(--md-default-fg-color, var(--ink));
   border-top: 1px solid var(--md-default-fg-color--lightest, #ccc);
   box-shadow: 0 -6px 24px rgba(0,0,0,0.25); padding: 10px 12px calc(14px + env(safe-area-inset-bottom));
@@ -4830,19 +4824,18 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .mp-coll-filt:hover { color: var(--brand); border-color: var(--brand); }
 .mp-coll-filt.is-on { color: #b36b00; border-color: #e0a44a; background: #fff6e6; }
 .mp-coll-filt .btn-ico { width: var(--ico-m); height: var(--ico-m); }
-.mp-listfilt-menu { min-width: 15em; max-width: 22em; max-height: 70vh; max-height: 70dvh; overflow: auto; }
+.mp-listfilt-menu { min-width: 15em; max-width: 22em; }
 .mp-listfilt-dates { display: flex; gap: 6px; padding: 5px 10px 2px; flex-wrap: wrap; }
 .mp-listfilt-dates label { display: flex; flex-direction: column; gap: 2px; font-size: var(--fs-xs); color: var(--muted, #777); }
 .mp-listfilt-dates input { font-size: var(--fs-xs); }
 .mp-listfilt-span { flex: 1 1 100%; font-size: var(--fs-xs); color: var(--muted, #999); }
 .mp-listfilt-obshdr { margin-top: 4px; }
-.mp-listfilt-obs { max-height: 34vh; max-height: 34dvh; overflow: auto; }
 .mp-listfilt-go { border-top: 1px solid var(--border, #e3ebe8); margin-top: 4px; font-weight: 600; }
 /* Note popup from a list row: the observer's own remark, on its own. */
 .mp-row-note { flex: 0 0 auto; font-size: var(--fs-s); }
 .mp-note-menu { min-width: 200px; max-width: 340px; }
 .mp-note-body { padding: 4px 10px 8px; font-size: var(--fs-s); line-height: 1.45; white-space: normal;
-  overflow-wrap: break-word; max-height: 50vh; max-height: 50dvh; overflow-y: auto; }
+  overflow-wrap: break-word; }
 .mp-note-body table { border-collapse: collapse; font-size: var(--fs-xs); }
 .mp-note-body td { padding: 1px 5px 1px 0; vertical-align: top; }
 /* Result line under "Compact imported lists" — the status line above the map is behind
@@ -4890,14 +4883,18 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
    container may grow to the full VISIBLE viewport (dvh; vh as the fallback for older browsers),
    8 px clear of the top and bottom edges, and scrolls inside beyond that. Shared action rows stay
    pinned at the bottom of a scrolling box, so OK / Cancel never slide out of reach. Every popup
-   also has a × top-right (createModal / ensureAnchClose add one where the caller built none). */
+   also has a × top-right (createModal / ensureAnchClose add one where the caller built none).
+   A list INSIDE a popup carries no cap of its own (owner, 2026-10-19: no scrolling while there is
+   screen space) — the popup grows to the screen and then scrolls as one; the exceptions are the
+   lists in the All-filters form, autocomplete results and the map controls. */
 .kml-modal, .ui-modal-overlay { padding-top: 8px; padding-bottom: 8px; }
 .kml-modal-box, .ui-modal, .ui-modal.ovl-help-box, .aff-modal, #about-box,
 #gbif-box, #natdb-box, #offline-box, #sources-box, #det-sets-box, #lists-box, #blogs-box,
-#distmap-box, #detlist-box, #feedback-modal > div, #perf-modal > div {
+#distmap-box, #detlist-box, #recent-box, #feedback-modal > div, #perf-modal > div {
   max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); overflow-y: auto; overscroll-behavior: contain; }
 .aff-modal, #detlist-box { overflow-y: hidden; }   /* these scroll an inner list themselves */
 .kml-modal-box .kml-actions, .kml-modal-box .cu-actions { position: sticky; bottom: -16px; margin-bottom: -16px; padding-bottom: 16px; background: var(--surface, #fff); }
+#natdb-box .cu-actions { position: sticky; bottom: -20px; margin-bottom: -20px; padding-bottom: 20px; background: var(--surface, #fff); }   /* its custom-URL list is uncapped */
 .leaflet-popup-content { max-height: calc(100vh - 90px); max-height: calc(100dvh - 90px); overflow-y: auto; overscroll-behavior: contain; }
 .obs-addmenu, .fp-dl-menu, .place-search-panel, #group-picker-panel, .detrow-menu, .mp-listfilt-menu {
   max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); overflow-y: auto; overscroll-behavior: contain; }
