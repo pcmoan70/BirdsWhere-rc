@@ -20813,10 +20813,7 @@
     if (el) { el.textContent = parts.join(" · "); el.style.display = parts.length ? "" : "none"; }
     // The running version also shows in Settings, under "About & how it works".
     var sv = document.getElementById("settings-version");
-    if (sv) {   // with the code's licence (owner, 2026-10-19: "make it clear that they carry a mit licence")
-      sv.innerHTML = escapeHtml(parts.join(" · ")) + ' · <a href="https://github.com/pcmoan70/BirdsWhere/blob/main/LICENSE" target="_blank" rel="noopener" title="The application code is open source under the MIT licence">MIT</a>';
-      sv.style.display = parts.length ? "" : "none";
-    }
+    if (sv) { sv.textContent = parts.join(" · "); sv.style.display = parts.length ? "" : "none"; }   // the MIT link lives in About → Credits & licence (v2137)
   }
 
   // A ?from=poster launch counts on the anonymous Abacus poster-scan counter (see counterHit)
