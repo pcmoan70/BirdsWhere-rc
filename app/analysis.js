@@ -301,7 +301,7 @@ window.GeoAnalysis = (function () {
         var x = sx(it.arrival).toFixed(1), y = sy(it.probability).toFixed(1);
         var name = ctx.speciesName(it.label);
         var title = name + " (" + it.label.sci + ")\n" + ctx.t("th.arrival") + " " + (it.arrival * 100).toFixed(1) + "%\n" + ctx.t("th.prob") + " " + (it.probability * 100).toFixed(1) + "%";
-        svg += '<circle class="an-pt" cx="' + x + '" cy="' + y + '" r="5" fill="' + arrivalColor(it.arrival) + '" stroke="rgba(0,0,0,0.5)" stroke-width="0.8"><title>' + esc(title) + "</title></circle>";
+        svg += '<circle class="an-pt" cx="' + x + '" cy="' + y + '" r="5" fill="' + arrivalColor(it.arrival) + '" stroke="rgba(0,0,0,0.5)" stroke-width="0.8" data-name="' + esc(name) + '"><title>' + esc(title) + "</title></circle>";
       });
       svg += "</svg>";
     }
@@ -339,6 +339,31 @@ window.GeoAnalysis = (function () {
     tbl += "</tbody></table>";
 
     el.innerHTML = svg + tbl;
+
+    // Hovering a dot names it at once, in the plot itself — the <title> tooltip comes late and
+    // not at all on touch, where a tap shows the label instead (owner, 2026-10-20: "make sure
+    // hover gives the species name of the dots"). W/ML/MT/MR are the plot's own margins above.
+    var svgEl = el.querySelector(".an-scatter-svg");
+    if (svgEl) {
+      var lbl = null;
+      var hideLbl = function () { if (lbl) { lbl.parentNode.removeChild(lbl); lbl = null; } };
+      var showLbl = function (c) {
+        hideLbl();
+        var cx = +c.getAttribute("cx"), cy = +c.getAttribute("cy");
+        lbl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        lbl.setAttribute("class", "an-pt-lbl");
+        lbl.setAttribute("x", cx);
+        lbl.setAttribute("y", cy > MT + 24 ? cy - 11 : cy + 20);   // above the dot, below it near the top edge
+        lbl.setAttribute("text-anchor", cx < ML + 90 ? "start" : cx > W - MR - 90 ? "end" : "middle");   // kept inside the plot
+        lbl.textContent = c.getAttribute("data-name");
+        lbl._for = c;
+        svgEl.appendChild(lbl);
+      };
+      var dotOf = function (e) { var n = e.target; while (n && n !== svgEl) { if (n.classList && n.classList.contains("an-pt")) return n; n = n.parentNode; } return null; };
+      svgEl.addEventListener("mouseover", function (e) { var c = dotOf(e); if (c) showLbl(c); });
+      svgEl.addEventListener("mouseout", function (e) { if (dotOf(e)) hideLbl(); });
+      svgEl.addEventListener("click", function (e) { var c = dotOf(e); if (!c) hideLbl(); else if (lbl && lbl._for === c) hideLbl(); else showLbl(c); });
+    }
 
     // Header click → sort (handled by app.js via the returned hook).
     var ths = el.querySelectorAll(".an-scatter-table th[data-sort]");
