@@ -25291,7 +25291,9 @@
     // A model-only list describes ONE point — the pin, or the middle of the map. Naming the
     // squares fetched earlier somewhere else would answer a question nobody asked (a pin in
     // Iceland under a header reading "Åfjord"), so that list gets its own point's place.
-    if (spMissingAuto && isFinite(lat) && isFinite(lon)) { setCoordsWithPlace(el, lat, lon, summary); return; }
+    // (A list built without a fetch — a pin placed, a restored view — is such a list from the start,
+    // before the fallback flag has settled, v2139.)
+    if ((spMissingAuto || (currentSpView && currentSpView._noFetch)) && isFinite(lat) && isFinite(lon)) { setCoordsWithPlace(el, lat, lon, summary); return; }
     // Only the fetched squares that touch the current map view are described — the header
     // names what the list below shows (the list itself is scoped to the view), and re-renders
     // when the map settles (listViewKick). A square entirely off screen is not a filter target
