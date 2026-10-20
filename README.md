@@ -193,8 +193,9 @@ prediction at that point:
 - **Arrivals** — a diverging heatmap of the arrival score `(P[next] − P[prev]) / max_year`
   (green = arriving, orange = departing).
 - **Annual Top** — a running total of arrival scores; the part of the year each species is most present.
-  Arrivals and Annual Top only list species whose yearly peak probability reaches **1 %** — both are
-  normalised by that peak, so near-absent species would show loud but meaningless patterns.
+  Every view leaves out species whose probability never reaches **0.5 %** in any week of the year
+  (since v2140; Arrivals and Annual Top are normalised by that peak, so near-absent species would
+  show loud but meaningless patterns).
 - **Scatter** — the top-N species plotted as *(arrival, probability)*, with a sortable table.
 
 **‹ returns to where you came from.** Migration and Distribution can be opened from another

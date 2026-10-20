@@ -75,6 +75,7 @@ window.GeoAnalysis = (function () {
   // hypothetical reused-but-mutated ctx still misses. We intentionally
   // recompute fresh rows on every miss because renderers mutate the returned
   // row objects (attaching .series/.sortKey/.arrival and re-sorting in place).
+  var MIN_PEAK = 0.005;   // yearly-peak floor for every analysis view (0.5 %)
   var memoCtx = null, memoSig = null, memoResult = null;
   function visibleSig(ctx) {
     return ctx.week + "|" + ctx.thresholdFrac + "|" + ctx.thresholdMax +
@@ -110,26 +111,24 @@ window.GeoAnalysis = (function () {
         probs[w] = v;
         if (v > mx) mx = v;
       }
-      // Drop species that are effectively absent all year (zero probability
-      // across every week) so they never clutter any analysis view.
-      if (mx < 1e-4) continue;
+      // Drop species that are as good as absent all year: a yearly peak under MIN_PEAK keeps a
+      // species out of every analysis view (owner, 2026-10-20: "do not show species with max
+      // probability through the year of less than 0.5%").
+      if (mx < MIN_PEAK) continue;
       out.push({ idx: i, label: lbl, probs: probs, maxYear: mx, curProb: cur });
     }
     return out;
   }
 
   // ---- Heatmap (probability / arrivals / focus) ---------------------------
-  // mode: "prob" | "arrival" | "focus".
-  // Arrivals and Annual Top are normalised by the species' yearly peak, so a species whose
-  // probability never reaches this floor would show a loud but meaningless pattern; they need
-  // a yearly peak of at least 1 %.
-  var ARRIVAL_MIN_PEAK = 0.01;
+  // mode: "prob" | "arrival" | "focus". (Arrivals and Annual Top are normalised by the species'
+  // yearly peak; MIN_PEAK in computeVisibleSpecies keeps near-absent species — a loud but
+  // meaningless pattern — out of these and every other view.)
   function renderHeatmap(el, ctx, mode) {
     var rows = visibleSpecies(ctx);
     var wkIdx = ctx.week - 1;
     var esc = ctx.escapeHtml;
     var isArrival = mode === "arrival", isFocus = mode === "focus";
-    if (isArrival || isFocus) rows = rows.filter(function (r) { return r.maxYear >= ARRIVAL_MIN_PEAK; });
 
     if (rows.length === 0) {
       el.innerHTML = '<p class="an-empty">' + esc(ctx.t("analysis.empty")) + "</p>";
