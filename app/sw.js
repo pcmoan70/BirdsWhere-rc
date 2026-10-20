@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2137";
+var VERSION = "v2138";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The MIT licence link moved from the Settings version line to About \u2192 Credits & licence.",
+  "\u2022 Fix: placing a pin and opening the list showed the previous point\u2019s page, and the Observation layout listed nothing for it. The list now describes the pin and opens as the species table when the pin has no observations of its own.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

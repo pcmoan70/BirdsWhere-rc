@@ -313,7 +313,7 @@ notes and status** where the source provides them (GBIF, iNaturalist, Artsobserv
 Artportalen — and eBird checklist comments plus unconfirmed/exotic flags). Hovering the ⓘ shows
 the note itself; a click opens the note window, which has a copy button. The same ⓘ sits on each
 record of the map-dot observation popup. Expanding a species in the table opens its records as an aligned
-sub-table.
+sub-table. The Observation list lists observations on the map; opening the list for a pin that has none of its own (a pin without a fetch, or placed after the last fetch) shows the species table instead for that visit — the saved layout choice is kept.
 
 **Observation photos** — when the source ships the observer's own pictures (iNaturalist, GBIF,
 Artsobservasjoner, Artportalen, Laji.fi) a **📷** sits in its own column, with the picture count

@@ -14593,8 +14593,12 @@
   }
   // Which point an un-fetched list should describe: the placed pin, else the point the last
   // list was about, else the middle of the map.
-  function listRefPoint() {
+  function pinPoint() {   // the placed pin, if any
     try { if (marker && marker.getLatLng) { var ll = marker.getLatLng(); if (ll && isFinite(ll.lat)) return { lat: ll.lat, lon: ll.lng }; } } catch (e) {}
+    return null;
+  }
+  function listRefPoint() {
+    var pin = pinPoint(); if (pin) return pin;
     if (currentSpView && isFinite(+currentSpView.lat) && isFinite(+currentSpView.lon)) return { lat: +currentSpView.lat, lon: +currentSpView.lon };
     try { if (map && map.getCenter) { var c = map.getCenter(); if (c && isFinite(c.lat)) return { lat: c.lat, lon: c.lng }; } } catch (e2) {}
     return null;
@@ -14608,25 +14612,35 @@
       var bc = document.getElementById("barchart-panel"); if (bc) bc.style.display = "none";
       // A model-only list belongs to ONE point: if the pin (or, with no pin, the map) has moved
       // since it was built, it describes the wrong place and must be rebuilt for the new one.
-      var refNow = hasPlottedDetections() ? null : listRefPoint();
+      var haveDots = hasPlottedDetections();
+      var multi = mapFromMultiFetch && haveDots;   // several locations fetched (and their dots still on the map): their "By observation" page
+      // A pin placed since the list was built (owner, 2026-10-20: "when user sets the pin in the map and
+      // goes to list view … it should switch the view to specieslist"): the page describes another place,
+      // so it is rebuilt for the pin — a model-only list, whatever dots (alerts, an older fetch) the map holds.
+      var pin = pinPoint();
+      var pinMoved = !multi && currentMode === "list" && !!(pin && currentSpView &&
+        (Math.abs(pin.lat - +currentSpView.lat) > 1e-4 || Math.abs(pin.lon - +currentSpView.lon) > 1e-4));
+      var noFetchList = !!(currentSpView && currentSpView._noFetch);   // the open list is a point's model-only list
+      var refNow = (haveDots && !pinMoved && !noFetchList) ? null : listRefPoint();
       var movedAway = !!(spMissingAuto && refNow && currentSpView &&
         (Math.abs(refNow.lat - +currentSpView.lat) > 1e-4 || Math.abs(refNow.lon - +currentSpView.lon) > 1e-4));
       var showedObsPage = false;
-      var haveDots = hasPlottedDetections();
       // The Observation layout draws plotted dots and nothing else. With none on the map it
       // renders a header over an EMPTY body — the species table is display:none in that
       // layout — so the page opened and looked blank, which is what "clicking the List
-      // button does nothing" is. Fall back to the species table for THIS render only: the
-      // stored preference is untouched and returns as soon as there are dots again, and the
-      // layout tabs show which view you actually got.
-      var obsLayoutEmpty = (spLayout === "observation") && !haveDots;
+      // button does nothing" is. The same for a point's model-only list (a pin without a
+      // fetch): it has no observations of its own, and the layout listed nothing, or only
+      // dots from somewhere else (v2138). Fall back to the species table for THIS render only:
+      // the stored preference is untouched and returns as soon as there are dots again, and
+      // the layout tabs show which view you actually got.
+      var modelOnly = pinMoved || movedAway || noFetchList;
+      var obsLayoutEmpty = (spLayout === "observation") && (!haveDots || (modelOnly && !multi));
       if (obsLayoutEmpty) spLayout = "table";
       // Rebuild when the page holds an observation list that has nothing left to list —
       // otherwise the old empty page is shown again and the click looks ignored.
       var staleObsPage = spPageIsObs && !haveDots;
-      if (!speciesPanelPopulated() || movedAway || staleObsPage || obsLayoutEmpty || (mapFromMultiFetch && haveDots)) {
-        // The multi-fetch flag only decides anything while its dots are still on the map.
-        var refPt = (mapFromMultiFetch && haveDots) ? null : refNow;
+      if (!speciesPanelPopulated() || movedAway || pinMoved || staleObsPage || obsLayoutEmpty || multi) {
+        var refPt = multi ? null : refNow;
         // Dots on the map → their "By observation" list. Nothing fetched at all → the model's
         // own species for the pin / map centre, commonest first (renderSpeciesList's noFetch
         // path ends in applySightings with an empty result, which is what turns that on).
