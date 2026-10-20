@@ -27517,14 +27517,10 @@
       lo.addEventListener("input", upd); hi.addEventListener("input", upd);
       lo.addEventListener("change", apply); hi.addEventListener("change", apply);
     } else if (spHeadPanel === "last") {
-      var clr = container.querySelector(".sp-date-clear");
-      if (clr) clr.addEventListener("click", function (e) { e.stopPropagation(); closeDatePane(); });
-      var clrf = container.querySelector(".sp-date-clearfilters");
-      if (clrf) clrf.addEventListener("click", function (e) { e.stopPropagation(); clearDateFilters(); });
-      container.querySelectorAll(".sp-date-rel").forEach(function (b) {
-        b.addEventListener("click", function (e) { e.stopPropagation(); cycleDateRel(this.getAttribute("data-date")); });
-      });
-      wireDetFilters(document.getElementById("species-panel"));   // recency chips / range inputs / month chips
+      // wireDetFilters wires the whole pane: recency chips / range inputs / month chips AND the
+      // On/Before/After button and the two × — wiring those here as well gave every button two
+      // handlers, so one tap on the date button advanced two steps (v2136).
+      wireDetFilters(document.getElementById("species-panel"));
     }
   }
   // Clear every date filter (recency window → All, absolute range → off, month-of-year
