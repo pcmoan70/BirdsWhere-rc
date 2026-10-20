@@ -166,7 +166,10 @@ window.GeoAnalysis = (function () {
     var gRange = gMax - gMin;
 
     var months = ctx.months;
-    var html = '<div class="an-scroll"><table class="an-heatmap">';
+    // A same-tab, same-week re-render (a filter, a threshold) keeps the scroll the reader has;
+    // a new tab or week brings this week's column into view (below).
+    var prev = el.querySelector(".an-scroll"), keepLeft = prev && prev.getAttribute("data-mode") === mode && prev.getAttribute("data-wk") === String(wkIdx) ? prev.scrollLeft : null;
+    var html = '<div class="an-scroll" data-mode="' + mode + '" data-wk="' + wkIdx + '"><table class="an-heatmap">';
     // Month header row (each month spans 4 weeks).
     html += "<thead><tr><th class='an-corner'></th>";
     for (var m = 0; m < 12; m++) html += '<th colspan="4" class="an-month">' + esc(months[m]) + "</th>";
@@ -206,6 +209,14 @@ window.GeoAnalysis = (function () {
     }
     html += "</tbody></table></div>";
     el.innerHTML = html;
+    // This week's column in view (owner, 2026-10-20: "make sure the arrivals column for current week is in
+    // focus when user opens pane"): on a narrow screen the 48 columns overflow sideways and the current
+    // week — late in the year — sat off to the right. Centred in the room beside the sticky name column.
+    var sc = el.querySelector(".an-scroll"), cur = el.querySelector("th.an-cur"), corner = el.querySelector("th.an-corner");
+    if (sc && sc.scrollWidth > sc.clientWidth + 1) {
+      if (keepLeft != null) sc.scrollLeft = keepLeft;
+      else if (cur) { var nameW = corner ? corner.offsetWidth : 0; sc.scrollLeft = Math.max(0, cur.offsetLeft - nameW - (sc.clientWidth - nameW - cur.offsetWidth) / 2); }
+    }
     // Desktop: give the sticky name column a bit more room than mobile's 110 px
     // (up to the 6th-widest rendered name, hard-capped at 180 px) — the rest of
     // the page width goes to the 48 week cells, which stretch via width:100%.
