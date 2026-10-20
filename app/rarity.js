@@ -152,6 +152,7 @@ window.AppRarity = (function () {
   // sighting at the band's 🔔 location. Auth is a personal access token (BAND Developers → My Apps →
   // Connect BAND account); the API answers the browser directly (CORS), so no server is involved.
   var BAND_API = "https://openapi.band.us";
+  var BAND_DISCONTINUED = true;    // the BAND source is retired (2026-10-20): no settings block, no polling; stored tokens/groups stay untouched
   var rarityBadBandToken = null;   // the token that last got 401 — retried only after it changes
   function pad2(n) { return (n < 10 ? "0" : "") + n; }
   function bandFetch(path, params, signal) {
@@ -748,7 +749,7 @@ window.AppRarity = (function () {
     // exactly those of an eBird notable record.
     function bandStep(done) {
       var bands = (cfg.bands || []).filter(function (b) { return b && b.on && b.key; });
-      if (!cfg.bandToken || !bands.length || rarityBadBandToken === cfg.bandToken) { done(); return; }
+      if (BAND_DISCONTINUED || !cfg.bandToken || !bands.length || rarityBadBandToken === cfg.bandToken) { done(); return; }
       var j = 0;
       (function nextBand() {
         if (j >= bands.length) { done(); return; }
@@ -1401,7 +1402,7 @@ window.AppRarity = (function () {
     harvestLocalRarities: harvestLocalRarities,
     rarityEmailPost: rarityEmailPost, rarityEmailValid: rarityEmailValid, rarityEmailState: rarityEmailState,
     rarityEmailTestSend: rarityEmailTestSend,
-    bandListBands: bandListBands, bandMatches: bandMatches, bandPlain: bandPlain, rarityLocs: rarityLocs, rarityLocKey: rarityLocKey,
+    BAND_DISCONTINUED: BAND_DISCONTINUED, bandListBands: bandListBands, bandMatches: bandMatches, bandPlain: bandPlain, rarityLocs: rarityLocs, rarityLocKey: rarityLocKey,
     showPanel: showRarityPanel, pageClosed: rarityPageClosed,
     initRarityAlerts: initRarityAlerts,
     // the group key behind the currently-open rarity window (app.js clears it

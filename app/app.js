@@ -7687,6 +7687,7 @@
                 '<label class="ctrl-check"><input type="checkbox" id="rarity-country-toggle"> <span data-i18n="rarity.countryWide">Whole-country alerts</span></label>' +
                 '<p class="cu-hint" data-i18n="rarity.countryWideTip">For every 🔔 point, fetch rare-bird alerts for its entire country instead of just the radius around it. Points that share a country are fetched once. Uses more of your eBird API budget.</p>' +
               '</div>' +
+              (window.AppRarity.BAND_DISCONTINUED ? "" :   // BAND groups: retired source, block hidden behind the flag
               '<div class="ctrl-group">' +
                 '<label for="rarity-band-token" data-i18n="rarity.band">BAND groups</label>' +
                 '<div class="ctrl-inline rarity-email-row">' +
@@ -7695,7 +7696,7 @@
                 '</div>' +
                 '<div id="rarity-band-list"></div>' +
                 '<p class="cu-hint" data-i18n="rarity.bandHint">Also watch the posts of your birding groups on BAND (band.us). Paste a personal access token (BAND Developers → My Apps → Connect BAND account), load your groups and tick the ones to follow. New posts are searched for species names in the chosen language (scientific names always); a named bird is treated as a sighting at the chosen 🔔 location — a post has no coordinates — and alerts when the model finds it unlikely there, like any other source.</p>' +
-              '</div>' +
+              '</div>') +
               '<div class="ctrl-group">' +
                 '<label for="rarity-prob-th" data-i18n="rarity.probTh">Rarity threshold (%)</label>' +
                 '<input id="rarity-prob-th" type="number" min="0" max="100" step="1" />' +
@@ -21573,7 +21574,8 @@
       rCw.checked = !!rarityCfg().countryWide;
       rCw.addEventListener("change", function () { raritySave({ countryWide: !!this.checked }); scheduleRarityPoll(); });   // takes effect on the next poll
     }
-    // BAND groups: token + the list of groups (tick · names-in language · alert location).
+    // BAND groups: token + the list of groups (tick · names-in language · alert location). Retired behind
+    // AppRarity.BAND_DISCONTINUED: the block is not rendered, so the three lookups below come back null and nothing is wired.
     var rBt = document.getElementById("rarity-band-token"), rBl = document.getElementById("rarity-band-load"), rBL = document.getElementById("rarity-band-list");
     function renderBandList(bands) {
       if (!rBL) return;

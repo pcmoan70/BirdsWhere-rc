@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2132";
+var VERSION = "v2133";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 MiS forest habitats legend: only the symbols, cropped from NIBIO\u2019s legend images \u2014 their tiny Norwegian text took the space without being readable.",
+  "\u2022 The BAND groups source for rarity alerts is discontinued: the settings block is gone and BAND posts are no longer polled. Everything else is unchanged.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
