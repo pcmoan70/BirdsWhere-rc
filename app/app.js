@@ -17069,17 +17069,22 @@
   function dateRelBtnHtml(d) {
     var st = dateRelState(d);
     var label = st === "on" ? t("date.on") : st === "before" ? t("date.before") : st === "after" ? t("date.after") : "–";
-    return '<button type="button" class="sp-date-rel' + (st !== "none" ? " on" : "") + '" data-date="' + escapeHtml(d) + '" data-state="' + st + '" title="' + escapeHtml(t("date.on") + " / " + t("date.before") + " / " + t("date.after")) + '">' + escapeHtml(label) + "</button>";
+    return '<button type="button" class="sp-date-rel' + (st !== "none" ? " on" : "") + '" data-date="' + escapeHtml(d) + '" title="' + escapeHtml(t("date.on") + " / " + t("date.before") + " / " + t("date.after")) + '">' + escapeHtml(label) + "</button>";
   }
   function dateRelRowHtml(d) {
     return '<div class="sp-date-rel-row"><b class="sp-date-lbl">' + escapeHtml(fmtDate(d) || d) + "</b>" + dateRelBtnHtml(d) + "</div>";
   }
-  function cycleDateRel(dateStr, state) {
-    var next = DATE_REL_ORDER[(DATE_REL_ORDER.indexOf(state) + 1) % DATE_REL_ORDER.length];
+  // The state is read from the live filter, not from the button's attribute: after a click
+  // detFiltersRefresh re-filters the table but leaves the open pane as it was, so the attribute
+  // went stale and every click set "on" again (v2135). The pane is redrawn here so the button
+  // shows the new state (the fetch list's modal redraws itself in detFiltersRefresh).
+  function cycleDateRel(dateStr) {
+    var next = DATE_REL_ORDER[(DATE_REL_ORDER.indexOf(dateRelState(dateStr)) + 1) % DATE_REL_ORDER.length];
     if (next === "on") setDetDateFilter(dateStr, dateStr);
     else if (next === "before") setDetDateFilter("", dateStr);
     else if (next === "after") setDetDateFilter(dateStr, "");
     else setDetDateFilter("", "");   // none
+    if (typeof speciesPanelPopulated === "function" && speciesPanelPopulated()) renderSpControls();
   }
   // `dateForRel` (Per-observation) wraps the open days panel with a clear-× and the
   // On/Before/After row for the clicked date.
@@ -17190,7 +17195,7 @@
     // "Per observation" date pane: On/Before/After the clicked date + a green × that
     // clears every date filter and closes the pane.
     el.querySelectorAll(".sp-date-rel").forEach(function (b) {
-      b.addEventListener("click", function (e) { e.stopPropagation(); cycleDateRel(this.getAttribute("data-date"), this.getAttribute("data-state")); });
+      b.addEventListener("click", function (e) { e.stopPropagation(); cycleDateRel(this.getAttribute("data-date")); });
     });
     var dclr = el.querySelector(".sp-date-clear");
     if (dclr) dclr.addEventListener("click", function (e) { e.stopPropagation(); closeDatePane(); });
@@ -27517,7 +27522,7 @@
       var clrf = container.querySelector(".sp-date-clearfilters");
       if (clrf) clrf.addEventListener("click", function (e) { e.stopPropagation(); clearDateFilters(); });
       container.querySelectorAll(".sp-date-rel").forEach(function (b) {
-        b.addEventListener("click", function (e) { e.stopPropagation(); cycleDateRel(this.getAttribute("data-date"), this.getAttribute("data-state")); });
+        b.addEventListener("click", function (e) { e.stopPropagation(); cycleDateRel(this.getAttribute("data-date")); });
       });
       wireDetFilters(document.getElementById("species-panel"));   // recency chips / range inputs / month chips
     }
