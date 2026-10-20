@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2133";
+var VERSION = "v2134";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The BAND groups source for rarity alerts is discontinued: the settings block is gone and BAND posts are no longer polled. Everything else is unchanged.",
+  "\u2022 MiS forest habitats: the surveyed-area outline is no longer drawn (nor in the legend); the point popup still says whether a spot was surveyed.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

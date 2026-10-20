@@ -108,7 +108,7 @@ birds/mammals/amphibians/insects; **Plants 🌿 and Fungi 🍄 are observation-o
 to Natura 2000), **Land cover** (CORINE / Copernicus-EEA — habitat backdrop, Europe/EEA, with a
 colour-coded class legend in the lower-right while it's on), **MiS forest habitats** (NIBIO's inventory of Norwegian forest —
 key biotopes and their habitat elements: old trees, dead wood, hollow broadleaves, cliff walls, stream gorges, lichen-hung trees…;
-Norway only; tap the map for what lies at a point; a legend of the symbols lower-right),
+Norway only; the surveyed outline is not drawn; tap the map for what lies at a point and whether it was surveyed; a legend of the symbols lower-right),
 **GBIF occurrence density** (*Experimental* — enable in Settings; a seasonal heatmap of where records concentrate),
 **OSM protected areas**, **Viewpoints** (a **bundled worldwide snapshot** of 122k OSM bird and wildlife hides, bird-watching towers and birdwatching
 viewpoints — incl. towers/viewpoints validated by proximity to an eBird hotspot — served from the

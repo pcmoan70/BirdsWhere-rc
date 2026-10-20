@@ -9945,8 +9945,10 @@
   var MIS_ATTR = 'MiS forest habitats &copy; <a href="https://www.nibio.no/" target="_blank" rel="noopener">NIBIO</a>';
   var MIS_LAYERS = [["Nokkelbiotop", "Key biotopes"], ["Hule_lauvtrar_punkt", "Hollow broadleaf trees"], ["Gamle_trar", "Old trees"], ["Staende_dod_ved", "Standing dead wood"], ["Liggende_dod_ved", "Lying dead wood"],
     ["Eldre_lauvsuksesjon", "Older broadleaf succession"], ["Bergvegger_alle", "Cliff walls"], ["Bekkeklofter", "Stream gorges"], ["Leirraviner", "Clay ravines"], ["Rik_bakkevegetasjon", "Rich ground vegetation"],
-    ["Trar_m_hengelav_alle", "Trees with hanging lichen"], ["Rikbarkstrar_alle", "Rich-bark trees"], ["Brannflater", "Burnt areas"], ["Kartleggingsomr", "Surveyed area"]];
+    ["Trar_m_hengelav_alle", "Trees with hanging lichen"], ["Rikbarkstrar_alle", "Rich-bark trees"], ["Brannflater", "Burnt areas"]];
+  var MIS_SURVEYED = ["Kartleggingsomr", "Surveyed area"];   // the surveyed outline: queried in the point popup, never drawn nor in the legend (owner, 2026-10-20)
   var MIS_LAYER_LIST = MIS_LAYERS.map(function (l) { return l[0]; }).join(",");
+  var MIS_QUERY_LIST = MIS_LAYER_LIST + "," + MIS_SURVEYED[0];
   function misLegendUrl(layer) { return MIS_WMS + "?service=WMS&version=1.3.0&request=GetLegendGraphic&format=image/png&sld_version=1.1.0&layer=" + layer; }
   // CORINE Land Cover legend — the 44 standard classes grouped by their level-1 category,
   // with the exact fill colours the CLC2018 raster renders (decoded from the EEA
@@ -18731,13 +18733,13 @@
   function misIdentifyAt(latlng) {
     var sz = map.getSize(), b = map.getBounds(), pt = map.latLngToContainerPoint(latlng);
     var sw = L.CRS.EPSG3857.project(b.getSouthWest()), ne = L.CRS.EPSG3857.project(b.getNorthEast());
-    var u = MIS_WMS + "?service=WMS&version=1.3.0&request=GetFeatureInfo&layers=" + MIS_LAYER_LIST + "&query_layers=" + MIS_LAYER_LIST + "&styles=&crs=EPSG:3857" +
+    var u = MIS_WMS + "?service=WMS&version=1.3.0&request=GetFeatureInfo&layers=" + MIS_QUERY_LIST + "&query_layers=" + MIS_QUERY_LIST + "&styles=&crs=EPSG:3857" +
       "&bbox=" + sw.x + "," + sw.y + "," + ne.x + "," + ne.y + "&width=" + sz.x + "&height=" + sz.y + "&i=" + Math.round(pt.x) + "&j=" + Math.round(pt.y) +
       "&info_format=application/vnd.ogc.gml&feature_count=30&radius=6";
     return AppFetch.fetchWithTimeout(u, {}, 9000).then(function (r) { return r.text(); }).then(function (txt) {
       var hit = Object.create(null), m, re = /<([A-Za-z_]+)_feature>/g;
       while ((m = re.exec(txt))) hit[m[1]] = 1;
-      return MIS_LAYERS.filter(function (l) { return hit[l[0]]; }).map(function (l) { return l[1]; }).join(", ");
+      return MIS_LAYERS.concat([MIS_SURVEYED]).filter(function (l) { return hit[l[0]]; }).map(function (l) { return l[1]; }).join(", ");
     });
   }
   // Query every active identifiable overlay at a point → [{ key, title, value }].
@@ -20321,11 +20323,10 @@
     });
     return rows.length ? rows.join("") : '<div class="lg-note">—</div>';
   }
-  var MIS_TWO_SYMBOLS = { Bergvegger_alle: 1, Kartleggingsomr: 1, Rikbarkstrar_alle: 1, Trar_m_hengelav_alle: 1 };   // legend images 39 px tall: two symbols stacked
+  var MIS_TWO_SYMBOLS = { Bergvegger_alle: 1, Rikbarkstrar_alle: 1, Trar_m_hengelav_alle: 1 };   // legend images 39 px tall: two symbols stacked
   function misLegendBody() {   // each MiS layer's symbol from the service (cropped to the symbol: the image's own text is too small to read), labelled in English
     return MIS_LAYERS.map(function (l) {
-      var lbl = l[0] === "Kartleggingsomr" ? l[1] + " (orange) \u00b7 not surveyed (blue)" : l[1];
-      return '<div class="lg-row"><img class="lg-sw lg-sw-mis' + (MIS_TWO_SYMBOLS[l[0]] ? " lg-sw-mis2" : "") + '" src="' + escapeHtml(misLegendUrl(l[0])) + '" alt=""><span class="lg-lbl">' + escapeHtml(lbl) + "</span></div>";
+      return '<div class="lg-row"><img class="lg-sw lg-sw-mis' + (MIS_TWO_SYMBOLS[l[0]] ? " lg-sw-mis2" : "") + '" src="' + escapeHtml(misLegendUrl(l[0])) + '" alt=""><span class="lg-lbl">' + escapeHtml(l[1]) + "</span></div>";
     }).join("");
   }
   var gbifLegendRange = null;   // { lo, hi } record counts of the hexes in view, set by the dynamic fit
