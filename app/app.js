@@ -20320,9 +20320,11 @@
     });
     return rows.length ? rows.join("") : '<div class="lg-note">—</div>';
   }
-  function misLegendBody() {   // each MiS layer's symbol from the service, labelled in English
+  var MIS_TWO_SYMBOLS = { Bergvegger_alle: 1, Kartleggingsomr: 1, Rikbarkstrar_alle: 1, Trar_m_hengelav_alle: 1 };   // legend images 39 px tall: two symbols stacked
+  function misLegendBody() {   // each MiS layer's symbol from the service (cropped to the symbol: the image's own text is too small to read), labelled in English
     return MIS_LAYERS.map(function (l) {
-      return '<div class="lg-row"><img class="lg-sw lg-sw-mis" src="' + escapeHtml(misLegendUrl(l[0])) + '" alt=""><span class="lg-lbl">' + escapeHtml(l[1]) + "</span></div>";
+      var lbl = l[0] === "Kartleggingsomr" ? l[1] + " (orange) \u00b7 not surveyed (blue)" : l[1];
+      return '<div class="lg-row"><img class="lg-sw lg-sw-mis' + (MIS_TWO_SYMBOLS[l[0]] ? " lg-sw-mis2" : "") + '" src="' + escapeHtml(misLegendUrl(l[0])) + '" alt=""><span class="lg-lbl">' + escapeHtml(lbl) + "</span></div>";
     }).join("");
   }
   var gbifLegendRange = null;   // { lo, hi } record counts of the hexes in view, set by the dynamic fit
