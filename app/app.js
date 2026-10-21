@@ -501,10 +501,11 @@
     if (!clearGroupEl) return;
     var hasPts = typeof detPlot !== "undefined" && Object.keys(detPlot).length > 0;
     var hasFilt = typeof detHasFilter === "function" && detHasFilter();
+    var hasAreas = typeof fetchedAreas !== "undefined" && fetchedAreas.length > 0;   // squares can outlive their dots (every species deleted) → still clearable
     var a = clearGroupEl.querySelector(".clearpts-btn");
     if (a) {
       var listsOn = mpState && (Object.keys(mpState.shownColls()).length || Object.keys(mpState.shownDetSets()).length);
-      a.style.display = (hasPts || listsOn) ? "" : "none";
+      a.style.display = (hasPts || listsOn || hasAreas) ? "" : "none";
       // Reflect the shared arm-and-delete state: armed → "click again to clear"; else
       // "arm per-area delete" when there are areas, plain "clear all" otherwise.
       var armed = !!detAreaDeleteMode;
@@ -526,7 +527,7 @@
       var ft = hasFilt ? t("det.clearFiltersHint") : t("det.filtersHint");
       f.title = ft; f.setAttribute("aria-label", hasFilt ? t("det.clearFilters") : t("det.filters"));
     }
-    clearGroupEl.style.display = hasPts ? "" : "none";
+    clearGroupEl.style.display = (hasPts || hasAreas) ? "" : "none";
   }
   // Back-compat aliases (call sites elsewhere).
   function updateClearPtsBtn() { updateClearGroup(); }
@@ -9623,7 +9624,11 @@
     // both the download and overlay-toggle icons, not between them.
     if (clearGroupEl && clearGroupEl.parentNode) clearGroupEl.parentNode.appendChild(clearGroupEl);
     loadDetections(true);  // restore any "Show in map" detection points — at START: no selection, no filters
-    restoreFetchedAreas(); // ...and their fetched-area outlines (per-area red × needs them)
+    // ...and their fetched-area outlines (per-area red × needs them) — but only WITH the
+    // observations: opening clean (the default) used to leave the squares and the ✓ update
+    // button on an empty map, with nothing to clear them and a tap re-fetching the lot
+    // (owner, 2026-10-21). The areas stay in storage with the observations they belong to.
+    if (!detRestoreSkipped) restoreFetchedAreas();
     loadMapPoints();       // user-added pins + saved named lists (IndexedDB, hydrated above)
     try { migrateDetSetsToLists(); } catch (e) {}   // old "trips" (detection sets) → ordinary saved lists, once
     try { updateBackupNudge(); } catch (e) {}   // gear/Sync go orange when the lists have outgrown the last backup

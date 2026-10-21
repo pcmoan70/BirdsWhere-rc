@@ -624,11 +624,11 @@ they stay ticked and on the map. A **⚠** appears when the *Max points on map* 
 **Opening the app starts clean**: no species selection and no filters (only display preferences —
 the minimised legend, sort order — and deleted species are kept), and the observations fetched last
 time are **not** put back unless Settings → Fetching & detections → **Show the last session's
-observations on open** is on (off by default). Shown point lists still appear; "Fetch on open" is the
-only start-up fetch.
+observations on open** is on (off by default); their fetched-area squares (and the ✓ update button)
+stay away with them. Shown point lists still appear; "Fetch on open" is the only start-up fetch.
 
 There's also a standalone red **×** on the **right of the map** (near the offline-download button),
-shown while observations or lists are on the map: the first tap clears the fetched observations
+shown while observations, fetched-area squares or lists are on the map: the first tap clears the fetched observations
 (saved point lists stay shown); a second tap — once nothing fetched is left — takes the shown lists
 and trips off the map too (un-ticked; the lists themselves are kept).
 
