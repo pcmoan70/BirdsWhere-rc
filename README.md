@@ -1253,7 +1253,9 @@ failed, try again in a minute* and the next check tries again.
 
 **Offline maps** — right-click / long-press the map → **Offline maps** opens the panel; its
 **⬇ Download map** button saves the area on screen (pan/zoom first, – shrinks the panel).
-Areas are colour-coded frames you can delete individually; if the browser evicts
+Areas are colour-coded frames you can delete individually; the panel lists the areas that
+overlap the current view first (tinted, marked *in view*) and follows the map as you pan — tap
+an area's name to show it on the map (switching to its basemap if needed). If the browser evicts
 tiles, the app detects it and offers to re-download. Pinned areas are never auto-purged. A download
 covers the zoom levels from the current view down to the chosen max, **plus a few zoomed-out levels**
 so the area still draws when you zoom out, and it is stored against the basemap actually on screen (a

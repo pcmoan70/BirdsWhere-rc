@@ -51,7 +51,14 @@ window.AppOffline = (function () {
     offlineEditing = true;            // bold frames + on-map "×" delete handles
     renderOfflineAreas();             // also re-renders the frames
     m.style.display = "flex";
-    navOpen("offline", function () { m.style.display = "none"; offlineEditing = false; renderOfflineFrames(); });
+    // The list follows the map while the manager is open (areas in view first) —
+    // skipped while a re-download writes its progress into a row.
+    var follow = function () { if (!document.querySelector("#offline-list .offline-redl.busy")) renderOfflineAreas(); };
+    if (getMap()) getMap().on("moveend", follow);
+    navOpen("offline", function () {
+      m.style.display = "none"; offlineEditing = false; renderOfflineFrames();
+      if (getMap()) getMap().off("moveend", follow);
+    });
   }
   // Distinct border colours so adjacent downloaded areas are easy to tell apart.
   var OFFLINE_COLORS = ["#e6194b", "#3cb44b", "#4363d8", "#f58231", "#911eb4", "#008080", "#9a6324", "#e6ab02"];
@@ -360,13 +367,24 @@ window.AppOffline = (function () {
     var list = document.getElementById("offline-list"); if (!list) return;
     var areas = getOfflineAreas();
     if (!areas.length) { list.innerHTML = '<p class="dd-empty">' + escapeHtml(t("offline.empty")) + "</p>"; return; }
-    list.innerHTML = areas.map(function (a, i) {
+    // Areas overlapping the current map view come first and are marked "in view";
+    // the colour key stays tied to the area's position in the saved list.
+    var vb = null; try { vb = getMap() && getMap().getBounds(); } catch (e) {}
+    function inView(a) {
+      return !!(vb && a.bbox && a.bbox[0] <= vb.getEast() && a.bbox[2] >= vb.getWest() && a.bbox[1] <= vb.getNorth() && a.bbox[3] >= vb.getSouth());
+    }
+    var rows = areas.map(function (a, i) { return { a: a, i: i, here: inView(a) }; });
+    rows.sort(function (x, y) { return (y.here - x.here) || (x.i - y.i); });
+    list.innerHTML = rows.map(function (r) {
+      var a = r.a, i = r.i;
       var mb = (a.bytes / 1048576).toFixed(a.bytes < 10485760 ? 1 : 0);
       // Two lines per area: name (with the colour key) on top, tiles · size · zoom range
       // below, so long names get the panel's width; ⟳ / × sit at the right edge.
-      return '<div class="offline-row" data-id="' + escapeHtml(a.id) + '"><span class="offline-sw" style="background:' + offlineColor(i) + '"></span><span class="offline-name" title="' + escapeHtml(a.name) + '">' + escapeHtml(a.name) +
-        '<span class="offline-purged" title="' + escapeHtml(t("offline.purged")) + '" style="display:none">⚠</span></span>' +
-        '<span class="offline-meta">' + a.tiles.toLocaleString() + " · ~" + mb + " MB · z" + a.zStart + "–" + a.zMax + "</span>" +
+      // The name is a button: tap to show the area on the map (switching basemap if needed).
+      return '<div class="offline-row' + (r.here ? " offline-row-here" : "") + '" data-id="' + escapeHtml(a.id) + '"><span class="offline-sw" style="background:' + offlineColor(i) + '"></span>' +
+        '<button type="button" class="offline-name offline-show" data-id="' + escapeHtml(a.id) + '" title="' + escapeHtml(t("offline.show")) + '">' + escapeHtml(a.name) +
+        '<span class="offline-purged" title="' + escapeHtml(t("offline.purged")) + '" style="display:none">⚠</span></button>' +
+        '<span class="offline-meta">' + (r.here ? '<span class="offline-here">' + escapeHtml(t("offline.inView")) + "</span> · " : "") + a.tiles.toLocaleString() + " · ~" + mb + " MB · z" + a.zStart + "–" + a.zMax + "</span>" +
         '<button type="button" class="offline-redl ico-btn" data-id="' + escapeHtml(a.id) + '" title="' + escapeHtml(t("offline.redownload")) + '" aria-label="' + escapeHtml(t("offline.redownload")) + '">' + ico("refresh") + "</button>" +
         '<button type="button" class="dd-del offline-del" data-id="' + escapeHtml(a.id) + '" aria-label="' + escapeHtml(t("offline.delete")) + '">×</button></div>';
     }).join("");
@@ -375,6 +393,9 @@ window.AppOffline = (function () {
         var id = this.getAttribute("data-id"), a = getOfflineAreas().filter(function (x) { return x.id === id; })[0];
         modalConfirm(t("offline.deletePrompt", { name: a ? a.name : "" })).then(function (ok) { if (ok) deleteOfflineArea(id); });
       });
+    });
+    list.querySelectorAll(".offline-show").forEach(function (b) {
+      b.addEventListener("click", function () { var a = getOfflineAreas().filter(function (x) { return x.id === b.getAttribute("data-id"); })[0]; if (a) showOfflineArea(a); });
     });
     list.querySelectorAll(".offline-redl").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -397,6 +418,12 @@ window.AppOffline = (function () {
       });
     });
     renderOfflineFrames();
+  }
+  // Show a downloaded area: its basemap (if different) and the map fitted to its frame.
+  function showOfflineArea(a) {
+    if (!getMap() || !a.bbox) return;
+    if (a.basemap && a.basemap !== getRenderedBasemap()) setBasemap(a.basemap);
+    try { getMap().fitBounds([[a.bbox[1], a.bbox[0]], [a.bbox[3], a.bbox[2]]], { maxZoom: a.zMax }); } catch (e) {}
   }
   // Coloured frames on the map marking the downloaded areas. Subtle normally;
   // while the "Manage offline maps" modal is open they're bold + each carries a
@@ -505,9 +532,7 @@ window.AppOffline = (function () {
       b.addEventListener("click", function () {
         var a = getOfflineAreas().filter(function (x) { return x.id === this.getAttribute("data-id"); }.bind(this))[0];
         close();
-        if (!a) return;
-        if (a.basemap && a.basemap !== getRenderedBasemap()) setBasemap(a.basemap);
-        try { getMap().fitBounds([[a.bbox[1], a.bbox[0]], [a.bbox[3], a.bbox[2]]], { maxZoom: a.zMax }); } catch (e) {}
+        if (a) showOfflineArea(a);
       });
     });
   }
