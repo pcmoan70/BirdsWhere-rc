@@ -25039,16 +25039,16 @@
     wrap.className = "map-choose";
     // The popup's own labels drop the leading pictogram (the mode dropdown keeps it).
     function noIcon(x) { return String(x).replace(/^[^\w\u00C0-\u024F]+/, ""); }
-    wrap.appendChild(makePopupBtn(noIcon(t("mode.list")), "btn-green", function () { mk.closePopup(); renderSpeciesList(lat, lon); }));
+    wrap.appendChild(makePopupBtn(noIcon(t("mode.list")), "", function () { mk.closePopup(); renderSpeciesList(lat, lon); }));
     // Historic + Migration moved out of the Mode dropdown: they start HERE, at the
     // clicked point. Historic rides the mode switch (the placed marker carries in);
     // Migration switches mode and runs the analysis for this exact spot.
-    wrap.appendChild(makePopupBtn(noIcon(t("mode.historic")), "btn-green", function () {
+    wrap.appendChild(makePopupBtn(noIcon(t("mode.historic")), "", function () {
       mk.closePopup();
       var sel = document.getElementById("mode-select");
       if (sel && sel.value !== "historic") { sel.value = "historic"; sel.dispatchEvent(new Event("change", { bubbles: true })); }
     }));
-    if (groupHasModel()) wrap.appendChild(makePopupBtn(noIcon(t("mode.barchart")), "btn-green", function () {
+    if (groupHasModel()) wrap.appendChild(makePopupBtn(noIcon(t("mode.barchart")), "", function () {
       mk.closePopup();
       var sel = document.getElementById("mode-select");
       if (sel && sel.value !== "barchart") { sel.value = "barchart"; sel.dispatchEvent(new Event("change", { bubbles: true })); }
@@ -25086,7 +25086,7 @@
       // popup entry (not inside "More"), Europe only, Experimental-gated. Inserted before the More toggle.
       if (continentFor(cc) === "EU" && experimentalOn()) {
         wrap.insertBefore(
-          makePopupBtn(t("link.aloft") + " ↗", "btn-green", function () {
+          makePopupBtn(t("link.aloft") + " ↗", "", function () {
             mk.closePopup(); openExternal("https://pcmoan70.github.io/BirdsWhere-aloft/");   // the Migration Aloft radar is its own repo/site now
           }),
           moreBtn
@@ -25105,7 +25105,7 @@
         // The dots on the map inside that square go along in the link's hash (owner, 2026-10-18:
         // "specify dots with descriptive text from BirdsWhere app to be drawn in 3d view").
         wrap.insertBefore(
-          makePopupBtn(t("link.terrain3d") + " ↗", "btn-green", function () {
+          makePopupBtn(t("link.terrain3d") + " ↗", "", function () {
             mk.closePopup();
             var pts = terrain3dPoints(lat, lon, 2000);
             openExternal("https://pcmoan70.github.io/3d_terrain/?lat=" + lat.toFixed(5) + "&lon=" + lon.toFixed(5) + "&r=2000" +

@@ -528,7 +528,7 @@ input[type="range"] { accent-color: var(--brand); }
 .lg-gbif-unit { color: var(--ink-muted); font-size: var(--fs-xs); text-align: center; margin-top: 1px; }
 .lg-gbif-res { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
 .lg-gbif-reslbl { flex: 1; color: var(--ink-muted); font-size: var(--fs-xs); }
-.lg-gbif-resbtn { width: 20px; height: 20px; line-height: 1; padding: 0; border: 1px solid var(--border); border-radius: 5px;
+.lg-gbif-resbtn { width: 20px; height: 20px; line-height: 1; padding: 0; border: 1px solid var(--border); border-radius: var(--radius-xs);
   background: var(--surface); color: var(--ink); font-size: 13px; font-weight: 700; cursor: pointer; }
 .lg-gbif-resbtn:hover:not(:disabled) { background: var(--surface-2); }
 .lg-gbif-resbtn:disabled { opacity: 0.35; cursor: default; }
@@ -895,7 +895,7 @@ input[type="range"] { accent-color: var(--brand); }
   position: absolute; top: 3px; right: 5px; z-index: 6;
   border: 0; background: transparent; cursor: pointer;
   font-size: 20px; line-height: 1; color: var(--ink-muted);
-  padding: 2px 7px; border-radius: 5px;
+  padding: 2px 7px; border-radius: var(--radius-xs);
 }
 .anch-x:hover, .ui-modal-x:hover { background: var(--surface-2); color: var(--ink); }
 .has-anch-x, .has-modal-x { position: relative; }
@@ -1066,7 +1066,13 @@ input[type="range"] { accent-color: var(--brand); }
   opacity: 0.85;
 }
 
-/* ---------- CSV download button ---------- */
+/* ---------- The button kit (one family; stage 2 of the design programme) ----------
+   .btn            primary   moss fill, white text
+   .btn-light      secondary white fill, hairline, ink text
+   .btn-ghost      text/icon no fill, no border, ink-muted → brand on hover
+   .btn-danger     rowan fill, white text
+   Standard height 36 px (radius --radius-sm); compact / icon buttons radius --radius-xs.
+   Hover: a shade darker (primary / danger) or --surface-2 (secondary / ghost); no lift. */
 .ctrl-group-btn {
   justify-content: flex-end;
 }
@@ -1076,11 +1082,11 @@ input[type="range"] { accent-color: var(--brand); }
   font-size: var(--fs-b);
   font-weight: 600;
   border: 1px solid var(--brand);
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-sm);
   background: var(--brand);
   color: var(--on-brand);
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
   box-shadow: var(--shadow-sm);
   white-space: nowrap;
 }
@@ -1103,12 +1109,6 @@ input[type="range"] { accent-color: var(--brand); }
 .btn:hover {
   background: var(--brand-strong);
   border-color: var(--brand-strong);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.btn:active {
-  transform: translateY(0);
 }
 
 .btn:disabled, .btn[disabled] {
@@ -1117,13 +1117,13 @@ input[type="range"] { accent-color: var(--brand); }
   box-shadow: none;
 }
 .btn:disabled:hover, .btn[disabled]:hover {
-  background: var(--brand);   /* don't lift/brighten a disabled button on hover */
+  background: var(--brand);   /* don't brighten a disabled button on hover */
   border-color: var(--brand);
-  transform: none;
   box-shadow: none;
 }
 .btn-light:disabled:hover, .btn-light[disabled]:hover {
   background: var(--surface);
+  border-color: var(--border);
 }
 
 /* ---------- Bar Charts panel ---------- */
@@ -1828,7 +1828,7 @@ table.an-scatter-table td.an-tint { color: var(--on-brand); font-weight: 600; te
   box-shadow: var(--shadow-md, 0 6px 24px rgba(0,0,0,.25)); padding: 4px;
 }
 .group-quick-panel .gq-head { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .04em; color: var(--ink-faint); padding: 4px 8px 6px; }
-.group-quick-panel .gq-item { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: none; border: 0; border-radius: 5px; padding: 7px 9px; font: inherit; color: var(--ink); cursor: pointer; }
+.group-quick-panel .gq-item { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: none; border: 0; border-radius: var(--radius-xs); padding: 7px 10px; font: inherit; color: var(--ink); cursor: pointer; }
 .group-quick-panel .gq-item .bird-ico { width: var(--ico-m, 16px); height: var(--ico-m, 16px); flex: 0 0 auto; color: var(--brand-deep); }
 .group-quick-panel .gq-item:hover { background: var(--surface-2); }
 .group-quick-panel .gq-item.gq-cur { font-weight: 600; }
@@ -1985,8 +1985,8 @@ button.dd-name:hover { text-decoration: underline; }
 .aff-sort-btn.on .aff-sort-gly { color: var(--brand); }
 /* Funnel button in the species-list controls bar (opens the all-filters pane). */
 .sp-filter-btn { border: 1px solid var(--border); background: var(--surface); color: var(--ink-muted); cursor: pointer;
-  padding: 4px 7px; border-radius: 6px; display: inline-flex; align-items: center; }
-.sp-filter-btn:hover { color: var(--brand); }
+  padding: 4px 7px; border-radius: var(--radius-xs); display: inline-flex; align-items: center; }
+.sp-filter-btn:hover { color: var(--brand); background: var(--surface-2); }
 .sp-missing-btn { font-weight: 700; font-size: var(--fs-b); min-width: 30px; }   /* [?] — also list predicted-but-unseen species */
 .sp-filter-btn.on { color: var(--warn); border-color: var(--warn); }
 
@@ -2104,7 +2104,8 @@ button.dd-name:hover { text-decoration: underline; }
    across rows — a locked list's icon no longer sits wider than an × on others. */
 .mp-coll-del, .mp-coll-lock { flex: 0 0 auto; box-sizing: border-box; width: 28px; height: 26px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
 /* Per-list icon buttons: navigate, share, edit. */
-.mp-coll-nav, .mp-coll-share, .mp-coll-edit, .mp-coll-dl { flex: 0 0 auto; box-sizing: border-box; width: 28px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: var(--radius-xs, 4px); background: var(--surface); cursor: pointer; padding: 0; color: var(--brand-deep); }
+.mp-coll-nav, .mp-coll-share, .mp-coll-edit, .mp-coll-dl { flex: 0 0 auto; box-sizing: border-box; width: 28px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--surface); cursor: pointer; padding: 0; color: var(--brand-deep); }
+.mp-coll-nav:hover, .mp-coll-share:hover, .mp-coll-edit:hover, .mp-coll-dl:hover { background: var(--surface-2); border-color: var(--border-strong); }
 .mp-coll-nav:hover, .mp-coll-share:hover, .mp-coll-edit:hover, .mp-coll-dl:hover { color: var(--brand); border-color: var(--brand); }
 .mp-coll-nav .btn-ico, .mp-coll-share .btn-ico, .mp-coll-edit .btn-ico, .mp-coll-dl .btn-ico { width: var(--ico-m); height: var(--ico-m); }
 .detlist-save-btn .btn-ico { width: var(--ico-m); height: var(--ico-m); }
@@ -2141,7 +2142,7 @@ button.dd-name:hover { text-decoration: underline; }
 .route-pop .route-pop-name { font-weight: 600; margin-bottom: 6px; }
 .route-pop .btn { width: 100%; }
 .mp-unsaved { margin: 0 6px 6px; padding: 4px 8px; font-size: var(--fs-xs); line-height: 1.3; border-radius: 4px; color: var(--warn-strong); background: var(--warn-soft); border: 1px solid var(--warn-soft); }
-.mp-saveas-btn { display: inline-block; margin-top: 4px; padding: 4px 10px; font: inherit; font-size: var(--fs-xs); font-weight: 700; cursor: pointer; border: 1px solid var(--warn); border-radius: 5px; background: var(--surface); color: var(--warn-strong); }
+.mp-saveas-btn { display: inline-block; margin-top: 4px; padding: 4px 10px; font: inherit; font-size: var(--fs-xs); font-weight: 700; cursor: pointer; border: 1px solid var(--warn); border-radius: var(--radius-xs); background: var(--surface); color: var(--warn-strong); }
 .mp-saveas-btn:active { background: var(--warn-soft); }
 .mp-chips { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 8px 6px; border-top: 1px solid var(--md-default-fg-color--lightest); }
 .mp-chip {
@@ -2435,7 +2436,7 @@ button.dd-name:hover { text-decoration: underline; }
 /* "Note from" accepts several fields: a checkbox dropdown instead of a single <select>.
    Sized from the same var(--fs-b) as every other row in the dialog. */
 .kml-ms { position: relative; flex: 0 1 58%; }
-.kml-ms-btn { width: 100%; padding: 5px 7px; border-radius: 7px; border: 1px solid var(--border);
+.kml-ms-btn { width: 100%; padding: 5px 7px; border-radius: var(--radius-xs); border: 1px solid var(--border);
   background: var(--surface); color: inherit; font: inherit; font-size: var(--fs-b);
   text-align: left; cursor: pointer; }
 .kml-ms-menu { display: none; position: absolute; z-index: 10; top: calc(100% + 3px); left: 0; right: 0;
@@ -2642,8 +2643,8 @@ button.dd-name:hover { text-decoration: underline; }
 .settings-update:disabled { opacity: 0.6; cursor: default; }
 /* Storage → clear cached data buttons. */
 .clear-cache-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
-.clear-cache-btn { padding: 7px 8px; font: inherit; font-size: var(--fs-s); border: 1px solid var(--border); border-radius: var(--radius-xs, 5px); background: var(--surface); color: var(--brand-strong); cursor: pointer; }
-.clear-cache-btn:hover:not(:disabled) { background: var(--brand-soft); }
+.clear-cache-btn { padding: 7px 8px; font: inherit; font-size: var(--fs-s); border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--surface); color: var(--ink); cursor: pointer; }
+.clear-cache-btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--border-strong); }
 .clear-cache-btn:disabled { opacity: 0.6; cursor: default; }
 /* Cached-item count on each clear button (small, muted). */
 .clear-cnt { font-size: 0.72em; opacity: 0.65; font-variant-numeric: tabular-nums; }
@@ -2890,7 +2891,7 @@ button.dd-name:hover { text-decoration: underline; }
 .sp-sort-grp { display: inline-flex; align-items: center; gap: 3px; font-size: var(--fs-s); color: var(--ink-muted); }
 .sp-sort-btn, .sp-spf-chip, .sp-date-rel {
   border: 1px solid var(--border); background: var(--surface);
-  border-radius: 6px; padding: 3px 9px; cursor: pointer; font-size: var(--fs-b); line-height: 1.25;
+  border-radius: var(--radius-xs); padding: 3px 9px; cursor: pointer; font-size: var(--fs-b); line-height: 1.25;
 }
 .sp-sort-btn.on, .sp-spf-chip.on, .sp-date-rel.on { background: var(--brand); color: var(--on-brand); border-color: var(--brand); }
 .sp-spf-chip { min-width: 2em; text-align: center; }
@@ -3028,15 +3029,22 @@ button.dd-name:hover { text-decoration: underline; }
 .sp-actions .btn { flex: 0 1 auto; min-width: 0; white-space: nowrap; padding: 6px 8px; font-size: var(--fs-s); overflow: hidden; text-overflow: ellipsis; }
 .btn-light {
   background: var(--surface);
-  color: var(--brand-deep);
+  color: var(--ink);
   border-color: var(--border);
 }
-.btn-light:hover { background: var(--surface-2); }
+.btn-light:hover { background: var(--surface-2); border-color: var(--border-strong); }
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-muted);
+  border-color: transparent;
+  box-shadow: none;
+}
+.btn-ghost:hover { background: var(--surface-2); border-color: transparent; color: var(--brand); }
 .btn-danger {
   background: var(--danger);
   border-color: var(--danger);
 }
-.btn-danger:hover { background: var(--danger-strong); }
+.btn-danger:hover { background: var(--danger-strong); border-color: var(--danger-strong); }
 
 #checklist-panel { margin-top: 16px; }
 .chk-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
@@ -3398,7 +3406,8 @@ th.sort-live::after { color: var(--info); opacity: 1; animation: sort-live-pulse
 .lists-pick { padding: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
 .lists-pick-hd { flex: 1 0 100%; font-size: var(--fs-s); color: var(--ink-muted); }
 .lists-pick-btn, .lists-pick-cancel { font: inherit; font-size: var(--fs-s); padding: 4px 9px; cursor: pointer;
-  border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--ink); }
+  border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--surface); color: var(--ink); }
+.lists-pick-btn:hover:not(:disabled), .lists-pick-cancel:hover { background: var(--surface-2); border-color: var(--border-strong); }
 .lists-pick-btn:disabled { opacity: .55; cursor: default; }
 .lists-pick-cancel { border-style: dashed; color: var(--ink-muted); }
 
@@ -3518,7 +3527,7 @@ tr.row-list-only .prob-na { color: var(--ink-muted); }
 .mp-tri-icon svg { display: block; filter: drop-shadow(0 1px 1px rgba(0,0,0,.35)); }
 .obs-addmenu { position: fixed; z-index: 6000; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.18); padding: 4px; min-width: 150px; max-width: 240px; }
 .obs-addmenu-head { font-size: var(--fs-xs); font-weight: 700; color: var(--ink-muted); padding: 3px 8px 5px; border-bottom: 1px solid var(--border); margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.obs-addmenu-item, .obs-addmenu-new, .obs-people-item { display: block; width: 100%; text-align: left; border: none; background: transparent; font: inherit; font-size: var(--fs-b); padding: 5px 8px; border-radius: 5px; cursor: pointer; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.obs-addmenu-item, .obs-addmenu-new, .obs-people-item { display: block; width: 100%; text-align: left; border: none; background: transparent; font: inherit; font-size: var(--fs-b); padding: 7px 10px; border-radius: var(--radius-xs); cursor: pointer; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .obs-people-item:hover { background: var(--surface-2); color: var(--brand); }
 .obs-addmenu-item:hover, .obs-addmenu-new:hover { background: var(--surface-2); }
 .obs-addmenu-item.on { color: var(--brand); font-weight: 600; }
@@ -3597,7 +3606,7 @@ tr.row-list-only .prob-na { color: var(--ink-muted); }
 #detlist-filters-bar { flex: 0 0 auto; }
 .detlist-select-btn { flex: 0 0 auto; border: 1px solid var(--brand); background: var(--brand-soft);
   color: var(--brand-strong); cursor: pointer; font: inherit; font-size: var(--fs-s); font-weight: 600;
-  padding: 6px 10px; border-radius: 7px; white-space: nowrap; }
+  padding: 6px 10px; border-radius: var(--radius-xs); white-space: nowrap; }
 .detlist-select-btn:hover { background: var(--brand); color: var(--on-brand); }
 #detlist-filters-wrap { margin: 6px 0 8px; }
 #detlist-filters-wrap:empty { margin: 0; }
@@ -3629,8 +3638,8 @@ tr.sp-clip, tbody.sp-clip { display: none !important; }
 .detlist-sort-sel:hover { border-color: var(--brand); color: var(--brand-deep); }
 /* "Save as list" — saves the listed species as a map point-list. */
 .detlist-save-btn { border: 1px solid var(--border); background: var(--surface); cursor: pointer; font: inherit; font-size: var(--fs-xs);
-  padding: 3px 10px; border-radius: 999px; color: var(--ink); white-space: nowrap; }
-.detlist-save-btn:hover:not(:disabled) { border-color: var(--brand); color: var(--brand-deep); }
+  padding: 3px 10px; border-radius: var(--radius-xs); color: var(--ink); white-space: nowrap; }
+.detlist-save-btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--border-strong); }
 .detlist-save-btn:disabled { opacity: 0.45; cursor: default; }
 #detlist-search { box-sizing: border-box; width: 100%; margin: 0 0 10px; padding: 7px 10px; font: inherit; font-size: var(--fs-b);
   border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--ink); }
@@ -3682,9 +3691,6 @@ tr.sp-clip, tbody.sp-clip { display: none !important; }
 /* The AI-model year profile at the top of a map-click popup (same chart styling,
    no toggle). The SVG is drawn at its own 200 px width — never wider — so it
    cannot stretch the popup; the caption under it keeps the popup's own width. */
-/* The popup's primary action reads as a plain green button, not the brand teal. */
-.btn-green { background: var(--ok); border-color: var(--ok); }
-.btn-green:hover { background: var(--brand-strong); border-color: var(--brand-strong); }
 .bsw-chart { display: block; width: 100%; height: auto; }
 .bsw-legend { font-size: var(--fs-xs); color: var(--ink-muted); text-align: center; margin-bottom: 2px; }
 /* The card's view-following stat line — same small size as the chart caption. */
@@ -3836,7 +3842,7 @@ a.dl-row:hover, .dl-row-menu:hover { background: var(--surface-2, rgba(0,0,0,.05
   font: inherit; font-size: var(--fs-b); color: var(--ink); cursor: pointer; border-radius: var(--radius-xs); white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis; }
 .detrow-menu-item:hover { background: var(--surface-2); }
-.detrow-menu-item.drm-green { background: var(--ok); color: var(--on-brand); font-weight: 600; margin: 2px 0; }   /* mode entries (Historic / Migration), like the point popup's green buttons */
+.detrow-menu-item.drm-green { background: var(--brand); color: var(--on-brand); font-weight: 600; margin: 2px 0; }   /* mode entries (Historic / Migration), like the point popup's green buttons */
 .detrow-menu-item.drm-green:hover { background: var(--brand-strong); }
 /* Active date-filter row: label left, a red × on the right that removes the filter. */
 .detrow-menu-item.drm-active { display: flex; align-items: center; justify-content: space-between; font-weight: 700; }
@@ -4193,13 +4199,13 @@ a.place-search-btn.is-open { background: var(--brand-soft); }
   border-bottom: 1px solid var(--border);
 }
 .fp-back {
-  flex: 0 0 auto; width: 38px; height: 38px; border-radius: 8px; cursor: pointer;
+  flex: 0 0 auto; width: 36px; height: 36px; border-radius: var(--radius-sm); cursor: pointer;
   border: 1px solid var(--border);
-  background: var(--surface); color: var(--ink-muted);
+  background: var(--surface); color: var(--brand-deep);
   display: inline-flex; align-items: center; justify-content: center;
   padding: 0; line-height: 1;
 }
-.fp-back:hover { color: var(--brand); border-color: var(--brand); }
+.fp-back:hover { background: var(--surface-2); border-color: var(--border-strong); }
 .fp-back .btn-ico { width: var(--ico-l, 20px); height: var(--ico-l, 20px); }
 .field-place {
   flex: 0 1 auto; width: 25ch; max-width: 25ch; min-width: 0; font-size: var(--fs-h); font-weight: 600;
@@ -4222,10 +4228,10 @@ a.place-search-btn.is-open { background: var(--brand-soft); }
   display: flex; flex-direction: column; gap: 2px;
 }
 .fp-dl-item {
-  text-align: left; padding: 6px 12px; font-size: var(--fs-b); cursor: pointer;
-  border: none; background: transparent; color: inherit; border-radius: 4px;
+  text-align: left; padding: 7px 10px; font-size: var(--fs-b); cursor: pointer;
+  border: none; background: transparent; color: inherit; border-radius: var(--radius-xs);
 }
-.fp-dl-item:hover { background: var(--md-code-bg-color); }
+.fp-dl-item:hover { background: var(--surface-2); }
 .fp-dl-sep { height: 1px; margin: 4px 4px; background: var(--md-default-fg-color--lightest); }
 .fp-dl-danger { color: var(--danger); }
 .fp-dl-danger:hover { background: rgba(195, 60, 80, 0.08); }
@@ -4306,8 +4312,9 @@ a.place-search-btn.is-open { background: var(--brand-soft); }
 .fc-img-add {
   flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
   width: 36px; height: 36px; box-sizing: border-box; cursor: pointer; font-size: var(--fs-h); line-height: 1;
-  border: 1px solid var(--border); border-radius: 6px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--brand-deep);
 }
+.fc-img-add:hover { background: var(--surface-2); border-color: var(--border-strong); }
 .fc-img-add:active { background: var(--brand-soft); }
 /* "×N" badge on the name when a species has more than one logged observation. */
 .fc-ncount {
@@ -4356,8 +4363,8 @@ a.place-search-btn.is-open { background: var(--brand-soft); }
 /* Per-entry photos: a 📷 add button on the row, thumbnails in a strip below it. */
 .ent-img-add {
   flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: var(--fs-h);
-  border: 1px solid var(--border); background: var(--surface);
+  width: 30px; height: 30px; border-radius: var(--radius-xs); cursor: pointer; font-size: var(--fs-h);
+  border: 1px solid var(--border); background: var(--surface); color: var(--brand-deep);
 }
 .ent-imgs { display: flex; flex-wrap: wrap; gap: 8px; padding: 2px 4px 8px 30px; }
 .ent-imgs:empty { display: none; padding: 0; }
@@ -4383,7 +4390,8 @@ a.place-search-btn.is-open { background: var(--brand-soft); }
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
 }
 #print-report .pr-bar { position: sticky; top: 0; display: flex; gap: 10px; justify-content: flex-end; padding: 6px 0 12px; background: var(--surface); }
-#print-report .pr-bar button { font: inherit; font-size: 0.92rem; padding: 8px 14px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--brand-deep); }
+#print-report .pr-bar button { font: inherit; font-size: var(--fs-b); font-weight: 600; padding: 8px 14px; border-radius: var(--radius-sm); cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--ink); }
+#print-report .pr-bar button:hover { background: var(--surface-2); border-color: var(--border-strong); }
 #print-report .pr-bar .pr-print { font-weight: 700; }
 #print-report h1 { font-size: 19px; color: var(--brand-deep); margin: 0 0 2px; }
 #print-report .pr-meta { color: var(--ink-muted); font-size: 12px; margin-bottom: 18px; }
@@ -4462,21 +4470,21 @@ a.place-search-btn.is-open { background: var(--brand-soft); }
 #fcp-name { font-weight: 600; font-size: var(--fs-h); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #fcp-close, #fca-close { border: none; background: transparent; font-size: var(--fs-glyph); line-height: 1; cursor: pointer; color: var(--md-default-fg-color--light); }
 .fcp-step-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 6px; }
-.fcp-step { flex: 1 1 0; min-width: 42px; height: 48px; padding: 0 4px; font-size: var(--fs-h); font-weight: 600; line-height: 1; border-radius: 8px; cursor: pointer;
-  border: 1px solid var(--md-default-fg-color--lightest); background: var(--md-default-bg-color); color: var(--md-default-fg-color);
+.fcp-step { flex: 1 1 0; min-width: 42px; height: 48px; padding: 0 4px; font-size: var(--fs-h); font-weight: 600; line-height: 1; border-radius: var(--radius-sm); cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface); color: var(--ink);
   -webkit-user-select: none; user-select: none; }
 .fcp-step[data-step="-1"], .fcp-step[data-step="1"] { font-size: var(--fs-glyph); }
-.fcp-step:active { background: var(--md-code-bg-color); }
+.fcp-step:active { background: var(--surface-2); }
 .fcp-val { flex: 0 0 auto; min-width: 56px; padding: 0 4px; text-align: center; font-size: var(--fs-glyph); font-weight: 700; font-variant-numeric: tabular-nums; }
 /* Sex cycle button on each card: none → ♂ → ♀ → ⚥ → ♀? → none */
 .fc-sex-btn {
   flex: 0 0 auto; width: 36px; height: 36px; box-sizing: border-box; cursor: pointer;
   padding: 0; font-size: var(--fs-h); line-height: 34px; text-align: center;
-  border: 1px solid var(--border); border-radius: 8px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
   background: var(--surface); color: var(--ink-muted);
   font-variant-numeric: tabular-nums;
 }
-.fc-sex-btn.has-sex { color: var(--ink, inherit); background: var(--md-code-bg-color); border-color: var(--md-default-fg-color--light); }
+.fc-sex-btn.has-sex { color: var(--ink); background: var(--surface-2); border-color: var(--border-strong); }
 /* Composed "female-like" glyph: a female cross with the circle opened into a
    question-mark hook off the top-left and a dot to the right. */
 .sx-fl { width: 0.44em; height: 0.69em; vertical-align: -0.19em; }
@@ -4484,9 +4492,9 @@ a.place-search-btn.is-open { background: var(--brand-soft); }
 /* Activity button: opens the scrollable activity picker (was a <select>). */
 .fc-act-btn { flex: 0 1 auto; max-width: 130px; height: 36px; box-sizing: border-box; cursor: pointer;
   padding: 0 10px; font-size: var(--fs-b); line-height: 34px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  border: 1px solid var(--md-default-fg-color--lightest); border-radius: 6px;
-  background: var(--md-default-bg-color); color: var(--md-default-fg-color--light); }
-.fc-act-btn.has-act { color: var(--on-brand); background: var(--md-accent-fg-color); border-color: var(--md-accent-fg-color); font-weight: 600; }
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--ink-muted); }
+.fc-act-btn.has-act { color: var(--on-brand); background: var(--brand); border-color: var(--brand); font-weight: 600; }
 .fc-empty { font-size: var(--fs-b); color: var(--md-default-fg-color--light); padding: 12px 4px; }
 
 /* Activity picker: scrollable bottom sheet of behaviour/activity codes. */
@@ -4504,11 +4512,11 @@ a.place-search-btn.is-open { background: var(--brand-soft); }
 .fca-item {
   text-align: left; padding: 9px 12px; font: inherit; font-size: var(--fs-b); cursor: pointer;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;
-  background: var(--md-default-bg-color); color: var(--md-default-fg-color);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--ink);
 }
-.fca-item:active { background: var(--md-code-bg-color); }
-.fca-item.is-active { background: var(--md-accent-fg-color); color: var(--on-brand); border-color: var(--md-accent-fg-color); font-weight: 700; }
+.fca-item:active { background: var(--surface-2); }
+.fca-item.is-active { background: var(--brand); color: var(--on-brand); border-color: var(--brand); font-weight: 700; }
 .fca-none { grid-column: 1 / -1; text-align: center; }
 .fca-custom { grid-column: 1 / -1; }
 #fca-search {
@@ -4519,8 +4527,8 @@ a.place-search-btn.is-open { background: var(--brand-soft); }
 
 /* Field title: "nearby places" button + picker */
 .fp-nearby {
-  flex: 0 0 auto; width: 30px; height: 32px; border-radius: 6px; cursor: pointer; font-size: var(--fs-b);
-  border: 1px solid var(--md-default-fg-color--lightest);
+  flex: 0 0 auto; width: 30px; height: 32px; border-radius: var(--radius-xs); cursor: pointer; font-size: var(--fs-b);
+  border: 1px solid var(--border);
   background: var(--md-default-bg-color); color: var(--md-default-fg-color);
 }
 #place-picker {
@@ -4537,7 +4545,7 @@ a.place-search-btn.is-open { background: var(--brand-soft); }
   border: none; border-bottom: 1px solid var(--md-default-fg-color--lightest);
   background: transparent; color: var(--md-default-fg-color);
 }
-.pp-item:active { background: var(--md-code-bg-color); }
+.pp-item:active { background: var(--surface-2); }
 .pp-dist { flex: 0 0 auto; font-size: var(--fs-s); color: var(--md-default-fg-color--light); font-variant-numeric: tabular-nums; }
 
 /* Offline indicator — shown only when navigator is offline */
@@ -4627,7 +4635,7 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 
 /* Domain-move notice on the old github.io origin (see maybeShowMovedNotice). */
 #moved-notice { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 1600; max-width: min(92vw, 560px); display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 14px; padding: 10px 14px; background: var(--brand-deep); color: var(--on-brand); border-radius: var(--radius-s, 10px); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35); font-size: var(--fs-b); }
-#moved-notice .btn { background: var(--brand); color: var(--on-brand); text-decoration: none; padding: 6px 12px; border: 0; border-radius: var(--radius-xs, 6px); font: inherit; font-weight: 600; white-space: nowrap; cursor: pointer; }
+#moved-notice .btn { background: var(--brand); color: var(--on-brand); text-decoration: none; padding: 6px 12px; border: 0; border-radius: var(--radius-sm); font: inherit; font-weight: 600; white-space: nowrap; cursor: pointer; }
 
 /* Links inside observation notes (ⓘ popup + the inline note under a record). */
 .oip-val a, .dl-note a { color: var(--brand); text-decoration: underline; word-break: break-all; }
