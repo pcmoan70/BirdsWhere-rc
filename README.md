@@ -167,7 +167,7 @@ holding a button:
 
 ## Species Range & Richness (the model)
 
-- **Species Range** — pick a species; the map shades occurrence probability (red → green) for
+- **Species Range** — pick a species; the map shades occurrence probability (dry grass → moss → spruce, light = unlikely, dark = near certain; the same ramp as the heatmaps) for
   the current week (opened from an observation, for the week it was seen). **▶ Play migration**
   animates the range across all 48 weeks; **⏸ Pause** stops it.
 - **Species Richness** — the predicted number of species per grid cell, also animatable across

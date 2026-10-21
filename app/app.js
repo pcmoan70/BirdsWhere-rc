@@ -756,16 +756,16 @@
   ];
 
   // ---- Colormap ------------------------------------------------------------
+  // The Species-Range / Richness overlay and its legend run the app's sequential ramp
+  // (analysis.js SEQ, app.css :root, 2026-10-21): dry grass → lichen → moss → spruce,
+  // luminance falling monotonically so it reads under red-green colour blindness. Cell
+  // alpha still scales with the value (see the render loops), so the light end is faint.
   var COLORMAP = (function () {
     var stops = [
-      [0.0,   0,   0,   4],
-      [0.14, 31,  12,  72],
-      [0.28, 85,  15, 109],
-      [0.42, 136,  8,  79],
-      [0.56, 186, 54,  36],
-      [0.70, 227, 105,  5],
-      [0.84, 249, 174,  10],
-      [1.0,  252, 255, 164],
+      [0.0,  243, 236, 210],
+      [0.33, 169, 196, 127],
+      [0.66,  63, 111,  58],
+      [1.0,   31,  61,  43],
     ];
     var ramp = new Array(256);
     for (var i = 0; i < 256; i++) {

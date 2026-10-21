@@ -818,7 +818,7 @@ window.AppSites = (function () {
   // 12,012 species sit near zero, and a [0,20] slab of ~11k would bury every band
   // above it (and make a "every 50 species" grid meaningless).
   var PT_MODEL_CUTOFFS = [0.01, 0.20, 0.40, 0.60, 0.80];
-  var PT_MODEL_COLORS = ["#cfe9de", "#9ed4bd", "#63bd9a", "#2e8b74", "#14584a"];   // light → dark
+  var PT_MODEL_COLORS = ["#f3ecd2", "#cedbaa", "#a9c47f", "#3f6f3a", "#1f3d2b"];   // light → dark: the app's sequential ramp (dry grass → lichen → moss → spruce)
   var ptModelCache = Object.create(null);
   // All six cutoffs come out of ONE 48-row model run (the worker counts every
   // cutoff in a single pass), cached per rounded location.

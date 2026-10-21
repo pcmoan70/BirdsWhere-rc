@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2156";
+var VERSION = "v2157";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 New look, stage 5: every input, select and tick box, every filter chip and every progress bar and notice now share one look \u2014 moss ticks and sliders, pill chips that fill moss when on, fjord-blue notices, amber busy states.",
+  "\u2022 New look, final stage: the range and richness overlays run the same dry-grass \u2192 moss \u2192 spruce ramp as the heatmaps, the app icon is now moss with a rowan dot (re-add to your home screen to see it), and the About pages wear the palette.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
