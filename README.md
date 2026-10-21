@@ -1348,6 +1348,13 @@ the one thing left out by default — they are much the largest thing the app ho
   **Press-and-hold** (or right-click) opens the full **Settings** panel — and so does the quick
   panel's last row, **Settings…**, so Settings is always reachable with plain taps. Both sliders
   drive the same controls that live in Settings, so a change made either way is saved the same way.
+- **Model compare** (Settings → About row → *Model compare ↗*, `model-compare/`) — a standalone page that runs
+  the **BirdNET+ Geomodel V3.0.4** (14,082 species) next to the app's own model (12,012) for one species over all
+  of Europe (25° W–45° E, 34–72° N, 1° / 0.5° / 0.25° grid, any week), on three panned-together maps: the two
+  models side by side on the probability ramp and their **difference** below (blue = higher in V3.0.4, red =
+  lower) with mean / largest difference, correlation and the change in cells ≥ 0.1. Species are matched between
+  the two label files by species code (11,880 shared), scientific name as the fallback; the picker shows both
+  models' common names when they differ. Default: White-backed Woodpecker. Online only (not cached).
 - **Persistence** — settings, view, species/year/life lists, checklists, points and plotted
   detections survive across visits. Small settings live in **localStorage**; bulky per-list data
   (saved sets, detections) lives in **IndexedDB** to avoid the ~5 MB cap. Saved point lists load **lazily**: at start only
@@ -1505,7 +1512,9 @@ The 3-D terrain viewer (1 m Kartverket terrain with the sun and its shadows for 
 - **App code**: MIT (see `LICENSE`).
 - **BirdNET Geomodel** by the [BirdNET team](https://github.com/birdnet-team/geomodel): source
   MIT; **trained weights (`geomodel_fp16.onnx`) are CC BY-SA 4.0** and redistributed here under
-  those terms (share-alike + attribution required).
+  those terms (share-alike + attribution required). The **Model compare** subpage
+  (`app/model-compare/`) also carries the **BirdNET+ Geomodel V3.0.4** FP16 weights and labels from
+  the [v3.0.4 release](https://github.com/birdnet-team/geomodel/releases/tag/v3.0.4) (Apache 2.0).
 - **Bundled libraries** (`app/vendor/`): Leaflet (BSD-2-Clause), ONNX Runtime Web (MIT), h3-js
   (Apache-2.0). Loaded from a CDN: @emailjs/browser (MIT), Google Identity Services.
 - Observations © their respective providers (eBird / Cornell Lab, GBIF, iNaturalist,

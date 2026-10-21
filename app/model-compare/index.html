@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1f3d2b">
+<title>Model compare — BirdsWhere</title>
+<link rel="stylesheet" href="../vendor/leaflet/leaflet.css">
+<style>
+  :root { --brand-deep: #1f3d2b; --brand: #3f6f3a; --brand-strong: #2f5a2c; --brand-soft: #e6eedf; --on-brand: #fff;
+    --surface: #fff; --surface-2: #f4f5ef; --page-bg: #eef0e8; --ink: #1d2a22; --ink-muted: #5c6b61; --ink-faint: #94a097;
+    --border: #d9ded5; --border-soft: #e6e9e2; --border-strong: #bfc8bc; --info: #2b6f8e; --danger: #a93226; --warn: #c7791c;
+    --radius: 12px; --radius-sm: 8px; --radius-xs: 6px; --shadow-sm: 0 1px 2px rgba(31,61,43,.06), 0 1px 3px rgba(31,61,43,.08); }
+  html, body { margin: 0; background: var(--page-bg); color: var(--ink); font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { background: linear-gradient(100deg, var(--brand-deep) 0%, var(--brand-strong) 55%, var(--brand-strong) 100%); color: var(--on-brand);
+    padding: 8px 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; box-shadow: var(--shadow-sm); }
+  header h1 { font-size: 16px; margin: 0; font-weight: 700; }
+  header a { color: var(--on-brand); opacity: .85; text-decoration: none; font-size: 13px; }
+  header a:hover { opacity: 1; text-decoration: underline; }
+  main { padding: 12px 14px calc(20px + env(safe-area-inset-bottom)); max-width: 1500px; margin: 0 auto; }
+  .ctl { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: flex-end; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 10px 14px; margin-bottom: 12px; }
+  .ctl label { display: flex; flex-direction: column; gap: 3px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-muted); }
+  .ctl label > * { font: inherit; font-size: 14px; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--ink); }
+  input[type=text], select { padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--surface); }
+  input[type=text]:focus, select:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+  input[type=range] { accent-color: var(--brand); width: 220px; }
+  .sp-wrap { position: relative; min-width: 300px; flex: 1 1 320px; }
+  .sp-wrap input { width: 100%; box-sizing: border-box; }
+  .sp-list { position: absolute; z-index: 2000; left: 0; right: 0; top: 100%; margin-top: 3px; max-height: 300px; overflow-y: auto;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: 0 6px 20px rgba(31,61,43,.10); padding: 4px; display: none; }
+  .sp-list div { padding: 6px 10px; border-radius: var(--radius-xs); cursor: pointer; }
+  .sp-list div:hover, .sp-list div.cur { background: var(--surface-2); }
+  .sp-list i { color: var(--ink-muted); font-size: 12px; margin-left: 6px; }
+  .btn { padding: 7px 16px; font: inherit; font-weight: 600; border: 1px solid var(--brand); border-radius: var(--radius-sm); background: var(--brand); color: var(--on-brand); cursor: pointer; }
+  .btn:hover { background: var(--brand-strong); } .btn:disabled { opacity: .5; cursor: default; }
+  .wk-val { font-weight: 700; color: var(--brand-deep); min-width: 2.2em; display: inline-block; }
+  #status { font-size: 13px; color: var(--ink-muted); margin: 0 0 10px; min-height: 1.4em; }
+  #status b { color: var(--ink); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .card h2 { margin: 0; padding: 8px 12px; font-size: 14px; color: var(--brand-deep); border-bottom: 1px solid var(--border); display: flex; align-items: baseline; gap: 8px; }
+  .card h2 small { font-weight: 400; color: var(--ink-muted); font-size: 12px; }
+  .map { height: 46vh; min-height: 300px; }
+  .diff-card { margin-top: 12px; } .diff-card .map { height: 50vh; }
+  .legend { display: flex; align-items: center; gap: 8px; padding: 6px 12px; font-size: 12px; color: var(--ink-muted); border-top: 1px solid var(--border); }
+  .legend .bar { flex: 0 0 160px; height: 10px; border-radius: 999px; border: 1px solid var(--border); }
+  .leaflet-container { font: inherit; background: var(--surface-2); }
+  .stats { font-size: 13px; color: var(--ink-muted); padding: 8px 12px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 6px 18px; }
+  .stats b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  footer { font-size: 12px; color: var(--ink-muted); margin-top: 14px; line-height: 1.5; }
+  footer a { color: var(--info); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Model compare</h1>
+  <span style="opacity:.85;font-size:13px">BirdNET+ Geomodel V3.0.4 against the app’s V3.0.0 — one species, all of Europe</span>
+  <a href="../" style="margin-left:auto">‹ BirdsWhere</a>
+</header>
+<main>
+  <div class="ctl">
+    <label class="sp-wrap">Species
+      <input id="sp" type="text" autocomplete="off" placeholder="Loading species…" disabled>
+      <div id="sp-list" class="sp-list"></div>
+    </label>
+    <label>Week <span><input id="wk" type="range" min="1" max="48" value="20"> <span class="wk-val" id="wk-val">20</span> <span id="wk-month" style="color:var(--ink-muted)"></span></span></label>
+    <label>Grid
+      <select id="step"><option value="1">1° (fast)</option><option value="0.5" selected>0.5°</option><option value="0.25">0.25° (slow)</option></select>
+    </label>
+    <button id="go" class="btn" disabled>Compute</button>
+  </div>
+  <p id="status">Loading the two models…</p>
+  <div class="grid">
+    <section class="card"><h2>V3.0.0 <small>the app’s model · 12,012 species</small></h2><div id="map-old" class="map"></div>
+      <div class="legend"><span>0</span><span class="bar" id="bar-seq-1"></span><span>1 · probability</span></div></section>
+    <section class="card"><h2>V3.0.4 <small>github.com/birdnet-team/geomodel · 14,082 species</small></h2><div id="map-new" class="map"></div>
+      <div class="legend"><span>0</span><span class="bar" id="bar-seq-2"></span><span>1 · probability</span></div></section>
+  </div>
+  <section class="card diff-card"><h2>Difference <small>V3.0.4 − V3.0.0 · blue = higher in the new model, red = lower</small></h2><div id="map-diff" class="map"></div>
+    <div class="legend"><span id="diff-lo">−1</span><span class="bar" id="bar-div"></span><span id="diff-hi">+1</span></div>
+    <div class="stats" id="stats"></div></section>
+  <footer>
+    Both models take raw latitude, longitude and week (1–48) and return a per-species occurrence probability (sigmoid). The grid covers 25° W – 45° E, 34° N – 72° N at the chosen step; every cell is one model call per model, run on this device with ONNX Runtime Web. Species are matched between the two label files by their species code (11,880 shared; 132 only in V3.0.0, 2,202 only in V3.0.4), with the scientific name as the fallback.
+    V3.0.4 weights © BirdNET team, Apache 2.0, from the <a href="https://github.com/birdnet-team/geomodel/releases/tag/v3.0.4" target="_blank" rel="noopener">v3.0.4 release</a>; the app’s bundled weights are CC BY-SA 4.0. Map © OpenStreetMap contributors.
+  </footer>
+</main>
+<script src="../vendor/leaflet/leaflet.js"></script>
+<script src="../vendor/ort/ort.wasm.min.js"></script>
+<script>
+(function () {
+  "use strict";
+  var ORT_BASE = new URL("../vendor/ort/", location.href).href;
+  ort.env.wasm.wasmPaths = { mjs: ORT_BASE + "ort-wasm-simd-threaded.mjs.js", wasm: ORT_BASE + "ort-wasm-simd-threaded.wasm" };
+  var OLD = { url: "../geomodel_fp16.onnx", labels: "../labels.txt", name: "V3.0.0" };
+  var NEW = { url: "geomodel_v3.0.4_fp16.onnx", labels: "labels_v3.0.4.txt", name: "V3.0.4" };
+  var BBOX = { w: -25, e: 45, s: 34, n: 72 };
+  var DEFAULT_SCI = "Dendrocopos leucotos";
+  var SEQ = [[243,236,210],[169,196,127],[63,111,58],[31,61,43]];
+  var DIV_NEG = [169,50,38], DIV_MID = [233,228,216], DIV_POS = [43,111,142];
+  var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  function $(id) { return document.getElementById(id); }
+  function mix(a, b, t) { return [a[0] + (b[0]-a[0])*t, a[1] + (b[1]-a[1])*t, a[2] + (b[2]-a[2])*t]; }
+  function seqColor(p) { var n = Math.max(0, Math.min(1, p)) * (SEQ.length - 1), i = Math.min(SEQ.length - 2, Math.floor(n)); return mix(SEQ[i], SEQ[i+1], n - i); }
+  function divColor(v) { var a = Math.max(-1, Math.min(1, v)); return a >= 0 ? mix(DIV_MID, DIV_POS, a) : mix(DIV_MID, DIV_NEG, -a); }
+  function css(c) { return "rgb(" + c.map(Math.round).join(",") + ")"; }
+  function gradient(fn, lo, hi) { var s = []; for (var i = 0; i <= 10; i++) s.push(css(fn(lo + (hi - lo) * i / 10))); return "linear-gradient(to right," + s.join(",") + ")"; }
+  $("bar-seq-1").style.background = $("bar-seq-2").style.background = gradient(seqColor, 0, 1);
+  $("bar-div").style.background = gradient(divColor, -1, 1);
+  function weekNow() { var d = new Date(), dim = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate(); return d.getMonth() * 4 + Math.min(3, Math.floor((d.getDate() - 1) * 4 / dim)) + 1; }
+  function weekLabel(w) { return MONTHS[Math.floor((w - 1) / 4)] + " · " + ((w - 1) % 4 + 1) + "/4"; }
+
+  // ---- maps (three, panned together) ----
+  var TILES = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";   // keyless (the CARTO styles now want an API key)
+  var ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+  var maps = {}, overlays = {}, syncing = false;
+  ["old", "new", "diff"].forEach(function (k) {
+    var m = L.map("map-" + k, { zoomSnap: 0.25, attributionControl: k === "diff" }).setView([54, 12], 3.5);
+    L.tileLayer(TILES, { maxZoom: 12, attribution: ATTR }).addTo(m);
+    m.on("move", function () {
+      if (syncing) return; syncing = true;
+      var c = m.getCenter(), z = m.getZoom();
+      Object.keys(maps).forEach(function (o) { if (o !== k) maps[o].setView(c, z, { animate: false }); });
+      syncing = false;
+    });
+    maps[k] = m;
+  });
+
+  // ---- labels + sessions ----
+  function parseLabels(txt) {
+    var out = []; txt.split("\n").forEach(function (ln) { var f = ln.split("\t"); if (f.length >= 3) out.push({ code: f[0].trim(), sci: f[1].trim(), com: f[2].trim() }); });
+    return out;
+  }
+  var species = [], oldSess, newSess, oldLabels, newLabels;
+  function setStatus(html) { $("status").innerHTML = html; }
+  Promise.all([
+    fetch(OLD.labels).then(function (r) { return r.text(); }), fetch(NEW.labels).then(function (r) { return r.text(); }),
+    ort.InferenceSession.create(OLD.url, { executionProviders: ["wasm"], graphOptimizationLevel: "all" }),
+    ort.InferenceSession.create(NEW.url, { executionProviders: ["wasm"], graphOptimizationLevel: "all" })
+  ]).then(function (r) {
+    oldLabels = parseLabels(r[0]); newLabels = parseLabels(r[1]); oldSess = r[2]; newSess = r[3];
+    // Map the two label lists: by species code first, by scientific name as the fallback.
+    var byCode = {}, bySci = {};
+    newLabels.forEach(function (l, i) { byCode[l.code] = i; if (!(l.sci in bySci)) bySci[l.sci] = i; });
+    var onlyOld = 0;
+    oldLabels.forEach(function (l, i) {
+      var j = (l.code in byCode) ? byCode[l.code] : ((l.sci in bySci) ? bySci[l.sci] : -1);
+      if (j < 0) { onlyOld++; return; }
+      var n = newLabels[j];
+      species.push({ iOld: i, iNew: j, sci: l.sci, com: l.com, comNew: n.com, code: l.code, viaName: !(l.code in byCode) });
+    });
+    species.sort(function (a, b) { return a.com.localeCompare(b.com); });
+    setStatus("Ready — <b>" + species.length + "</b> species are in both models (" + onlyOld + " only in V3.0.0, " + (newLabels.length - species.length) + " only in V3.0.4). Pick a species and press Compute.");
+    var inp = $("sp"); inp.disabled = false; inp.placeholder = "Common or scientific name…";
+    var def = species.filter(function (s) { return s.sci === DEFAULT_SCI; })[0] || species[0];
+    choose(def); $("go").disabled = false;
+    compute();
+  }).catch(function (e) { setStatus('<span style="color:var(--danger)">Could not load the models: ' + (e && e.message ? e.message : e) + "</span>"); });
+
+  // ---- species picker ----
+  var chosen = null;
+  function choose(s) { chosen = s; $("sp").value = s.com + " (" + s.sci + ")"; $("sp-list").style.display = "none"; }
+  function label(s) { return s.com + (s.comNew && s.comNew !== s.com ? " <i>V3.0.4: " + s.comNew + "</i>" : "") + " <i>" + s.sci + (s.viaName ? " · matched by name" : "") + "</i>"; }
+  $("sp").addEventListener("input", function () {
+    var q = this.value.trim().toLowerCase(), list = $("sp-list"); list.innerHTML = "";
+    if (!q) { list.style.display = "none"; return; }
+    var hits = species.filter(function (s) { return s.com.toLowerCase().indexOf(q) >= 0 || s.sci.toLowerCase().indexOf(q) >= 0 || (s.comNew || "").toLowerCase().indexOf(q) >= 0; }).slice(0, 30);
+    hits.forEach(function (s) { var d = document.createElement("div"); d.innerHTML = label(s); d.addEventListener("mousedown", function (ev) { ev.preventDefault(); choose(s); compute(); }); list.appendChild(d); });
+    list.style.display = hits.length ? "block" : "none";
+  });
+  $("sp").addEventListener("focus", function () { this.select(); });
+  $("sp").addEventListener("blur", function () { var self = this; setTimeout(function () { $("sp-list").style.display = "none"; if (chosen) self.value = chosen.com + " (" + chosen.sci + ")"; }, 150); });
+  $("sp").addEventListener("keydown", function (e) { if (e.key === "Enter") { var f = $("sp-list").firstChild; if (f) f.dispatchEvent(new MouseEvent("mousedown")); } });
+
+  $("wk").value = weekNow();
+  function showWeek() { $("wk-val").textContent = $("wk").value; $("wk-month").textContent = weekLabel(+$("wk").value); }
+  $("wk").addEventListener("input", showWeek); $("wk").addEventListener("change", compute); showWeek();
+  $("step").addEventListener("change", compute);
+  $("go").addEventListener("click", compute);
+
+  // ---- inference over the grid ----
+  var running = false, queued = false;
+  async function runGrid(sess, idx, lats, lons, week, onProgress) {
+    var n = lats.length, out = new Float32Array(n), B = 512, inName = sess.inputNames[0];
+    for (var s = 0; s < n; s += B) {
+      var m = Math.min(B, n - s), x = new Float32Array(m * 3);
+      for (var i = 0; i < m; i++) { x[i*3] = lats[s+i]; x[i*3+1] = lons[s+i]; x[i*3+2] = week; }
+      var feeds = {}; feeds[inName] = new ort.Tensor("float32", x, [m, 3]);
+      var res = await sess.run(feeds);
+      var data = res[sess.outputNames[0]].data, nSp = data.length / m;
+      for (var j = 0; j < m; j++) out[s+j] = data[j * nSp + idx];
+      onProgress((s + m) / n);
+    }
+    return out;
+  }
+  async function compute() {
+    if (!chosen || !oldSess) return;
+    if (running) { queued = true; return; }
+    running = true; $("go").disabled = true;
+    try {
+      var step = +$("step").value, week = +$("wk").value;
+      var W = Math.round((BBOX.e - BBOX.w) / step), H = Math.round((BBOX.n - BBOX.s) / step);
+      var lats = new Float32Array(W * H), lons = new Float32Array(W * H);
+      for (var r = 0; r < H; r++) for (var c = 0; c < W; c++) { lats[r*W+c] = BBOX.n - (r + 0.5) * step; lons[r*W+c] = BBOX.w + (c + 0.5) * step; }
+      var t0 = performance.now();
+      var pOld = await runGrid(oldSess, chosen.iOld, lats, lons, week, function (f) { setStatus("Computing V3.0.0 … " + Math.round(f * 100) + "% of " + (W*H) + " cells"); });
+      var pNew = await runGrid(newSess, chosen.iNew, lats, lons, week, function (f) { setStatus("Computing V3.0.4 … " + Math.round(f * 100) + "% of " + (W*H) + " cells"); });
+      var diff = new Float32Array(W * H), maxAbs = 0, sumAbs = 0, areaOld = 0, areaNew = 0, sx = 0, sy = 0, sxx = 0, syy = 0, sxy = 0;
+      for (var i = 0; i < diff.length; i++) {
+        var d = pNew[i] - pOld[i]; diff[i] = d; var a = Math.abs(d); if (a > maxAbs) maxAbs = a; sumAbs += a;
+        if (pOld[i] >= 0.1) areaOld++; if (pNew[i] >= 0.1) areaNew++;
+        sx += pOld[i]; sy += pNew[i]; sxx += pOld[i]*pOld[i]; syy += pNew[i]*pNew[i]; sxy += pOld[i]*pNew[i];
+      }
+      var n = diff.length, corr = (n*sxy - sx*sy) / Math.sqrt(Math.max(1e-12, (n*sxx - sx*sx) * (n*syy - sy*sy)));
+      var scale = Math.max(0.05, maxAbs);
+      draw("old", pOld, W, H, step, function (v) { return [seqColor(v), 0.2 + 0.75 * v]; });
+      draw("new", pNew, W, H, step, function (v) { return [seqColor(v), 0.2 + 0.75 * v]; });
+      draw("diff", diff, W, H, step, function (v) { var t = v / scale; return [divColor(t), 0.15 + 0.8 * Math.min(1, Math.abs(t))]; });
+      $("diff-lo").textContent = "−" + scale.toFixed(2); $("diff-hi").textContent = "+" + scale.toFixed(2);
+      var cellKm2 = (step * 111.2) * (step * 111.2 * Math.cos(53 * Math.PI / 180));
+      $("stats").innerHTML = "<span>mean |difference| <b>" + (sumAbs / n).toFixed(3) + "</b></span><span>largest <b>" + maxAbs.toFixed(2) + "</b></span>" +
+        "<span>correlation <b>" + corr.toFixed(3) + "</b></span><span>cells ≥ 0.1: V3.0.0 <b>" + areaOld + "</b> · V3.0.4 <b>" + areaNew + "</b> (" + (areaNew >= areaOld ? "+" : "") + (areaNew - areaOld) + ", ≈ " + Math.round((areaNew - areaOld) * cellKm2 / 1000) + " k km²)</span>" +
+        "<span>" + n + " cells · " + Math.round(performance.now() - t0) + " ms</span>";
+      setStatus("<b>" + chosen.com + "</b> <i>" + chosen.sci + "</i>" + (chosen.comNew !== chosen.com ? " (V3.0.4 calls it " + chosen.comNew + ")" : "") + " · week " + week + " (" + weekLabel(week) + ") · " + step + "° grid");
+    } catch (e) { setStatus('<span style="color:var(--danger)">Compute failed: ' + (e && e.message ? e.message : e) + "</span>"); }
+    running = false; $("go").disabled = false;
+    if (queued) { queued = false; compute(); }
+  }
+
+  // Draw the lat/lon grid as an image in Mercator space so the overlay lines up with the map:
+  // each image row is a Mercator y, inverted to a latitude, then looked up in the grid.
+  function draw(which, vals, W, H, step, colorFn) {
+    var PW = Math.min(1400, W * 6), PH = Math.round(PW * 0.75);
+    var cv = document.createElement("canvas"); cv.width = PW; cv.height = PH;
+    var img = cv.getContext("2d").createImageData(PW, PH), d = img.data;
+    function merc(lat) { return Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)); }
+    var y0 = merc(BBOX.n), y1 = merc(BBOX.s);
+    for (var py = 0; py < PH; py++) {
+      var lat = (2 * Math.atan(Math.exp(y0 + (y1 - y0) * (py + 0.5) / PH)) - Math.PI / 2) * 180 / Math.PI;
+      var r = Math.min(H - 1, Math.max(0, Math.floor((BBOX.n - lat) / step)));
+      for (var px = 0; px < PW; px++) {
+        var c = Math.min(W - 1, Math.floor(px * W / PW)), v = vals[r * W + c], ca = colorFn(v), col = ca[0], o = px * 4 + py * PW * 4;
+        d[o] = col[0]; d[o+1] = col[1]; d[o+2] = col[2]; d[o+3] = Math.round(255 * Math.max(0, Math.min(1, ca[1])));
+      }
+    }
+    cv.getContext("2d").putImageData(img, 0, 0);
+    if (overlays[which]) maps[which].removeLayer(overlays[which]);
+    overlays[which] = L.imageOverlay(cv.toDataURL("image/png"), [[BBOX.s, BBOX.w], [BBOX.n, BBOX.e]], { opacity: 1, interactive: false }).addTo(maps[which]);
+  }
+})();
+</script>
+</body>
+</html>

@@ -4230,10 +4230,10 @@
     laji: { account: "https://laji.fi/", key: "https://laji.fi/about/806" }
   };
   function srcInfo(id) {
-    if (id === "gbif") return { id: "gbif", name: "GBIF", url: "", days: gbifDays(), timeout: gbifTimeout(), keyed: false, country: null, global: true, removable: false, isGbif: true };
+    if (id === "gbif") return { id: "gbif", name: "GBIF", url: "", days: gbifDays(), timeout: gbifTimeout(), keyed: false, country: null, global: true, isGbif: true };
     var s = directSources().filter(function (x) { return x.id === id; })[0]; if (!s) return null;
     var d = DIRECT_BY_ID[id] || {};
-    return { id: id, name: s.name, url: s.url, days: s.days, timeout: s.timeout, keyed: !!d.keyed, country: d.country || null, global: false, removable: true, isGbif: false };
+    return { id: id, name: s.name, url: s.url, days: s.days, timeout: s.timeout, keyed: !!d.keyed, country: d.country || null, global: false, isGbif: false };
   }
   function srcDescKey(info) { return "srcdesc." + (info.isGbif ? "gbif" : (DIRECT_BY_ID[info.id] ? info.id : "custom")); }
   // One-line "what is this source" blurb for the sources LIST. Falls back to "" for
@@ -4343,7 +4343,6 @@
         '<div class="radius-row"><input type="range" class="src-bw-conf" min="0" max="95" step="5" value="' + Math.round(bwMinConf() * 100) + '" /></div>' +
         '<p class="cu-hint">' + escapeHtml(t("sources.bwHint")) + '</p></div>';
     }
-    if (info.removable) h += '<div class="cu-actions"><button type="button" class="btn btn-light src-del-detail">' + escapeHtml(t("sources.remove")) + "</button></div>";
     h += "</div>";
     el.innerHTML = h;
     var onCb = el.querySelector(".src-on"); if (onCb) onCb.addEventListener("change", function () { setSourceOff(id, !this.checked); });
@@ -4390,12 +4389,7 @@
       bwC.addEventListener("input", function () { if (bwCV) bwCV.textContent = this.value + "%"; });
       bwC.addEventListener("change", function () { window.GeoState.save({ bwMinConf: Math.max(0, Math.min(95, +this.value || 0)) / 100 }); allSightingsCache = {}; });
     }
-    var del = el.querySelector(".src-del-detail");
-    if (del) del.addEventListener("click", function () {
-      if (DIRECT_BY_ID[id]) { var rem = window.GeoState.get("srcRemoved", []) || []; if (rem.indexOf(id) < 0) { rem.push(id); window.GeoState.save({ srcRemoved: rem }); } }
-      saveDirectSources(directSources().filter(function (s) { return s.id !== id; }).map(function (s) { return { id: s.id, name: s.name, url: s.url, days: s.days, timeout: s.timeout }; }));
-      srcDetailId = null; renderSourcesTable();
-    });
+    // (The "Remove source" action was dropped 2026-10-22, owner's request — sources are switched off, never removed; srcRemoved from earlier removals still applies until Reset.)
   }
   function resetSources() { window.GeoState.save({ directSources: null, srcRemoved: null }); allSightingsCache = {}; srcDetailId = null; renderSourcesTable(); }
   // Display name for a species key (current UI language), for the lists view.
@@ -7540,6 +7534,7 @@
               '<div class="settings-aboutrow">' +
                 '<a class="settings-about about-page-link" href="about/" target="_blank" rel="noopener" data-i18n="settings.aboutPage">About ↗</a>' +
                 '<button type="button" id="about-open" class="settings-about" data-i18n="ctrl.about">How it works</button>' +
+                '<a class="settings-about" href="model-compare/" target="_blank" rel="noopener" data-i18n="settings.modelCompare">Model compare ↗</a>' +
               '</div>' +
               '<div id="settings-version" class="settings-version" style="display:none"></div>' +
               '<button type="button" id="settings-update" class="settings-update" style="display:none"></button>' +
