@@ -15401,7 +15401,13 @@
   // detSelected mechanism as "Show only this species". Build a selection first (Show
   // only + Add to species filter), then Save selection as list.
   function getSpeciesLists() { return window.GeoState.get("speciesLists", []) || []; }
-  function saveSpeciesLists(a) { window.GeoState.save({ speciesLists: a }); }
+  // The one place species lists are written — so every surface listing them follows: the
+  // open all-filters pane redraws its Species-lists section (owner, 2026-10-21: "when deleting
+  // one of my lists in filter pane, the pane should be redrawn. The same when adding lists").
+  function saveSpeciesLists(a) {
+    window.GeoState.save({ speciesLists: a });
+    if (allFiltersPane) renderAllFiltersPane();
+  }
   function sameKeySet(selObj, arr) {
     var keys = Object.keys(selObj); if (!arr || keys.length !== arr.length) return false;
     for (var i = 0; i < arr.length; i++) if (!selObj[arr[i]]) return false;
