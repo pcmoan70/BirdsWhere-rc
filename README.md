@@ -75,7 +75,7 @@ A Leaflet map with a **Mode** selector in the header:
 
 - **📍 Recent** — click the map for a ranked species list at that point, with live recent-observation counts.
 - **Historic** — search GBIF for a chosen date range and set of months around a point.
-- **📍 Migration** — the location-analysis panel (phenology, arrivals, scatter) for a clicked point.
+- **📍 Migration** — the location-analysis panel (phenology, arrivals, scatter) for a clicked point. Opened from the point popup; once its page is left, a map click opens the point popup again.
 - **Species Range** — a probability heatmap for one chosen species, animatable across the year.
 - **Species Richness** — predicted species count per grid cell, also animatable.
 

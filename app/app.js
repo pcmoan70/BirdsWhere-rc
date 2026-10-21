@@ -24492,6 +24492,12 @@
     var hadPopupOrMenu = isPopupOrMenuOpen();
     dismissTransientUI();
     if (hadPopupOrMenu) return;
+    // Migration is a page, not a map mode: when its page is left by browser Back, a fetch
+    // or another page the mode lingers as "barchart", and the next map click used to jump
+    // straight into the analysis (owner, 2026-10-21: "make sure I see the point popup").
+    // A click on the bare map means the user is back on the map → Recent mode, then the
+    // popup (which still offers Migration) as usual.
+    if (currentMode === "barchart") { var bcp = document.getElementById("barchart-panel"); if (!bcp || bcp.style.display === "none") exitToRecentMode(); }
     // List + Range show the per-point species list; Migration the analysis;
     // Historic the GBIF date-range search.
     if (["list", "barchart", "range", "historic"].indexOf(currentMode) < 0) return;
