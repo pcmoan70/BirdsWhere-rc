@@ -2667,6 +2667,7 @@ button.offline-name:hover { text-decoration: underline; }
 .settings-update:disabled { opacity: 0.6; cursor: default; }
 /* Storage → clear cached data buttons. */
 .clear-cache-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+#clear-all-btn { margin-top: 8px; }
 .clear-cache-btn { padding: 7px 8px; font: inherit; font-size: var(--fs-s); border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--surface); color: var(--ink); cursor: pointer; }
 .clear-cache-btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--border-strong); }
 .clear-cache-btn:disabled { opacity: 0.6; cursor: default; }

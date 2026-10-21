@@ -5799,8 +5799,12 @@
       var nameTd = row && row.children[1], link = nameTd && nameTd.querySelector(".sp-link");
       if (link && spRedList[key] && !nameTd.querySelector(".rl-tag")) link.insertAdjacentHTML("afterend", rlTagHtml(spRedList[key]));
       if (!entry || !entry.count) { if (isFinal) td.textContent = ""; return; }   // partial: leave the hourglass for not-yet-arrived data
-      // Pure total (applyAgeFilter recomputes it as filtered SPECIMENS right after).
+      // Pure total (applyAgeFilter recomputes it as filtered SPECIMENS right after). Rebuilding
+      // the cell drops its "(n)" suffix and orphans the row's cached cell refs, so reset both —
+      // otherwise the refresh pass sees an unchanged data-pairs and never re-adds the suffix
+      // (rows showed "31" instead of "31(3)" after a re-fetch or pan).
       td.innerHTML = '<button type="button" class="det-count-btn" data-key="' + escapeHtml(key) + '">' + entry.count + "</button>";
+      if (row) { row.removeAttribute("data-pairs"); row._spCells = null; }
     });
     // Distance column: how far the NEAREST detection of each species is from the
     // distance origin (the map pin when placed, else this list's point). Sortable.
@@ -7773,6 +7777,7 @@
                 '<label data-i18n="clear.label">Clear cached data</label>' +
                 '<p class="cu-hint" data-i18n="clear.hint">Clear cached data (re-downloads next time). Saved lists &amp; settings are kept.</p>' +
                 '<div class="clear-cache-grid">' +
+                  '<button type="button" class="clear-cache-btn" data-clear="obs"><span class="clear-lbl" data-i18n="clear.obs">Fetched observations</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="tiles"><span class="clear-lbl" data-i18n="clear.tiles">Map tiles</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="range"><span class="clear-lbl" data-i18n="clear.range">Range maps</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="overlays"><span class="clear-lbl" data-i18n="clear.overlays">Overlays</span><span class="clear-cnt"></span></button>' +
@@ -7784,6 +7789,7 @@
                   '<button type="button" class="clear-cache-btn" data-clear="offline"><span class="clear-lbl" data-i18n="clear.offline">Offline areas</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="images"><span class="clear-lbl" data-i18n="clear.images">Species photos</span><span class="clear-cnt"></span></button>' +
                 '</div>' +
+                '<button type="button" id="clear-all-btn" class="btn btn-light" data-i18n="clear.all">Clear all cached data</button>' +
                 // Not a cache clear — it rewrites the lists in place, so it sits under its own
                 // label with what it does spelled out. One press, reports what it freed.
                 '<div class="ctrl-group" id="compact-wrap">' +
@@ -21244,6 +21250,15 @@
         p = window.caches ? caches.open(MAP_POOL_CACHE).then(function (c) { return c.delete(H3_POOL_URL); }) : Promise.resolve();
         if (currentMode === "range" || currentMode === "richness") { try { clearOverlay(); triggerRender(); } catch (e) {} }   // wipe the stale heatmap, recompute the visible area fresh
       }
+      else if (what === "obs") {   // every fetched observation, wherever it sits (owner, 2026-10-21: memory climbed to tens of GB):
+        // this session's per-location answers (memory), the IndexedDB copy that serves a revisit,
+        // the restore-on-open snapshot, the per-record model probabilities and the dots on the map.
+        allSightingsCache = {}; histSightingsCache = {}; histAggCache = {}; seededSightings = {}; persistedSightings = {};
+        obsProbCache = Object.create(null);
+        try { clearDetections(); } catch (e) {}
+        window.GeoState.save({ mapDetections: null });
+        p = (window.AppIDB && AppIDB.available()) ? AppIDB.del("sightingsCache").catch(function () {}) : Promise.resolve();
+      }
       else if (what === "overlays") p = delByPrefix("api-");   // cached Overpass / overlay query responses → refetch fresh
       else if (what === "hotspots") {
         window.AppSites.clearHotspotStore();
@@ -21274,11 +21289,19 @@
       else p = Promise.resolve();
       var restore = btn ? btn.innerHTML : "";   // keep the label + count markup to restore after the ✓
       if (btn) btn.disabled = true;
-      p.catch(function () {}).then(function () {
+      return p.catch(function () {}).then(function () {
         if (btn) { btn.textContent = "✓"; btn.disabled = false; setTimeout(function () { btn.innerHTML = restore; updateClearCacheCounts(); }, 1200); }
         else updateClearCacheCounts();
         setStatus(t("clear.done"));
       });
+    }
+    // Everything at once — every row above, one after the other (each row's own clean-up,
+    // nothing bypassed), behind a confirm because the offline areas and the map's dots go too.
+    var CLEAR_ALL_ROWS = ["obs", "tiles", "range", "overlays", "hotspots", "birds", "best", "names", "harvest", "offline", "images"];
+    function clearAllCachedData() {
+      var chain = Promise.resolve();
+      CLEAR_ALL_ROWS.forEach(function (w) { chain = chain.then(function () { return clearCachedData(w, null); }); });
+      return chain.then(function () { updateClearCacheCounts(); try { renderStorageUsage(); } catch (e) {} });
     }
     // Show the cached-item count AND size on each clear button (small font): map
     // tiles + overlay responses from the Cache API, eBird hotspots + birding spots
@@ -21305,6 +21328,12 @@
       }
       var hs = loadHotspotStore();
       setCnt("hotspots", Object.keys(hs).length, jsonBytes(hs));
+      if (window.AppIDB && AppIDB.available()) {
+        AppIDB.get("sightingsCache").then(function (m) {
+          m = (m && typeof m === "object") ? m : {};
+          setCnt("obs", Object.keys(m).length, jsonBytes(m));
+        }).catch(function () {});
+      } else setCnt("obs", Object.keys(persistedSightings).length, jsonBytes(persistedSightings));
       if (window.AppOffline && AppOffline.areaStats) AppOffline.areaStats().then(function (s) { setCnt("offline", s.n, s.bytes, true); }).catch(function () {});
       // Species-Range cache: the in-memory Map IS the working set (hydrated from
       // its pool blob at boot) — count its (species,week) tags, size via the same
@@ -21383,6 +21412,14 @@
     if (clearGrid) clearGrid.addEventListener("click", function (e) {
       var btn = e.target.closest && e.target.closest(".clear-cache-btn"); if (!btn) return;
       clearCachedData(btn.getAttribute("data-clear"), btn);
+    });
+    var clearAllBtn = document.getElementById("clear-all-btn");
+    if (clearAllBtn) clearAllBtn.addEventListener("click", function () {
+      modalConfirm(t("clear.allConfirm")).then(function (ok) {
+        if (!ok) return;
+        clearAllBtn.disabled = true;
+        clearAllCachedData().then(function () { clearAllBtn.disabled = false; setStatus(t("clear.done")); });
+      });
     });
 
     // National-database list: edit / block / delete per row, plus add / reset. Each
