@@ -48,6 +48,9 @@
   .legend { display: flex; align-items: center; gap: 8px; padding: 6px 12px; font-size: 12px; color: var(--ink-muted); border-top: 1px solid var(--border); }
   .legend .bar { flex: 0 0 160px; height: 10px; border-radius: 999px; border: 1px solid var(--border); }
   .leaflet-container { font: inherit; background: var(--surface-2); }
+  #tip { position: fixed; z-index: 5000; pointer-events: none; display: none; background: var(--ink); color: var(--on-brand); padding: 5px 9px;
+    border-radius: var(--radius-xs); box-shadow: 0 6px 20px rgba(31,61,43,.10); font-size: 12px; line-height: 1.35; white-space: nowrap; }
+  #tip b { font-variant-numeric: tabular-nums; } #tip .d { color: #cfe3ee; } #tip .m { color: #cdd6cf; }
   .stats { font-size: 13px; color: var(--ink-muted); padding: 8px 12px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 6px 18px; }
   .stats b { color: var(--ink); font-variant-numeric: tabular-nums; }
   footer { font-size: 12px; color: var(--ink-muted); margin-top: 14px; line-height: 1.5; }
@@ -82,9 +85,10 @@
   <section class="card diff-card"><h2>Difference <small>V3.0.4 − V3.0.0 · blue = higher in the new model, red = lower</small></h2><div id="map-diff" class="map"></div>
     <div class="legend"><span id="diff-lo">−1</span><span class="bar" id="bar-div"></span><span id="diff-hi">+1</span></div>
     <div class="stats" id="stats"></div></section>
-  <footer>
-    Both models take raw latitude, longitude and week (1–48) and return a per-species occurrence probability (sigmoid). The grid covers 25° W – 45° E, 34° N – 72° N at the chosen step; every cell is one model call per model, run on this device with ONNX Runtime Web. Species are matched between the two label files by their species code (11,880 shared; 132 only in V3.0.0, 2,202 only in V3.0.4), with the scientific name as the fallback.
-    V3.0.4 weights © BirdNET team, Apache 2.0, from the <a href="https://github.com/birdnet-team/geomodel/releases/tag/v3.0.4" target="_blank" rel="noopener">v3.0.4 release</a>; the app’s bundled weights are CC BY-SA 4.0. Map © OpenStreetMap contributors.
+  <div id="tip"></div>
+<footer>
+    Hover a map for the cell’s values in both models and their difference. Both models take raw latitude, longitude and week (1–48) and return a per-species occurrence probability (sigmoid). The grid covers 25° W – 45° E, 34° N – 72° N at the chosen step; every cell is one model call per model, run on this device with ONNX Runtime Web. Species are matched between the two label files by their species code (11,880 shared; 132 only in V3.0.0, 2,202 only in V3.0.4), with the scientific name as the fallback.
+    V3.0.4 weights © BirdNET team, Apache 2.0, from the <a href="https://github.com/birdnet-team/geomodel/releases/tag/v3.0.4" target="_blank" rel="noopener">v3.0.4 release</a>; the app’s bundled weights are CC BY-SA 4.0. Map tiles © Esri (World Topo Map).
   </footer>
 </main>
 <script src="../vendor/leaflet/leaflet.js"></script>
@@ -114,12 +118,12 @@
   function weekLabel(w) { return MONTHS[Math.floor((w - 1) / 4)] + " · " + ((w - 1) % 4 + 1) + "/4"; }
 
   // ---- maps (three, panned together) ----
-  var TILES = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";   // keyless (the CARTO styles now want an API key)
-  var ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+  var TILES = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}";   // the app's Esri topo basemap (keyless)
+  var ATTR = 'Tiles &copy; <a href="https://www.esri.com">Esri</a> &mdash; Esri, DeLorme, NAVTEQ, TomTom, and the GIS community';
   var maps = {}, overlays = {}, syncing = false;
   ["old", "new", "diff"].forEach(function (k) {
     var m = L.map("map-" + k, { zoomSnap: 0.25, attributionControl: k === "diff" }).setView([54, 12], 3.5);
-    L.tileLayer(TILES, { maxZoom: 12, attribution: ATTR }).addTo(m);
+    L.tileLayer(TILES, { maxZoom: 14, attribution: ATTR }).addTo(m);
     m.on("move", function () {
       if (syncing) return; syncing = true;
       var c = m.getCenter(), z = m.getZoom();
@@ -181,6 +185,27 @@
   $("step").addEventListener("change", compute);
   $("go").addEventListener("click", compute);
 
+  // ---- hover readout: the cell under the pointer, both models + the difference ----
+  var last = null;   // { pOld, pNew, diff, W, H, step } of the latest computation
+  var tip = $("tip");
+  Object.keys(maps).forEach(function (k) {
+    maps[k].on("mousemove", function (e) {
+      if (!last) return;
+      var la = e.latlng.lat, lo = e.latlng.lng;
+      if (la < BBOX.s || la > BBOX.n || lo < BBOX.w || lo > BBOX.e) { tip.style.display = "none"; return; }
+      var r = Math.min(last.H - 1, Math.floor((BBOX.n - la) / last.step)), c = Math.min(last.W - 1, Math.floor((lo - BBOX.w) / last.step)), i = r * last.W + c;
+      var d = last.diff[i];
+      tip.innerHTML = "V3.0.0 <b>" + last.pOld[i].toFixed(3) + "</b> &nbsp; V3.0.4 <b>" + last.pNew[i].toFixed(3) + "</b> &nbsp; <span class=\"d\">Δ <b>" + (d >= 0 ? "+" : "−") + Math.abs(d).toFixed(3) + "</b></span>" +
+        "<br><span class=\"m\">" + la.toFixed(2) + "°, " + lo.toFixed(2) + "° · cell " + (BBOX.n - (r + 1) * last.step).toFixed(2) + "–" + (BBOX.n - r * last.step).toFixed(2) + " N, " + (BBOX.w + c * last.step).toFixed(2) + "–" + (BBOX.w + (c + 1) * last.step).toFixed(2) + " E</span>";
+      var x = e.originalEvent.clientX + 14, y = e.originalEvent.clientY + 16;
+      tip.style.display = "block";
+      if (x + tip.offsetWidth > innerWidth - 8) x = e.originalEvent.clientX - tip.offsetWidth - 10;
+      if (y + tip.offsetHeight > innerHeight - 8) y = e.originalEvent.clientY - tip.offsetHeight - 10;
+      tip.style.left = x + "px"; tip.style.top = y + "px";
+    });
+    maps[k].on("mouseout", function () { tip.style.display = "none"; });
+  });
+
   // ---- inference over the grid ----
   var running = false, queued = false;
   async function runGrid(sess, idx, lats, lons, week, onProgress) {
@@ -216,6 +241,7 @@
       }
       var n = diff.length, corr = (n*sxy - sx*sy) / Math.sqrt(Math.max(1e-12, (n*sxx - sx*sx) * (n*syy - sy*sy)));
       var scale = Math.max(0.05, maxAbs);
+      last = { pOld: pOld, pNew: pNew, diff: diff, W: W, H: H, step: step };
       draw("old", pOld, W, H, step, function (v) { return [seqColor(v), 0.2 + 0.75 * v]; });
       draw("new", pNew, W, H, step, function (v) { return [seqColor(v), 0.2 + 0.75 * v]; });
       draw("diff", diff, W, H, step, function (v) { var t = v / scale; return [divColor(t), 0.15 + 0.8 * Math.min(1, Math.abs(t))]; });
