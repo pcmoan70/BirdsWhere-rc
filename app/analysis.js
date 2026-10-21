@@ -418,6 +418,7 @@ window.GeoAnalysis = (function () {
   }
 
   return {
+    MIN_PEAK: MIN_PEAK,          // the shared 0.5 % floor — app.js uses it for predicted species in the lists too
     visibleSpecies: visibleSpecies,
     renderHeatmap: renderHeatmap,
     renderScatter: renderScatter,

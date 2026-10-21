@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2145";
+var VERSION = "v2146";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Opening the app no longer shows the last session\u2019s fetched-area squares (and the \u2713 update button) without their observations; the red \u00d7 can always clear leftover squares.",
+  "\u2022 Predicted species are listed down to a probability of 0.5 % (was 1 % for an empty spot\u2019s model list, 10 % for the [?] rows) \u2014 the same floor the Migration views use.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

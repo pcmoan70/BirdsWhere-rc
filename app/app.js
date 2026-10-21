@@ -2803,12 +2803,12 @@
     var hasSel = Object.keys(detSelected).length > 0;   // a species selection / applied species list narrows the table too
     var now = Date.now();
     // Empty spot → the model's own ranking stands in for the missing observations. Show what
-    // it puts at MODEL_FLOOR or better and, where even that is empty (far offshore, deep
+    // it puts at PRED_MIN_PROB or better and, where even that is empty (far offshore, deep
     // desert), its best MODEL_TOP_N anyway — the answer must never be a blank page. An
     // explicit probability floor set by the user still wins.
-    var MODEL_FLOOR = 0.01, MODEL_MIN_ROWS = 10, MODEL_TOP_N = 25, autoCut = 0;
+    var MODEL_FLOOR = PRED_MIN_PROB, MODEL_MIN_ROWS = 10, MODEL_TOP_N = 25, autoCut = 0;
     var floor = (+document.getElementById("prob-min").value || 0) / 100;   // once per pass (was a DOM read per row)
-    var rareCut = rarePct() / 100, missingOn = spMissingOn();   // once per pass (rarePct read storage per row)
+    var missingOn = spMissingOn();
     var tRows = 0, tDom = 0, tMark = perfOn ? performance.now() : 0;   // ?perf=1: row work vs DOM work
     if (spMissingAuto) {
       var ps = [];
@@ -2887,8 +2887,8 @@
       // [?] on: a model row with no detections at all bypasses the count + recency rules
       // (it has no dates); the species-flag, rarity and selection filters still apply.
       // Predicted species down to the list's own probability floor; with the floor at 0 %
-      // the rare threshold guards instead — else the whole model would pour into the list.
-      var missingCut = spMissingAuto ? Math.max(floor, autoCut) : (floor > 0 ? floor : rareCut);
+      // the predicted-species floor guards instead — else the whole model would pour into the list.
+      var missingCut = spMissingAuto ? Math.max(floor, autoCut) : Math.max(floor, PRED_MIN_PROB);
       var missingOk = missingOn && !!agg && !entry && !extra &&
         (+tr.getAttribute("data-prob") || 0) >= missingCut;
       // What the list offers BEFORE the species selection narrows it — the pool the
@@ -3835,6 +3835,11 @@
   // at least 15 %, or the Probability slider's own floor when that is higher. (With the
   // slider at its default 0 % the count used to be "N above 0 %" — nearly the whole model.)
   var SUMMARY_MIN_PROB = 0.15;
+  // The lowest probability at which a species the model predicts is listed at all — the
+  // model-only list of an empty spot and the [?] predicted rows of a fetched list — when no
+  // higher floor is set in the Filters pane. The same 0.5 % that keeps near-absent species out
+  // of the Migration views (owner, 2026-10-21: "decrease … to 0.5% in predicted lists and migration panes").
+  var PRED_MIN_PROB = window.GeoAnalysis.MIN_PEAK;
   function summaryProbFloor(pmin) { return Math.max(+pmin || 0, SUMMARY_MIN_PROB); }
   function summaryPct(pmin) { return (summaryProbFloor(pmin) * 100).toFixed(0); }
   function summaryCount(rows, pmin) {
@@ -7380,7 +7385,7 @@
     // [?] toggle, off by default), so the Images cards showed the fetched species only.
     // Set in memory and NOT saved: this launch shows both, the visitor's own [?] choice is
     // untouched, and pressing [?] still overrides it (that handler saves). The prediction
-    // floor (prob-min, else rarePct — 10 % by default) keeps it from becoming the whole model.
+    // floor (prob-min, else PRED_MIN_PROB — 0.5 %) keeps it from becoming the whole model.
     spShowMissing = true;
     launchNotePending = true;   // the first settled fetch may add the "few sightings — add keys" note
     stripShortcutParams();   // everything above is consumed — a reload must not run the shortcut again

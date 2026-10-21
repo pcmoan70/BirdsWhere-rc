@@ -220,7 +220,8 @@ is cleared by the funnel's clear-all.
 **Sorting and what the list contains.** Beside the funnel sit two buttons, in the species table and
 the Images view alike: a **probability sort toggle** (↓ commonest first, ↑ rarest first — one tap
 each way; ⇅ while the list is ordered by something else), and the **[!] / [?]** switch — **[!]**
-lists only what has been observed, **[?]** weaves in the species the model predicts here as well,
+lists only what has been observed, **[?]** weaves in the species the model predicts here as well
+(down to a probability of 0.5 %, or the filter pane's own floor when higher),
 and where nothing has been observed the predictions are shown on their own. Every other column
 still sorts from its own header in the table.
 
@@ -340,7 +341,7 @@ fully adjustable. **With nothing fetched at all**, opening the list (species tab
 model's species for the **placed pin — or, with no pin, the middle of the map** — likeliest first,
 so the list is useful before you have fetched anything. **When a spot has no observations at all**
 the list fills with the model's own expectation for that place instead of coming back empty — **likeliest first**, everything it puts
-at 1 % or better (and, where even that is empty, its best 25 anyway), with a line saying so. The
+at 0.5 % or better (and, where even that is empty, its best 25 anyway), with a line saying so. The
 **[!]** button switches back to observed-only; your own **[?]** setting is left as you had it. **Filtering** lives in the **filter pane** (funnel button next to the layout
 selector; it keeps its scroll position as you tick things). Every section **folds** — tap its
 heading (▾ / ▸); which sections are folded is remembered, and a folded section with a filter set inside shows a **blue** triangle. (The count section is called **Counts**.) **Species lists** shows the lists straight
