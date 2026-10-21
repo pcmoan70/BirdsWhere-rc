@@ -4354,6 +4354,37 @@ a.place-search-btn.is-open { background: var(--brand-soft); }
   letter-spacing: 0.04em; color: var(--ink-muted);
 }
 
+/* ---- "Edit values": a point list as a spreadsheet (points-lists.js openCollValuesEditor) ---- */
+#ptedit-page {
+  position: fixed; top: var(--header-h, 60px); left: 0; right: 0; bottom: 0;
+  z-index: 1550; display: none; flex-direction: column;
+  background: var(--page-bg); color: var(--ink);
+}
+#ptedit-page .pe-title { flex: 0 1 auto; min-width: 0; font-size: var(--fs-h); font-weight: 600; color: var(--brand-deep); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#ptedit-page .pe-count { flex: 0 0 auto; font-size: var(--fs-s); color: var(--ink-muted); }
+#ptedit-page .pe-actions { margin-left: auto; display: flex; gap: 8px; flex: 0 0 auto; }
+#ptedit-page .pe-hint { margin: 6px 14px 0; }
+.pe-wrap { flex: 1 1 auto; overflow: auto; padding: 8px 14px 24px; -webkit-overflow-scrolling: touch; }
+.pe-tbl { border-collapse: separate; border-spacing: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: var(--fs-s); }
+.pe-tbl th { position: sticky; top: 0; z-index: 2; background: var(--surface); text-align: left; font-size: var(--fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-muted); padding: 6px; border-bottom: 2px solid var(--border); white-space: nowrap; }
+.pe-tbl td { padding: 2px 4px; border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
+.pe-tbl tbody tr:hover td { background: var(--surface-2); }
+.pe-tbl td.pe-n { color: var(--ink-faint); font-variant-numeric: tabular-nums; text-align: right; padding-right: 8px; }
+.pe-tbl .pe-in { width: 100%; box-sizing: border-box; font: inherit; font-size: var(--fs-s); padding: 4px 6px; border: 1px solid transparent; border-radius: var(--radius-xs); background: transparent; color: var(--ink); }
+.pe-tbl .pe-in:hover { border-color: var(--border); }
+.pe-tbl .pe-in:focus { outline: none; border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 3px var(--brand-soft); }
+.pe-tbl td.pe-chk { text-align: center; }
+.pe-tbl td.pe-chk .pe-in { width: auto; }
+.pe-tbl input[type="color"].pe-in { width: 30px; height: 24px; padding: 0; border: 1px solid var(--border); }
+.pe-tbl td.pe-coord { white-space: nowrap; }
+.pe-tbl .pe-coord-in { width: 7.5em; }
+.pe-coord-btn { font: inherit; font-size: var(--fs-s); font-variant-numeric: tabular-nums; border: 0; background: none; color: var(--info); cursor: pointer; padding: 4px 6px; border-radius: var(--radius-xs); text-decoration: underline dotted; text-underline-offset: 2px; }
+.pe-coord-btn:hover { background: var(--surface-2); }
+.pe-tbl td.pe-ro { color: var(--ink-muted); text-align: center; }
+.pe-del { border: 0; background: transparent; color: var(--ink-muted); font-size: var(--fs-glyph); line-height: 1; cursor: pointer; padding: 0 6px; border-radius: var(--radius-xs); }
+.pe-del:hover { background: var(--surface-2); color: var(--danger); }
+body.pe-picking .leaflet-container { cursor: crosshair; }
+
 /* ---- Entry-edit page (a species' individual logged observations) ---- */
 #entry-page {
   position: fixed; top: var(--header-h, 60px); left: 0; right: 0; bottom: 0;

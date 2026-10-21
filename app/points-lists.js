@@ -24,7 +24,8 @@ window.AppPoints = (function () {
   var clearSpider, detRenderer, detStarMarker, downloadCsv, escapeHtml, haversineKm, ico,
       copyPointToList, deleteListPoint, listPointPasses, looksLikeHtml, makePopupBtn, modalPrompt, mpTipHtml, openExternal, openPointEditor,
       refreshMpPanel, renderMpAdmin, setStatus, showDetRowMenu, syncListDetections,
-      pulseFunnels, tagDisplay, labelForSci, updateDetSetOverlays, updateMpBadge, updateSpDistances, t;
+      pulseFunnels, tagDisplay, labelForSci, updateDetSetOverlays, updateMpBadge, updateSpDistances, t,
+      modalConfirm, wireLocHover, pickOnMap, bringToFront;
   // … and accessors for app state that is replaced at runtime (the map and the
   // clicked-spot marker are built later; the spider layer is app.js's).
   var getMap, getMarker, getSpiderHidden, setSpiderLayer;
@@ -44,6 +45,8 @@ window.AppPoints = (function () {
     updateMpBadge = ctx.updateMpBadge; updateSpDistances = ctx.updateSpDistances; t = ctx.t;
     getMap = ctx.getMap; getMarker = ctx.getMarker;
     getSpiderHidden = ctx.getSpiderHidden; setSpiderLayer = ctx.setSpiderLayer;
+    modalConfirm = ctx.modalConfirm; wireLocHover = ctx.wireLocHover; pickOnMap = ctx.pickOnMap;   // the "Edit values" page
+    bringToFront = ctx.bringToFront || function (el) { return el; };   // newest popup on top
   }
 
   // ---- Map points (user-added pins + named lists) ---------------------------
@@ -104,6 +107,186 @@ window.AppPoints = (function () {
     var pts = c.points || [];
     return pts.length > 0 && pts.every(function (p) { return p && p.source === "route"; });
   }
+
+  // ---- "Edit values": the whole list as a spreadsheet (owner, 2026-10-22) -----------------
+  // One row per point, one cell per field — everything a point can carry (name, position, tags,
+  // note, date, count, activity, observer, scientific name, uncertainty, link, colour, ★, HTML
+  // note); photos are shown as a count, an imported description is kept untouched. A latitude /
+  // longitude cell previews the spot on hover (the app's ~4 km mini-map), a click hands over to
+  // the map — one tap there sets the new position — and a double-click types it. Edits live in
+  // a working copy until Save; the list's own points (and the working set, if it is the active
+  // list) are then replaced and persisted the usual way.
+  var PE_COLS = [
+    { k: "name", t: "points.name", type: "text", w: "14em" },
+    { k: "lat", t: "ptedit.lat", type: "coord", w: "7em" },
+    { k: "lon", t: "ptedit.lon", type: "coord", w: "7em" },
+    { k: "tags", t: "points.tags", type: "tags", w: "12em" },
+    { k: "note", t: "points.note", type: "text", w: "16em" },
+    { k: "date", t: "ptedit.date", type: "text", w: "8em" },
+    { k: "count", t: "ptedit.count", type: "number", w: "4.5em" },
+    { k: "act", t: "ptedit.act", type: "text", w: "8em" },
+    { k: "observer", t: "th.obs", type: "text", w: "9em" },
+    { k: "sci", t: "th.sci", type: "text", w: "11em" },
+    { k: "radius", t: "ptedit.radius", type: "number", w: "5em" },
+    { k: "url", t: "ptedit.url", type: "text", w: "10em" },
+    { k: "color", t: "points.color", type: "color", w: "3em" },
+    { k: "star", t: "ptedit.star", type: "check", w: "2.4em" },
+    { k: "noteHtml", t: "points.noteHtml", type: "check", w: "3em" },
+    { k: "files", t: "ptedit.photos", type: "ro", w: "3em" }
+  ];
+  var peState = null;   // { c, rows, dirty } while the page is open
+  function openCollValuesEditor(name) {
+    var c = mpCollections.filter(function (x) { return x.name === name; })[0]; if (!c) return;
+    if (isViewOnly(c)) { setStatus(t("drive.noCopy")); return; }
+    hydrateOne(c).then(function () {
+      var rows = (c.points || []).map(function (p) {
+        var q = {}; Object.keys(p).forEach(function (k) { if (k.charAt(0) !== "_") q[k] = (k === "tags") ? (p.tags || []).slice() : p[k]; }); return q;
+      });
+      peState = { c: c, rows: rows, dirty: false };
+      peRender();
+    });
+  }
+  function peEl() { var el = document.getElementById("ptedit-page"); if (!el) { el = document.createElement("div"); el.id = "ptedit-page"; document.body.appendChild(el); } return el; }
+  function peClose() { var el = document.getElementById("ptedit-page"); if (el) el.style.display = "none"; peState = null; }
+  function peTryClose() { var st = peState; if (st && st.dirty && modalConfirm) modalConfirm(t("ptedit.discard")).then(function (ok) { if (ok) peClose(); }); else peClose(); }
+  function peVal(p, k) { var v = p[k]; if (v == null) return ""; if (k === "tags") return v.join(", "); return String(v); }
+  function peCoordTxt(v) { return (v === "" || v == null || !isFinite(+v)) ? "—" : (+v).toFixed(5); }
+  function peRowHtml(p, i) {
+    var esc = escapeHtml, cells = PE_COLS.map(function (col) {
+      var v = peVal(p, col.k), a = ' data-i="' + i + '" data-k="' + col.k + '"';
+      if (col.type === "coord") return '<td class="pe-coord"' + a + '><button type="button" class="pe-coord-btn" title="' + esc(t("ptedit.pickTitle")) + '"' + a + ">" + esc(peCoordTxt(p[col.k])) + "</button></td>";
+      if (col.type === "check") return '<td class="pe-chk"><input type="checkbox" class="pe-in"' + (p[col.k] ? " checked" : "") + a + " /></td>";
+      if (col.type === "color") return '<td class="pe-chk"><input type="color" class="pe-in" value="' + esc(mpHex6(p.color || mpColorFor(p))) + '"' + a + " /></td>";
+      if (col.type === "ro") return '<td class="pe-ro">' + ((p.files && p.files.length) ? esc(String(p.files.length)) : "") + "</td>";
+      if (col.type === "number") return '<td><input type="number" step="any" class="pe-in" value="' + esc(v) + '"' + a + " /></td>";
+      return '<td><input type="text" class="pe-in" value="' + esc(v) + '"' + (col.type === "tags" ? ' list="pe-tags"' : "") + a + " /></td>";
+    }).join("");
+    return '<tr data-i="' + i + '"><td class="pe-n">' + (i + 1) + "</td>" + cells +
+      '<td class="pe-x"><button type="button" class="pe-del" data-i="' + i + '" title="' + esc(t("btn.delete")) + '" aria-label="' + esc(t("btn.delete")) + '">×</button></td></tr>';
+  }
+  function peRender(focusRow, focusKey) {
+    var st = peState, el = peEl(), esc = escapeHtml;
+    var tagOpts = {}; st.rows.forEach(function (p) { (p.tags || []).forEach(function (x) { tagOpts[x] = 1; }); });
+    var head = PE_COLS.map(function (col) { return '<th style="min-width:' + col.w + '">' + esc(t(col.t)) + "</th>"; }).join("");
+    el.innerHTML = '<div class="field-page-bar">' +
+        '<button type="button" class="fp-back" id="pe-back" title="' + esc(t("btn.close")) + '" aria-label="' + esc(t("btn.close")) + '">' + ico("back") + "</button>" +
+        '<span class="pe-title">' + esc(t("points.editValues")) + " · " + esc(st.c.name) + "</span>" +
+        '<span class="pe-count">' + esc(t("ptedit.rows", { n: st.rows.length })) + "</span>" +
+        '<span class="pe-actions">' +
+          '<button type="button" class="btn btn-light" id="pe-add">' + esc(t("ptedit.addRow")) + "</button>" +
+          '<button type="button" class="btn" id="pe-save">' + esc(t("points.save")) + "</button>" +
+        "</span></div>" +
+      '<p class="cu-hint pe-hint">' + esc(t("ptedit.hint")) + "</p>" +
+      '<div class="pe-wrap"><table class="pe-tbl"><thead><tr><th>#</th>' + head + "<th></th></tr></thead><tbody>" +
+        st.rows.map(function (p, i) { return peRowHtml(p, i); }).join("") + "</tbody></table></div>" +
+      '<datalist id="pe-tags">' + Object.keys(tagOpts).sort().map(function (x) { return '<option value="' + esc(x) + '">'; }).join("") + "</datalist>";
+    el.style.display = "flex";
+    peWire(el);
+    if (focusRow != null) {
+      var tr = el.querySelectorAll("tbody tr")[focusRow];
+      if (tr) { tr.scrollIntoView({ block: "center" }); var inp = tr.querySelector('.pe-in[data-k="' + (focusKey || "name") + '"]'); if (inp) { try { inp.focus(); } catch (e) {} } }
+    }
+  }
+  function peRelink(p) {   // a changed scientific name re-links (or unlinks) the model species behind the point
+    var lbl = p.sci ? labelForSci(p.sci, p.cls) : null;
+    if (lbl && (lbl.key || lbl.code)) p.spKey = lbl.key || lbl.code; else delete p.spKey;
+    delete p.spColor;
+  }
+  function peWire(el) {
+    var st = peState;
+    el.querySelector("#pe-back").addEventListener("click", peTryClose);
+    el.querySelector("#pe-add").addEventListener("click", function () {
+      var m = getMap(), c = m ? m.getCenter() : { lat: 0, lng: 0 };
+      st.rows.push({ id: mpUid(), lat: +c.lat.toFixed(5), lon: +c.lng.toFixed(5), name: "", tags: [], note: "", source: "manual", createdAt: new Date().toISOString() });
+      st.dirty = true; peRender(st.rows.length - 1, "name");
+    });
+    el.querySelector("#pe-save").addEventListener("click", peSave);
+    el.addEventListener("input", function (e) {
+      var inp = e.target; if (!inp.classList || !inp.classList.contains("pe-in")) return;
+      var p = st.rows[+inp.getAttribute("data-i")], k = inp.getAttribute("data-k"); if (!p || !k) return;
+      st.dirty = true;
+      if (inp.type === "checkbox") { if (inp.checked) p[k] = true; else delete p[k]; return; }
+      var v = inp.value;
+      if (k === "tags") p.tags = mpParseTags(v);
+      else if (k === "count" || k === "radius") { if (v === "") delete p[k]; else p[k] = +v; }
+      else if (k === "color") p.color = v;
+      else if (k === "sci") { p.sci = v.trim(); if (!p.sci) delete p.sci; peRelink(p); }
+      else { if (v === "") delete p[k]; else p[k] = v; }
+    });
+    el.addEventListener("click", function (e) {
+      var del = e.target.closest && e.target.closest(".pe-del");
+      if (del) { st.rows.splice(+del.getAttribute("data-i"), 1); st.dirty = true; peRender(); return; }
+      var cb = e.target.closest && e.target.closest(".pe-coord-btn");
+      if (cb && !cb._peEditing) pePick(+cb.getAttribute("data-i"));
+    });
+    // Double-click a coordinate to type it (Enter / blur commits, Esc leaves it).
+    el.addEventListener("dblclick", function (e) {
+      var cb = e.target.closest && e.target.closest(".pe-coord-btn"); if (!cb) return;
+      e.preventDefault(); peEditCoord(cb);
+    });
+    // Enter → the same column one row down; ↑/↓ likewise (a spreadsheet's habit).
+    el.addEventListener("keydown", function (e) {
+      var inp = e.target; if (!inp.classList || !inp.classList.contains("pe-in") || inp.type === "checkbox" || inp.type === "color") return;
+      var dir = (e.key === "Enter" || e.key === "ArrowDown") ? 1 : (e.key === "ArrowUp" ? -1 : 0); if (!dir) return;
+      if (e.key !== "Enter" && inp.type === "number") return;   // a number field steps with ↑/↓
+      var tr = inp.closest("tr"), nx = dir > 0 ? tr.nextElementSibling : tr.previousElementSibling; if (!nx) return;
+      var tgt = nx.querySelector('.pe-in[data-k="' + inp.getAttribute("data-k") + '"]'); if (tgt) { e.preventDefault(); tgt.focus(); if (tgt.select) tgt.select(); }
+    });
+    if (wireLocHover) el.querySelectorAll("td.pe-coord").forEach(function (td) {
+      var i = +td.getAttribute("data-i");
+      wireLocHover(td, function () { var p = st.rows[i]; return p ? { lat: p.lat, lon: p.lon } : null; });
+    });
+  }
+  function peEditCoord(btn) {
+    var st = peState, i = +btn.getAttribute("data-i"), k = btn.getAttribute("data-k"), p = st.rows[i]; if (!p) return;
+    var inp = document.createElement("input"); inp.type = "text"; inp.className = "pe-in pe-coord-in"; inp.setAttribute("inputmode", "decimal");
+    inp.value = isFinite(+p[k]) ? String(p[k]) : "";
+    btn._peEditing = true; btn.style.display = "none"; btn.parentNode.appendChild(inp); inp.focus(); inp.select();
+    var done = function (commit) {
+      if (!inp.parentNode) return;
+      if (commit) {
+        var n = parseFloat(String(inp.value).replace(",", "."));
+        if (isFinite(n) && Math.abs(n) <= (k === "lat" ? 90 : 180)) { p[k] = +n.toFixed(6); st.dirty = true; }
+      }
+      inp.parentNode.removeChild(inp); btn.style.display = ""; btn._peEditing = false; btn.textContent = peCoordTxt(p[k]);
+    };
+    inp.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); done(true); } else if (e.key === "Escape") { e.preventDefault(); done(false); } e.stopPropagation(); });
+    inp.addEventListener("blur", function () { done(true); });
+  }
+  // Hand the position over to the map: the page steps aside, a ring marks the current spot,
+  // the next tap on the map is the new position (Esc brings the page back unchanged).
+  function pePick(i) {
+    var st = peState, p = st && st.rows[i], m = getMap(); if (!p || !m || !pickOnMap) return;
+    var el = peEl(); el.style.display = "none";
+    var mk = null;
+    try { if (isFinite(+p.lat) && isFinite(+p.lon)) { mk = L.circleMarker([+p.lat, +p.lon], { radius: 10, color: "#a93226", weight: 2, fillColor: "#a93226", fillOpacity: 0.15 }).addTo(m); m.panTo([+p.lat, +p.lon]); } } catch (e) {}
+    setStatus(t("ptedit.pick", { name: p.name || ("#" + (i + 1)) }));
+    document.body.classList.add("pe-picking");
+    var onKey;
+    var done = function (ll) {
+      document.body.classList.remove("pe-picking"); document.removeEventListener("keydown", onKey, true);
+      if (mk) { try { m.removeLayer(mk); } catch (e) {} }
+      if (ll) { p.lat = +(+ll.lat).toFixed(5); p.lon = +(+ll.lng).toFixed(5); st.dirty = true; }
+      setStatus("");
+      if (peState === st) peRender(i, "name");
+    };
+    onKey = function (e) { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); pickOnMap(null); done(null); } };
+    document.addEventListener("keydown", onKey, true);
+    pickOnMap(done);
+  }
+  function peSave() {
+    var st = peState; if (!st) return;
+    for (var i = 0; i < st.rows.length; i++) {
+      var p = st.rows[i];
+      if (!isFinite(+p.lat) || !isFinite(+p.lon) || Math.abs(+p.lat) > 90 || Math.abs(+p.lon) > 180) { setStatus(t("ptedit.badCoords", { n: i + 1 }), true); return; }
+    }
+    var c = st.c;
+    c.points = st.rows.map(function (p) { var q = Object.assign({}, p); q.lat = +q.lat; q.lon = +q.lon; if (!q.id) q.id = mpUid(); if (!q.color) delete q.color; return q; });
+    if (mpActiveName === c.name) mapPoints = c.points.map(function (p) { return Object.assign({}, p); });
+    saveMapPoints(); renderMapPoints(); refreshMpPanel();
+    setStatus(t("ptedit.saved", { n: c.points.length, name: c.name }));
+    st.dirty = false; peClose();
+  }
   // Whole-list editor: set a colour + tags applied to every point in the list
   // (and rename it). Opened from the ✎ on a list row in the Points overview.
   function openCollEditModal(name) {
@@ -120,7 +303,7 @@ window.AppPoints = (function () {
     // "Notes are HTML" starts ticked only if every point that has a note is flagged.
     var noted = (c.points || []).filter(function (p) { return p.note; });
     var allHtml = noted.length > 0 && noted.every(function (p) { return p.noteHtml; });
-    var ov = document.createElement("div"); ov.id = "coll-edit-modal"; ov.className = "kml-modal";
+    var ov = document.createElement("div"); ov.id = "coll-edit-modal"; ov.className = "kml-modal"; bringToFront(ov);
     ov.innerHTML = '<div class="kml-modal-box">' +
       '<button type="button" id="ce-close" class="kml-close" aria-label="' + esc(t("btn.close")) + '">×</button>' +
       "<h3>" + esc(t("points.editList")) + "</h3>" +
@@ -1328,7 +1511,7 @@ window.AppPoints = (function () {
       '<div class="kml-actions"><button type="button" id="kml-do" class="btn">' + escapeHtml(t("kml.import")) + "</button></div>" +
       "</div>";
     var ov = document.createElement("div");
-    ov.id = "kml-import-modal"; ov.className = "kml-modal";
+    ov.id = "kml-import-modal"; ov.className = "kml-modal"; bringToFront(ov);
     ov.innerHTML = html;
     document.body.appendChild(ov);
     ov.addEventListener("click", function (e) { if (e.target === ov) closeKmlImportDialog(); });
@@ -2719,7 +2902,7 @@ window.AppPoints = (function () {
     exactListsOfText: exactListsOfText, importListsExact: importListsExact,
     deleteCollection: deleteCollection, isCollProtected: isCollProtected, isViewOnly: isViewOnly, ownColls: ownColls, openViewOnly: openViewOnly, fillViewOnly: fillViewOnly, forgetViewOnly: forgetViewOnly, mpLoading: mpLoading,
     setCollProtected: setCollProtected, isRouteColl: isRouteColl,
-    openCollEditModal: openCollEditModal, collColor: collColor,
+    openCollEditModal: openCollEditModal, openCollValuesEditor: openCollValuesEditor, collColor: collColor,
     // ---- colours ----
     mpHashColor: mpHashColor, mpColorFor: mpColorFor, mpColorRow: mpColorRow,
     mpReadColor: mpReadColor, mpHex6: mpHex6, wireMpColorRow: wireMpColorRow,

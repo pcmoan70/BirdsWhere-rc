@@ -775,6 +775,13 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
 - **Detection sets** — named snapshots of a whole plot (dots, dates, observers, sources, stars)
   that appear as **🗂 tick-to-show overlay rows** in the Points panel; they sync across devices
   and are shareable as a link/file. (Deleting one removes it on every device via a tombstone.)
+- **Edit values** (list menu ⋯ → *Edit values*) — the whole list as a spreadsheet: one row per point, one cell per field
+  (name, latitude, longitude, tags, note, date, count, activity, observer, scientific name, uncertainty in m, link, colour,
+  ★, HTML note; photos shown as a count). Hover a latitude or longitude for the ~4 km preview map; **click** it to set the
+  position on the map (the page steps aside, one tap places the point, Esc cancels); double-click to type it. Tags are
+  comma-separated (existing tags offered as you type); a changed scientific name re-links the model species. Enter moves
+  down a column, × removes a row, **+ Add row** adds a point at the map centre. Nothing is written until **Save**; leaving
+  with unsaved edits asks first. View-only (shared) lists cannot be edited.
 
 ---
 

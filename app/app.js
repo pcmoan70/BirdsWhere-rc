@@ -655,10 +655,22 @@
   // opts.boxClass appends to "ui-modal"; opts.onClose runs extra cleanup once;
   // opts.backdropClose (default true) dismisses on a click outside the box;
   // opts.escClose dismisses on Escape.
+  // Whatever opens LAST sits on top (owner, 2026-10-22: the Edit-list dialog came up under the
+  // list's own menu). Every popup opener hands its element here: it gets a z-index one above the
+  // highest popup still showing, within the 8000s band — under the hover tips (9000+), above the
+  // fixed levels in app.css (dropdowns 3000, dialogs 5000, menus 8000, confirms 8500).
+  var _popTop = [];
+  function bringToFront(el) {
+    if (!el) return el;
+    _popTop = _popTop.filter(function (x) { return x !== el && x.isConnected && x.style.display !== "none"; });
+    var top = 8000; _popTop.forEach(function (x) { top = Math.max(top, +x.style.zIndex || 0); });
+    el.style.zIndex = String(top + 1); _popTop.push(el);
+    return el;
+  }
   function createModal(opts) {
     opts = opts || {};
     closeOtherPopups();   // a modal replaces every transient popup on screen
-    var ov = document.createElement("div"); ov.className = "ui-modal-overlay";
+    var ov = document.createElement("div"); ov.className = "ui-modal-overlay"; bringToFront(ov);
     var box = document.createElement("div"); box.className = "ui-modal" + (opts.boxClass ? " " + opts.boxClass : "");
     ov.appendChild(box); document.body.appendChild(ov);
     var closed = false, onKey = null;
@@ -2345,6 +2357,8 @@
     var rp = document.getElementById("rarity-page");
     if (rp && rp.style.display !== "none") return true;   // the rarity-alerts page hides the map too
     if (document.body.getAttribute("data-nearby")) return true;
+    var pe = document.getElementById("ptedit-page");
+    if (pe && pe.style.display === "flex") return true;   // the point-list "Edit values" page (lat/lon cells preview their spot)
     return false;
   }
   function scheduleLocHoverMap(lat, lon) {
@@ -3612,7 +3626,7 @@
     blogsCC = String(cc || "").toUpperCase();
     blogsCountryName = name || blogsCC;
     renderBlogs();
-    document.getElementById("blogs-modal").style.display = "flex";
+    bringToFront(document.getElementById("blogs-modal")).style.display = "flex";
     navOpen("blogs", function () { document.getElementById("blogs-modal").style.display = "none"; });
   }
   function renderBlogs() {
@@ -4472,7 +4486,7 @@
     var p = (c.points || []).filter(function (x) { return x.id === id; })[0]; if (!p) return;
     var esc = escapeHtml;
     var ov = document.createElement("div");
-    ov.id = "lp-edit-modal"; ov.className = "kml-modal";
+    ov.id = "lp-edit-modal"; ov.className = "kml-modal"; bringToFront(ov);
     ov.innerHTML = '<div class="kml-modal-box">' +
       '<button type="button" id="lp-close" class="kml-close" aria-label="Close">×</button>' +
       "<h3>" + esc(t("lists.editPoint")) + "</h3>" +
@@ -4744,7 +4758,7 @@
   function openMpAdmin() {
     if (document.getElementById("mp-admin-modal")) return;   // already open
     closeDropdowns();
-    var ov = document.createElement("div"); ov.id = "mp-admin-modal"; ov.className = "kml-modal";
+    var ov = document.createElement("div"); ov.id = "mp-admin-modal"; ov.className = "kml-modal"; bringToFront(ov);
     ov.innerHTML = '<div class="kml-modal-box mp-admin-box">' +
       '<button type="button" id="mp-admin-close" class="kml-close" aria-label="' + escapeHtml(t("btn.close")) + '">×</button>' +
       "<h3>" + escapeHtml(t("points.adminTitle")) + "</h3>" +
@@ -4855,7 +4869,7 @@
     closeDropdowns();
     srcDetailId = null;   // always open on the source LIST
     renderSourcesTable();
-    document.getElementById("sources-modal").style.display = "flex";
+    bringToFront(document.getElementById("sources-modal")).style.display = "flex";
     navOpen("sources", function () { document.getElementById("sources-modal").style.display = "none"; });
   }
   // GBIF datasets manager — launched from the GBIF source panel. The sources modal is
@@ -4866,7 +4880,7 @@
     closeDropdowns();
     renderGbifTable();
     var sm = document.getElementById("sources-modal"); sm.style.display = "none";
-    document.getElementById("gbif-modal").style.display = "flex";
+    bringToFront(document.getElementById("gbif-modal")).style.display = "flex";
     navOpen("gbif", function () {
       document.getElementById("gbif-modal").style.display = "none";
       srcDetailId = "gbif"; renderSourcesTable(); sm.style.display = "flex";
@@ -6914,7 +6928,7 @@
     var body = document.getElementById("recent-body");
     document.getElementById("recent-title").textContent = name;
     body.innerHTML = '<div class="spinner" style="margin:24px auto"></div>';
-    document.getElementById("recent-modal").style.display = "flex";
+    bringToFront(document.getElementById("recent-modal")).style.display = "flex";
     navOpen("recent", hideRecent);
     var token = ++recentToken;
 
@@ -7082,7 +7096,7 @@
     var body = document.getElementById("distmap-body");
     document.getElementById("distmap-title").textContent = name;
     body.innerHTML = '<div class="spinner" style="margin:24px auto"></div>';
-    modal.style.display = "flex";
+    bringToFront(modal).style.display = "flex";
     navOpen("distmap", hideDistMap);
     var lbl = key && labelsByKey[key];
     var en = (lbl && lbl.common) || name;   // English common name helps match filenames
@@ -12207,7 +12221,7 @@
     // closeAnchoredMenu(undefined) means "close every popup", which would take the host too.
     if (host) { var hi = _anchStack.indexOf(host); if (hi + 1 < _anchStack.length) closeAnchoredMenu(_anchStack[hi + 1]); }
     else closeOtherPopups(true);                                            // incl. every anchored menu; keeps map popups
-    var el = document.createElement("div"); el.className = className;
+    var el = document.createElement("div"); el.className = className; bringToFront(el);
     document.body.appendChild(el);
     _anchStack.push(el);
     _anchMenuEl = el;
@@ -17795,6 +17809,8 @@
     updateDetSetOverlays: updateDetSetOverlays, updateMpBadge: updateMpBadge,
     pulseFunnels: pulseFunnels, tagDisplay: tagDisplay,
     updateSpDistances: updateSpDistances, t: t,
+    modalConfirm: modalConfirm, wireLocHover: wireLocHover, bringToFront: bringToFront,
+    pickOnMap: function (fn) { mapPickHandler = fn; },   // the next map click goes to fn(latlng) instead of the point popup (Edit values)
     getMap: function () { return map; },
     getMarker: function () { return marker; },
     getSpiderHidden: function () { return spiderHidden; },
@@ -19685,6 +19701,9 @@
     // Per-row ✎ opens the whole-list editor (colour + tags + rename).
       root.querySelectorAll(".mp-coll-edit").forEach(function (b) {
       b.addEventListener("click", function (e) { e.preventDefault(); openCollEditModal(this.getAttribute("data-name")); });
+      });
+      root.querySelectorAll(".mp-coll-values").forEach(function (b) {
+      b.addEventListener("click", function (e) { e.preventDefault(); closeOtherPopups(); window.AppPoints.openCollValuesEditor(this.getAttribute("data-name")); });
     });
     // Per-row × deletes that saved list / detection set (after confirming).
       root.querySelectorAll(".mp-coll-filt").forEach(function (b) {
@@ -19825,6 +19844,8 @@
                   t(isRoute ? "points.navDescRoute" : "points.navDesc"));
       html += row("mp-coll-share", ico("share"), t("share.link"), t("points.shareDesc"));
       if (type === "p") html += row("mp-coll-edit", ico("edit"), t("points.editList"), t("points.editDesc"),
+                                    'data-name="' + escapeHtml(name) + '"');
+      if (type === "p") html += row("mp-coll-values", ico("list"), t("points.editValues"), t("points.editValuesDesc"),
                                     'data-name="' + escapeHtml(name) + '"');
       if (count) html += row("mp-coll-dl", ico("download"), t("points.download"), t("points.downloadDesc"));
       if (type === "p") {
@@ -20999,7 +21020,7 @@
     closeDropdowns();
     var st = document.getElementById("feedback-status"); if (st) st.textContent = "";
     feedbackSyncLimit();
-    document.getElementById("feedback-modal").style.display = "flex";
+    bringToFront(document.getElementById("feedback-modal")).style.display = "flex";
     navOpen("feedback", hideFeedback);
     var ta = document.getElementById("feedback-msg"); if (ta) ta.focus();
   }
@@ -21439,7 +21460,7 @@
       natdbOpenBtn.addEventListener("click", function () {
         closeDropdowns();
         renderCustomUrls();
-        document.getElementById("natdb-modal").style.display = "flex";
+        bringToFront(document.getElementById("natdb-modal")).style.display = "flex";
         navOpen("natdb", function () { document.getElementById("natdb-modal").style.display = "none"; });
       });
       document.getElementById("natdb-close").addEventListener("click", function () { navClose("natdb"); });
@@ -21489,7 +21510,7 @@
         closeDropdowns();
         if (leTog) leTog.checked = listEdgesOn();   // reflect current state when opening
         renderListsModal();
-        document.getElementById("lists-modal").style.display = "flex";
+        bringToFront(document.getElementById("lists-modal")).style.display = "flex";
         navOpen("lists", function () { document.getElementById("lists-modal").style.display = "none"; });
       });
       // Toggle the year/life-list coloured edge on map markers (off when many dots
@@ -22053,7 +22074,7 @@
         var cats = saved.cats || { settings: 1, lists: 1, trips: 1, checklists: 1, fetched: 0 };
         var catRow = function (id, lbl) { return '<label class="so-cat"><input type="checkbox" class="so-cat-cb" data-cat="' + id + '"' + (cats[id] ? " checked" : "") + "> " + escapeHtml(t(lbl)) + "</label>"; };
         var dirRow = function (val, lbl) { return '<label class="so-dir"><input type="radio" name="so-dir" value="' + val + '"' + (dir === val ? " checked" : "") + "> " + escapeHtml(t(lbl)) + "</label>"; };
-        var ov = document.createElement("div"); ov.id = "sync-opts-modal"; ov.className = "kml-modal";
+        var ov = document.createElement("div"); ov.id = "sync-opts-modal"; ov.className = "kml-modal"; bringToFront(ov);
         ov.innerHTML = '<div class="kml-modal-box sync-opts-box">' +
           '<button type="button" class="kml-close so-close" aria-label="' + escapeHtml(t("btn.close")) + '">×</button>' +
           "<h3>" + escapeHtml(t("sync.title")) + "</h3>" +
@@ -22859,7 +22880,7 @@
     // About (model & methodology) opens from the Settings dropdown as a modal.
     document.getElementById("about-open").addEventListener("click", function () {
       closeDropdowns();
-      document.getElementById("about-modal").style.display = "flex";
+      bringToFront(document.getElementById("about-modal")).style.display = "flex";
       navOpen("about", hideAbout);
     });
     document.getElementById("about-close").addEventListener("click", function () { navClose("about"); });
@@ -24520,8 +24541,10 @@
     }
     return false;
   }
+  var mapPickHandler = null;   // set by AppPoints (Edit values): one click = a position, consumed here
   function onMapClick(e) {
     if (eventOverControl(e)) return;   // a tap on a control button is not a map click
+    if (mapPickHandler) { var ph = mapPickHandler; mapPickHandler = null; ph(e.latlng); return; }
     // Ignore an accidental brush on the empty map: opening the point popup / placing
     // Debounce every map click: ignore any click that lands within 200 ms of the
     // previous one (rapid double-taps, or a legend re-render leaking through).
