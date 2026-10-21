@@ -83,6 +83,7 @@ iframe[src*="accounts.google.com"] {
   --shadow-up: 0 -6px 24px rgba(31,61,43,.18);   /* bottom sheets */
   --backdrop: rgba(29,42,34,.5);                  /* the scrim behind every modal (peat) */
   --ink-glass: rgba(29,42,34,.8);                 /* translucent dark panel (the map legend) */
+  --surface-warm: #f3efe4;                         /* eggshell: map popups, so their white buttons read as buttons */
   /* Chrome: a modal / bottom sheet = --radius + --shadow-lg; a popover, dropdown or anchored
      menu = --radius-sm + --shadow-md; a tooltip = --radius-xs + --shadow-md; an inline card =
      --radius + --shadow-sm. One × (see .ui-modal-x), one scrim (--backdrop). */
@@ -558,11 +559,18 @@ input[type="range"] { accent-color: var(--brand); }
   border-radius: var(--radius-xs) 0 0 0;
 }
 
-/* Leaflet popups (point / detection / save / choose popups): the kit's popover chrome. */
+/* Leaflet popups (point / right-click / detection / save popups): the kit's popover chrome on an
+   eggshell card (owner, 2026-10-21: the white edges were too broad and too white). Tight margins
+   all round; the × sits as a small badge on the popup's corner so no edge has to make room for it. */
 .leaflet-popup-content-wrapper { border-radius: var(--radius-sm); color: var(--ink); }
-.leaflet-popup-content-wrapper, .leaflet-popup-tip { box-shadow: var(--shadow-md); }
-.leaflet-container a.leaflet-popup-close-button { color: var(--ink-muted); }
-.leaflet-container a.leaflet-popup-close-button:hover, .leaflet-container a.leaflet-popup-close-button:focus { color: var(--ink); }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface-warm); box-shadow: var(--shadow-md); }
+.leaflet-popup-content { margin: 10px 12px; }
+.leaflet-container a.leaflet-popup-close-button {
+  top: -9px; right: -9px; width: 22px; height: 22px; border-radius: 50%; padding: 0;
+  font: 16px/20px Tahoma, Verdana, sans-serif; background: var(--surface); color: var(--ink-muted);
+  border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+}
+.leaflet-container a.leaflet-popup-close-button:hover, .leaflet-container a.leaflet-popup-close-button:focus { background: var(--surface-2); color: var(--ink); }
 /* "Save this location" button shown on the map (marker popup) */
 .leaflet-popup.save-popup .leaflet-popup-content { margin: 9px 12px; }
 .map-save-btn { font-size: var(--fs-s); padding: 6px 12px; }
