@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2148";
+var VERSION = "v2149";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 A new look, step 1: a natural palette \u2014 spruce header, moss buttons, fjord-blue links and marks, rowan red for delete. The migration heatmaps and probability bars run dry grass \u2192 moss \u2192 spruce; arrivals are blue (arriving) against red (departing), readable with red-green colour blindness.",
+  "\u2022 The current week is now framed in peat with a white inner line, so it stands out on the dark spruce cells of the heatmaps and the timeline too.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

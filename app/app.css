@@ -1681,14 +1681,22 @@ table.an-heatmap th.an-wk {
   padding: 1px 0;
 }
 /* Current-week column: one rectangle around the whole column (week-number
-   header down to the last species), not a box around every cell. */
+   header down to the last species), not a box around every cell. Two-tone
+   frame (peat outside, white inside) so it reads on light AND dark cells. */
 table.an-heatmap th.an-cur,
 table.an-heatmap td.an-cell.an-cur {
-  border-left: 2px solid var(--brand-deep);
-  border-right: 2px solid var(--brand-deep);
+  border-left: 2px solid var(--ink);
+  border-right: 2px solid var(--ink);
+  box-shadow: inset 1px 0 0 var(--on-brand), inset -1px 0 0 var(--on-brand);
 }
-table.an-heatmap thead th.an-cur { border-top: 2px solid var(--brand-deep); }
-table.an-heatmap tbody tr:last-child td.an-cell.an-cur { border-bottom: 2px solid var(--brand-deep); }
+table.an-heatmap thead th.an-cur {
+  border-top: 2px solid var(--ink);
+  box-shadow: inset 1px 0 0 var(--on-brand), inset -1px 0 0 var(--on-brand), inset 0 1px 0 var(--on-brand);
+}
+table.an-heatmap tbody tr:last-child td.an-cell.an-cur {
+  border-bottom: 2px solid var(--ink);
+  box-shadow: inset 1px 0 0 var(--on-brand), inset -1px 0 0 var(--on-brand), inset 0 -1px 0 var(--on-brand);
+}
 table.an-heatmap td.an-cell {
   width: 16px;
   height: 16px;
@@ -3166,11 +3174,12 @@ table.chk-table .chk-text { min-width: 100px; }
 @media (prefers-reduced-motion: reduce) { .obs-wait::after { animation: none; content: "…"; } }
 @keyframes obs-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 
-/* Timeline: ring the current-week bar (its fill stays on the red->green scale) */
-.bc-bar.bc-cur { outline: 2px solid var(--ink); outline-offset: -1px; opacity: 1 !important; z-index: 2; }
+/* Timeline: ring the current-week bar — peat outline with a white inner line,
+   visible on the dark spruce bars too. */
+.bc-bar.bc-cur { outline: 2px solid var(--ink); outline-offset: -1px; box-shadow: inset 0 0 0 2px var(--on-brand); opacity: 1 !important; z-index: 2; }
 /* The observation's week (when the migration timeline is opened from a sighting):
    a blue frame, distinct from the black current-week frame. */
-.bc-bar.bc-det { outline: 2px solid var(--info); outline-offset: -1px; opacity: 1 !important; z-index: 3; }
+.bc-bar.bc-det { outline: 2px solid var(--info); outline-offset: -1px; box-shadow: inset 0 0 0 2px var(--on-brand); opacity: 1 !important; z-index: 3; }
 
 /* Performance note modal (shown on page load) */
 #perf-modal {
