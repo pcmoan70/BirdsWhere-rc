@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2151";
+var VERSION = "v2152";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Offline maps: the manager lists the downloaded areas that overlap the current view first (marked \u201cin view\u201d) and follows the map as you pan; tap an area\u2019s name to show it on the map.",
+  "\u2022 New look, stage 3: every dialog, dropdown, menu, tooltip, legend and map popup now shares one chrome \u2014 the same corners, shadows, close button and a softer, tinted backdrop behind dialogs.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
