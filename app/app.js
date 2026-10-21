@@ -287,7 +287,7 @@
   // The header (settings) icon reflects the active species group. All icons are
   // monochrome SVGs in one style (currentColor; small details in deep teal),
   // not emoji — so they match the app palette.
-  var EYE = "#0b3a3a";   // deep-teal detail (eyes/nose) on the white silhouette
+  var EYE = cssVar("--brand-deep", "#1f3d2b");   // deep-teal detail (eyes/nose) on the white silhouette
   var GROUP_ICON = {
     // Binoculars (All) — line style.
     all: '<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
@@ -1512,6 +1512,9 @@
     try { updateDistSortPulse(); } catch (e) {}   // start/stop the blue DIST-arrow pulse with tracking
   }
   var currentMode = "range";
+  // A colour token from app.css (:root) for the chrome the JS paints itself — fetched-area
+  // rectangles, the comparison wheel, print styles — so it follows the palette.
+  function cssVar(name, fallback) { try { var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim(); if (v) return v; } catch (e) {} return fallback; }
   var rendering = false;
   var renderGeneration = 0;
   var moveEndTimer = null;
@@ -3891,7 +3894,7 @@
     if ((currentMode !== "list" && currentMode !== "historic") || !map) { hideFetchArea(); return; }
     var b = fetchAreaBounds(latlng);
     if (!fetchAreaRect) {
-      fetchAreaRect = L.rectangle(b, { color: "#2e8b74", weight: 1, opacity: 0.7, dashArray: "4 4", fillColor: "#2e8b74", fillOpacity: 0.04, interactive: false });
+      fetchAreaRect = L.rectangle(b, { color: cssVar("--brand", "#3f6f3a"), weight: 1, opacity: 0.7, dashArray: "4 4", fillColor: cssVar("--brand", "#3f6f3a"), fillOpacity: 0.04, interactive: false });
       fetchAreaRect.addTo(map);
     } else {
       fetchAreaRect.setBounds(b);
@@ -4057,7 +4060,7 @@
     // [[s,w],[n,e]] array, but the persistence + per-area delete call .getSouth() /
     // .contains() on it. (L.latLngBounds is idempotent for an existing bounds.)
     b = L.latLngBounds(b);
-    var rect = L.rectangle(b, { color: "#2e8b74", weight: 1, opacity: 0.5, dashArray: "2 4", fill: false, interactive: false });
+    var rect = L.rectangle(b, { color: cssVar("--brand", "#3f6f3a"), weight: 1, opacity: 0.5, dashArray: "2 4", fill: false, interactive: false });
     fetchedAreasLayer.addLayer(rect);
     // date = the moment observations were last fetched up to (the "end date"); the
     // update button re-fetches from here − overlap to now and lets it re-stamp to now.
@@ -10037,7 +10040,7 @@
         .then(function (j) {
           if (mine !== token || !active) return;
           grp.clearLayers();
-          var style = { color: "#1f8a3b", weight: 1.5, opacity: 0.9, fillColor: "#1f8a3b", fillOpacity: 0.08 };
+          var style = { color: cssVar("--brand", "#3f6f3a"), weight: 1.5, opacity: 0.9, fillColor: cssVar("--brand", "#3f6f3a"), fillOpacity: 0.08 };
           var n = 0;
           (j.elements || []).forEach(function (el) {
             var nm = (el.tags && el.tags.name) || t("layer.osmpa");
@@ -12611,7 +12614,7 @@
     { k: "life", label: "traits.lifestyle" },
     { k: "mig", label: "traits.migration", map: { "1": "traits.migSed", "2": "traits.migPart", "3": "traits.migMig" } }
   ];
-  var CMP_FOCAL_COL = "#2e8b74", CMP_PARTNER_COL = "#d98e2e";   // focal vs look-alike, shared by the wheel + season chart
+  var CMP_FOCAL_COL = cssVar("--brand", "#3f6f3a"), CMP_PARTNER_COL = cssVar("--warn", "#c7791c");   // focal vs look-alike, shared by the wheel + season chart
   // Plumage colour as a per-colour DEVIATION between the two birds, one diverging strip per sex
   // (male above female). For each colour class either bird uses, dev = 200·(base − look-alike) /
   // (base + look-alike): the bar rises above the zero line when the base species has relatively
@@ -24622,7 +24625,7 @@
       var r = l.radius || recentRadiusKm();
       var dLat = r / 111, dLon = r / ((111 * Math.cos(l.lat * Math.PI / 180)) || 1);
       var rect = L.rectangle([[l.lat - dLat, l.lon - dLon], [l.lat + dLat, l.lon + dLon]],
-        { className: "storedloc-frame", color: "#2e8b74", weight: 1, opacity: 0.6, dashArray: "4 4", fill: false, interactive: false });   // thin dashed green outline, no fill
+        { className: "storedloc-frame", color: cssVar("--brand", "#3f6f3a"), weight: 1, opacity: 0.6, dashArray: "4 4", fill: false, interactive: false });   // thin dashed green outline, no fill
       rect.bindTooltip(escapeHtml(l.name), { direction: "top", className: "area-tip", sticky: true });
       storedLocFramesLayer.addLayer(rect);
       // A pin at the area's centre so the stored POINT itself is visible, not just
@@ -25203,23 +25206,19 @@
   }
 
   // Cell for "Annual max" comparison: current week as a fraction of the
-  // species' annual peak (0\u2013100%), tinted red(off-peak)\u2192green(at peak).
-  // Shared probability palette: red (hue 10, low) -> green (hue 130, high),
-  // matching the migration analysis heatmaps. n in [0, 1].
-  function probHueColor(n) {
-    n = Math.max(0, Math.min(1, n));
-    return "hsl(" + (10 + n * 120) + ", 60%, 42%)";
-  }
+  // species' annual peak (0\u2013100%). The palette's sequential scale (dry grass →
+  // spruce), shared with the migration heatmaps (GeoAnalysis.probColor). n in [0, 1].
+  function probHueColor(n) { return window.GeoAnalysis.probColor(n); }
   function ratioCell(ratio) {
     var r = Math.max(0, Math.min(1, ratio));
-    return '<td class="ratio-cell" style="background:' + probHueColor(r) + '">' + (r * 100).toFixed(0) + "%</td>";
+    return '<td class="ratio-cell' + window.GeoAnalysis.lightCls(r) + '" style="background:' + probHueColor(r) + '">' + (r * 100).toFixed(0) + "%</td>";
   }
 
   // Cell for the "Annual Top" comparison: focus value 0–100, tinted red→green.
   function focusCell(v) {
     if (Number.isNaN(v)) return '<td class="ratio-cell">-</td>';
     var n = Math.max(0, Math.min(100, v));
-    return '<td class="ratio-cell" style="background:' + probHueColor(n / 100) + '">' + Math.round(n) + "%</td>";
+    return '<td class="ratio-cell' + window.GeoAnalysis.lightCls(n / 100) + '" style="background:' + probHueColor(n / 100) + '">' + Math.round(n) + "%</td>";
   }
 
   // Species List comparison cell as a probability-style bar (used when every
@@ -25721,7 +25720,7 @@
     }).join("");
     var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + esc(heading) + "</title><style>" +
       "body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#16302b;margin:32px;}" +
-      "h1{font-size:19px;color:#0b3a3a;margin:0 0 2px;}" +
+      "h1{font-size:19px;color:" + cssVar("--brand-deep", "#1f3d2b") + ";margin:0 0 2px;}" +
       ".meta{color:#5b6f69;font-size:12px;margin-bottom:18px;}" +
       "table{border-collapse:collapse;width:100%;font-size:13px;}" +
       "th,td{text-align:left;padding:6px 9px;border-bottom:1px solid #d8e1dd;}" +

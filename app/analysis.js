@@ -18,22 +18,26 @@
 window.GeoAnalysis = (function () {
   "use strict";
 
-  // ---- Colour scales: the app's orange → green palette --------------------
-  // Probability: orange (the app's --warn, hue 30) at low → brand green (hue 163,
-  // #2e8b74) at high, through yellow-green in between.
-  var HUE_LO = 30, HUE_HI = 163;
+  // ---- Colour scales: the app's natural palette (app.css :root, 2026-10-21) ----------
+  // Sequential (probability, timeline bars, list bars): dry grass → lichen → moss → spruce.
+  // Luminance falls monotonically, so the scale reads the same with red-green colour
+  // blindness. Diverging (arrivals, deltas): rowan red (departing / falling) ← stone →
+  // fjord blue (arriving / rising) — blue vs red, never green vs red.
+  var SEQ = [[243,236,210],[169,196,127],[63,111,58],[31,61,43]];
+  var DIV_NEG = [169,50,38], DIV_MID = [233,228,216], DIV_POS = [43,111,142];
+  function mix(a, b, t) { return "rgb(" + Math.round(a[0] + (b[0] - a[0]) * t) + "," + Math.round(a[1] + (b[1] - a[1]) * t) + "," + Math.round(a[2] + (b[2] - a[2]) * t) + ")"; }
   function probColor(norm) {
-    var n = Math.max(0, Math.min(1, norm));
-    return "hsl(" + Math.round(HUE_LO + n * (HUE_HI - HUE_LO)) + ", " + Math.round(80 - n * 30) + "%, " + Math.round(50 - n * 14) + "%)";
+    var n = Math.max(0, Math.min(1, norm)) * (SEQ.length - 1), i = Math.min(SEQ.length - 2, Math.floor(n));
+    return mix(SEQ[i], SEQ[i + 1], n - i);
   }
-  // Arrival: diverging — orange (negative/departing) → grey (≈0) → green
-  // (positive/arriving), intensity ∝ |value|. Value already in [-1, 1].
   function arrivalColor(val) {
     var a = Math.max(-1, Math.min(1, val));
-    var hue = a >= 0 ? HUE_HI : HUE_LO;
-    var mag = Math.abs(a);
-    return "hsl(" + hue + ", " + Math.round(mag * (a >= 0 ? 55 : 80)) + "%, " + Math.round(62 - mag * (a >= 0 ? 26 : 12)) + "%)";
+    return a >= 0 ? mix(DIV_MID, DIV_POS, a) : mix(DIV_MID, DIV_NEG, -a);
   }
+  // Dark text on the light end of either scale, white on the dark end — as a class
+  // for the cell (see app.css .an-lt).
+  function lightCls(norm) { return norm < 0.45 ? " an-lt" : ""; }
+  function lightClsDiv(val) { return Math.abs(val) < 0.55 ? " an-lt" : ""; }
 
   function arrivalAt(probs, w, maxYear) {
     if (maxYear < 1e-6) return 0;
@@ -186,24 +190,24 @@ window.GeoAnalysis = (function () {
       // long names, so hover must reveal what got cut, not just the sci name.
       html += '<tr><td class="an-name" title="' + esc(ctx.speciesName(row.label) + " · " + row.label.sci) + '"><span class="an-name-in">' + ctx.nameLink(row.label) + "</span></td>";
       for (var cc = 0; cc < 48; cc++) {
-        var color, text;
+        var color, text, lt = "";
         if (isArrival) {
           var av = row.series[cc];
-          color = arrivalColor(av);
+          color = arrivalColor(av); lt = lightClsDiv(av);
           // Show only the number; negatives keep their "-", positives have no sign.
           text = Math.abs(av) >= 0.005 ? (av * 100).toFixed(0) : "";
         } else if (isFocus) {
           var fv = row.series[cc];
-          color = probColor(Math.max(0, Math.min(1, fv / 100)));
+          color = probColor(Math.max(0, Math.min(1, fv / 100))); lt = lightCls(fv / 100);
           text = Math.abs(fv) >= 1 ? Math.round(fv).toString() : "";
         } else {
           var pv = row.probs[cc];
           var norm = gRange > 0 ? (pv - gMin) / gRange : 0;
-          color = probColor(norm);
+          color = probColor(norm); lt = lightCls(norm);
           text = pv > 0 ? (pv * 100).toFixed(0) : "";
         }
         var curCls = cc === wkIdx ? " an-cur" : "";
-        html += '<td class="an-cell' + curCls + '" style="background:' + color + '">' + text + "</td>";
+        html += '<td class="an-cell' + curCls + lt + '" style="background:' + color + '">' + text + "</td>";
       }
       html += "</tr>";
     }
@@ -344,8 +348,8 @@ window.GeoAnalysis = (function () {
     rows.forEach(function (r) {
       var norm = pRange > 0 ? (r.probability - pMin) / pRange : 0;
       tbl += "<tr><td>" + ctx.nameLink(r.label) + "</td>";
-      tbl += '<td class="an-num an-tint" style="background:' + probColor(norm) + '">' + (r.probability * 100).toFixed(1) + "%</td>";
-      tbl += '<td class="an-num an-tint" style="background:' + arrivalColor(r.arrival) + '">' + (r.arrival * 100).toFixed(1) + "%</td></tr>";
+      tbl += '<td class="an-num an-tint' + lightCls(norm) + '" style="background:' + probColor(norm) + '">' + (r.probability * 100).toFixed(1) + "%</td>";
+      tbl += '<td class="an-num an-tint' + lightClsDiv(r.arrival) + '" style="background:' + arrivalColor(r.arrival) + '">' + (r.arrival * 100).toFixed(1) + "%</td></tr>";
     });
     tbl += "</tbody></table>";
 
@@ -424,6 +428,7 @@ window.GeoAnalysis = (function () {
     renderScatter: renderScatter,
     probColor: probColor,        // the migration palette (orange → green) — the Timeline tab bars use it too
     arrivalColor: arrivalColor,
+    lightCls: lightCls,          // " an-lt" when a probColor cell needs dark text
     buildCsv: buildCsv,
     focusSeries: focusSeries,
   };
