@@ -7924,7 +7924,7 @@
         '</div>' +
         '<div id="field-page" style="display:none">' +
           '<div class="field-page-bar">' +
-            '<button id="field-back" class="fp-back" title="Back to map">‹</button>' +
+            '<button id="field-back" class="fp-back" title="Back to map">' + ico("back") + '</button>' +
             '<button id="field-nearby" class="fp-nearby" title="Nearby places" aria-label="Nearby places">▾</button>' +
             '<input id="field-coords" class="field-place" type="text" autocomplete="off" data-i18n-ph="ph.fieldtitle" placeholder="Location name" />' +
             '<button type="button" id="field-far" class="fp-far" style="display:none" aria-label="!">!</button>' +
@@ -7982,7 +7982,7 @@
         '<div id="rarity-page" class="rarity-panel" style="display:none"></div>' +
         '<div id="entry-page" style="display:none">' +
           '<div class="field-page-bar">' +
-            '<button id="entry-back" class="fp-back" title="Back">‹</button>' +
+            '<button id="entry-back" class="fp-back" title="Back">' + ico("back") + '</button>' +
             '<span id="entry-title" class="field-place"></span>' +
             '<span class="field-actions">' +
               '<button id="entry-merge" class="btn" data-i18n="chk.merge">Merge</button>' +
@@ -7992,7 +7992,7 @@
         '</div>' +
         '<div id="review-page" style="display:none">' +
           '<div class="field-page-bar">' +
-            '<button id="review-back" class="fp-back" title="Back">‹</button>' +
+            '<button id="review-back" class="fp-back" title="Back">' + ico("back") + '</button>' +
             '<span id="review-title" class="field-place" data-i18n="review.title">Review &amp; upload</span>' +
             '<span class="field-actions">' +
               '<button id="review-new" class="btn" data-i18n="review.newGroup">+ Checklist</button>' +
