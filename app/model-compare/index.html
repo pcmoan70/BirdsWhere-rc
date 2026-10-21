@@ -87,7 +87,7 @@
     <div class="stats" id="stats"></div></section>
   <div id="tip"></div>
 <footer>
-    Hover a map for the cell’s values in both models and their difference. Both models take raw latitude, longitude and week (1–48) and return a per-species occurrence probability (sigmoid). The grid covers 25° W – 45° E, 34° N – 72° N at the chosen step; every cell is one model call per model, run on this device with ONNX Runtime Web. Species are matched between the two label files by their species code (11,880 shared; 132 only in V3.0.0, 2,202 only in V3.0.4), with the scientific name as the fallback.
+    Hover a map — or tap it — for the cell’s values in both models and their difference (a tap pins the readout; tap again to release). Both models take raw latitude, longitude and week (1–48) and return a per-species occurrence probability (sigmoid). The grid covers 25° W – 45° E, 34° N – 72° N at the chosen step; every cell is one model call per model, run on this device with ONNX Runtime Web. Species are matched between the two label files by their species code (11,880 shared; 132 only in V3.0.0, 2,202 only in V3.0.4), with the scientific name as the fallback.
     V3.0.4 weights © BirdNET team, Apache 2.0, from the <a href="https://github.com/birdnet-team/geomodel/releases/tag/v3.0.4" target="_blank" rel="noopener">v3.0.4 release</a>; the app’s bundled weights are CC BY-SA 4.0. Map tiles © Esri (World Topo Map).
   </footer>
 </main>
@@ -185,26 +185,34 @@
   $("step").addEventListener("change", compute);
   $("go").addEventListener("click", compute);
 
-  // ---- hover readout: the cell under the pointer, both models + the difference ----
+  // ---- hover / tap readout: the cell under the pointer, both models + the difference ----
+  // Positioned from Leaflet's containerPoint (works for mouse, pen and touch alike); a tap or
+  // click pins the tip until the next tap or until the map is moved, so touch screens get it too.
   var last = null;   // { pOld, pNew, diff, W, H, step } of the latest computation
-  var tip = $("tip");
+  var tip = $("tip"), pinned = false;
+  function showTip(k, e) {
+    if (!last) return false;
+    var la = e.latlng.lat, lo = e.latlng.lng;
+    if (la < BBOX.s || la > BBOX.n || lo < BBOX.w || lo > BBOX.e) { tip.style.display = "none"; return false; }
+    var r = Math.min(last.H - 1, Math.floor((BBOX.n - la) / last.step)), c = Math.min(last.W - 1, Math.floor((lo - BBOX.w) / last.step)), i = r * last.W + c;
+    var d = last.diff[i];
+    tip.innerHTML = "V3.0.0 <b>" + last.pOld[i].toFixed(3) + "</b> &nbsp; V3.0.4 <b>" + last.pNew[i].toFixed(3) + "</b> &nbsp; <span class=\"d\">Δ <b>" + (d >= 0 ? "+" : "−") + Math.abs(d).toFixed(3) + "</b></span>" +
+      "<br><span class=\"m\">" + la.toFixed(2) + "°, " + lo.toFixed(2) + "° · cell " + (BBOX.n - (r + 1) * last.step).toFixed(2) + "–" + (BBOX.n - r * last.step).toFixed(2) + " N, " + (BBOX.w + c * last.step).toFixed(2) + "–" + (BBOX.w + (c + 1) * last.step).toFixed(2) + " E</span>";
+    var rect = maps[k].getContainer().getBoundingClientRect(), cx = rect.left + e.containerPoint.x, cy = rect.top + e.containerPoint.y;
+    tip.style.display = "block";
+    var x = cx + 14, y = cy + 16;
+    if (x + tip.offsetWidth > innerWidth - 8) x = cx - tip.offsetWidth - 10;
+    if (y + tip.offsetHeight > innerHeight - 8) y = cy - tip.offsetHeight - 10;
+    tip.style.left = x + "px"; tip.style.top = y + "px";
+    return true;
+  }
   Object.keys(maps).forEach(function (k) {
-    maps[k].on("mousemove", function (e) {
-      if (!last) return;
-      var la = e.latlng.lat, lo = e.latlng.lng;
-      if (la < BBOX.s || la > BBOX.n || lo < BBOX.w || lo > BBOX.e) { tip.style.display = "none"; return; }
-      var r = Math.min(last.H - 1, Math.floor((BBOX.n - la) / last.step)), c = Math.min(last.W - 1, Math.floor((lo - BBOX.w) / last.step)), i = r * last.W + c;
-      var d = last.diff[i];
-      tip.innerHTML = "V3.0.0 <b>" + last.pOld[i].toFixed(3) + "</b> &nbsp; V3.0.4 <b>" + last.pNew[i].toFixed(3) + "</b> &nbsp; <span class=\"d\">Δ <b>" + (d >= 0 ? "+" : "−") + Math.abs(d).toFixed(3) + "</b></span>" +
-        "<br><span class=\"m\">" + la.toFixed(2) + "°, " + lo.toFixed(2) + "° · cell " + (BBOX.n - (r + 1) * last.step).toFixed(2) + "–" + (BBOX.n - r * last.step).toFixed(2) + " N, " + (BBOX.w + c * last.step).toFixed(2) + "–" + (BBOX.w + (c + 1) * last.step).toFixed(2) + " E</span>";
-      var x = e.originalEvent.clientX + 14, y = e.originalEvent.clientY + 16;
-      tip.style.display = "block";
-      if (x + tip.offsetWidth > innerWidth - 8) x = e.originalEvent.clientX - tip.offsetWidth - 10;
-      if (y + tip.offsetHeight > innerHeight - 8) y = e.originalEvent.clientY - tip.offsetHeight - 10;
-      tip.style.left = x + "px"; tip.style.top = y + "px";
-    });
-    maps[k].on("mouseout", function () { tip.style.display = "none"; });
+    maps[k].on("mousemove", function (e) { if (!pinned) showTip(k, e); });
+    maps[k].on("click", function (e) { pinned = showTip(k, e) && !pinned; if (!pinned) tip.style.display = "none"; });
+    maps[k].on("mouseout", function () { if (!pinned) tip.style.display = "none"; });
+    maps[k].on("movestart zoomstart", function () { pinned = false; tip.style.display = "none"; });
   });
+  window.addEventListener("scroll", function () { if (pinned) { pinned = false; tip.style.display = "none"; } }, { passive: true });
 
   // ---- inference over the grid ----
   var running = false, queued = false;
