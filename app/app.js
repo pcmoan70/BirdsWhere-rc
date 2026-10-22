@@ -452,6 +452,14 @@
   function fitMapHeight() {
     var el = document.getElementById("app-map");
     if (!el || el.offsetParent === null) return;   // not visible yet
+    // Under the full-screen list page the map is not on screen, and the species table is
+    // scoped to ITS viewport: a refit here (keyboard, toolbar, rotation, a status-line edge)
+    // shrank the hidden map, and the next list pass dropped every species whose dots had
+    // fallen outside the new, unseen bounds — until the list was opened again from the map
+    // (owner, 2026-10-22: "switching between list types and turning prediction on and off
+    // the fetched obs disappear from list. Going to map and back brings them back").
+    // The map keeps the size the user last saw; closeAnyFullPage refits once it is back.
+    if (onListView()) return;
     // The map view fills the viewport and must never page-scroll. A transient overflow —
     // e.g. the histogram strip expanding before the map is re-sized — can scroll the page,
     // which pushes the map (and its top-corner controls) up UNDER the fixed header and, read
@@ -3241,7 +3249,10 @@
       fp.style.display = "none";
     }
     var sp = document.getElementById("species-panel");
-    if (sp && sp.classList.contains("as-page")) { sp.classList.remove("as-page"); sp.style.display = "none"; }
+    if (sp && sp.classList.contains("as-page")) {
+      sp.classList.remove("as-page"); sp.style.display = "none";
+      try { fitMapHeight(); } catch (e) {}   // refits were held back while the page covered the map (see fitMapHeight)
+    }
     var bc = document.getElementById("barchart-panel");
     if (bc && bc.classList.contains("as-page")) { bc.classList.remove("as-page"); bc.style.display = "none"; }
     var rp = document.getElementById("rarity-page");
