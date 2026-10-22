@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2162";
+var VERSION = "v2163";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Fixes: a source that merely timed out no longer shows as a failure; the \u22652-observers ring now counts \u201cA, B\u201d as two people; changing sources, keys, datasets or timeouts also forgets the historic cache; a GBIF copy of a native record is dropped even when only GBIF names the observer; the Drive-restore confirm is the app\u2019s own dialog.",
+  "\u2022 Fixes: a source that merely timed out no longer shows as a failure; the \u22652-observers ring counts \u201cA | B\u201d as two people; changing sources, keys, datasets or borders forgets every cached answer (the historic ones too); a GBIF copy of a native record is dropped even when only GBIF names the observer; the Drive-restore confirm is the app\u2019s own dialog.",
   "\u2022 Historic (GBIF) fetches: the two halves of a split run in parallel, a short half is recovered on its own, and the progress bar climbs once instead of restarting.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
@@ -668,9 +668,8 @@ function queueTrim(cacheName, cache, max) {
   // arriving meanwhile reassigns the tail to a later promise, so this only
   // nulls when nothing further has been chained on.
   var tail = st.trimming;
-  tail.then(function () {
-    if (st.trimming === tail) st.trimming = null;
-  });
+  var clear = function () { if (st.trimming === tail) st.trimming = null; };
+  tail.then(clear, clear);
   return st.trimming;
 }
 
@@ -688,6 +687,6 @@ function trim(cache, max) {
     var excess = tiles.length - max;
     var dels = [];
     for (var i = 0; i < excess; i++) dels.push(cache.delete(tiles[i]));
-    return Promise.all(dels);
+    return Promise.all(dels).catch(function () {});   // a refused delete must not reject the trim chain (a rejected tail stalled that cache's trims for good)
   });
 }

@@ -4213,9 +4213,13 @@
   // and keys. This store only ever holds the latest import and survives those wipes.
   var seededSightings = {};
   var histSightingsCache = {};  // "lat,lon:rkm:range" -> Promise<aggregated map> for Historic observations
-  // Any change to WHAT a fetch would return (sources, keys, datasets, timeouts, BirdWeather
-  // thresholds, borders) forgets both caches — the historic one used to be left behind (#5).
-  function invalidateSightings() { allSightingsCache = {}; histSightingsCache = {}; }
+  // A change to WHAT a fetch would return (sources on/off, keys, datasets, borders) forgets every
+  // cached answer — recent, historic AND the broadest-historic store below, which otherwise serves a
+  // narrower range from the old configuration (#5, re-review 2026-10-22). Radius, group ticks, the
+  // per-source timeout and the BirdWeather thresholds only shape the RECENT fetch (the historic keys
+  // carry radius + group themselves), so those paths keep the expensive historic results.
+  function invalidateSightings() { allSightingsCache = {}; histSightingsCache = {}; histAggCache = {}; }
+  function invalidateRecentSightings() { allSightingsCache = {}; }
   // Broadest COMPLETED historic result per location/radius/group, kept across fetches
   // (NOT wiped like histSightingsCache) so a narrower date range or month subset that
   // it covers can be served by filtering it — no re-fetch. { from, to, months[], out }.
@@ -4389,7 +4393,7 @@
     var urlInp = el.querySelector(".src-url"); if (urlInp) urlInp.addEventListener("change", function () { patchSource(id, "url", this.value.trim()); });
     var daysInp = el.querySelector(".src-days"); if (daysInp) daysInp.addEventListener("change", function () { var v = Math.max(1, Math.min(info.isGbif ? 92 : 365, +this.value || 1)); if (info.isGbif) setGbifDays(v); else patchSource(id, "days", v); });
     var dsBtn = el.querySelector("#gbif-ds-open"); if (dsBtn) dsBtn.addEventListener("click", openGbifDatasets);
-    var toInp = el.querySelector(".src-timeout-inp"); if (toInp) toInp.addEventListener("change", function () { var v = Math.max(0, Math.min(600, Math.round(+this.value) || 0)); this.value = String(v); if (info.isGbif) setGbifTimeout(v); else patchSource(id, "timeout", v); invalidateSightings(); });
+    var toInp = el.querySelector(".src-timeout-inp"); if (toInp) toInp.addEventListener("change", function () { var v = Math.max(0, Math.min(600, Math.round(+this.value) || 0)); this.value = String(v); if (info.isGbif) setGbifTimeout(v); else patchSource(id, "timeout", v); invalidateRecentSightings(); });
     var keyInp = el.querySelector(".src-key");
     if (keyInp) {
       keyInp.addEventListener("input", function () { setDirectKey(id, this.value); invalidateSightings(); window.GeoState.touch(); });
@@ -4399,12 +4403,12 @@
     var bwMd = el.querySelector(".src-bw-md"), bwMdV = el.querySelector(".src-bw-md-val");
     if (bwMd) {
       bwMd.addEventListener("input", function () { if (bwMdV) bwMdV.textContent = this.value; });
-      bwMd.addEventListener("change", function () { window.GeoState.save({ bwMinDet: Math.max(1, Math.min(50, +this.value || 2)) }); invalidateSightings(); });
+      bwMd.addEventListener("change", function () { window.GeoState.save({ bwMinDet: Math.max(1, Math.min(50, +this.value || 2)) }); invalidateRecentSightings(); });
     }
     var bwC = el.querySelector(".src-bw-conf"), bwCV = el.querySelector(".src-bw-conf-val");
     if (bwC) {
       bwC.addEventListener("input", function () { if (bwCV) bwCV.textContent = this.value + "%"; });
-      bwC.addEventListener("change", function () { window.GeoState.save({ bwMinConf: Math.max(0, Math.min(95, +this.value || 0)) / 100 }); invalidateSightings(); });
+      bwC.addEventListener("change", function () { window.GeoState.save({ bwMinConf: Math.max(0, Math.min(95, +this.value || 0)) / 100 }); invalidateRecentSightings(); });
     }
     // (The "Remove source" action was dropped 2026-10-22, owner's request — sources are switched off, never removed; srcRemoved from earlier removals still applies until Reset.)
   }
@@ -7367,7 +7371,7 @@
     var rk = parseFloat(p.radius);
     if (isFinite(rk) && rk > 0) {   // persist so the fetch + the settings slider agree
       rk = Math.max(0.1, Math.min(150, rk));
-      window.GeoState.save({ recentRadiusKm: rk }); invalidateSightings();
+      window.GeoState.save({ recentRadiusKm: rk }); invalidateRecentSightings();
       var rrEl = document.getElementById("recent-radius"); if (rrEl) rrEl.value = String(radiusStepIndex(rk));
       var rrVal = document.getElementById("recent-radius-val"); if (rrVal) rrVal.textContent = radiusLabel(rk);
     }
@@ -9300,7 +9304,7 @@
       var idx = Math.max(0, Math.min(RADIUS_STEPS.length - 1, radiusStepIndex(recentRadiusKm()) + (e.deltaY < 0 ? 1 : -1)));
       var km = RADIUS_STEPS[idx];
       if (km === recentRadiusKm()) return;
-      window.GeoState.save({ recentRadiusKm: km }); invalidateSightings();
+      window.GeoState.save({ recentRadiusKm: km }); invalidateRecentSightings();
       var rrEl = document.getElementById("recent-radius"); if (rrEl) rrEl.value = String(idx);
       var rrVal = document.getElementById("recent-radius-val"); if (rrVal) rrVal.textContent = radiusLabel(km);
       try { updateFetchArea(map.mouseEventToLatLng(e)); } catch (er) {}                                // resize the live movable preview
@@ -21781,7 +21785,7 @@
         FETCH_GROUP_IDS.forEach(function (g) { if (!(g in cur)) cur[g] = true; });
         cur[cb.getAttribute("data-fg")] = !!cb.checked;
         window.GeoState.save({ fetchGroups: cur });
-        invalidateSightings();   // a different tick set is different data: don't reuse this session's answers
+        invalidateRecentSightings();   // a different tick set is different data: don't reuse this session's answers
                                   // (the persisted cache is keyed by sightConfigSig, which now carries the set)
         render();
       });
@@ -21820,7 +21824,7 @@
     rrEl.value = String(radiusStepIndex(+window.GeoState.get("recentRadiusKm", 25) || 25));
     if (rrVal) rrVal.textContent = radiusLabel(RADIUS_STEPS[+rrEl.value]);
     rrEl.addEventListener("input", function () { if (rrVal) rrVal.textContent = radiusLabel(RADIUS_STEPS[+this.value]); });
-    rrEl.addEventListener("change", function () { window.GeoState.save({ recentRadiusKm: RADIUS_STEPS[+this.value] || 25 }); invalidateSightings(); });
+    rrEl.addEventListener("change", function () { window.GeoState.save({ recentRadiusKm: RADIUS_STEPS[+this.value] || 25 }); invalidateRecentSightings(); });
 
     var histFetchBtn = document.getElementById("hist-fetch");
     if (histFetchBtn) histFetchBtn.addEventListener("click", function () {
