@@ -86,7 +86,12 @@ window.AppSources = (function () {
     { key: "e357cdec-295a-4b91-ac7d-abf5fbbc43bb", name: "Faune-France (FR · historic)", url: "https://www.faune-france.org/", country: "FR", historicOnly: true }
   ];
   var GBIF_DS_COUNTRY = {}; DEFAULT_GBIF_DATASETS.forEach(function (d) { if (d.country) GBIF_DS_COUNTRY[d.key] = d.country; });
+  // Both lists are rebuilt from state on every call and asked for several times per fetch; memoised
+  // until the next state write (P10).
+  var _memo = {};
+  try { window.GeoState.onChange(function () { _memo = {}; }); } catch (e) {}
   function gbifDatasets() {
+    if (_memo.ds) return _memo.ds;
     var stored = window.GeoState.get("gbifDatasets", null);
     var def = {}; DEFAULT_GBIF_DATASETS.forEach(function (d) { def[d.key] = d; });
     var removed = {}; (window.GeoState.get("gbifRemoved", []) || []).forEach(function (k) { removed[k] = 1; });
@@ -99,6 +104,7 @@ window.AppSources = (function () {
     // Always include the current defaults (so new ones like Birda appear),
     // unless the user explicitly removed them.
     DEFAULT_GBIF_DATASETS.forEach(function (d) { if (!have[d.key] && !removed[d.key]) out.push(d); });
+    _memo.ds = out;
     return out;
   }
 
@@ -119,6 +125,7 @@ window.AppSources = (function () {
   var DIRECT_BY_ID = {}; DEFAULT_DIRECT_SOURCES.forEach(function (d) { DIRECT_BY_ID[d.id] = d; });
 
   function directSources() {
+    if (_memo.src) return _memo.src;
     var stored = window.GeoState.get("directSources", null);
     var list;
     if (!Array.isArray(stored)) {
@@ -132,13 +139,14 @@ window.AppSources = (function () {
       DEFAULT_DIRECT_SOURCES.forEach(function (d) { if (!have[d.id] && !removed[d.id]) list.push({ id: d.id, name: d.name, url: d.url, days: d.days }); });
     }
     var seen = {};
-    return list.filter(function (s) { if (!s || !s.id || seen[s.id]) return false; seen[s.id] = 1; return true; }).map(function (s) {
+    var outList = list.filter(function (s) { if (!s || !s.id || seen[s.id]) return false; seen[s.id] = 1; return true; }).map(function (s) {
       var d = DIRECT_BY_ID[s.id] || {};
       var name = s.name || d.name || s.id;
       if (s.id === "laji" && name === "Laji.fi (FI)") name = "Laji";   // migrate the old default label to the short name
       return { id: s.id, name: name, url: s.url || d.url || "", keyed: !!d.keyed, country: d.country || null, days: (s.days != null && +s.days > 0) ? +s.days : (d.days || 90),
                timeout: (s.timeout != null && +s.timeout >= 0 && +s.timeout <= 600) ? +s.timeout : 120 };   // per-source fetch timeout (s), default 120, 0 = none
     });
+    _memo.src = outList; return outList;
   }
   function saveDirectSources(list) { window.GeoState.save({ directSources: list }); onConfigChange(); }
   // On/off toggles. A source/dataset is ON unless its id/key is in the "off" map,

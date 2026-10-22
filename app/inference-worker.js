@@ -59,6 +59,38 @@ if (ORT_LEGACY) {
 
 var session = null;
 
+// ---- "aggs" sessions (the country view's per-species max / p90 / median over many cells) ----
+var aggSessions = {};
+function quickselectF(a, lo, hi, k) {
+  while (hi - lo > 1) {
+    var pivot = a[lo + ((hi - lo) >> 1)];
+    var lt = lo, gt = hi - 1, i = lo, t;
+    while (i <= gt) {
+      var x = a[i];
+      if (x < pivot) { t = a[lt]; a[lt] = x; a[i] = t; lt++; i++; }
+      else if (x > pivot) { t = a[gt]; a[gt] = x; a[i] = t; gt--; }
+      else i++;
+    }
+    if (k < lt) hi = lt; else if (k > gt) lo = gt + 1; else return a[k];
+  }
+  return a[k];
+}
+function aggsFinish(ag) {
+  if (!ag) return new Float32Array(0);
+  var nSpecies = ag.nSpecies, n = ag.n;
+  if (!ag.chunks || !n) return new Float32Array(ag.max);
+  var out = new Float32Array(3 * nSpecies); out.set(ag.max, 0);
+  var col = new Float32Array(n), p90Idx = Math.min(n - 1, Math.floor(n * 0.9)), medIdx = Math.floor(n / 2);
+  for (var i = 0; i < nSpecies; i++) {
+    var c = 0;
+    for (var ch = 0; ch < ag.chunks.length; ch++) { var m = ag.chunks[ch], rows = m.length / nSpecies; for (var r = 0; r < rows; r++) col[c++] = m[r * nSpecies + i]; }
+    // Two order statistics via in-place quickselect — no full sort, no per-species allocation.
+    out[nSpecies + i] = quickselectF(col, 0, n, p90Idx);
+    out[2 * nSpecies + i] = quickselectF(col, 0, n, medIdx);
+  }
+  return out;
+}
+
 self.onmessage = async function (e) {
   var type = e.data.type, id = e.data.id;
 
@@ -75,6 +107,14 @@ self.onmessage = async function (e) {
     return;
   }
 
+  if (type === "infer" && e.data.task === "aggsFinish") {   // close an "aggs" session: max | p90 | median (see below)
+    try {
+      var ag = aggSessions[e.data.aggSession]; delete aggSessions[e.data.aggSession];
+      var outF = aggsFinish(ag);
+      self.postMessage({ type: "infer", id: id, data: outF.buffer }, [outF.buffer]);
+    } catch (err) { self.postMessage({ type: "infer", id: id, error: err.message }); }
+    return;
+  }
   if (type === "infer") {
     try {
       var flatInputs = new Float32Array(e.data.flatInputs);
@@ -129,6 +169,14 @@ self.onmessage = async function (e) {
             out[b] = count;
           }
         }
+      } else if (task === "aggs") {
+        // Country view: accumulate this chunk into its session (running max; the matrix only
+        // while the caller allows it), reply with nothing but an ack.
+        var ag2 = aggSessions[e.data.aggSession] || (aggSessions[e.data.aggSession] = { n: 0, nSpecies: nSpecies, max: new Float32Array(nSpecies), chunks: e.data.aggMatrix ? [] : null });
+        for (b = 0; b < batchSize; b++) { base = b * nSpecies; for (s = 0; s < nSpecies; s++) { var av = full[base + s]; if (av > ag2.max[s]) ag2.max[s] = av; } }
+        if (ag2.chunks) ag2.chunks.push(new Float32Array(full));
+        ag2.n += batchSize;
+        out = new Float32Array(0);
       } else {
         out = new Float32Array(full);                 // copy out of ORT buffer
       }

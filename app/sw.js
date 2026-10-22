@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2163";
+var VERSION = "v2164";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Fixes: a source that merely timed out no longer shows as a failure; the \u22652-observers ring counts \u201cA | B\u201d as two people; changing sources, keys, datasets or borders forgets every cached answer (the historic ones too); a GBIF copy of a native record is dropped even when only GBIF names the observer; the Drive-restore confirm is the app\u2019s own dialog.",
-  "\u2022 Historic (GBIF) fetches: the two halves of a split run in parallel, a short half is recovered on its own, and the progress bar climbs once instead of restarting.",
+  "\u2022 Faster: partial results during a fetch render at most four times a second; a legend click or a single added point no longer recolours every species; the country list\u2019s statistics run off the main thread; range and richness paints reuse projected hexes and a cached peak; the species list indexes its group once; session caches are capped.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

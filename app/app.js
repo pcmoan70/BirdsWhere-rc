@@ -269,6 +269,7 @@
   var labelClass = [];        // class_name per label index (built after load)
 
   function buildLabelClass() {
+    _grpIdx = {};   // the class table is (re)built → the per-group index arrays with it
     labelClass = labels.map(function (l) {
       var row = taxByCode[l.key];
       return (row && row.class_name) || "";
@@ -277,6 +278,14 @@
 
   // Is the species at label index `i` in the active group?
   function inGroup(i) { return speciesGroup === "all" || labelClass[i] === speciesGroup; }
+  // The label indices of the current group, built once per group (P15): the list renderers used
+  // to test all ~12k labels on every render.
+  var _grpIdx = {};
+  function groupLabelIdx() {
+    var g = speciesGroup, arr = _grpIdx[g];
+    if (!arr) { arr = []; for (var i = 0; i < labels.length; i++) if (inGroup(i)) arr.push(i); _grpIdx[g] = arr; }
+    return arr;
+  }
 
   // Richness cache key — distinct per group so counts don't collide.
   function richKey() { return "__richness__@" + speciesGroup; }
@@ -1228,6 +1237,19 @@
   var H3_POOL_URL = "https://mapcache.local/range-v1";      // synthetic key for the range blob
   var h3CacheMB = 2;          // range-cache slice of the shared pool, MB (0 = off)
   var h3SaveTimer = null;
+  // Storing a cell's value also bumps that cache's version; the paints ask h3CacheMax() for the
+  // peak at their resolution, which is recomputed only when the version moved (P3: the old
+  // per-paint rescan of every cached cell was the cost of each pan/zoom).
+  var _h3Ver = new WeakMap(), _h3Max = new WeakMap();
+  function h3CacheStore(cache, cell, v) { cache[cell] = v; _h3Ver.set(cache, (_h3Ver.get(cache) || 0) + 1); }
+  function h3CacheMax(cache, res) {
+    var ver = _h3Ver.get(cache) || 0, m = _h3Max.get(cache);
+    if (m && m.ver === ver && m.res === res) return m.max;
+    var max = 0, keys = Object.keys(cache);
+    for (var i = 0; i < keys.length; i++) { if (h3ResOf(keys[i]) !== res) continue; var v = cache[keys[i]]; if (v != null && v > max) max = v; }
+    _h3Max.set(cache, { ver: ver, res: res, max: max });
+    return max;
+  }
   function h3RangeCacheFor(tag) {
     var m = h3RangeCache.get(tag);
     if (!m) { m = {}; h3RangeCache.set(tag, m); if (h3RangeCache.size > 600) h3RangeCache.delete(h3RangeCache.keys().next().value); }
@@ -1259,12 +1281,16 @@
     if (typeof caches === "undefined") return;
     if (h3CacheMB <= 0) { caches.open(MAP_POOL_CACHE).then(function (c) { return c.delete(H3_POOL_URL); }).catch(function () {}); return; }
     var capChars = h3CacheMB * 1e6;   // ~1 char ≈ 1 byte for this ascii/numeric data
-    var obj = h3CacheToJson(), str = JSON.stringify(obj);
-    // Evict oldest tags (Map order) until within the range slice.
-    while (str.length > capChars && Object.keys(obj).length > 1) {
-      delete obj[Object.keys(obj)[0]];
-      str = JSON.stringify(obj);
+    // Each tag is serialised ONCE; the newest tags (Map order = insertion order) are kept until the
+    // cap is reached, then joined — the old loop re-stringified the whole blob per evicted tag (P8).
+    var obj = h3CacheToJson(), tags = Object.keys(obj), parts = {}, keep = [], total = 2;
+    for (var ti = tags.length - 1; ti >= 0; ti--) {
+      var pt = JSON.stringify(obj[tags[ti]]), len = pt.length + tags[ti].length + 4;
+      if (total + len > capChars && keep.length) break;
+      parts[tags[ti]] = pt; total += len; keep.push(tags[ti]);
     }
+    keep.reverse();
+    var str = "{" + keep.map(function (tg) { return JSON.stringify(tg) + ":" + parts[tg]; }).join(",") + "}";
     caches.open(MAP_POOL_CACHE).then(function (c) {   // put → re-stamps to most-recent in the shared LRU pool
       return c.put(H3_POOL_URL, new Response(str, { headers: { "Content-Type": "application/json" } }));
     }).catch(function () {});
@@ -4218,6 +4244,8 @@
   // narrower range from the old configuration (#5, re-review 2026-10-22). Radius, group ticks, the
   // per-source timeout and the BirdWeather thresholds only shape the RECENT fetch (the historic keys
   // carry radius + group themselves), so those paths keep the expensive historic results.
+  // Session caches that grew without bound (P9): drop the oldest entries past a cap.
+  function capObj(o, max) { var ks = Object.keys(o); for (var i = 0; i < ks.length - max; i++) delete o[ks[i]]; }
   function invalidateSightings() { allSightingsCache = {}; histSightingsCache = {}; histAggCache = {}; }
   function invalidateRecentSightings() { allSightingsCache = {}; }
   // Broadest COMPLETED historic result per location/radius/group, kept across fetches
@@ -5222,7 +5250,7 @@
     var pf = persistedSightings[ck], ttl = sightTtlMs();
     if (pf && pf.out && pf.ver === SIGHT_CACHE_VER && sigServes(pf.sig, cfgSig) && (ttl === 0 || (Date.now() - (pf.ts || 0)) < ttl)) {
       var cachedPr = Promise.resolve(pf.out);
-      allSightingsCache[ck] = cachedPr;
+      allSightingsCache[ck] = cachedPr; capObj(allSightingsCache, 60);
       disarm();
       return cachedPr;
     }
@@ -5241,7 +5269,7 @@
         // records. So: empty is not an answer — fall through and fetch it properly.
         if (derived.dedupTotal > 0) {
           var derivedPr = Promise.resolve(derived);
-          allSightingsCache[ck] = derivedPr;
+          allSightingsCache[ck] = derivedPr; capObj(allSightingsCache, 60);
           disarm();
           return derivedPr;
         }
@@ -5261,8 +5289,15 @@
       // Records + per-source counts accumulate as sources resolve; emitPartial()
       // re-aggregates the running set and hands it to onPartial for live rendering.
       var records = [], bySrc = {};
+      // Sources land close together and each partial render re-aggregates EVERY record so far
+      // (P11): coalesce to one render per 250 ms — the trailing one always runs, so the last
+      // arrival is never missed; the final aggregate below cancels anything still pending.
+      var partialTimer = null, partialAt = 0;
       function emitPartial() {
-        if (typeof onPartial !== "function") return;
+        if (typeof onPartial !== "function" || partialTimer) return;
+        partialTimer = setTimeout(function () { partialTimer = null; partialAt = Date.now(); emitPartialNow(); }, Math.max(0, 250 - (Date.now() - partialAt)));
+      }
+      function emitPartialNow() {
         try {
           var p = AppAggregate.aggregateRecords(records, fetchGroup);
           p.bySrc = {}; for (var k in bySrc) p.bySrc[k] = bySrc[k];
@@ -5316,13 +5351,14 @@
         });
       });
       return Promise.all(jobs).then(function () {
+        if (partialTimer) { clearTimeout(partialTimer); partialTimer = null; }   // the final result supersedes any pending partial render
         var out = AppAggregate.aggregateRecords(records, fetchGroup); out.failed = failed; out.bySrc = bySrc; out.timedOut = timedOut; out.timedOutInfo = timedOutInfo; out.truncInfo = truncInfo; out.group = fetchGroup; out.origin = fetchOrigin;
         // out.dedupTotal (unique observations kept after de-dup + the bird filter)
         // is computed by aggregateRecords — surfaced in the per-source counts.
         return out;
       });
     });
-    allSightingsCache[ck] = pr;   // discovery now runs inside the cc resolution above
+    allSightingsCache[ck] = pr; capObj(allSightingsCache, 60);   // discovery now runs inside the cc resolution above
     // Cache-eviction policy: a transient TOTAL failure must not become this
     // location's permanent answer, but a PARTIAL success has to stay cached —
     // otherwise reusing the same location ("pin to map", week change, etc.) would
@@ -5461,7 +5497,7 @@
     if (covering && histCovers(covering, from, to, reqMonths)) {
       var filtered = filterHistAgg(covering.out, from, to, reqMonths);
       var prC = Promise.resolve(filtered);
-      histSightingsCache[ck] = prC;
+      histSightingsCache[ck] = prC; capObj(histSightingsCache, 30);
       try { plotHistoricAgg(filtered, speciesGroup); saveDetections(); } catch (e) {}
       try { setStatus(t("hist.reused", { n: filtered.dedupTotal })); } catch (e) {}
       return prC;
@@ -5533,7 +5569,7 @@
         return out;
       });
     });
-    histSightingsCache[ck] = pr;
+    histSightingsCache[ck] = pr; capObj(histSightingsCache, 30);
     // As with fetchAllSightingsAt: keep a partial/clean result cached (so "pin to
     // map" reuses it), evict only a no-data failure or a hard rejection/abort so a
     // fresh request retries.
@@ -10170,7 +10206,7 @@
   function recordFamily(key, fam) {
     fam = (fam || "").trim();
     if (!key || !fam || famIndex[key] === fam) return false;
-    famIndex[key] = fam; return true;   // caller persists once per batch
+    famIndex[key] = fam; famIndexGen++; return true;   // caller persists once per batch
   }
   // Stable non-negative hash of a string.
   function strHash(s) { var h = 0; s = String(s); for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
@@ -10194,8 +10230,13 @@
   // same on every device). Run whenever the plotted set changes or a family is
   // newly learned from GBIF — so a dot snaps to its family's hue the moment GBIF
   // supplies the family.
+  var detColorSig = "", famIndexGen = 0;   // recolorDetections runs on every legend click / point add: skip it when nothing it depends on changed (P1)
   function recolorDetections() {
-    Object.keys(detPlot).forEach(function (k) {
+    var keys = Object.keys(detPlot);
+    var sig = keys.length + "|" + famIndexGen + "|" + keys.join("\u0001");
+    if (sig === detColorSig) return;
+    detColorSig = sig;
+    keys.forEach(function (k) {
       var f = famOf(k);
       if (f) {
         var hue = (famHue(f) + (strHash("h:" + k) % 7) - 3 + 360) % 360;          // ±3° jitter within the family band
@@ -14207,6 +14248,13 @@
     });
     return folded;
   }
+  // Several single-point adds in quick succession (a search, a shared link's pins) used to
+  // rebuild the legend and persist after EACH one; one short timer folds them into one pass.
+  var detAfterAddTimer = null;
+  function scheduleDetAfterAdd() {
+    if (detAfterAddTimer) return;
+    detAfterAddTimer = setTimeout(function () { detAfterAddTimer = null; try { updateDetLegend(); } catch (e) {} try { saveDetections(); } catch (e) {} }, 60);
+  }
   function plotDetections(key, name, rows, fit, defer, cls) {
     var slim = detSlim(rows);
     if (currentFetchAreaId) slim.forEach(function (r) { r._areas = [currentFetchAreaId]; });
@@ -14235,7 +14283,7 @@
       e.group = renderDetGroup(detName(e), merged, e.color, isInteresting(e.key), detIsRare(key), null, e.key);
       e.group.addTo(map);
     }
-    if (!defer) { updateDetLegend(); saveDetections(); }   // batch when plotting many at once
+    if (!defer) scheduleDetAfterAdd();   // batch when plotting many at once; single adds coalesce within a tick (P2)
     if (fit && e.group) { try { fitBoundsMin(e.group.getBounds(), 0.25); } catch (err) { /* single point / bad bounds */ } }
   }
   // Rebuild every detection layer from the current selection state (called when
@@ -15337,7 +15385,7 @@
     Object.keys(detPlot).forEach(function (k) { if (detPlot[k].group) map.removeLayer(detPlot[k].group); });
     detPlot = {};
     // Pick up families merged in from another device so colours match it.
-    try { var ff = (window.GeoState && window.GeoState.get("detFamilies", {})) || {}; Object.keys(ff).forEach(function (k) { if (ff[k]) famIndex[k] = ff[k]; }); } catch (e) {}
+    try { var ff = (window.GeoState && window.GeoState.get("detFamilies", {})) || {}; Object.keys(ff).forEach(function (k) { if (ff[k]) famIndex[k] = ff[k]; }); famIndexGen++; } catch (e) {}
     if (typeof loadInteresting === "function") loadInteresting();
     if (typeof loadLists === "function") loadLists();   // pick up merged year/life lists from a sync
     loadDetections();
@@ -23623,6 +23671,7 @@
       var msg = { type: "infer", id: id, flatInputs: buf, batchSize: batchSize, task: opts.task || "raw" };
       if (opts.task === "column") msg.speciesIdx = opts.speciesIdx;
       if (opts.task === "richness") { msg.threshold = opts.threshold; if (opts.thresholds) msg.thresholds = opts.thresholds; if (opts.mask) msg.mask = opts.mask; }
+      if (opts.task === "aggs" || opts.task === "aggsFinish") { msg.aggSession = opts.aggSession; msg.aggMatrix = !!opts.aggMatrix; }
       try {
         worker.postMessage(msg, [buf]);   // mask (if any) is cloned, not transferred
       } catch (e) {
@@ -23910,6 +23959,7 @@
     if (overlayCanvas.width !== size.x || overlayCanvas.height !== size.y) { overlayCanvas.width = size.x; overlayCanvas.height = size.y; }
     L.DomUtil.setPosition(overlayCanvas, map.containerPointToLayerPoint([0, 0]));
     var ctx = overlayCanvas.getContext("2d");
+    var pjo = h3ProjOffsets();   // one projection origin per paint; hex vertices come from the per-(cell, zoom) memo (P12)
     ctx.clearRect(0, 0, size.x, size.y);
     var targetRes = h3ResForView(), cells = h3CellsInView(targetRes);
     var i, max = 0, v;
@@ -23920,11 +23970,7 @@
     // Important: ignore cells from other H3 resolutions left in the cache from
     // an earlier hiResFactor — they'd skew the max for the cells we actually
     // draw and wash out the colours at the new resolution.
-    var allKeys = Object.keys(cache);
-    for (i = 0; i < allKeys.length; i++) {
-      if (h3ResOf(allKeys[i]) !== targetRes) continue;
-      v = cache[allKeys[i]]; if (v != null && v > max) max = v;
-    }
+    max = h3CacheMax(cache, targetRes);
     if (max <= 0) max = 0.01;
     cachedRender.maxProb = max;   // legend reflects this species-wide normalisation
     var pmin = +document.getElementById("prob-min").value / 100;
@@ -23935,11 +23981,10 @@
       var p = Math.pow(raw / max, DISPLAY_GAMMA);
       if (!(p >= 0.01)) continue;
       var sh = h3Shape(cells[i]); if (sh.straddles) continue;   // skip antimeridian-straddling hexes
-      var bnd = sh.bnd;
+      var pj = h3Proj(cells[i], sh, pjo.zoom);
       ctx.beginPath();
-      for (var vtx = 0; vtx < bnd.length; vtx++) {
-        var pt = map.latLngToContainerPoint([bnd[vtx][0], bnd[vtx][1]]);
-        if (vtx === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y);
+      for (var vtx = 0; vtx < pj.length; vtx += 2) {
+        if (vtx === 0) ctx.moveTo(pj[vtx] - pjo.ox, pj[vtx + 1] - pjo.oy); else ctx.lineTo(pj[vtx] - pjo.ox, pj[vtx + 1] - pjo.oy);
       }
       ctx.closePath();
       var col = colormapLookup(p);
@@ -23962,15 +24007,12 @@
     if (overlayCanvas.width !== size.x || overlayCanvas.height !== size.y) { overlayCanvas.width = size.x; overlayCanvas.height = size.y; }
     L.DomUtil.setPosition(overlayCanvas, map.containerPointToLayerPoint([0, 0]));
     var ctx = overlayCanvas.getContext("2d");
+    var pjo = h3ProjOffsets();   // one projection origin per paint; hex vertices come from the per-(cell, zoom) memo (P12)
     ctx.clearRect(0, 0, size.x, size.y);
     var targetRes = h3ResForView(), cells = h3CellsInView(targetRes);
     // Peak across cached cells of the CURRENT resolution (ignore leftovers from an
     // earlier detail setting), so colours stay stable when zooming into a low area.
-    var i, max = 0, v, allKeys = Object.keys(cache);
-    for (i = 0; i < allKeys.length; i++) {
-      if (h3ResOf(allKeys[i]) !== targetRes) continue;
-      v = cache[allKeys[i]]; if (v != null && v > max) max = v;
-    }
+    var i, max = h3CacheMax(cache, targetRes);
     if (max <= 0) max = 1;
     cachedRender.maxVal = max;   // legend shows the peak species count
     for (i = 0; i < cells.length; i++) {
@@ -23979,11 +24021,10 @@
       var p = Math.pow(raw / max, DISPLAY_GAMMA);
       if (!(p >= 0.01)) continue;
       var sh = h3Shape(cells[i]); if (sh.straddles) continue;
-      var bnd = sh.bnd;
+      var pj = h3Proj(cells[i], sh, pjo.zoom);
       ctx.beginPath();
-      for (var vtx = 0; vtx < bnd.length; vtx++) {
-        var pt = map.latLngToContainerPoint([bnd[vtx][0], bnd[vtx][1]]);
-        if (vtx === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y);
+      for (var vtx = 0; vtx < pj.length; vtx += 2) {
+        if (vtx === 0) ctx.moveTo(pj[vtx] - pjo.ox, pj[vtx + 1] - pjo.oy); else ctx.lineTo(pj[vtx] - pjo.ox, pj[vtx + 1] - pjo.oy);
       }
       ctx.closePath();
       var col = colormapLookup(p);
@@ -24056,6 +24097,23 @@
     }
     return s;
   }
+  // Hex vertices projected to world pixels, memoised per (cell, zoom): a paint then only subtracts
+  // the pan/origin offset per vertex instead of projecting every vertex of every cell again (P12).
+  var _h3Proj = Object.create(null), _h3ProjN = 0;
+  function h3ProjOffsets() {
+    var po = map.getPixelOrigin(), o0 = map.containerPointToLayerPoint([0, 0]);
+    return { zoom: map.getZoom(), ox: po.x + o0.x, oy: po.y + o0.y };   // container = project(ll, zoom) − pixelOrigin + panePos
+  }
+  function h3Proj(cell, sh, zoom) {
+    var k = cell + "@" + zoom, p = _h3Proj[k];
+    if (p === undefined) {
+      if (_h3ProjN > 60000) { _h3Proj = Object.create(null); _h3ProjN = 0; }
+      var bnd = sh.bnd; p = new Float64Array(bnd.length * 2);
+      for (var w = 0; w < bnd.length; w++) { var q = map.project([bnd[w][0], bnd[w][1]], zoom); p[w * 2] = q.x; p[w * 2 + 1] = q.y; }
+      _h3Proj[k] = p; _h3ProjN++;
+    }
+    return p;
+  }
   function h3ResOf(cell) {
     var r = _h3Res[cell];
     if (r === undefined) r = _h3Res[cell] = window.h3.getResolution(cell);
@@ -24069,6 +24127,7 @@
     if (overlayCanvas.width !== size.x || overlayCanvas.height !== size.y) { overlayCanvas.width = size.x; overlayCanvas.height = size.y; }
     L.DomUtil.setPosition(overlayCanvas, map.containerPointToLayerPoint([0, 0]));
     var ctx = overlayCanvas.getContext("2d");
+    var pjo = h3ProjOffsets();   // one projection origin per paint; hex vertices come from the per-(cell, zoom) memo (P12)
     ctx.clearRect(0, 0, size.x, size.y);
 
     var cells = h3CellsInView(h3ResForView());
@@ -24082,11 +24141,10 @@
       if (!(p >= 0.01)) continue;
       // Skip hexes straddling the antimeridian (would smear across the map).
       var sh = h3Shape(cells[i]); if (sh.straddles) continue;
-      var bnd = sh.bnd;
+      var pj = h3Proj(cells[i], sh, pjo.zoom);
       ctx.beginPath();
-      for (var v = 0; v < bnd.length; v++) {
-        var pt = map.latLngToContainerPoint([bnd[v][0], bnd[v][1]]);
-        if (v === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y);
+      for (var v = 0; v < pj.length; v += 2) {
+        if (v === 0) ctx.moveTo(pj[v] - pjo.ox, pj[v + 1] - pjo.oy); else ctx.lineTo(pj[v] - pjo.ox, pj[v + 1] - pjo.oy);
       }
       ctx.closePath();
       var col = colormapLookup(p);
@@ -24224,14 +24282,12 @@
   function normalizeProbs(raw) {
     var maxProb = 0;
     for (var i = 0; i < raw.length; i++) if (raw[i] > maxProb) maxProb = raw[i];
-    var norm = perceptualNorm(raw, maxProb);
-    // Hide cells whose raw probability falls outside the min–max range slider
-    // so the same control filters the species-range overlay.
+    // One pass normalises AND hides the cells outside the min–max range slider (the same
+    // control filters the species-range overlay) — three passes and two buffers before (P13).
     var pmin = +document.getElementById("prob-min").value / 100;
     var pmax = +document.getElementById("prob-max").value / 100;
-    if (pmin > 0 || pmax < 1) {
-      for (var j = 0; j < raw.length; j++) if (raw[j] < pmin || raw[j] > pmax) norm[j] = 0;
-    }
+    var norm = new Float32Array(raw.length);
+    if (maxProb > 0) for (var j = 0; j < raw.length; j++) { var v = raw[j]; norm[j] = (v < pmin || v > pmax) ? 0 : Math.pow(v / maxProb, DISPLAY_GAMMA); }
     return { probs: norm, maxProb: maxProb };
   }
 
@@ -24348,7 +24404,7 @@
         }
         // Worker returns just this species' column (batch.length floats).
         var out = await runInference(inputs, batch.length, { task: "column", speciesIdx: speciesIdx });
-        for (var k = 0; k < batch.length; k++) batch[k].cache[batch[k].c] = out[k];
+        for (var k = 0; k < batch.length; k++) h3CacheStore(batch[k].cache, batch[k].c, out[k]);
         setComputeProgress(++done / total);
         setStatus(t("status.computing", { name: name, week: weekText(selectedWeek), n: missing.length, i: done, total: total }));
         if (gen === renderGeneration) { cachedRender = { h3range: true, tag: key + ":" + selectedWeek }; schedulePaint(); }
@@ -24450,7 +24506,7 @@
         }
         // Worker counts species ≥ threshold (optionally masked to a group) per cell.
         var out = await runInference(inputs, batch.length, { task: "richness", threshold: RICHNESS_THRESHOLD, mask: mask });
-        for (var k = 0; k < batch.length; k++) batch[k].cache[batch[k].c] = out[k];
+        for (var k = 0; k < batch.length; k++) h3CacheStore(batch[k].cache, batch[k].c, out[k]);
         setComputeProgress(++done / total);
         setStatus(t("status.computing", { name: richName, week: weekText(selectedWeek), n: missing.length, i: done, total: total }));
         if (gen === renderGeneration) { cachedRender = { h3richness: true, tag: richTag(selectedWeek) }; schedulePaint(); }
@@ -25317,7 +25373,7 @@
     apply("");   // show the coordinate/summary line while the place name resolves
     reverseGeocode(lat, lon).then(function (name) {
       if (!name) return;                 // failed / rate-limited → keep the coordinate line, retry next time
-      placeCache[k] = name;
+      placeCache[k] = name; capObj(placeCache, 1000);
       if (el.dataset.placeKey === k) apply(placeCache[k]);
     });
   }
@@ -25406,7 +25462,7 @@
       var label = a.name || (cached ? cached : "");
       if (!a.name && !cached && !placePending[key]) {   // resolve this square's name, then re-render; a FAILED lookup is not cached — it retries on the next render
         placePending[key] = 1;
-        reverseGeocode(a.clat, a.clon).then(function (n) { delete placePending[key]; if (n) { placeCache[key] = n; reRender(); } });
+        reverseGeocode(a.clat, a.clon).then(function (n) { delete placePending[key]; if (n) { placeCache[key] = n; capObj(placeCache, 1000); reRender(); } });
       }
       var named = !!label;
       if (!label) label = a.clat.toFixed(4) + "°, " + a.clon.toFixed(4) + "°";
@@ -25529,7 +25585,7 @@
           return (specific && town && specific !== town) ? specific + ", " + town : (specific || town || p.country || "");
         });
       })
-      .then(function (n) { if (n) placeDetailCache[k] = n; return n; });   // a failed lookup is not cached — retried next time
+      .then(function (n) { if (n) { placeDetailCache[k] = n; capObj(placeDetailCache, 1000); } return n; });   // a failed lookup is not cached — retried next time
   }
 
   // ---- Map-derived place names for the observation lists --------------------
@@ -25849,7 +25905,7 @@
       if (!Array.isArray(arr)) { lastSppError = "format"; return null; }
       var set = Object.create(null);
       arr.forEach(function (c) { set[c] = 1; });
-      countryEBirdCache[cc] = set;
+      countryEBirdCache[cc] = set; capObj(countryEBirdCache, 16);
       return set;
     } catch (e) { lastSppError = "network"; return null; }
   }
@@ -25923,25 +25979,14 @@
   // so a[i] <= a[k] for i<k and >= for i>k. 3-way partition stays O(n) despite the
   // many duplicate (zero) probabilities in a species' column — replaces a full
   // O(n log n) sort + per-species array copy when we only need p90 + median.
-  function quickselectF(a, lo, hi, k) {
-    while (hi - lo > 1) {
-      var pivot = a[lo + ((hi - lo) >> 1)];
-      var lt = lo, gt = hi - 1, i = lo, t;
-      while (i <= gt) {
-        var x = a[i];
-        if (x < pivot) { t = a[lt]; a[lt] = x; a[i] = t; lt++; i++; }
-        else if (x > pivot) { t = a[gt]; a[gt] = x; a[i] = t; gt--; }
-        else i++;
-      }
-      if (k < lt) hi = lt; else if (k > gt) lo = gt + 1; else return a[k];
-    }
-    return a[k];
-  }
+  // The per-cell maximum and the p90 / median over all cells are computed IN THE WORKER (P5):
+  // each chunk is appended to a worker-side session ("aggs"), and one "aggsFinish" message
+  // returns max | p90 | median as one flat array — nothing of nSpecies × cells crosses back
+  // to the UI thread or runs on it.
+  var aggSessionSeq = 0;
   async function speciesAggsAcrossCells(cells, week, progress) {
     var nSpecies = labels.length, CHUNK = inferChunk();
-    var allowMatrix = cells.length <= SPECIES_AGG_CAP_CELLS;
-    var maxArr = new Float32Array(nSpecies);
-    var mat = allowMatrix ? new Float32Array(cells.length * nSpecies) : null;
+    var allowMatrix = cells.length <= SPECIES_AGG_CAP_CELLS, sid = ++aggSessionSeq;
     for (var s = 0; s < cells.length; s += CHUNK) {
       var batch = cells.slice(s, s + CHUNK);
       var inputs = new Float32Array(batch.length * 3);
@@ -25949,27 +25994,13 @@
         var ll = window.h3.cellToLatLng(batch[j]);
         inputs[j * 3] = ll[0]; inputs[j * 3 + 1] = ll[1]; inputs[j * 3 + 2] = week;
       }
-      var out = await runInference(inputs, batch.length);
-      if (mat) mat.set(out, s * nSpecies);
-      for (var k = 0; k < batch.length; k++) {
-        var base = k * nSpecies;
-        for (var i = 0; i < nSpecies; i++) { var v = out[base + i]; if (v > maxArr[i]) maxArr[i] = v; }
-      }
+      await runInference(inputs, batch.length, { task: "aggs", aggSession: sid, aggMatrix: allowMatrix });
       if (progress) progress(Math.min(s + batch.length, cells.length), cells.length);
     }
-    if (!mat) return { max: maxArr };
-    var p90 = new Float32Array(nSpecies), median = new Float32Array(nSpecies);
-    var col = new Float32Array(cells.length);
-    var p90Idx = Math.min(cells.length - 1, Math.floor(cells.length * 0.9));
-    var medIdx = Math.floor(cells.length / 2);
-    for (var i2 = 0; i2 < nSpecies; i2++) {
-      for (var c = 0; c < cells.length; c++) col[c] = mat[c * nSpecies + i2];
-      // Two order statistics via in-place quickselect — no full sort, no per-species
-      // allocation. (col is reused/overwritten next iteration, so partitioning it is fine.)
-      p90[i2] = quickselectF(col, 0, cells.length, p90Idx);
-      median[i2] = quickselectF(col, 0, cells.length, medIdx);
-    }
-    return { max: maxArr, p90: p90, median: median };
+    var fin = await runInference(new Float32Array(0), 0, { task: "aggsFinish", aggSession: sid });
+    var maxArr = fin.subarray(0, nSpecies);
+    if (fin.length < 3 * nSpecies) return { max: maxArr };
+    return { max: maxArr, p90: fin.subarray(nSpecies, 2 * nSpecies), median: fin.subarray(2 * nSpecies, 3 * nSpecies) };
   }
   async function renderSpeciesInCountry(lat, lon) {
     var keepScroll = keepListScroll; keepListScroll = false;   // consume one-shot flag
@@ -25987,7 +26018,7 @@
       // Cache cells by (cc, res, rounded click) — different polygons (mainland
       // vs an overseas island) for the same country must not share a cache.
       var cellsKey = info.cc + ":" + res + ":" + Math.round(lat * 2) / 2 + "," + Math.round(lon * 2) / 2;
-      var cells = countryCellsCache[cellsKey] || (countryCellsCache[cellsKey] = cellsCoveringCountry(geom, res, lat, lon));
+      var cells = countryCellsCache[cellsKey] || (countryCellsCache[cellsKey] = cellsCoveringCountry(geom, res, lat, lon)); capObj(countryCellsCache, 8);
       if (!cells.length) { setStatus(t("status.error", { msg: "no cells" }), true); return; }
       if (cells.length > SP_COUNTRY_MAX_CELLS) { setStatus(t("status.countryTooMany", { n: cells.length, max: SP_COUNTRY_MAX_CELLS })); return; }
       var aggKey = info.cc + ":" + res + ":" + week;
@@ -25995,13 +26026,14 @@
       if (!aggs) {
         setStatus(t("status.countrySampling", { country: info.name || info.cc, n: cells.length, week: week, res: res }));
         aggs = await speciesAggsAcrossCells(cells, week, function (done, total) { setComputeProgress(done / total); });
-        countryAggCache[aggKey] = aggs;
+        countryAggCache[aggKey] = aggs; capObj(countryAggCache, 4);   // each entry holds up to three 12k-float arrays
       }
       var maxArr = aggs[countryAgg] || aggs.max;
       var spp = await ebirdCountrySpecies(info.cc);   // null when no key / fetch fails
       var results = [];
-      for (var i = 0; i < labels.length; i++) {
-        var lbl = labels[i]; if (!inGroup(i) || !passSpeciesFilter(lbl.key)) continue;
+      var gIdx = groupLabelIdx();
+      for (var gi = 0; gi < gIdx.length; gi++) {
+        var i = gIdx[gi], lbl = labels[i]; if (!passSpeciesFilter(lbl.key)) continue;
         var prob = maxArr[i];
         var inModel = prob >= pmin && prob <= pmax;
         var inList = !!(spp && spp[lbl.key]);
@@ -27663,6 +27695,8 @@
     scrollSpFiltersIntoView();
   }
   async function renderSpeciesList(lat, lon, hist, opts) {
+    var _nm = new Map();   // speciesName() per label once per render (it is asked for the sort key, the CSV and the PDF; P14)
+    function spNm(l) { var v = _nm.get(l); if (v === undefined) { v = speciesName(l); _nm.set(l, v); } return v; }
     // `opts.noFetch` = restoring the view on app open — build the (local) model list but
     // DON'T re-run the observation fetch; fill counts from the already-restored map dots.
     var noFetch = !!(opts && opts.noFetch);
@@ -27745,8 +27779,10 @@
       function buildResults() {
         var r = [];
         if (noModel) return r;   // nothing the model predicts belongs to this group
-        for (var i = 0; i < labels.length; i++) {
-          if (out[i] >= pmin && out[i] <= pmax && inGroup(i) && passSpeciesFilter(labels[i].key)) {
+        var gIdx = groupLabelIdx();
+        for (var gi = 0; gi < gIdx.length; gi++) {
+          var i = gIdx[gi];
+          if (out[i] >= pmin && out[i] <= pmax && passSpeciesFilter(labels[i].key)) {
             var cval = 0;
             if (hasCompare) {
               cval = kind === "ratio" ? (cmp.probs[i] > 0 ? Math.min(1, out[i] / cmp.probs[i]) : 0)   // current ÷ peak ≤ 1 (100%)
@@ -27804,7 +27840,7 @@
         var name2Cell = '<td class="name2">' + (secondLang ? escapeHtml(secondName(r.label)) : "") + '</td>';
         var dKey = escapeHtml(r.label.key);
         var pct = Math.round(r.prob * 100);
-        var sortAttrs = ' data-name="' + escapeHtml(speciesName(r.label).toLowerCase()) + '" data-prob="' + r.prob + '"' + (hasCompare ? ' data-cmp="' + (Number.isNaN(r.cmpVal) ? -1 : r.cmpVal) + '"' : "");
+        var sortAttrs = ' data-name="' + escapeHtml(spNm(r.label).toLowerCase()) + '" data-prob="' + r.prob + '"' + (hasCompare ? ' data-cmp="' + (Number.isNaN(r.cmpVal) ? -1 : r.cmpVal) + '"' : "");
         return '<tr' + sortAttrs + '>' +
                '<td class="num det-nd" data-key="' + dKey + '"><span class="det-wait" title="' + escapeHtml(t("status.loadingDet")) + '"></span></td>' +   // Total FIRST (count left of the name)
                '<td>' + spListDot(r.label.key) + nameLinkHtml(r.label, true) + '</td>' + name2Cell +
@@ -27885,7 +27921,7 @@
         header += ",seen_count";
         var csvLines = [header];
         results.forEach(function (r, idx) {
-          var line = (idx + 1) + ',"' + r.label.key + '","' + speciesName(r.label).replace(/"/g, '""') + '"';
+          var line = (idx + 1) + ',"' + r.label.key + '","' + spNm(r.label).replace(/"/g, '""') + '"';
           if (secondLang) line += ',"' + secondName(r.label).replace(/"/g, '""') + '"';
           line += ',"' + r.label.sci.replace(/"/g, '""') + '",' + r.prob.toFixed(6);
           if (hasCompare) line += "," + (Number.isNaN(r.cmpVal) ? "" : r.cmpVal.toFixed(6));
@@ -27971,7 +28007,7 @@
               : kind === "focus" ? (Number.isNaN(r.cmpVal) ? "-" : Math.round(r.cmpVal) + "%")   // Annual Top: current÷peak %, "-" when peak 0
               : (r.cmpVal >= 0 ? "+" : "") + (r.cmpVal * 100).toFixed(1) + "%";
           }
-          return { key: r.label.key, name: speciesName(r.label), name2: secondLang ? secondName(r.label) : "", sci: r.label.sci, prob: (r.prob * 100).toFixed(1) + "%", cmp: cmpText };
+          return { key: r.label.key, name: spNm(r.label), name2: secondLang ? secondName(r.label) : "", sci: r.label.sci, prob: (r.prob * 100).toFixed(1) + "%", cmp: cmpText };
         }),
       };
       showCsvBtn();

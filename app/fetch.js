@@ -429,7 +429,12 @@ window.AppFetch = (function () {
     if (rkm > 50) tr = { clampKm: 50 };
     if (obs.length >= 9500) { tr = tr || {}; tr.cap = true; tr.kept = obs.length; }
     noteTrunc("ebird", tr);
-    await ebirdEnrichObservers(obs, tok, ge, signal);   // geo/recent omits observers → look them up per checklist
+    // geo/recent omits observers → look them up per checklist, on their OWN budget (8 s): a slow
+    // eBird must not spend the source's whole timeout on names (P18). Whatever resolved in time is
+    // applied; the outer abort still stops it at once.
+    var enrichAc = new AbortController(), enrichTimer = setTimeout(function () { enrichAc.abort(); }, 8000);
+    if (signal) { if (signal.aborted) enrichAc.abort(); else signal.addEventListener("abort", function () { enrichAc.abort(); }); }
+    try { await ebirdEnrichObservers(obs, tok, ge, enrichAc.signal); } catch (e) {} finally { clearTimeout(enrichTimer); }
     return obs;
   }
   // eBird "notable" feed — regionally-flagged rarities near a point. Used by the
