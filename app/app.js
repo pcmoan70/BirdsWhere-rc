@@ -1774,14 +1774,15 @@
   // species actually OBSERVED here (agg), because the list also holds hundreds of
   // predicted-but-unseen species and the low-probability tail of those would
   // otherwise all light up.
-  function spRareSet(agg, tbody) {
+  // Every listed species the model finds unlikely at this spot (probability ≤ the rare threshold)
+  // gets the ◉ centre dot — observed or not (owner, 2026-10-22: "the rarity dots should also show in
+  // species list, and other lists"), so a model-only (Predicted) list marks its rare end too.
+  function spRareSet(tbody) {
     var set = Object.create(null);
-    if (!agg || !tbody) return set;
+    if (!tbody) return set;
     Array.prototype.forEach.call(tbody.querySelectorAll("tr"), function (tr) {
       var sl = tr.querySelector(".sp-link[data-key]"), k = sl && sl.getAttribute("data-key");
       if (!k) return;
-      var e = agg[k];
-      if (!e || !(e.count > 0)) return;                       // not observed here → not "rare here"
       if (isRareProb(parseFloat(tr.getAttribute("data-prob")))) set[k] = 1;
     });
     return set;
@@ -1796,8 +1797,9 @@
   // Should a row be kept under the active filters? Encapsulates the rule so
   // renderSpeciesList and renderSpeciesInCountry stay consistent. Filters are
   // independent and AND-combined; the "needs" ones mirror the map's year/life
-  // edges. ◉ rare is absent here on purpose — it needs the fetched observations,
-  // so it is applied as a row-hiding pass in applyAgeFilter instead.
+  // edges. ◉ rare is absent here on purpose — it comes from the list's rare set (model
+  // probability ≤ the threshold, see spRareSet) and is applied as a row-hiding pass in
+  // applyAgeFilter instead.
   function passSpeciesFilter(key) {
     if (spFilters.star && !isInteresting(key)) return false;
     if (spFilters.year && inYearList(key)) return false;
@@ -2841,7 +2843,7 @@
     // it puts at PRED_MIN_PROB or better and, where even that is empty (far offshore, deep
     // desert), its best MODEL_TOP_N anyway — the answer must never be a blank page. An
     // explicit probability floor set by the user still wins.
-    var MODEL_FLOOR = PRED_MIN_PROB, MODEL_MIN_ROWS = 10, MODEL_TOP_N = 25, autoCut = 0;
+    var MODEL_FLOOR = (currentSpView && currentSpView._predicted) ? 0.01 : PRED_MIN_PROB, MODEL_MIN_ROWS = 10, MODEL_TOP_N = 25, autoCut = 0;
     var floor = (+document.getElementById("prob-min").value || 0) / 100;   // once per pass (was a DOM read per row)
     var missingOn = spMissingOn();
     var tRows = 0, tDom = 0, tMark = perfOn ? performance.now() : 0;   // ?perf=1: row work vs DOM work
@@ -3875,7 +3877,7 @@
   // higher floor is set in the Filters pane. The same 0.5 % that keeps near-absent species out
   // of the Migration views (owner, 2026-10-21: "decrease … to 0.5% in predicted lists and migration panes").
   var PRED_MIN_PROB = window.GeoAnalysis.MIN_PEAK;
-  function summaryProbFloor(pmin) { return Math.max(+pmin || 0, SUMMARY_MIN_PROB); }
+  function summaryProbFloor(pmin) { return Math.max(+pmin || 0, (currentSpView && currentSpView._predicted) ? 0.01 : SUMMARY_MIN_PROB); }   // the Predicted list counts down to 1 %
   function summaryPct(pmin) { return (summaryProbFloor(pmin) * 100).toFixed(0); }
   function summaryCount(rows, pmin) {
     var f = summaryProbFloor(pmin);
@@ -5873,7 +5875,7 @@
     });
     // We now know WHICH species were seen here, so the dot can mark the ones the model
     // considers unlikely at this spot (rare-here) — applyAgeFilter repaints the dots.
-    tbody._rareSet = spRareSet(agg, tbody);
+    tbody._rareSet = spRareSet(tbody);
     prependExtraSightings(tbody, extras);
     // Re-apply the active age/rare filters and sort as data arrives.
     applyAgeFilter();
@@ -25149,7 +25151,7 @@
     wrap.appendChild(makePopupBtn(noIcon(t("mode.predicted")), "", function () {
       mk.closePopup(); urlForceView = "list";
       speciesListSort = { col: "prob", dir: "desc" }; try { updateSortIndicators(); } catch (e) {}   // most likely first, rarest last (owner, 2026-10-22)
-      renderSpeciesList(lat, lon, null, { noFetch: true });
+      renderSpeciesList(lat, lon, null, { noFetch: true, predicted: true });
     }));
     // Historic + Migration moved out of the Mode dropdown: they start HERE, at the
     // clicked point. Historic rides the mode switch (the placed marker carries in);
@@ -27736,6 +27738,7 @@
       : { mode: "point", lat: lat, lon: lon };
     currentSpView._plotGen = detPlotGen;   // red × mid-fetch bumps this → partial plots stop
     if (noFetch) currentSpView._noFetch = true;   // a model-only list: it holds no observations of its own (see goToMapView)
+    if (opts && opts.predicted) currentSpView._predicted = true;   // the popup's Predicted button: list the ranking down to 1 % so its rare end shows
     if (reuse) { currentSpView._plotGen = prevView._plotGen; currentSpView._result = prevView._result; currentSpView._final = true; if (prevView._noFetch) currentSpView._noFetch = true; }
     // Harmonise the date window so historic records aren't dropped by the recency
     // filter: Historic sets the global date-range to the fetched range (and clears
