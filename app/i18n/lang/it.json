@@ -776,6 +776,7 @@
   "mode.range": "(IA) Areale della specie",
   "mode.richness": "Ricchezza di specie",
   "mode.list": "📍 Recenti",
+  "mode.predicted": "📍 Previsto",
   "mode.historic": "Storico",
   "hist.fetch": "Recupera",
   "hist.allAreas": "Tutte le aree recuperate",

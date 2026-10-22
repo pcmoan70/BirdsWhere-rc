@@ -776,6 +776,7 @@
   "mode.range": "(AI) Liigi levik",
   "mode.richness": "Liigirikkus",
   "mode.list": "📍 Hiljutised",
+  "mode.predicted": "📍 Ennustatud",
   "mode.historic": "Ajaloolised",
   "hist.fetch": "Too",
   "hist.allAreas": "Kõik laaditud alad",

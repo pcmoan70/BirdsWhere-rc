@@ -466,6 +466,7 @@ window.GeoI18N = (function () {
         "mode.range": "(AI) Species Range",
         "mode.richness": "Species Richness",
         "mode.list": "📍 Recent",
+        "mode.predicted": "📍 Predicted",
         "mode.historic": "Historic",
         "hist.fetch": "Fetch",
         "hist.allAreas": "All fetched areas",

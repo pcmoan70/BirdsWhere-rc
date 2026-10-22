@@ -776,6 +776,7 @@
   "mode.range": "(AI) Zasięg gatunku",
   "mode.richness": "Bogactwo gatunkowe",
   "mode.list": "📍 Ostatnie",
+  "mode.predicted": "📍 Przewidywane",
   "mode.historic": "Historyczne",
   "hist.fetch": "Pobierz",
   "hist.allAreas": "Wszystkie pobrane obszary",

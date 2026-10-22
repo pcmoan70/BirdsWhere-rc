@@ -776,6 +776,7 @@
   "mode.range": "(AI-)Verspreiding",
   "mode.richness": "Soortenrijkdom",
   "mode.list": "📍 Recent",
+  "mode.predicted": "📍 Voorspeld",
   "mode.historic": "Historisch",
   "hist.fetch": "Ophalen",
   "hist.allAreas": "Alle opgehaalde gebieden",

@@ -776,6 +776,7 @@
   "mode.range": "(DI) Rūšies paplitimas",
   "mode.richness": "Rūšių gausa",
   "mode.list": "📍 Naujausi",
+  "mode.predicted": "📍 Prognozuota",
   "mode.historic": "Istoriniai",
   "hist.fetch": "Gauti",
   "hist.allAreas": "Visos gautos sritys",

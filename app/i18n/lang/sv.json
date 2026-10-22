@@ -398,6 +398,7 @@
   "mode.range": "(AI-)Artutbredning",
   "mode.richness": "Artrikedom",
   "mode.list": "📍 Senaste",
+  "mode.predicted": "📍 Förutsagt",
   "mode.historic": "Historiska",
   "hist.fetch": "Hämta",
   "hist.allAreas": "Alla hämtade områden",

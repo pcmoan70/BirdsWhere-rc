@@ -776,6 +776,7 @@
   "mode.range": "(IA) Distribuição de Espécies",
   "mode.richness": "Riqueza de Espécies",
   "mode.list": "📍 Recentes",
+  "mode.predicted": "📍 Previsto",
   "mode.historic": "Histórico",
   "hist.fetch": "Obter",
   "hist.allAreas": "Todas as áreas obtidas",

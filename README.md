@@ -74,6 +74,8 @@ layered on top are the real sightings.
 A Leaflet map with a **Mode** selector in the header:
 
 - **📍 Recent** — click the map for a ranked species list at that point, with live recent-observation counts.
+- **📍 Predicted** — the model's own ranking for the tapped point, no observation fetch: the inference runs
+  and the species-list page opens on completion (the point popup's second button, under Recent).
 - **Historic** — search GBIF for a chosen date range and set of months around a point.
 - **📍 Migration** — the location-analysis panel (phenology, arrivals, scatter) for a clicked point. Opened from the point popup; once its page is left, a map click opens the point popup again.
 - **Species Range** — a probability heatmap for one chosen species, animatable across the year.

@@ -776,6 +776,7 @@
   "mode.range": "(AI) Lajin levinneisyys",
   "mode.richness": "Lajirunsaus",
   "mode.list": "📍 Tuoreet",
+  "mode.predicted": "📍 Ennustettu",
   "mode.historic": "Historialliset",
   "hist.fetch": "Hae",
   "hist.allAreas": "Kaikki haetut alueet",

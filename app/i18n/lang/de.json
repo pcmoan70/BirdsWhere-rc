@@ -776,6 +776,7 @@
   "mode.range": "(KI-)Artverbreitung",
   "mode.richness": "Artenreichtum",
   "mode.list": "📍 Aktuell",
+  "mode.predicted": "📍 Vorhergesagt",
   "mode.historic": "Historisch",
   "hist.fetch": "Abrufen",
   "hist.allAreas": "Alle abgerufenen Gebiete",

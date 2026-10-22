@@ -776,6 +776,7 @@
   "mode.range": "(AI) Areál druhu",
   "mode.richness": "Druhová bohatost",
   "mode.list": "📍 Nedávné",
+  "mode.predicted": "📍 Předpovězeno",
   "mode.historic": "Historické",
   "hist.fetch": "Načíst",
   "hist.allAreas": "Všechny načtené oblasti",

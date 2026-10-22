@@ -25144,6 +25144,9 @@
     // The popup's own labels drop the leading pictogram (the mode dropdown keeps it).
     function noIcon(x) { return String(x).replace(/^[^\w\u00C0-\u024F]+/, ""); }
     wrap.appendChild(makePopupBtn(noIcon(t("mode.list")), "", function () { mk.closePopup(); renderSpeciesList(lat, lon); }));
+    // Predicted (owner, 2026-10-22): the model's own ranking for this point — no observation
+    // fetch — opened straight as the species-list page once the inference has run.
+    wrap.appendChild(makePopupBtn(noIcon(t("mode.predicted")), "", function () { mk.closePopup(); urlForceView = "list"; renderSpeciesList(lat, lon, null, { noFetch: true }); }));
     // Historic + Migration moved out of the Mode dropdown: they start HERE, at the
     // clicked point. Historic rides the mode switch (the placed marker carries in);
     // Migration switches mode and runs the analysis for this exact spot.

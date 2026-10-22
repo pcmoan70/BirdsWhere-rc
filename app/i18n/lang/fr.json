@@ -777,6 +777,7 @@
   "mode.range": "(IA) Aire de répartition",
   "mode.richness": "Richesse spécifique",
   "mode.list": "📍 Récent",
+  "mode.predicted": "📍 Prédit",
   "mode.historic": "Historique",
   "hist.fetch": "Récupérer",
   "hist.allAreas": "Toutes les zones récupérées",
