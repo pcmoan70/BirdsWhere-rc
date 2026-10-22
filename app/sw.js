@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2168";
+var VERSION = "v2169";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Predicted: the list runs down to 1 % and marks its rare end with the \u25c9 centre dot, like every other species list.",
+  "\u2022 Fetched observations now stay on the device until you clear them (Settings \u2192 Storage \u2192 Fetched observations), one record per location \u2014 reopening a spot shows its observations without downloading again, and clearing releases the space.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

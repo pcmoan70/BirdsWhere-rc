@@ -5113,7 +5113,7 @@
   // still fetches. (Also helps offline: a cached location opens with no network.)
   // How long a downloaded location stays reusable before a reopen refetches it.
   // User-set in Settings (minutes); default 30 min. 0 = always reuse (never expire).
-  function sightTtlMin() { var v = +window.GeoState.get("sightTtlMin", 30); return isFinite(v) && v >= 0 ? v : 30; }
+  function sightTtlMin() { var v = +window.GeoState.get("sightTtlMin", 0); return isFinite(v) && v >= 0 ? v : 0; }   // default 0 = reuse until cleared (owner, 2026-10-22)
   function sightTtlMs() { return sightTtlMin() * 60000; }
   // "Fetch on open": on a plain app open, auto-fetch the stored locations ticked
   // "load on open" and plot their observations — reusing the same persisted,
@@ -5130,10 +5130,6 @@
   // Bump when the aggregation/matching logic changes so results cached by the
   // previous code are ignored and the next fetch re-aggregates.
   var SIGHT_CACHE_VER = 7;   // bumped: Sweden Artportalen "Corvus corone" (kråka) → Corvus cornix
-  var persistedSightings = {};           // ck -> { ts, sig, ver, out }, loaded once at boot
-  function sightCK(lat, lon, rkm, group, days) { return lat.toFixed(2) + "," + lon.toFixed(2) + ":" + rkm + ":" + group + (days > 0 ? ":d" + days : ""); }
-  // Signature of the settings that change what a fetch returns; a mismatch means a
-  // cached copy is stale for the current config and must not be reused.
   function sightConfigSig() {
     try {
       var srcs = obsSources().filter(function (s) { return s.enabled(); }).map(function (s) { return s.name; }).sort().join(",");
@@ -5150,24 +5146,75 @@
   // optimisation while the user is stuck. Re-introduce it with a test that seeds a real
   // persisted cache, not a synthetic one.
   function sigServes(cachedSig, nowSig) { return cachedSig === nowSig; }
+  function sightCK(lat, lon, rkm, group, days) { return lat.toFixed(2) + "," + lon.toFixed(2) + ":" + rkm + ":" + group + (days > 0 ? ":d" + days : ""); }
+  // Signature of the settings that change what a fetch returns; a mismatch means a
+  // cached copy is stale for the current config and must not be reused.
+  function sightConfigSig() {
+    try {
+      var srcs = obsSources().filter(function (s) { return s.enabled(); }).map(function (s) { return s.name; }).sort().join(",");
+      return srcs + "|bw" + window.GeoState.get("bwMinDet", 2) + "," + window.GeoState.get("bwMinConf", 0) + "|ds" + ((gbifDatasets || []).length) +
+        "|g" + fetchGroupList().join("+");   // a narrower tick set holds less: don't serve it as a wider one
+    } catch (e) { return ""; }
+  }
+  // Every fetched location is KEPT ON THE DEVICE until the user clears it (Settings → Storage →
+  // Fetched observations), one IndexedDB record per location ("sight:<ck>") plus a small index
+  // ("sightIdx": ts / config signature / size per location) that is read at boot; a record is
+  // read only when its location is revisited, so memory holds just what this session used.
+  // (Owner, 2026-10-22: "Fetches should be kept on device until user clears them, upon which
+  // the disk space should be released." — the old single record kept the 6 newest only.)
+  var persistedSightings = {};           // ck -> { ts, sig, ver, out } — loaded records only
+  var sightIdx = {};                     // ck -> { ts, sig, ver, bytes } — every stored location
+  var SIGHT_IDX_KEY = "sightIdx", SIGHT_REC = "sight:";
+  function sightBytes(out) { try { return JSON.stringify(out).length; } catch (e) { return 0; } }
   function loadPersistedSightings() {
     if (!window.AppIDB) return Promise.resolve();
-    return AppIDB.get("sightingsCache").then(function (m) { if (m && typeof m === "object") persistedSightings = m; }).catch(function () {});
+    return AppIDB.get(SIGHT_IDX_KEY).then(function (ix) { if (ix && typeof ix === "object") sightIdx = ix; })
+      .then(function () { return AppIDB.get("sightingsCache"); })   // one-time migration of the legacy single record
+      .then(function (m) {
+        if (!m || typeof m !== "object") return;
+        var writes = [];
+        Object.keys(m).forEach(function (ck) {
+          var e = m[ck]; if (!e || !e.out) return;
+          persistedSightings[ck] = e; sightIdx[ck] = { ts: e.ts || 0, sig: e.sig || "", ver: e.ver, bytes: sightBytes(e.out) };
+          writes.push(AppIDB.put(SIGHT_REC + ck, e));
+        });
+        return Promise.all(writes).then(function () { return AppIDB.put(SIGHT_IDX_KEY, sightIdx); }).then(function () { return AppIDB.del("sightingsCache"); });
+      }).catch(function () {});
+  }
+  function storeSightEntry(ck, e) {
+    persistedSightings[ck] = e;
+    sightIdx[ck] = { ts: e.ts || 0, sig: e.sig || "", ver: e.ver, bytes: sightBytes(e.out) };
+    if (!window.AppIDB || !AppIDB.available()) return Promise.resolve();
+    return AppIDB.put(SIGHT_REC + ck, e).then(function () { return AppIDB.put(SIGHT_IDX_KEY, sightIdx); })
+      .catch(function () { try { setStatus(t("err.storageFull")); } catch (e2) {} });
   }
   function persistSightings(ck, out, sig) {
-    if (!window.AppIDB) return;
-    try {
-      // `sig` is the signature captured when the fetch STARTED (sources, keys, and which
-      // species types it asked for). Filing it under a freshly-read one could label a
-      // narrow result as a wide one — see the poster launch's birds-only fetch.
-      persistedSightings[ck] = { ts: Date.now(), sig: sig || sightConfigSig(), ver: SIGHT_CACHE_VER, out: out };
-      var keys = Object.keys(persistedSightings);
-      if (keys.length > 6) {   // keep the 6 most-recently fetched locations
-        keys.sort(function (a, b) { return (persistedSightings[b].ts || 0) - (persistedSightings[a].ts || 0); });
-        keys.slice(6).forEach(function (k) { delete persistedSightings[k]; });
-      }
-      AppIDB.put("sightingsCache", persistedSightings).catch(function () {});
-    } catch (e) {}
+    // `sig` is the signature captured when the fetch STARTED (sources, keys, and which
+    // species types it asked for). Filing it under a freshly-read one could label a
+    // narrow result as a wide one — see the poster launch's birds-only fetch.
+    storeSightEntry(ck, { ts: Date.now(), sig: sig || sightConfigSig(), ver: SIGHT_CACHE_VER, out: out });
+    try { checkStoragePressure(); } catch (e) {}
+  }
+  // The index says whether a stored download may answer this request; the record itself is read then.
+  function sightReusable(ck, cfgSig) {
+    var ix = sightIdx[ck], ttl = sightTtlMs();
+    return !!(ix && ix.ver === SIGHT_CACHE_VER && sigServes(ix.sig, cfgSig) && (ttl === 0 || (Date.now() - (ix.ts || 0)) < ttl));
+  }
+  function loadSight(ck) {
+    var e = persistedSightings[ck]; if (e && e.out) return Promise.resolve(e.out);
+    if (!window.AppIDB || !AppIDB.available()) return Promise.resolve(null);
+    return AppIDB.get(SIGHT_REC + ck).then(function (rec) {
+      if (rec && rec.out) { persistedSightings[rec.ck ? rec.ck : ck] = rec; return rec.out; }
+      delete sightIdx[ck]; return null;   // the record is gone (storage eviction): forget it so the next ask fetches
+    }).catch(function () { return null; });
+  }
+  function loadAllSights() { return Promise.all(Object.keys(sightIdx).map(loadSight)).then(function () { return persistedSightings; }); }
+  function clearPersistedSightings() {   // Settings → Storage → Fetched observations: every record goes, the space with it
+    var ks = Object.keys(sightIdx); sightIdx = {}; persistedSightings = {};
+    if (!window.AppIDB || !AppIDB.available()) return Promise.resolve();
+    return Promise.all(ks.map(function (ck) { return AppIDB.del(SIGHT_REC + ck).catch(function () {}); }))
+      .then(function () { return AppIDB.del(SIGHT_IDX_KEY).catch(function () {}); })
+      .then(function () { return AppIDB.del("sightingsCache").catch(function () {}); });
   }
   // Derive a single-group result from a cached "All" aggregate by keeping only the
   // species/extras of that group's class (animals) or kingdom (plants/fungi) — the
@@ -5241,9 +5288,12 @@
     if (allSightingsCache[ck]) { disarm(); return allSightingsCache[ck]; }
     // Reuse a previously-downloaded result for this exact location (same radius,
     // group + source config) that is still fresh — no network, no refetch on reopen.
-    var pf = persistedSightings[ck], ttl = sightTtlMs();
-    if (pf && pf.out && pf.ver === SIGHT_CACHE_VER && sigServes(pf.sig, cfgSig) && (ttl === 0 || (Date.now() - (pf.ts || 0)) < ttl)) {
-      var cachedPr = Promise.resolve(pf.out);
+    if (sightReusable(ck, cfgSig)) {
+      var cachedPr = loadSight(ck).then(function (out) {
+        if (out) return out;
+        delete allSightingsCache[ck];   // the stored record vanished → a real fetch (sightReusable is false now)
+        return fetchAllSightingsAt(lat, lon, onPartial, radiusOverride, daysOverride);
+      });
       allSightingsCache[ck] = cachedPr; capObj(allSightingsCache, 60);
       disarm();
       return cachedPr;
@@ -5252,8 +5302,9 @@
     // spot / radius / day-window is cached, derive this group by filtering All's
     // aggregate — no network. (Skipped for "all" itself and when no All cache exists.)
     if (fetchGroup !== "all") {
-      var pa = persistedSightings[sightCK(lat, lon, rkm, "all", days)];
-      if (pa && pa.out && pa.ver === SIGHT_CACHE_VER && sigServes(pa.sig, cfgSig) && (ttl === 0 || (Date.now() - (pa.ts || 0)) < ttl)) {
+      var ckAll = sightCK(lat, lon, rkm, "all", days);
+      var pa = sightReusable(ckAll, cfgSig) ? persistedSightings[ckAll] : null;   // only an already-loaded All record is derived from synchronously
+      if (pa && pa.out) {
         var derived = filterAggByGroup(pa.out, fetchGroup);
         // An "All" fetch shares each source's paging budget across every taxon, so at a
         // dense spot it can truncate before it has any of a smaller group — and deriving
@@ -6097,7 +6148,7 @@
     // ONLY when the "Fetched points" box is ticked (see SYNC_CAT_KEYS.fetched).
     try {
       if (syncCatOn("fetched") && typeof persistedSightings !== "undefined" && persistedSightings) {
-        state.sightingsCache = persistedSightings;
+        state.sightingsCache = persistedSightings;   // the sync / export loads every stored record first (loadAllSights)
       }
     } catch (e) {}
     return {
@@ -6184,7 +6235,7 @@
     }
   }
   function exportAppData() {
-    mpState.whenAllLoaded().then(function () {   // lists load lazily: a backup must hold them whole
+    mpState.whenAllLoaded().then(function () { return syncCatOn("fetched") ? loadAllSights() : null; }).then(function () {   // lists (and fetched records) load lazily: a backup must hold them whole
       if (mpState.anyLazy()) return;
       downloadCsv("BirdsWhere_backup_" + new Date().toISOString().slice(0, 10) + ".json", JSON.stringify(buildPayload(), null, 2), "application/json;charset=utf-8;");
     });
@@ -6619,8 +6670,7 @@
     // ticked; write it straight back to IndexedDB and into the live map.
     try {
       if (incoming.sightingsCache && window.AppIDB && AppIDB.available()) {
-        persistedSightings = incoming.sightingsCache;
-        AppIDB.put("sightingsCache", persistedSightings).catch(function () {});
+        Object.keys(incoming.sightingsCache).forEach(function (ck) { var e = incoming.sightingsCache[ck]; if (e && e.out) storeSightEntry(ck, e); });
       }
     } catch (e) {}
     // Reflect the merged pins (dots/stars) on the map + legend immediately.
@@ -6881,6 +6931,7 @@
   // copies through the exact same code path as the file Export/Import.
   window.AppData = {
     buildPayload: buildPayload,
+    loadFetchedForSync: function () { return syncCatOn("fetched") ? loadAllSights() : Promise.resolve(); },   // the stored location records are read on demand; a sync with "Fetched points" ticked needs them all
     flushWrites: flushWrites,
     driveExtraFiles: driveExtraFiles,
     markBackedUp: markBackedUp,
@@ -21323,11 +21374,11 @@
       else if (what === "obs") {   // every fetched observation, wherever it sits (owner, 2026-10-21: memory climbed to tens of GB):
         // this session's per-location answers (memory), the IndexedDB copy that serves a revisit,
         // the restore-on-open snapshot, the per-record model probabilities and the dots on the map.
-        allSightingsCache = {}; histSightingsCache = {}; histAggCache = {}; seededSightings = {}; persistedSightings = {};
+        allSightingsCache = {}; histSightingsCache = {}; histAggCache = {}; seededSightings = {};
         obsProbCache = Object.create(null);
         try { clearDetections(); } catch (e) {}
         window.GeoState.save({ mapDetections: null });
-        p = (window.AppIDB && AppIDB.available()) ? AppIDB.del("sightingsCache").catch(function () {}) : Promise.resolve();
+        p = clearPersistedSightings();   // every stored location record + the index → the space is released
       }
       else if (what === "overlays") p = delByPrefix("api-");   // cached Overpass / overlay query responses → refetch fresh
       else if (what === "hotspots") {
@@ -21398,12 +21449,8 @@
       }
       var hs = loadHotspotStore();
       setCnt("hotspots", Object.keys(hs).length, jsonBytes(hs));
-      if (window.AppIDB && AppIDB.available()) {
-        AppIDB.get("sightingsCache").then(function (m) {
-          m = (m && typeof m === "object") ? m : {};
-          setCnt("obs", Object.keys(m).length, jsonBytes(m));
-        }).catch(function () {});
-      } else setCnt("obs", Object.keys(persistedSightings).length, jsonBytes(persistedSightings));
+      var sightN = 0, sightB = 0; Object.keys(sightIdx).forEach(function (k) { sightN++; sightB += +sightIdx[k].bytes || 0; });   // from the index: no record is read
+      setCnt("obs", sightN, sightB);
       if (window.AppOffline && AppOffline.areaStats) AppOffline.areaStats().then(function (s) { setCnt("offline", s.n, s.bytes, true); }).catch(function () {});
       // Species-Range cache: the in-memory Map IS the working set (hydrated from
       // its pool blob at boot) — count its (species,week) tags, size via the same

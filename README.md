@@ -1373,13 +1373,15 @@ the one thing left out by default — they are much the largest thing the app ho
   opened), so many large lists no longer slow the start. Long lists (species table, observation
   list, legend) show their first rows at once and fill in the rest in the background.
   **Settings → Storage** lists every cache with its count and size — **Fetched observations**
-  (this session's per-location answers in memory, the IndexedDB copy, the restore-on-open snapshot
-  and the dots on the map), map tiles, range maps, overlays, eBird hotspots, viewpoints, best sites,
+  (every location's downloaded observations, kept on the device until you clear them: one
+  IndexedDB record per location, read again when you revisit the spot — plus the restore-on-open
+  snapshot and the dots on the map; clearing deletes the records and releases the space), map tiles, range maps, overlays, eBird hotspots, viewpoints, best sites,
   species names, downloaded names, offline areas and species photos — each with its own clear
   button, and **Clear all cached data** empties them all in one go (after a confirm; saved lists,
   checklists and settings stay). The browser's own usage figure counts cross-origin map tiles with
   a large privacy padding and can read tens of GB for a few hundred MB of real data; the per-row
-  sizes are the measured ones.
+  sizes are the measured ones. *Reuse downloads* (Settings) defaults to 0 = a stored location is
+  reused until cleared; set minutes there to have a reopen refetch after that long.
 - **Languages** — the **UI is fully translated into 15 languages** (en, sv, de, es, fr, nl, it, pt,
   pl, cs, no, da, fi, et, lt); other languages fall back to English UI text while still showing
   localised species names. **Species common names are available in ~45 languages**, loaded as

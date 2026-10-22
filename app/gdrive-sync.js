@@ -692,6 +692,7 @@ window.GDriveSync = (function () {
       // `updatedAt` excluded: every local write bumps that timestamp, so a
       // bare stringify would treat an otherwise-unchanged sync as dirty and
       // trigger a full resumable upload on every sync. Download is pull-only.
+      if (window.AppData.loadFetchedForSync) { try { await window.AppData.loadFetchedForSync(); } catch (e) {} }   // fetched records live one per location now
       var merged = window.AppData.buildPayload();
       if (dir !== "upload") window.AppData.overlayExcludedForPush(merged, remote, inc, localState);
       // From here the payload names each list's file instead of holding its points.
