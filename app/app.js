@@ -813,14 +813,6 @@
   }
 
   // ---- Utilities -----------------------------------------------------------
-  function perceptualNorm(raw, maxVal) {
-    var out = new Float32Array(raw.length);
-    if (maxVal > 0) {
-      for (var i = 0; i < raw.length; i++)
-        out[i] = Math.pow(raw[i] / maxVal, DISPLAY_GAMMA);
-    }
-    return out;
-  }
 
   function wrapLon(v) { return ((((v + 180) % 360) + 360) % 360) - 180; }
 
@@ -6360,7 +6352,7 @@
       o.mapDetections = capDetections(obj.mapDetections, st.cap);
       if (st.caches) dropRebuildable(o);
       if (st.rar != null && o.rarityList && o.rarityList.length > st.rar) o.rarityList = o.rarityList.slice(0, st.rar);
-      try { localStorage.setItem(window.GeoState.storageKey, JSON.stringify(o)); window.GeoState.invalidate(); return detRowCount(o.mapDetections); }
+      try { localStorage.setItem(window.GeoState.storageKey, JSON.stringify(o)); window.GeoState.invalidate(); try { AppSources.invalidate(); } catch (e3) {} return detRowCount(o.mapDetections); }
       catch (e) { /* quota — free more and retry */ }
     }
     throw new Error("storage full; biggest: " + biggestStateKeys(obj, 3));
@@ -10198,6 +10190,7 @@
           var code = ln.slice(0, ci).trim(), fam = ln.slice(ci + 1).trim();
           if (code && fam) bundledFam[code] = fam;
         });
+        famIndexGen++;   // the bundled families change every colour's input
         if (Object.keys(detPlot).length) { try { recolorDetections(); rebuildDetLayers(); updateDetLegend(); } catch (e) {} }   // provisional hues → family hues
       }).catch(function () {});
     } catch (e) {}
@@ -10230,13 +10223,15 @@
   // same on every device). Run whenever the plotted set changes or a family is
   // newly learned from GBIF — so a dot snaps to its family's hue the moment GBIF
   // supplies the family.
-  var detColorSig = "", famIndexGen = 0;   // recolorDetections runs on every legend click / point add: skip it when nothing it depends on changed (P1)
+  // recolorDetections runs on every legend click / point add (P1): an entry already coloured
+  // for the current family index (`_cg`, non-enumerable so it is never persisted) is skipped —
+  // only new / re-created entries and a changed family index (famIndexGen: harvested families,
+  // the bundled families.csv, a sync merge) cost the four hashes per species.
+  var famIndexGen = 0;
   function recolorDetections() {
-    var keys = Object.keys(detPlot);
-    var sig = keys.length + "|" + famIndexGen + "|" + keys.join("\u0001");
-    if (sig === detColorSig) return;
-    detColorSig = sig;
-    keys.forEach(function (k) {
+    Object.keys(detPlot).forEach(function (k) {
+      if (detPlot[k]._cg === famIndexGen) return;
+      Object.defineProperty(detPlot[k], "_cg", { value: famIndexGen, writable: true, enumerable: false, configurable: true });
       var f = famOf(k);
       if (f) {
         var hue = (famHue(f) + (strHash("h:" + k) % 7) - 3 + 360) % 360;          // ±3° jitter within the family band
@@ -14251,10 +14246,9 @@
   // Several single-point adds in quick succession (a search, a shared link's pins) used to
   // rebuild the legend and persist after EACH one; one short timer folds them into one pass.
   var detAfterAddTimer = null;
-  function scheduleDetAfterAdd() {
-    if (detAfterAddTimer) return;
-    detAfterAddTimer = setTimeout(function () { detAfterAddTimer = null; try { updateDetLegend(); } catch (e) {} try { saveDetections(); } catch (e) {} }, 60);
-  }
+  function runDetAfterAdd() { detAfterAddTimer = null; try { updateDetLegend(); } catch (e) {} try { saveDetections(); } catch (e) {} }
+  function scheduleDetAfterAdd() { if (!detAfterAddTimer) detAfterAddTimer = setTimeout(runDetAfterAdd, 60); }
+  function flushDetAfterAdd() { if (detAfterAddTimer) { clearTimeout(detAfterAddTimer); runDetAfterAdd(); } }   // before a page hide or a store reload, so the add is never lost
   function plotDetections(key, name, rows, fit, defer, cls) {
     var slim = detSlim(rows);
     if (currentFetchAreaId) slim.forEach(function (r) { r._areas = [currentFetchAreaId]; });
@@ -15278,7 +15272,7 @@
     if (_legendSaveT) return;                      // one write per burst, not one per toggle
     _legendSaveT = setTimeout(function () { _legendSaveT = null; saveLegendStateNow(); }, 300);
   }
-  function flushLegendState() { if (_legendSaveT) { clearTimeout(_legendSaveT); _legendSaveT = null; saveLegendStateNow(); } }
+  function flushLegendState() { flushDetAfterAdd(); if (_legendSaveT) { clearTimeout(_legendSaveT); _legendSaveT = null; saveLegendStateNow(); } }
   window.addEventListener("pagehide", flushLegendState);
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") flushLegendState(); });
   function saveLegendStateNow() {
@@ -15382,6 +15376,7 @@
   // import merged them) and re-render the map + legend in place.
   function reloadPlottedFromStore() {
     if (typeof map === "undefined" || !map) return;
+    flushDetAfterAdd();   // a point added within the last 60 ms must reach the store before it is re-read
     Object.keys(detPlot).forEach(function (k) { if (detPlot[k].group) map.removeLayer(detPlot[k].group); });
     detPlot = {};
     // Pick up families merged in from another device so colours match it.
@@ -24279,18 +24274,6 @@
     return arr;
   }
 
-  function normalizeProbs(raw) {
-    var maxProb = 0;
-    for (var i = 0; i < raw.length; i++) if (raw[i] > maxProb) maxProb = raw[i];
-    // One pass normalises AND hides the cells outside the min–max range slider (the same
-    // control filters the species-range overlay) — three passes and two buffers before (P13).
-    var pmin = +document.getElementById("prob-min").value / 100;
-    var pmax = +document.getElementById("prob-max").value / 100;
-    var norm = new Float32Array(raw.length);
-    if (maxProb > 0) for (var j = 0; j < raw.length; j++) { var v = raw[j]; norm[j] = (v < pmin || v > pmax) ? 0 : Math.pow(v / maxProb, DISPLAY_GAMMA); }
-    return { probs: norm, maxProb: maxProb };
-  }
-
   // Weeks to compute for a range/richness render: just the selected week
   // normally, or all 48 when precomputing for migration animation.
   function weeksToCompute() {
@@ -25987,17 +25970,24 @@
   async function speciesAggsAcrossCells(cells, week, progress) {
     var nSpecies = labels.length, CHUNK = inferChunk();
     var allowMatrix = cells.length <= SPECIES_AGG_CAP_CELLS, sid = ++aggSessionSeq;
-    for (var s = 0; s < cells.length; s += CHUNK) {
-      var batch = cells.slice(s, s + CHUNK);
-      var inputs = new Float32Array(batch.length * 3);
-      for (var j = 0; j < batch.length; j++) {
-        var ll = window.h3.cellToLatLng(batch[j]);
-        inputs[j * 3] = ll[0]; inputs[j * 3 + 1] = ll[1]; inputs[j * 3 + 2] = week;
+    try {
+      for (var s = 0; s < cells.length; s += CHUNK) {
+        var batch = cells.slice(s, s + CHUNK);
+        var inputs = new Float32Array(batch.length * 3);
+        for (var j = 0; j < batch.length; j++) {
+          var ll = window.h3.cellToLatLng(batch[j]);
+          inputs[j * 3] = ll[0]; inputs[j * 3 + 1] = ll[1]; inputs[j * 3 + 2] = week;
+        }
+        await runInference(inputs, batch.length, { task: "aggs", aggSession: sid, aggMatrix: allowMatrix });
+        if (progress) progress(Math.min(s + batch.length, cells.length), cells.length);
       }
-      await runInference(inputs, batch.length, { task: "aggs", aggSession: sid, aggMatrix: allowMatrix });
-      if (progress) progress(Math.min(s + batch.length, cells.length), cells.length);
+    } catch (err) {
+      // A failed chunk must not leave the (up to ~144 MB) session behind in the worker: close it, then rethrow.
+      try { await runInference(new Float32Array(0), 0, { task: "aggsFinish", aggSession: sid }); } catch (e2) {}
+      throw err;
     }
     var fin = await runInference(new Float32Array(0), 0, { task: "aggsFinish", aggSession: sid });
+    if (fin.length < nSpecies) throw new Error("species aggregation lost in the worker");   // never cache an empty result
     var maxArr = fin.subarray(0, nSpecies);
     if (fin.length < 3 * nSpecies) return { max: maxArr };
     return { max: maxArr, p90: fin.subarray(nSpecies, 2 * nSpecies), median: fin.subarray(2 * nSpecies, 3 * nSpecies) };
@@ -27921,7 +27911,7 @@
         header += ",seen_count";
         var csvLines = [header];
         results.forEach(function (r, idx) {
-          var line = (idx + 1) + ',"' + r.label.key + '","' + spNm(r.label).replace(/"/g, '""') + '"';
+          var line = (idx + 1) + ',"' + r.label.key + '","' + speciesName(r.label).replace(/"/g, '""') + '"';   // at download time: names harvested since the render count
           if (secondLang) line += ',"' + secondName(r.label).replace(/"/g, '""') + '"';
           line += ',"' + r.label.sci.replace(/"/g, '""') + '",' + r.prob.toFixed(6);
           if (hasCompare) line += "," + (Number.isNaN(r.cmpVal) ? "" : r.cmpVal.toFixed(6));

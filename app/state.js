@@ -86,7 +86,7 @@ window.GeoState = (function () {
   // Another tab changing our key invalidates this tab's cache (matches the old
   // re-parse-every-read behaviour for cross-tab edits).
   try {
-    window.addEventListener("storage", function (e) { if (e.key === KEY) cache = null; });
+    window.addEventListener("storage", function (e) { if (e.key === KEY) { cache = null; try { if (window.AppSources && window.AppSources.invalidate) window.AppSources.invalidate(); } catch (e2) {} } });
   } catch (e) { /* no window/storage events — fine */ }
 
   // Merge a partial patch into the stored state.

@@ -89,7 +89,8 @@ window.AppSources = (function () {
   // Both lists are rebuilt from state on every call and asked for several times per fetch; memoised
   // until the next state write (P10).
   var _memo = {};
-  try { window.GeoState.onChange(function () { _memo = {}; }); } catch (e) {}
+  function invalidate() { _memo = {}; }   // also called after a direct localStorage write that bypasses save() (sync merge, boot self-heal, another tab)
+  try { window.GeoState.onChange(invalidate); } catch (e) {}
   function gbifDatasets() {
     if (_memo.ds) return _memo.ds;
     var stored = window.GeoState.get("gbifDatasets", null);
@@ -224,6 +225,7 @@ window.AppSources = (function () {
 
   return {
     init: init,
+    invalidate: invalidate,
     gbifDatasets: gbifDatasets,
     lajiDirectActive: lajiDirectActive,
     directSources: directSources,

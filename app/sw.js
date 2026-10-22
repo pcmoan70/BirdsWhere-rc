@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2164";
+var VERSION = "v2165";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Faster: partial results during a fetch render at most four times a second; a legend click or a single added point no longer recolours every species; the country list\u2019s statistics run off the main thread; range and richness paints reuse projected hexes and a cached peak; the species list indexes its group once; session caches are capped.",
+  "\u2022 Follow-ups to the speed work: species colours are always refreshed where they must be (bundled families, rarity alerts, list species), an added point is saved before the app is hidden, and a failed country aggregation no longer leaves memory behind in the worker.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -433,8 +433,10 @@ window.AppFetch = (function () {
     // eBird must not spend the source's whole timeout on names (P18). Whatever resolved in time is
     // applied; the outer abort still stops it at once.
     var enrichAc = new AbortController(), enrichTimer = setTimeout(function () { enrichAc.abort(); }, 8000);
-    if (signal) { if (signal.aborted) enrichAc.abort(); else signal.addEventListener("abort", function () { enrichAc.abort(); }); }
-    try { await ebirdEnrichObservers(obs, tok, ge, enrichAc.signal); } catch (e) {} finally { clearTimeout(enrichTimer); }
+    var onOuterAbort = function () { enrichAc.abort(); };
+    if (signal) { if (signal.aborted) enrichAc.abort(); else signal.addEventListener("abort", onOuterAbort, { once: true }); }
+    try { await ebirdEnrichObservers(obs, tok, ge, enrichAc.signal); } catch (e) {}
+    finally { clearTimeout(enrichTimer); if (signal) { try { signal.removeEventListener("abort", onOuterAbort); } catch (e) {} } }
     return obs;
   }
   // eBird "notable" feed — regionally-flagged rarities near a point. Used by the
