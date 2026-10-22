@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2170";
+var VERSION = "v2171";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Species list: switching layouts or toggling the predicted species no longer drops fetched observations from the list. The map underneath the list page kept resizing (keyboard, toolbar, rotation, a status-line change), and the list was scoped to that unseen viewport; it now keeps the view you left the map in.",
+  "\u2022 Map overlays menu: Best sites, Viewpoints, eBird hotspots, MiS forest habitats and Land cover now sit at the top; the protected-area outlines follow.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

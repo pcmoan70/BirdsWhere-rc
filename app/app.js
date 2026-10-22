@@ -20656,18 +20656,20 @@
     // Hover tips explain eBird hotspots (50 km fetch + caching) and OSM protected areas
     // (drawn live from OpenStreetMap; only loads when zoomed in — a wide view returns
     // too much data for the Overpass API).
+    // Row order = menu order: the birding layers first (owner, 2026-10-22), then the
+    // habitat backdrops, then the protected-area outlines; experimental ones append last.
     overlayDefsRef = [
+      { key: "layer.bestSites", layer: bestSitesLayer(), tip: "layer.bestSitesTip" },
+      { key: "layer.birdSpots", layer: birdingSpotsLayer(), tip: "layer.birdSpotsTip" },
+      { key: "layer.hotspots", layer: hotspotsLayer, tip: "layer.hotspotsTip" },
+      { key: "layer.mis", layer: mis, tip: "layer.misTip" },
+      { key: "layer.landcover", layer: landcover, tip: "layer.landcoverTip" },
       { key: "layer.wdpa", layer: wdpa },
       { key: "layer.ramsar", layer: ramsar },
       { key: "layer.natura2000", layer: n2k },
       { key: "layer.emerald", layer: emerald, tip: "layer.emeraldTip" },
-      { key: "layer.landcover", layer: landcover, tip: "layer.landcoverTip" },
-      { key: "layer.mis", layer: mis, tip: "layer.misTip" },
       { key: "layer.gbif", layer: gbif, tip: "layer.gbifTip" },
-      { key: "layer.osmpa", layer: osmProtectedLayer(), tip: "layer.osmpaTip" },
-      { key: "layer.hotspots", layer: hotspotsLayer, tip: "layer.hotspotsTip" },
-      { key: "layer.bestSites", layer: bestSitesLayer(), tip: "layer.bestSitesTip" },
-      { key: "layer.birdSpots", layer: birdingSpotsLayer(), tip: "layer.birdSpotsTip" }
+      { key: "layer.osmpa", layer: osmProtectedLayer(), tip: "layer.osmpaTip" }
     ];
     // Tile/raster overlays (WDPA, Ramsar, Natura 2000, Emerald, Land cover, GBIF
     // density) don't call overlayLoadStatus — they load through Leaflet's own tile

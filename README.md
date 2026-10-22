@@ -106,7 +106,7 @@ fetched at once; it is a *display* choice, so what a fetch asks for is still dec
 birds/mammals/amphibians/insects; **Plants 🌿 and Fungi 🍄 are observation-only**
 (Range/Richness/Migration are hidden for them).
 
-**Overlay layers** (layer control): **WDPA · Protected Planet** (*Experimental* — enable in Settings), **Ramsar wetlands**,
+**Overlay layers** (layer control; the menu lists the birding layers first — Best sites, Viewpoints, eBird hotspots, MiS forest habitats, Land cover — then the protected-area outlines): **WDPA · Protected Planet** (*Experimental* — enable in Settings), **Ramsar wetlands**,
 **Natura 2000** (EU SPA/SCI; *Experimental* — enable in Settings), **Emerald Network** (Bern Convention — the non-EU counterpart
 to Natura 2000), **Land cover** (CORINE / Copernicus-EEA — habitat backdrop, Europe/EEA, with a
 colour-coded class legend in the lower-right while it's on), **MiS forest habitats** (NIBIO's inventory of Norwegian forest —
