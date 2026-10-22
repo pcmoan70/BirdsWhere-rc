@@ -667,13 +667,14 @@ window.GDriveSync = (function () {
       // Re-emit so the UI sees the freshly counted `pull` in the snapshot and can say what
       // arrived; the counting itself happens just above.
       if (remote) phase("merge");
+      // One parse of the stored blob: it doubles as the "before" copy for the change test below
+      // (independent of GeoState's live cache, which applyRemote mutates in place).
       var localState = {}; try { localState = JSON.parse(localStateStr()); } catch (e) {}
       // Upload writes a NEW folder holding this device's data and nothing else (owner,
       // 2026-10-06: "When uploading: a new folder on gdrive should be created containing only
       // device datafiles"): Drive's payload is read only to copy list files that are byte-for-
       // byte this device's own (same signature) instead of uploading them again.
       var toApply = (remote && dir !== "upload") ? window.AppData.filterIncomingForSync(remote, inc, localState) : null;
-      var before = localStateStr();
       // Download: Drive's copy of a list REPLACES this device's (points deleted elsewhere go here
       // too); lists only this device has are kept. Two-way stays a union — nothing is lost.
       // Download: "merge" (default) is an outer join — Drive's lists and points are added,
@@ -682,7 +683,9 @@ window.GDriveSync = (function () {
       // hand if wanted (owner, 2026-10-06). Two-way: union.
       var replaceL = dir === "download" && options && options.merge === false;
       if (toApply) window.AppData.applyRemote(toApply, { incomingWins: incomingWins, interactive: false, replaceLists: replaceL });
-      var changed = localStateStr() !== before;
+      // Changed = a real difference, judged key by key with the self-stamps excluded — a raw
+      // string compare saw `updatedAt` move on every write and called every sync "changed" (S6).
+      var changed = stateDiffers(localState, window.GeoState.snapshot());
 
       // Push when there's no remote yet, or the merged result differs from it
       // (local-only collections, or our scalars winning). Compare state with

@@ -269,10 +269,10 @@ window.AppAggregate = (function () {
     function dkDate(r) { return String(r.date || "").slice(0, 10); }
     function dedupKey(r) { return r.sciName.toLowerCase() + "|" + dkLoc(r) + "|" + String(r.observer || "").toLowerCase().replace(/\s+/g, " ").trim() + "|" + dkDate(r) + "|" + dkCount(r); }
     function dedupKeyNoObs(r) { return r.sciName.toLowerCase() + "|" + dkLoc(r) + "|" + dkDate(r) + "|" + dkCount(r); }
-    var nativeKeys = Object.create(null), nativeNoObs = Object.create(null);
+    var nativeKeys = Object.create(null), nativeNoObs = Object.create(null), nativeBlankObs = Object.create(null);
     (records || []).forEach(function (r) {
       if (!r || !r.sciName || r.src === "GBIF") return;
-      if (r.observer) nativeKeys[dedupKey(r)] = 1;
+      if (r.observer) nativeKeys[dedupKey(r)] = 1; else nativeBlankObs[dedupKeyNoObs(r)] = 1;   // a native record WITHOUT an observer: its GBIF twin may carry one (B3)
       nativeNoObs[dedupKeyNoObs(r)] = 1;   // built for ALL native records (matches a GBIF republish that dropped the observer)
     });
     // Keep only the active species group's taxa. A specific ANIMAL group keeps just
@@ -292,7 +292,7 @@ window.AppAggregate = (function () {
       // Skip a GBIF record that duplicates a sighting we already have natively:
       // by observer when GBIF kept one, else by the observer-independent date key.
       if (r.src === "GBIF") {
-        if (r.observer ? nativeKeys[dedupKey(r)] : nativeNoObs[dedupKeyNoObs(r)]) return;
+        if (r.observer ? (nativeKeys[dedupKey(r)] || nativeBlankObs[dedupKeyNoObs(r)]) : nativeNoObs[dedupKeyNoObs(r)]) return;
       }
       // Group filter (records with an unknown class/kingdom are kept — the name
       // match decides):

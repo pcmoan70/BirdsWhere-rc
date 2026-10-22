@@ -80,9 +80,9 @@ self.onmessage = async function (e) {
       var flatInputs = new Float32Array(e.data.flatInputs);
       var batchSize = e.data.batchSize;
       var tensor = new ort.Tensor("float32", flatInputs, [batchSize, 3]);
-      var results = await session.run({ input: tensor });
-      var outKey = Object.keys(results)[0];
-      var full = results[outKey].data;               // batchSize * nSpecies
+      var feeds = {}; feeds[session.inputNames[0]] = tensor;   // by the model's own names, not a hard-coded "input" / the first key (S5)
+      var results = await session.run(feeds);
+      var full = results[session.outputNames[0]].data;   // batchSize * nSpecies
       var nSpecies = full.length / batchSize;
       var task = e.data.task || "raw";
       var out, b, base, s;

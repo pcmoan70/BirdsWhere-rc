@@ -318,28 +318,59 @@ window.AppFetch = (function () {
   // Bisect the DATE range until each sub-range is under the ceiling, fetch each
   // fully (fetchGbifAll pages it), and concatenate — so every page is retrieved.
   // Sub-ranges are disjoint (mid | mid+1), so a record can't land in two of them.
-  // Sequential (await) sub-fetches also spread the request load over time, which
-  // eases GBIF's rate limiter.
-  async function fetchGbifHistoric(lat, lon, from, to, rkm, cc, signal, onProgress, extra) {
+  // The two halves of a split run in parallel (P16; each fetchGbifAll already caps
+  // itself at 6 concurrent queries and gbifPage retries 429s with backoff), and ONE
+  // progress accumulator spans the whole recursion, so the bar climbs once instead
+  // of jumping to 100 % per sub-fetch (B7).
+  function gbifProgressAcc(onProgress) {
+    var parts = {}, n = 0;
+    return {
+      part: function () {   // a per-sub-fetch onProgress that reports the SUM of all parts
+        var id = n++;
+        return onProgress ? function (done, total) {
+          parts[id] = [done, total];
+          var d = 0, tt = 0; for (var k in parts) { d += parts[k][0]; tt += parts[k][1]; }
+          try { onProgress(Math.min(d, tt), tt); } catch (e) {}   // a query counts its pages before it learns its total: never report done > total
+        } : null;
+      }
+    };
+  }
+  async function fetchGbifHistoric(lat, lon, from, to, rkm, cc, signal, onProgress, extra, acc) {
     if (signal && signal.aborted) return [];
+    acc = acc || gbifProgressAcc(onProgress);
     var count = await gbifCount(lat, lon, from + "," + to, rkm, cc, signal, extra);
     var mid = gbifMidDate(from, to);
     var canSplit = from < to && mid > from && mid < to;
+    var halves = function () {
+      return Promise.all([
+        fetchGbifHistoric(lat, lon, from, mid, rkm, cc, signal, onProgress, extra, acc),
+        fetchGbifHistoric(lat, lon, gbifAddDay(mid, 1), to, rkm, cc, signal, onProgress, extra, acc)
+      ]).then(function (ab) { return ab[0].concat(ab[1]); });
+    };
     if (count <= 95000 || !canSplit) {
-      var recs = await fetchGbifAll(lat, lon, from + "," + to, rkm, cc, signal, onProgress, extra, null, true);   // historic=true → include historic-only datasets (eBird EOD)
-      // Completeness guard: if paging still came back well short of the known
-      // count (a transient truncation the per-page retries couldn't overcome)
-      // and the range can still be split, recover the remainder by bisecting.
+      var recs = await fetchGbifAll(lat, lon, from + "," + to, rkm, cc, signal, acc.part(), extra, null, true);   // historic=true → include historic-only datasets (eBird EOD)
+      // Completeness guard: if paging still came back well short of the known count (a
+      // transient truncation the per-page retries couldn't overcome) and the range can
+      // still be split, recover only the half that is short — the complete half is kept,
+      // not fetched again — and merge by record key.
       if (count > 0 && recs.length < count * 0.85 && canSplit && !(signal && signal.aborted)) {
-        var la = await fetchGbifHistoric(lat, lon, from, mid, rkm, cc, signal, onProgress, extra);
-        var lb = await fetchGbifHistoric(lat, lon, gbifAddDay(mid, 1), to, rkm, cc, signal, onProgress, extra);
-        return la.concat(lb);
+        var midDay = mid, byHalf = [[], []];
+        recs.forEach(function (o) { byHalf[String(o.eventDate || "").slice(0, 10) <= midDay ? 0 : 1].push(o); });
+        var ranges = [[from, mid], [gbifAddDay(mid, 1), to]];
+        var fixed = await Promise.all(ranges.map(async function (rg, h) {
+          if (signal && signal.aborted) return byHalf[h];
+          var ch = await gbifCount(lat, lon, rg[0] + "," + rg[1], rkm, cc, signal, extra);
+          if (!(ch > 0) || byHalf[h].length >= ch * 0.85) return byHalf[h];   // this half is complete
+          var again = await fetchGbifHistoric(lat, lon, rg[0], rg[1], rkm, cc, signal, onProgress, extra, acc);
+          var seen = Object.create(null), out = [];
+          byHalf[h].concat(again).forEach(function (o) { if (o.key != null) { if (seen[o.key]) return; seen[o.key] = 1; } out.push(o); });
+          return out;
+        }));
+        return fixed[0].concat(fixed[1]);
       }
       return recs;
     }
-    var a = await fetchGbifHistoric(lat, lon, from, mid, rkm, cc, signal, onProgress, extra);
-    var b = await fetchGbifHistoric(lat, lon, gbifAddDay(mid, 1), to, rkm, cc, signal, onProgress, extra);
-    return a.concat(b);
+    return halves();
   }
   // Append a query string to a (possibly already-parameterised) endpoint URL.
   function joinUrl(base, params) { return base + (base.indexOf("?") < 0 ? "?" : "&") + params; }

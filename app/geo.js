@@ -133,7 +133,7 @@ window.AppGeo = (function () {
   // widens the zone, so a point whose radius reaches the other side queries both.
   function noSeBorderLon(lat) { return 11.4 + 0.91 * (lat - 59); }
   function nearCountry(lat, lon, cc, marginKm) {
-    var mk = marginKm || 0, dLat = mk / 111, dLon = mk / ((111 * Math.cos(lat * Math.PI / 180)) || 1);
+    var mk = marginKm || 0, dLat = mk / 111, dLon = Math.min(180, mk / (111 * Math.max(0.1, Math.cos(lat * Math.PI / 180))));   // cos clamped: the box must not balloon east near the pole (B8)
     var bl = noSeBorderLon(lat);
     if (cc === "NO") return lat >= 57.5 - dLat && lat <= 71.5 + dLat && lon >= 3.5 - dLon && lon <= bl + dLon;
     if (cc === "SE") return lat >= 55.0 - dLat && lat <= 69.3 + dLat && lon >= bl - dLon && lon <= 24.6 + dLon;

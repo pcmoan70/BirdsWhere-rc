@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2161";
+var VERSION = "v2162";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Point lists: Edit values (list menu) \u2014 the list as a spreadsheet; click a latitude or longitude to set the position on the map, hover to preview it.",
-  "\u2022 Whatever opens last now sits on top \u2014 the Edit-list dialog no longer hides under the list menu.",
+  "\u2022 Fixes: a source that merely timed out no longer shows as a failure; the \u22652-observers ring now counts \u201cA, B\u201d as two people; changing sources, keys, datasets or timeouts also forgets the historic cache; a GBIF copy of a native record is dropped even when only GBIF names the observer; the Drive-restore confirm is the app\u2019s own dialog.",
+  "\u2022 Historic (GBIF) fetches: the two halves of a split run in parallel, a short half is recovered on its own, and the progress bar climbs once instead of restarting.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
@@ -633,7 +633,7 @@ function cacheFirstCapped(req, cacheName, max) {
       return fetch(req).then(function (res) {
         if (res && (res.ok || res.type === "opaque")) {
           cache.put(req, res.clone()).then(function () {
-            queueTrim(cache, max);
+            queueTrim(cacheName, cache, max);
           });
         }
         return res;
@@ -647,29 +647,31 @@ function cacheFirstCapped(req, cacheName, max) {
 // deleting overlapping keys[i] ranges, which can over-delete (below max) or
 // thrash. Chain each queued trim onto the previous so at most one runs at a
 // time, and coalesce — never pile up more than one additional pending pass.
-var trimming = null; // tail of the in-flight trim chain, or null when idle
-var trimPending = false; // a follow-up pass is already queued behind the chain
+// One chain PER CACHE (the 16 tile shards trim independently): a single shared chain let a
+// trim queued for shard A be coalesced into shard B's pending pass, so A could sit over its cap.
+var trimChains = {};   // cacheName -> { trimming: tail promise | null, pending: bool }
 
-function queueTrim(cache, max) {
-  if (trimming) {
+function queueTrim(cacheName, cache, max) {
+  var st = trimChains[cacheName] || (trimChains[cacheName] = { trimming: null, pending: false });
+  if (st.trimming) {
     // A trim is running; queue at most one follow-up pass behind it.
-    if (trimPending) return trimming;
-    trimPending = true;
-    trimming = trimming.then(function () {
-      trimPending = false;
+    if (st.pending) return st.trimming;
+    st.pending = true;
+    st.trimming = st.trimming.then(function () {
+      st.pending = false;
       return trim(cache, max);
     });
   } else {
-    trimming = trim(cache, max);
+    st.trimming = trim(cache, max);
   }
   // Whichever branch set the tail, clear it once the chain drains. New work
-  // arriving meanwhile reassigns `trimming` to a later promise, so this only
+  // arriving meanwhile reassigns the tail to a later promise, so this only
   // nulls when nothing further has been chained on.
-  var tail = trimming;
+  var tail = st.trimming;
   tail.then(function () {
-    if (trimming === tail) trimming = null;
+    if (st.trimming === tail) st.trimming = null;
   });
-  return trimming;
+  return st.trimming;
 }
 
 // Cache Storage preserves insertion order, so cache.keys() returns requests

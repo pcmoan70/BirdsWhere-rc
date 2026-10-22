@@ -133,6 +133,7 @@ window.GeoState = (function () {
   return {
     get: get,
     save: save,
+    snapshot: read,    // the cached state object itself — READ-ONLY for callers (save() mutates it in place)
     storageKey: KEY,   // the (possibly RC-suffixed) localStorage key — use instead of hardcoding
     invalidate: invalidate,
     lastSaveOk: lastSaveOk,

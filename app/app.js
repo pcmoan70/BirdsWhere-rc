@@ -4213,6 +4213,9 @@
   // and keys. This store only ever holds the latest import and survives those wipes.
   var seededSightings = {};
   var histSightingsCache = {};  // "lat,lon:rkm:range" -> Promise<aggregated map> for Historic observations
+  // Any change to WHAT a fetch would return (sources, keys, datasets, timeouts, BirdWeather
+  // thresholds, borders) forgets both caches — the historic one used to be left behind (#5).
+  function invalidateSightings() { allSightingsCache = {}; histSightingsCache = {}; }
   // Broadest COMPLETED historic result per location/radius/group, kept across fetches
   // (NOT wiped like histSightingsCache) so a narrower date range or month subset that
   // it covers can be served by filtering it — no re-fetch. { from, to, months[], out }.
@@ -4386,26 +4389,26 @@
     var urlInp = el.querySelector(".src-url"); if (urlInp) urlInp.addEventListener("change", function () { patchSource(id, "url", this.value.trim()); });
     var daysInp = el.querySelector(".src-days"); if (daysInp) daysInp.addEventListener("change", function () { var v = Math.max(1, Math.min(info.isGbif ? 92 : 365, +this.value || 1)); if (info.isGbif) setGbifDays(v); else patchSource(id, "days", v); });
     var dsBtn = el.querySelector("#gbif-ds-open"); if (dsBtn) dsBtn.addEventListener("click", openGbifDatasets);
-    var toInp = el.querySelector(".src-timeout-inp"); if (toInp) toInp.addEventListener("change", function () { var v = Math.max(0, Math.min(600, Math.round(+this.value) || 0)); this.value = String(v); if (info.isGbif) setGbifTimeout(v); else patchSource(id, "timeout", v); allSightingsCache = {}; });
+    var toInp = el.querySelector(".src-timeout-inp"); if (toInp) toInp.addEventListener("change", function () { var v = Math.max(0, Math.min(600, Math.round(+this.value) || 0)); this.value = String(v); if (info.isGbif) setGbifTimeout(v); else patchSource(id, "timeout", v); invalidateSightings(); });
     var keyInp = el.querySelector(".src-key");
     if (keyInp) {
-      keyInp.addEventListener("input", function () { setDirectKey(id, this.value); allSightingsCache = {}; window.GeoState.touch(); });
+      keyInp.addEventListener("input", function () { setDirectKey(id, this.value); invalidateSightings(); window.GeoState.touch(); });
       keyInp.addEventListener("change", function () { runSrcKeyTest(id); });
       if (directKey(id)) runSrcKeyTest(id);
     }
     var bwMd = el.querySelector(".src-bw-md"), bwMdV = el.querySelector(".src-bw-md-val");
     if (bwMd) {
       bwMd.addEventListener("input", function () { if (bwMdV) bwMdV.textContent = this.value; });
-      bwMd.addEventListener("change", function () { window.GeoState.save({ bwMinDet: Math.max(1, Math.min(50, +this.value || 2)) }); allSightingsCache = {}; });
+      bwMd.addEventListener("change", function () { window.GeoState.save({ bwMinDet: Math.max(1, Math.min(50, +this.value || 2)) }); invalidateSightings(); });
     }
     var bwC = el.querySelector(".src-bw-conf"), bwCV = el.querySelector(".src-bw-conf-val");
     if (bwC) {
       bwC.addEventListener("input", function () { if (bwCV) bwCV.textContent = this.value + "%"; });
-      bwC.addEventListener("change", function () { window.GeoState.save({ bwMinConf: Math.max(0, Math.min(95, +this.value || 0)) / 100 }); allSightingsCache = {}; });
+      bwC.addEventListener("change", function () { window.GeoState.save({ bwMinConf: Math.max(0, Math.min(95, +this.value || 0)) / 100 }); invalidateSightings(); });
     }
     // (The "Remove source" action was dropped 2026-10-22, owner's request — sources are switched off, never removed; srcRemoved from earlier removals still applies until Reset.)
   }
-  function resetSources() { window.GeoState.save({ directSources: null, srcRemoved: null }); allSightingsCache = {}; srcDetailId = null; renderSourcesTable(); }
+  function resetSources() { window.GeoState.save({ directSources: null, srcRemoved: null }); invalidateSightings(); srcDetailId = null; renderSourcesTable(); }
   // Display name for a species key (current UI language), for the lists view.
   function listKeyName(key) {
     var lbl = labelsByKey[key];
@@ -4802,7 +4805,7 @@
       var rem = window.GeoState.get("gbifRemoved", []) || [];
       if (rem.indexOf(key) < 0) { rem.push(key); window.GeoState.save({ gbifRemoved: rem }); }
     }
-    allSightingsCache = {};
+    invalidateSightings();
     renderGbifTable();
   }
   // Accept a bare dataset key or a gbif.org/dataset/<key> URL; pull the name from
@@ -4820,7 +4823,7 @@
     var rem = window.GeoState.get("gbifRemoved", []) || []; var ri = rem.indexOf(key);
     if (ri >= 0) { rem.splice(ri, 1); window.GeoState.save({ gbifRemoved: rem }); }
     list.push({ key: key, name: homepage || "", url: homepage, country: country });
-    window.GeoState.save({ gbifDatasets: list }); allSightingsCache = {};
+    window.GeoState.save({ gbifDatasets: list }); invalidateSightings();
     renderGbifTable();
     // Fill in the title / homepage from GBIF (don't overwrite a URL the user gave).
     fetch("https://api.gbif.org/v1/dataset/" + key).then(function (r) { return r.json(); }).then(function (dj) {
@@ -5294,7 +5297,9 @@
           release();
           var rr = recs || [];
           if (killed) {
-            timedOut.push(s.name); var fi = failed.indexOf(s.name); if (fi >= 0) failed.splice(fi, 1);   // a timeout isn't a hard failure
+            timedOut.push(s.name);   // a timeout isn't a hard failure — drop it from `failed` (entries are {name, error} objects; an indexOf on the name never matched, B1)
+            var fi = -1; for (var fj = 0; fj < failed.length; fj++) { var ff = failed[fj]; if ((ff && ff.name ? ff.name : ff) === s.name) { fi = fj; break; } }
+            if (fi >= 0) failed.splice(fi, 1);
             var prog = obsSub[s.name] || {};
             timedOutInfo[s.name] = { kept: rr.length, total: (prog.total > 0 ? prog.total : null) };   // what it had paged when cut off
           }
@@ -7362,7 +7367,7 @@
     var rk = parseFloat(p.radius);
     if (isFinite(rk) && rk > 0) {   // persist so the fetch + the settings slider agree
       rk = Math.max(0.1, Math.min(150, rk));
-      window.GeoState.save({ recentRadiusKm: rk }); allSightingsCache = {};
+      window.GeoState.save({ recentRadiusKm: rk }); invalidateSightings();
       var rrEl = document.getElementById("recent-radius"); if (rrEl) rrEl.value = String(radiusStepIndex(rk));
       var rrVal = document.getElementById("recent-radius-val"); if (rrVal) rrVal.textContent = radiusLabel(rk);
     }
@@ -7428,10 +7433,10 @@
     // Hand the aggregation module live access to the model data + family index
     // (it owns the record→species matching; these stay owned by app.js).
     // A source/dataset config change invalidates the cached sightings fetches.
-    AppSources.init({ onConfigChange: function () { allSightingsCache = {}; } });
+    AppSources.init({ onConfigChange: function () { invalidateSightings(); } });
     // Start the country-border load; when it arrives, drop the sightings cache
     // so country-gating re-runs with the (now accurate) polygons.
-    AppGeo.init({ onBordersLoaded: function () { allSightingsCache = {}; } });
+    AppGeo.init({ onBordersLoaded: function () { invalidateSightings(); } });
     AppAggregate.init({
       getLabels: function () { return labels; },
       familyOfKey: function (key) { return famOf(key); },   // disambiguates a shared epithet across genera
@@ -9295,7 +9300,7 @@
       var idx = Math.max(0, Math.min(RADIUS_STEPS.length - 1, radiusStepIndex(recentRadiusKm()) + (e.deltaY < 0 ? 1 : -1)));
       var km = RADIUS_STEPS[idx];
       if (km === recentRadiusKm()) return;
-      window.GeoState.save({ recentRadiusKm: km }); allSightingsCache = {};
+      window.GeoState.save({ recentRadiusKm: km }); invalidateSightings();
       var rrEl = document.getElementById("recent-radius"); if (rrEl) rrEl.value = String(idx);
       var rrVal = document.getElementById("recent-radius-val"); if (rrVal) rrVal.textContent = radiusLabel(km);
       try { updateFetchArea(map.mouseEventToLatLng(e)); } catch (er) {}                                // resize the live movable preview
@@ -14062,7 +14067,7 @@
       if (!detPassesText(r)) return;            // words in notes
       var lk = (+r.lat).toFixed(4) + "," + (+r.lon).toFixed(4);
       var s = obsByLoc[lk] || (obsByLoc[lk] = Object.create(null));
-      var o = (r.observer || "").trim(); if (o) s[o] = 1;
+      detObsRealNames((r.observer || "").trim()).forEach(function (n) { s[n] = 1; });   // split "A | B" into its people (tags dropped) — the ≥2 ring counts observers, not strings (B4)
       drawRows.push({ r: r, lk: lk });          // filtered ONCE — the draw pass reuses this row + key
     });
     var ringed = Object.create(null);
@@ -21776,7 +21781,7 @@
         FETCH_GROUP_IDS.forEach(function (g) { if (!(g in cur)) cur[g] = true; });
         cur[cb.getAttribute("data-fg")] = !!cb.checked;
         window.GeoState.save({ fetchGroups: cur });
-        allSightingsCache = {};   // a different tick set is different data: don't reuse this session's answers
+        invalidateSightings();   // a different tick set is different data: don't reuse this session's answers
                                   // (the persisted cache is keyed by sightConfigSig, which now carries the set)
         render();
       });
@@ -21815,7 +21820,7 @@
     rrEl.value = String(radiusStepIndex(+window.GeoState.get("recentRadiusKm", 25) || 25));
     if (rrVal) rrVal.textContent = radiusLabel(RADIUS_STEPS[+rrEl.value]);
     rrEl.addEventListener("input", function () { if (rrVal) rrVal.textContent = radiusLabel(RADIUS_STEPS[+this.value]); });
-    rrEl.addEventListener("change", function () { window.GeoState.save({ recentRadiusKm: RADIUS_STEPS[+this.value] || 25 }); allSightingsCache = {}; });
+    rrEl.addEventListener("change", function () { window.GeoState.save({ recentRadiusKm: RADIUS_STEPS[+this.value] || 25 }); invalidateSightings(); });
 
     var histFetchBtn = document.getElementById("hist-fetch");
     if (histFetchBtn) histFetchBtn.addEventListener("click", function () {
@@ -22157,12 +22162,13 @@
             }).join("");
             Array.prototype.forEach.call(bakList.querySelectorAll(".so-bak-go"), function (btn) {
               btn.addEventListener("click", function () {
-                var when = fmtBackupWhen(+this.getAttribute("data-at"));
-                if (!window.confirm(t("sync.restoreConfirm", { t: when }))) return;
-                var id = this.getAttribute("data-id");
-                close();
-                gdStatus.textContent = "⟳ " + t("gdrive.syncing"); gdStatus.classList.add("gd-syncing");
-                window.GDriveSync.restoreBackup(id).then(function (ok) { if (ok) setStatus(t("sync.restored", { t: when })); });
+                var when = fmtBackupWhen(+this.getAttribute("data-at")), id = this.getAttribute("data-id");
+                modalConfirm(t("sync.restoreConfirm", { t: when })).then(function (ok) {   // the app's own dialog (window.confirm dropped fullscreen on Android, S1)
+                  if (!ok) return;
+                  close();
+                  gdStatus.textContent = "⟳ " + t("gdrive.syncing"); gdStatus.classList.add("gd-syncing");
+                  window.GDriveSync.restoreBackup(id).then(function (ok2) { if (ok2) setStatus(t("sync.restored", { t: when })); });
+                });
               });
             });
           });
