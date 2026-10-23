@@ -21,7 +21,7 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2173";
+var VERSION = "v2174";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
@@ -29,6 +29,10 @@ var VERSION = "v2173";
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
   "\u2022 Overlays moved off the map: tap the bird button (top-left) \u2192 Overlays\u2026 for a popup with a tick box and a short description per overlay, a ? for the full explanation and the \u2699 settings on Viewpoints, Best sites and eBird hotspots. Hold the Overlays\u2026 row (or tap the button at the top of the popup) to hide and restore every ticked overlay in one go.",
+  "\u2022 Fetched observations stay on the device per location until you clear them (Settings \u2192 Storage \u2192 Fetched observations), and clearing releases the space. Reopening a spot you have fetched shows its observations without a new download.",
+  "\u2022 Point popup: a Predicted button runs the model for the spot and opens the species list, most likely first and down to 1 %; the \u25c9 rare mark now shows in every species list, predicted species included.",
+  "\u2022 Model compare: two Norwegian examples at the bottom of the page (White-backed Woodpecker, Gyrfalcon) with small maps of the difference around Oslo.",
+  "\u2022 Fixes and speed: the species list keeps its observations while you switch list types or toggle prediction; a source that times out is no longer reported as failed; co-observed records count both observers; fetches with several sources, the legend, the range and richness overlays and the country lists render noticeably faster.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
