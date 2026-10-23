@@ -1030,7 +1030,10 @@ Right-click / long-press / tap any species name for a menu **led by the species 
   matching records of the lists not struck through into the map points (the working pins); the lists
   and their shown / hidden state stay as they were. Each record goes on once — the same observation in
   several lists (same spot to ~1 m, date and species, else name) counts and is added once, and a
-  record already on the map is not added again. Save
+  record already on the map is not added again. Every point a search put on the map goes through the
+  legend: a record with a species sits under its species, a record matched on its note under one row
+  named by the search words (in the search's colour), so the legend's filters reach them all and the
+  legend's red × takes them off again (after the fetched observations, before the shown lists). Save
   the pins into a list to keep them.
   A search's points are drawn as plain circles in that search's own colour (25 % fill); those with a
   species — read from the point's stored species or scientific name through the model labels — also

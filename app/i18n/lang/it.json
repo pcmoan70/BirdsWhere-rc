@@ -149,6 +149,7 @@
   "ctrl.clearPoints": "Rimuovi dalla mappa le osservazioni scaricate (gli elenchi di punti salvati restano)",
   "ctrl.clearLists": "Togli dalla mappa gli elenchi mostrati (gli elenchi restano)",
   "ctrl.listsCleared": "Elenchi mostrati tolti dalla mappa — spuntali in Punti per mostrarli di nuovo.",
+  "ctrl.searchPinsCleared": "Punti della ricerca tolti dalla mappa — cerca di nuovo in Punti per rimetterli.",
   "offline.purgedAsk": "{n} area/e mappa offline sono state cancellate dal browser. Riscaricarle ora?",
   "offline.redownloading": "Nuovo download di “{name}”…",
   "offline.redone": "Aree offline riscaricate.",

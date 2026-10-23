@@ -10955,7 +10955,7 @@
     if (k && k.indexOf("x:") === 0) { var e = dEntry(k); return (e && e.cls) || ""; }
     return (taxByCode[k] && taxByCode[k].class_name) || "";
   }
-  function detPassesGroup(k) { return speciesGroup === "all" || String(detClassOf(k)).toLowerCase() === String(speciesGroup).toLowerCase(); }
+  function detPassesGroup(k) { return speciesGroup === "all" || isSearchKey(k) || String(detClassOf(k)).toLowerCase() === String(speciesGroup).toLowerCase(); }   // a search's pins have no class
   var mapClickGuardUntil = 0;   // onMapClick ignores clicks before this time; each accepted click re-arms it (200 ms debounce), legend re-renders set a longer window
   var mapPtrDownTs = 0, mapPtrUpTs = 0, mapPtrIsTouch = false;   // last map pointer-down/-up times + whether it was touch (press-duration gating)
   function mapPtrStillDown() { return mapPtrDownTs > 0 && mapPtrUpTs < mapPtrDownTs; }
@@ -11457,6 +11457,7 @@
     // Extra stored under "x:<sci>" — re-resolve to a model species by scientific
     // name (or class-aware epithet) so it localises to the current UI language
     // instead of showing the capture-locale name (e.g. Norwegian "hønsehauk").
+    if (isSearchKey(e.key)) return e.name || e.key.slice(SEARCH_KEY_PREFIX.length);   // a search's row: its words
     if (e.key && e.key.indexOf("x:") === 0) {
       var sci = e.key.slice(2);
       // The epithet-only matcher needs the record's class: without one, "Astragalus norvegicus"
@@ -15143,6 +15144,12 @@
   function clearStep() {
     if (!detAreaDeleteMode && fetchedAreas.length) { enterAreaDeleteMode(); updateDetLegend(); return; }
     if (detAreaDeleteMode || detFetchedCount()) { clearDetections(); return; }
+    if (mpSearchPins().length) {   // the points a search put on the map (owner, 2026-10-23: the red × deletes them)
+      mpState.setMapPoints(mpState.mapPoints().filter(function (p) { return !p.fromSearch; }));
+      saveMapPoints(); renderMapPoints();
+      if (typeof refreshMpPanel === "function") refreshMpPanel();
+      setStatus(t("ctrl.searchPinsCleared")); return;
+    }
     if (Object.keys(mpState.shownColls()).length || Object.keys(mpState.shownDetSets()).length) {
       mpState.setShownColls({}); mpState.setShownDetSets({});
       saveShownState(); updateDetSetOverlays(); renderMapPoints();
@@ -18233,8 +18240,12 @@
     // Map points put there by a search, with a species (owner, 2026-10-11: "the species names should be
     // parsed correctly and added to legend"): they join the legend like a shown list's records, drawn as
     // one circle per point in their SEARCH's colour (see the _search branch of the dot drawing).
+    // A pin WITHOUT a species (matched on its note) joins too, under one legend row per search —
+    // named by the search words, in the search's colour — so the legend, its filters and the red ×
+    // reach every point a search put on the map (owner, 2026-10-23).
     mpSearchPins().forEach(function (p) {
-      var key = mpState.detKeyOf(p); if (!key) return;
+      if (!isFinite(+p.lat) || !isFinite(+p.lon)) return;
+      var key = mpState.detKeyOf(p) || searchKey(p.fromSearch);
       var col = mpSearchColor(p.fromSearch);
       var row = _listRowOf && _listRowOf.get(p);
       if (!row) {
@@ -18244,7 +18255,9 @@
         if (_listRowOf) _listRowOf.set(p, row);
       }
       var e = detPlot[key];
-      if (!e) e = detPlot[key] = { key: key, name: (key.indexOf("x:") === 0 ? (p.sci || p.name) : p.name) || key, color: p.spColor || "#888", rows: [], group: null, cls: p.spCls || (taxByCode[key] && taxByCode[key].class_name) || "" };
+      if (!e) e = detPlot[key] = isSearchKey(key)
+        ? { key: key, name: "\u201c" + p.fromSearch + "\u201d", color: col, rows: [], group: null, cls: "" }
+        : { key: key, name: (key.indexOf("x:") === 0 ? (p.sci || p.name) : p.name) || key, color: p.spColor || "#888", rows: [], group: null, cls: p.spCls || (taxByCode[key] && taxByCode[key].class_name) || "" };
       // the same record already there (a shown list's, a fetched one): not counted twice
       var sk = (+row.lat).toFixed(5) + "," + (+row.lon).toFixed(5) + "|" + String(row.date || "").slice(0, 10);
       if (e.rows.some(function (r0) { return (+r0.lat).toFixed(5) + "," + (+r0.lon).toFixed(5) + "|" + String(r0.date || "").slice(0, 10) === sk; })) { skipped++; return; }
@@ -19257,6 +19270,11 @@
   var MP_OTHER = "#other-map-points#";
   // The map points a search put there, and that search's colour (stable per search words).
   function mpSearchPins() { return mpState.mapPoints().filter(function (p) { return p && p.fromSearch; }); }
+  // The legend key of a search's species-less pins: "x:search:<words>" — an extra like a non-model
+  // species, so it rides the "x:" paths; named by the words, never resolved against the taxonomy.
+  var SEARCH_KEY_PREFIX = "x:search:";
+  function searchKey(q) { return SEARCH_KEY_PREFIX + q; }
+  function isSearchKey(k) { return typeof k === "string" && k.indexOf(SEARCH_KEY_PREFIX) === 0; }
   function mpSearchColor(q) { return mpState.mpHashColor("search:" + q); }
   // One record's identity for de-duplication: its spot to ~1 m, its date, its species (else its name).
   function mpRecKey(q) { var k = mpState.detKeyOf(q); return (+q.lat).toFixed(5) + "," + (+q.lon).toFixed(5) + "|" + (q.date || "").slice(0, 10) + "|" + (k || textFold(q.name || "")); }

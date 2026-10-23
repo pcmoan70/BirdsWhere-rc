@@ -2787,7 +2787,7 @@ window.AppPoints = (function () {
     updateDetSetOverlays();   // keep the shown detection-set layers in sync
     mapPoints.forEach(function (p) {
       if (!mpVisible(p)) return;
-      if (p.fromSearch && detKeyOf(p)) return;   // a search's pin WITH a species is drawn by the detection pipeline (legend), in its search's colour
+      if (p.fromSearch) return;   // a search's pins are drawn by the detection pipeline (legend rows, filters, red ×), in the search's colour
       renderMpPin(p, true);                      // loose working pins (editable, tag colour)
     });
     // Ticked saved point-lists: a list's DETECTION points (those carrying a species

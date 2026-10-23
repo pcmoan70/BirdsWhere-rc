@@ -149,6 +149,7 @@
   "ctrl.clearPoints": "Effacer de la carte les observations chargées (les listes de points enregistrées restent)",
   "ctrl.clearLists": "Retirer les listes affichées de la carte (les listes sont conservées)",
   "ctrl.listsCleared": "Listes affichées retirées de la carte — cochez-les dans Points pour les réafficher.",
+  "ctrl.searchPinsCleared": "Points de recherche retirés de la carte — relancez la recherche dans Points pour les remettre.",
   "offline.purgedAsk": "{n} zone(s) de carte hors ligne ont été effacées par le navigateur. Les retélécharger maintenant ?",
   "offline.redownloading": "Retéléchargement de « {name} »…",
   "offline.redone": "Zones hors ligne retéléchargées.",

@@ -149,6 +149,7 @@
   "ctrl.clearPoints": "Ryd hentede observationer fra kortet (gemte punktlister bliver)",
   "ctrl.clearLists": "Fjern de viste lister fra kortet (listerne beholdes)",
   "ctrl.listsCleared": "Viste lister er fjernet fra kortet — sæt flueben i Punkter for at vise dem igen.",
+  "ctrl.searchPinsCleared": "Søgepunkterne er fjernet fra kortet — søg igen i Punkter for at lægge dem tilbage.",
   "offline.purgedAsk": "{n} offlinekortområde(r) blev ryddet af browseren. Download dem igen nu?",
   "offline.redownloading": "Downloader “{name}” igen…",
   "offline.redone": "Offlineområder downloadet igen.",

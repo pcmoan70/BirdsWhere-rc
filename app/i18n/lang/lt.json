@@ -149,6 +149,7 @@
   "ctrl.clearPoints": "Pašalinti iš žemėlapio atsisiųstus stebėjimus (išsaugoti taškų sąrašai lieka)",
   "ctrl.clearLists": "Nuimti rodomus sąrašus nuo žemėlapio (sąrašai išlieka)",
   "ctrl.listsCleared": "Rodomi sąrašai nuimti nuo žemėlapio — pažymėkite juos Taškuose, kad vėl būtų rodomi.",
+  "ctrl.searchPinsCleared": "Paieškos taškai nuimti nuo žemėlapio — ieškokite dar kartą Taškuose, kad juos grąžintumėte.",
   "offline.purgedAsk": "Naršyklė išvalė {n} neprisijungimo žemėlapio sričių. Atsisiųsti jas iš naujo?",
   "offline.redownloading": "Iš naujo atsisiunčiama „{name}“…",
   "offline.redone": "Neprisijungimo sritys atsisiųstos iš naujo.",

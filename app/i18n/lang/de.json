@@ -149,6 +149,7 @@
   "ctrl.clearPoints": "Abgerufene Beobachtungen von der Karte entfernen (gespeicherte Punktlisten bleiben)",
   "ctrl.clearLists": "Angezeigte Listen von der Karte nehmen (die Listen bleiben)",
   "ctrl.listsCleared": "Angezeigte Listen von der Karte genommen — unter Punkte ankreuzen, um sie wieder zu zeigen.",
+  "ctrl.searchPinsCleared": "Suchpunkte von der Karte genommen — unter Punkte erneut suchen, um sie zurückzulegen.",
   "offline.purgedAsk": "{n} Offline-Kartenbereich(e) wurden vom Browser gelöscht. Jetzt erneut herunterladen?",
   "offline.redownloading": "„{name}“ wird erneut heruntergeladen…",
   "offline.redone": "Offline-Bereiche erneut heruntergeladen.",

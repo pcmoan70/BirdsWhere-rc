@@ -149,6 +149,7 @@
   "ctrl.clearPoints": "Fjern hentede observasjoner fra kartet (lagrede punktlister blir værende)",
   "ctrl.clearLists": "Ta de viste listene av kartet (listene beholdes)",
   "ctrl.listsCleared": "Viste lister er tatt av kartet — kryss dem av i Punkter for å vise dem igjen.",
+  "ctrl.searchPinsCleared": "Søkepunktene er tatt av kartet — søk på nytt i Punkter for å legge dem tilbake.",
   "offline.purgedAsk": "{n} offline-kartområde(r) ble slettet av nettleseren. Laste dem ned på nytt nå?",
   "offline.redownloading": "Laster ned «{name}» på nytt …",
   "offline.redone": "Offline-områder lastet ned på nytt.",

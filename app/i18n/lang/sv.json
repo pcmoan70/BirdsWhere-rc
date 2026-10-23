@@ -150,6 +150,7 @@
   "ctrl.clearPoints": "Rensa hämtade observationer från kartan (sparade punktlistor ligger kvar)",
   "ctrl.clearLists": "Ta bort de visade listorna från kartan (listorna behålls)",
   "ctrl.listsCleared": "Visade listor borttagna från kartan — markera dem i Punkter för att visa dem igen.",
+  "ctrl.searchPinsCleared": "Sökpunkterna borttagna från kartan — sök igen i Punkter för att lägga tillbaka dem.",
   "ctrl.offline": "Offlinekartor",
   "ctrl.offlineZoom": "Max zoom för nedladdning",
   "ctrl.rarepct": "Tröskel för sällsynta arter (%)",

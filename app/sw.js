@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2175";
+var VERSION = "v2176";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Fix: Save in the point editor did nothing when a point was added from an observation\u2019s place name (Add as point) \u2014 the popup\u2019s buttons lost their handlers while it was being centred.",
-  "\u2022 The Overlays popup is now Maps & overlays: the base-map chooser (Voyager, Streets, CyclOSM, Topographic, Esri Topo, Satellite and the API-key fields) moved there from Settings and sits at the top, above the overlays.",
+  "\u2022 Points \u2192 search: every point a search puts on the map now shows in the legend \u2014 a record without a species under one row named by the search words \u2014 so the legend\u2019s filters apply to them and the legend\u2019s red \u00d7 takes them off the map again (after the fetched observations, before the shown lists).",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
