@@ -2586,8 +2586,11 @@ window.AppPoints = (function () {
             mpTipHtml(o.p) + "</div>" + pointTagsHtml(o.p) + "</div>";
       }).join("");
     // Leaflet's own maxHeight gives the popup its scrollbar (.leaflet-popup-scrolled).
+    // A DOM node, not a string: centerPopup's pop.update() re-renders string content and would drop
+    // the click handlers attached below (same fix as openPointEditor in app.js).
+    var node = document.createElement("div"); node.innerHTML = html;
     var pop = L.popup({ className: "area-tip mp-stack-pop", maxWidth: 320, maxHeight: 300, autoPan: false })
-      .setLatLng(center).setContent(html).openOn(getMap());
+      .setLatLng(center).setContent(node).openOn(getMap());
     centerPopup(pop);
     var el = pop.getElement();
     if (!el) return;

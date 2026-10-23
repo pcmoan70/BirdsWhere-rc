@@ -21,18 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2174";
+var VERSION = "v2175";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Overlays moved off the map: tap the bird button (top-left) \u2192 Overlays\u2026 for a popup with a tick box and a short description per overlay, a ? for the full explanation and the \u2699 settings on Viewpoints, Best sites and eBird hotspots. Hold the Overlays\u2026 row (or tap the button at the top of the popup) to hide and restore every ticked overlay in one go.",
-  "\u2022 Fetched observations stay on the device per location until you clear them (Settings \u2192 Storage \u2192 Fetched observations), and clearing releases the space. Reopening a spot you have fetched shows its observations without a new download.",
-  "\u2022 Point popup: a Predicted button runs the model for the spot and opens the species list, most likely first and down to 1 %; the \u25c9 rare mark now shows in every species list, predicted species included.",
-  "\u2022 Model compare: two Norwegian examples at the bottom of the page (White-backed Woodpecker, Gyrfalcon) with small maps of the difference around Oslo.",
-  "\u2022 Fixes and speed: the species list keeps its observations while you switch list types or toggle prediction; a source that times out is no longer reported as failed; co-observed records count both observers; fetches with several sources, the legend, the range and richness overlays and the country lists render noticeably faster.",
+  "\u2022 Fix: Save in the point editor did nothing when a point was added from an observation\u2019s place name (Add as point) \u2014 the popup\u2019s buttons lost their handlers while it was being centred.",
+  "\u2022 The Overlays popup is now Maps & overlays: the base-map chooser (Voyager, Streets, CyclOSM, Topographic, Esri Topo, Satellite and the API-key fields) moved there from Settings and sits at the top, above the overlays.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -7707,6 +7707,9 @@
               '<div class="ctrl-group" id="week-select-wrap" style="display:none">' +
                 '<select id="week-select" aria-hidden="true" tabindex="-1"></select>' +
               '</div>' +
+              // The base-map chooser lives in the Maps & overlays popup (owner, 2026-10-23); the hidden
+              // holder keeps the markup (and its wiring) in the document between opens.
+              '<div id="maptype-home" hidden>' +
               '<div class="ctrl-group" id="maptype-wrap">' +
                 '<label for="maptype-select" data-i18n="ctrl.basemap">Map type</label>' +
                 '<select id="maptype-select">' +
@@ -7727,6 +7730,7 @@
                   '<input type="text" id="maptiler-key-input" autocomplete="off" spellcheck="false" data-i18n-ph="ph.maptilerKey" placeholder="MapTiler API key (for MapTiler Outdoor)" />' +
                   '<p class="cu-hint" data-i18n="ctrl.maptilerKeyHint">MapTiler Outdoor (trails + terrain) needs a free personal MapTiler API key from maptiler.com — paste it here to use it. Until then a plain Streets map is shown.</p>' +
                 '</div>' +
+              '</div>' +
               '</div>' +
               '<div class="settings-section" data-i18n="settings.secFetch">Fetching &amp; detections</div>' +
               '<div class="ctrl-group">' +
@@ -18675,9 +18679,14 @@
     var isEdit = !!(existing && existing.id);
     // Re-use a single working popup; close any other detail popups first.
     if (mpEditPopup) map.closePopup(mpEditPopup);
-    var html = mpEditorHtml(p, isEdit);
+    // The content goes in as a DOM node, not a string: centerPopup() calls pop.update() once the
+    // popup has its final size, and Leaflet re-renders STRING content from scratch on every update
+    // — which threw away the Save / Delete / route handlers wireEditorPopup had just attached
+    // whenever that update landed after the wiring (owner, 2026-10-23: "Save does nothing").
+    // A node is re-appended as-is, listeners included.
+    var node = document.createElement("div"); node.innerHTML = mpEditorHtml(p, isEdit);
     var pop = L.popup({ closeButton: true, autoClose: true, maxWidth: 280, className: "mp-popup", autoPan: false })
-      .setLatLng([p.lat, p.lon]).setContent(html);
+      .setLatLng([p.lat, p.lon]).setContent(node);
     mpEditPopup = pop; pop.openOn(map);
     window.AppPoints.centerPopup(pop);   // in the middle of the screen, once it has its final size
     setTimeout(function () { wireEditorPopup(p, isEdit); }, 0);
@@ -20269,11 +20278,16 @@
   function openOverlaysPopup() {
     if (!overlayDefsRef || !map) return;
     closeDropdowns();
-    var m = createModal({ escClose: true, backdropClose: true, boxClass: "ovl-box", onClose: function () { overlaysPopup = null; navClose("overlays"); } });
+    var mapWrap = document.getElementById("maptype-wrap"), mapHome = document.getElementById("maptype-home");
+    var m = createModal({ escClose: true, backdropClose: true, boxClass: "ovl-box", onClose: function () {
+      overlaysPopup = null; navClose("overlays");
+      if (mapWrap && mapHome) mapHome.appendChild(mapWrap);   // park the base-map chooser again (its wiring stays)
+    } });
     overlaysPopup = m;
     navOpen("overlays", m.close);   // Back closes it like the other popups
     m.box.innerHTML = '<div class="ui-modal-msg ovl-help-title">' + escapeHtml(t("ctrl.overlays")) + "</div>" +
       '<button type="button" class="btn ovl-all"></button><div class="ovl-rows"></div>';
+    if (mapWrap) m.box.insertBefore(mapWrap, m.box.querySelector(".ovl-all"));   // the base map first, then the overlays
     m.box.querySelector(".ovl-all").addEventListener("click", function () { toggleAllOverlays(); });
     renderOverlayRows();
   }
