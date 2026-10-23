@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2172";
+var VERSION = "v2173";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Model compare: two examples from Norway at the foot of the page (White-backed woodpecker, Gyrfalcon) with small difference maps around Oslo for the chosen week, and a button that loads each over Europe.",
+  "\u2022 Overlays moved off the map: tap the bird button (top-left) \u2192 Overlays\u2026 for a popup with a tick box and a short description per overlay, a ? for the full explanation and the \u2699 settings on Viewpoints, Best sites and eBird hotspots. Hold the Overlays\u2026 row (or tap the button at the top of the popup) to hide and restore every ticked overlay in one go.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

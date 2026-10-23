@@ -407,7 +407,9 @@
       linkout:  '<path d="M14 5h5v5"/><path d="M19 5l-8 8"/><path d="M17 13.5V18a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h4.5"/>',
       bell:     '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
       // Clock — the legend's "sort by date" state.
-      clock:    '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>'
+      clock:    '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
+      // Stacked layers — the Overlays row in the bird button's quick panel.
+      layers:   '<path d="M12 3.5l9 4.75-9 4.75-9-4.75z"/><path d="M3 13l9 4.75 9-4.75"/><path d="M3 17.25L12 22l9-4.75"/>'
     };
     return '<svg class="btn-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (P[name] || "") + "</svg>";
   }
@@ -698,7 +700,10 @@
       if (opts.onClose) opts.onClose();
     }
     if (opts.backdropClose !== false) ov.addEventListener("click", function (e) { if (e.target === ov) close(); });
-    if (opts.escClose) { onKey = function (e) { if (e.key === "Escape") { e.preventDefault(); close(); } }; document.addEventListener("keydown", onKey, true); }
+    // Esc closes only the topmost modal (an overlay's help dialog stacks on the Overlays
+    // popup), and only that: the document's Esc = Back handler must not also pop the
+    // popup underneath.
+    if (opts.escClose) { onKey = function (e) { if (e.key !== "Escape") return; var all = document.querySelectorAll(".ui-modal-overlay"); if (all[all.length - 1] !== ov) return; e.preventDefault(); e.stopPropagation(); close(); }; document.addEventListener("keydown", onKey, true); }
     // Every popup carries a × (the app-wide rule). Callers fill `box` synchronously right
     // after this returns, so it goes in on the next tick — after their own markup, and
     // skipped where they already built a close control.
@@ -1046,11 +1051,11 @@
     var now = Date.now();
     Object.keys(overlayBusySet).forEach(function (n) { if (overlayBusySet[n] < now) delete overlayBusySet[n]; });
     var names = Object.keys(overlayBusySet), any = names.length > 0;
-    var tog = document.querySelector(".leaflet-control-layers-toggle");
-    if (tog) tog.classList.toggle("ovl-loading", any);
-    document.querySelectorAll(".leaflet-control-layers-overlays label").forEach(function (lb) {
-      var txt = (lb.textContent || "").trim();
-      lb.classList.toggle("ovl-row-loading", names.some(function (n) { return txt.indexOf(n) === 0; }));
+    // The bird button and the quick panel's Overlays row pulse; so does the loading
+    // overlay's row in the Overlays popup while it is open.
+    document.querySelectorAll("#settings-toggle, .gq-overlays").forEach(function (b) { b.classList.toggle("ovl-loading", any); });
+    document.querySelectorAll(".ovl-row").forEach(function (lb) {
+      lb.classList.toggle("ovl-row-loading", names.indexOf(lb.getAttribute("data-name")) >= 0);
     });
     clearTimeout(overlayBusyTimer);
     if (any) overlayBusyTimer = setTimeout(overlayBusyRender, 3000);   // sweep expired stragglers
@@ -9883,8 +9888,7 @@
   // any future try-it-out links/features.
   function experimentalOn() { return !!window.GeoState.get("experimental", false); }
   // Every menu entry that only appears when Experimental features are on gets a
-  // trailing "*" so it reads as an experimental extra. applyOverlayTips() strips it
-  // back off before matching overlay rows by label.
+  // trailing "*" so it reads as an experimental extra.
   var EXP_STAR = "*";
   function expMark(text) { return text + EXP_STAR; }
   // Show/hide the experimental-gated UI that lives in static HTML (re-run on the
@@ -20203,35 +20207,14 @@
       gbifLayer.setUrl(gbifRasterUrl());
     }
   }
-  // The Leaflet overlay control builds its labels ONCE from the overlays object, so a
-  // runtime language change would leave them stale (e.g. still "Fugleplasser" after
-  // switching to English). Keep a name-key per layer so the control can be re-labelled.
-  var overlayLayersCtrl = null, overlayDefsRef = null;
+  // The overlay registry: a name key (+ description key) per layer. The Overlays popup
+  // (bird button → Overlays…) is built from it each time it opens.
+  var overlayDefsRef = null, overlaysPopup = null;
   // Detailed explanation of one overlay (what it shows, why it helps, how to use it,
-  // caveats) — opened from the ⓘ-style "?" badge at the right of its row. The texts are
-  // English so far; other languages get the English one with a small note.
-  // While the help dialog is up, Leaflet's layers control must not fold away (its
-  // mouseleave / map-click collapse fires as the pointer moves onto the dialog): any
-  // collapse is undone at once, and after the dialog closes the panel is re-expanded
-  // so it stays open until the user closes it themselves (tap the map / move off it).
-  var ovlPinObs = null;
-  function pinOverlayCtrl(on) {
-    var c = overlayLayersCtrl; if (!c) return;
-    var el = c.getContainer();
-    if (on) {
-      try { c.expand(); } catch (e) {}
-      if (!ovlPinObs && window.MutationObserver) {
-        ovlPinObs = new MutationObserver(function () { if (!el.classList.contains("leaflet-control-layers-expanded")) { try { c.expand(); } catch (e) {} } });
-        ovlPinObs.observe(el, { attributes: true, attributeFilter: ["class"] });
-      }
-    } else {
-      if (ovlPinObs) { ovlPinObs.disconnect(); ovlPinObs = null; }
-      setTimeout(function () { try { c.expand(); } catch (e) {} }, 0);
-    }
-  }
+  // caveats) — opened from the "?" at the right of its row. The texts are English so
+  // far; other languages get the English one with a small note.
   function showOverlayHelp(def) {
-    pinOverlayCtrl(true);
-    var m = createModal({ escClose: true, backdropClose: true, boxClass: "ovl-help-box", onClose: function () { pinOverlayCtrl(false); } });
+    var m = createModal({ escClose: true, backdropClose: true, boxClass: "ovl-help-box" });
     var html = t(def.key + "Help");
     var enOnly = (lang !== "en") && !window.GeoI18N.hasOwn(lang, def.key + "Help");
     m.box.innerHTML = '<div class="ui-modal-msg ovl-help-title">' + escapeHtml(t(def.key)) + "</div>" +
@@ -20240,60 +20223,99 @@
       '<div class="ui-modal-btns"><button type="button" class="btn ovl-help-ok">' + escapeHtml(t("popup.ok")) + "</button></div>";
     m.box.querySelector(".ovl-help-ok").addEventListener("click", m.close);
   }
-  function applyOverlayTips() {
-    if (!overlayLayersCtrl || !overlayDefsRef) return;
-    try {
-      var tips = {}, defsByName = {};
-      overlayDefsRef.forEach(function (d) { if (d.tip) tips[t(d.key)] = t(d.tip); defsByName[t(d.key)] = d; });
-      var wantBird = t("layer.birdSpots");
-      Array.prototype.forEach.call(overlayLayersCtrl.getContainer().querySelectorAll(".leaflet-control-layers-overlays label"), function (lab) {
-        // The zoom-hint badge (added below) lives in its own span; exclude it when
-        // reading the layer name so tip-matching still works after it's attached.
-        var hint = lab.querySelector(".ovl-zoomhint");
-        var txt = (lab.textContent || "");
-        if (hint) txt = txt.replace(hint.textContent, "");
-        txt = txt.trim();
-        if (txt.slice(-1) === EXP_STAR) txt = txt.slice(0, -1).trim();   // drop the experimental "*" before matching
-        lab.title = tips[txt] || "";
-        // "?" badge at the right edge of every row → the overlay's detailed explanation.
-        var def = defsByName[txt];
-        if (def && !lab.querySelector(".ovl-help")) {
-          var q = document.createElement("span");
-          q.className = "ovl-help"; q.setAttribute("role", "button"); q.tabIndex = 0;
-          q.textContent = "?"; q.title = t("layer.helpBtn"); q.setAttribute("aria-label", t("layer.helpBtn"));
-          q.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showOverlayHelp(def); });
-          q.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); showOverlayHelp(def); } });
-          lab.appendChild(q);
-        }
-        // Birding spots + eBird hotspots + Best sites have related settings
-        // (visibility zoom, max shown, min species) — a ⚙-badge marks that on the
-        // row; tapping the gear (or long-pressing the row) opens the settings popup.
-        if (txt === wantBird || txt === t("layer.hotspots") || txt === t("layer.bestSites")) {
-          if (!hint) {
-            hint = document.createElement("span");
-            hint.className = "ovl-zoomhint";
-            var span = lab.querySelector("span") || lab;
-            span.appendChild(hint);
-          }
-          var which = (txt === wantBird) ? "bird" : (txt === t("layer.bestSites") ? "best" : "hs");
-          if (which === "bird") birdSpotsHintEl = hint;
-          else if (which === "best") bestSitesHintEl = hint;
-          else hotspotsHintEl = hint;
-          wireZoomLongPress(lab, which);
-          if (!hint._gearWired) {   // a tap on the gear itself opens the settings (not the checkbox)
-            hint._gearWired = true;
-            hint.addEventListener("click", function (e) {
-              e.preventDefault(); e.stopPropagation();
-              showZoomMenu(which, e.clientX, e.clientY);
-            });
-          }
-        }
+  // The overlays on offer: every registered one; the experimental ones only while
+  // Settings → Experimental features is on.
+  function offeredOverlayDefs() {
+    return (overlayDefsRef || []).filter(function (d) { return !isExperimentalOverlay(d.key) || experimentalOn(); });
+  }
+  // Viewpoints / Best sites / eBird hotspots carry their own settings popup (showZoomMenu).
+  function overlayGearKind(d) { return d.key === "layer.birdSpots" ? "bird" : d.key === "layer.bestSites" ? "best" : d.key === "layer.hotspots" ? "hs" : null; }
+  // Hide every ticked overlay in one go (the set is remembered, persisted) or bring that
+  // set back — a quick peek at the bare map. Hold the quick panel's Overlays row, or use
+  // the button at the top of the popup.
+  function toggleAllOverlays() {
+    if (!overlayDefsRef || !map) return;
+    var on = overlayDefsRef.filter(function (d) { return map.hasLayer(d.layer); });
+    if (on.length) {
+      window.GeoState.save({ suspendedOverlays: on.map(function (d) { return d.key; }) });
+      on.forEach(function (d) { try { map.removeLayer(d.layer); } catch (e) {} });
+    } else {
+      var keys = window.GeoState.get("suspendedOverlays", []) || [];
+      overlayDefsRef.forEach(function (d) {
+        if (keys.indexOf(d.key) < 0) return;
+        if (isExperimentalOverlay(d.key) && !experimentalOn()) return;
+        try { map.addLayer(d.layer); } catch (e) {}
       });
-      // The collapsed control's button: localized "hold to hide/show" hint.
-      var tgl = overlayLayersCtrl.getContainer().querySelector(".leaflet-control-layers-toggle");
-      if (tgl) tgl.title = t("layer.holdHint");
-      updateBirdSpotsZoomHint();
-    } catch (e) {}
+    }
+    updateOverlayBtnState();
+  }
+  function overlaysSuspended() {
+    if (!overlayDefsRef || !map) return false;
+    var anyOn = overlayDefsRef.some(function (d) { return map.hasLayer(d.layer); });
+    var susp = window.GeoState.get("suspendedOverlays", []) || [];
+    return !anyOn && susp.length > 0;
+  }
+  // The suspended state shows as an ORANGE cue (--warn, like an active filter) on the bird
+  // button, the quick panel's Overlays row and the popup's hide/show button.
+  function updateOverlayBtnState() {
+    var susp = overlaysSuspended();
+    document.querySelectorAll("#settings-toggle, .gq-overlays, .ovl-all").forEach(function (b) { b.classList.toggle("ovl-suspended", susp); });
+    var ab = document.querySelector(".ovl-all");
+    if (ab) ab.textContent = t(susp ? "ovl.showAll" : "ovl.hideAll");
+  }
+  // The Overlays popup: one row per overlay — checkbox, name, description, a "?" for the
+  // long explanation, and for the three layers with settings a ⚙ (or a long-press on the
+  // row) that opens the same anchored settings popup as before.
+  function openOverlaysPopup() {
+    if (!overlayDefsRef || !map) return;
+    closeDropdowns();
+    var m = createModal({ escClose: true, backdropClose: true, boxClass: "ovl-box", onClose: function () { overlaysPopup = null; navClose("overlays"); } });
+    overlaysPopup = m;
+    navOpen("overlays", m.close);   // Back closes it like the other popups
+    m.box.innerHTML = '<div class="ui-modal-msg ovl-help-title">' + escapeHtml(t("ctrl.overlays")) + "</div>" +
+      '<button type="button" class="btn ovl-all"></button><div class="ovl-rows"></div>';
+    m.box.querySelector(".ovl-all").addEventListener("click", function () { toggleAllOverlays(); });
+    renderOverlayRows();
+  }
+  function renderOverlayRows() {
+    var host = overlaysPopup && overlaysPopup.box.querySelector(".ovl-rows"); if (!host) return;
+    host.innerHTML = "";
+    birdSpotsHintEl = hotspotsHintEl = bestSitesHintEl = null;
+    offeredOverlayDefs().forEach(function (d) {
+      var name = t(d.key), exp = isExperimentalOverlay(d.key), kind = overlayGearKind(d);
+      var row = document.createElement("div");
+      row.className = "ovl-row"; row.setAttribute("data-key", d.key); row.setAttribute("data-name", name);
+      row.innerHTML = '<label class="ovl-main"><input type="checkbox" class="ovl-cb"' + (map.hasLayer(d.layer) ? " checked" : "") + '> <span class="ovl-name">' + escapeHtml(exp ? expMark(name) : name) + "</span></label>" +   // "*" marks experimental overlays
+        (kind ? '<span class="ovl-zoomhint ok" role="button" tabindex="0"></span>' : "") +
+        '<span class="ovl-help" role="button" tabindex="0" title="' + escapeHtml(t("layer.helpBtn")) + '" aria-label="' + escapeHtml(t("layer.helpBtn")) + '">?</span>' +
+        (d.tip ? '<div class="ovl-desc">' + escapeHtml(t(d.tip)) + "</div>" : "");
+      row.querySelector(".ovl-cb").addEventListener("change", function () {
+        try { if (this.checked) map.addLayer(d.layer); else map.removeLayer(d.layer); } catch (e) {}
+      });
+      var q = row.querySelector(".ovl-help");
+      q.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showOverlayHelp(d); });
+      q.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); showOverlayHelp(d); } });
+      if (kind) {
+        var g = row.querySelector(".ovl-zoomhint");
+        if (kind === "bird") birdSpotsHintEl = g; else if (kind === "best") bestSitesHintEl = g; else hotspotsHintEl = g;
+        g.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showZoomMenu(kind, e.clientX, e.clientY); });
+        g.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); var r = g.getBoundingClientRect(); showZoomMenu(kind, r.left, r.bottom); } });
+        wireZoomLongPress(row.querySelector(".ovl-main"), kind);
+      }
+      row.classList.toggle("ovl-row-loading", !!overlayBusySet[name]);
+      host.appendChild(row);
+    });
+    updateBirdSpotsZoomHint();
+    updateOverlayBtnState();
+  }
+  // A layer toggled from elsewhere (restore, the hold, a ⚙ change) → keep the boxes in step.
+  function syncOverlayRows() {
+    if (!overlaysPopup || !map) return;
+    Array.prototype.forEach.call(overlaysPopup.box.querySelectorAll(".ovl-row"), function (row) {
+      var d = legendDefFor(row.getAttribute("data-key")), cb = row.querySelector(".ovl-cb");
+      if (d && cb) cb.checked = map.hasLayer(d.layer);
+    });
+    updateOverlayBtnState();
   }
   // The map's attribution line grows long with overlays on and eats map space.
   // OSM's attribution guidelines explicitly allow a collapsed control that
@@ -20441,17 +20463,11 @@
     upd(hotspotsHintEl, hotspotZoomFrom());
     upd(bestSitesHintEl, bestSiteZoomFrom());
   }
+  // A language change re-renders the open Overlays popup (it is rebuilt on every open anyway).
   function relabelOverlays() {
-    if (!overlayLayersCtrl || !overlayDefsRef) return;
-    try {
-      (overlayLayersCtrl._layers || []).forEach(function (o) {
-        for (var i = 0; i < overlayDefsRef.length; i++) {
-          if (overlayDefsRef[i].layer === o.layer) { o.name = t(overlayDefsRef[i].key); break; }
-        }
-      });
-      overlayLayersCtrl._update();   // re-render the labels in the new language
-      applyOverlayTips();            // labels were rebuilt → reattach the hover tips
-    } catch (e) {}
+    if (!overlaysPopup) return;
+    var h = overlaysPopup.box.querySelector(".ovl-help-title"); if (h) h.textContent = t("ctrl.overlays");
+    renderOverlayRows();
   }
   // ---- Overlay legend stack (bottom-right; a collapsible card per active overlay) ------
   // Overlays that carry a legend, in stack order. `arc` = fetch the MapServer /legend
@@ -20612,25 +20628,15 @@
   // third-party services). Kept out of the layer control until the gate is on.
   var EXPERIMENTAL_OVERLAY_KEYS = ["layer.gbif", "layer.emerald", "layer.osmpa", "layer.natura2000", "layer.wdpa"];
   function isExperimentalOverlay(key) { return EXPERIMENTAL_OVERLAY_KEYS.indexOf(key) >= 0; }
-  // Add/remove the experimental overlays from the layer control when the Settings →
-  // Experimental toggle changes (called from applyExperimentalUi). Re-render the CORINE
-  // legend hook stays independent.
+  // Settings → Experimental toggled (applyExperimentalUi): gated off → the experimental
+  // overlays leave the map; the Overlays popup lists them only while the gate is on.
   function syncExperimentalOverlays() {
-    if (!overlayLayersCtrl || !overlayDefsRef) return;
-    var on = experimentalOn(), touched = false;
-    EXPERIMENTAL_OVERLAY_KEYS.forEach(function (key) {
-      var d = null;
-      for (var i = 0; i < overlayDefsRef.length; i++) if (overlayDefsRef[i].key === key) { d = overlayDefsRef[i]; break; }
-      if (!d) return;
-      var inCtrl = (overlayLayersCtrl._layers || []).some(function (o) { return o.layer === d.layer; });
-      if (on) {
-        if (!inCtrl) { overlayLayersCtrl.addOverlay(d.layer, t(d.key)); touched = true; }
-      } else {
-        if (map.hasLayer(d.layer)) map.removeLayer(d.layer);   // turn the layer off
-        if (inCtrl) { overlayLayersCtrl.removeLayer(d.layer); touched = true; }   // removing rebuilds the labels too
-      }
+    if (!overlayDefsRef || !map) return;
+    if (!experimentalOn()) EXPERIMENTAL_OVERLAY_KEYS.forEach(function (key) {
+      var d = legendDefFor(key);
+      if (d && map.hasLayer(d.layer)) map.removeLayer(d.layer);
     });
-    if (touched) applyOverlayTips();
+    if (overlaysPopup) renderOverlayRows();
   }
   function setupAreaOverlays() {
     if (!map || !window.L) return;
@@ -20664,9 +20670,9 @@
       { key: "layer.hotspots", layer: hotspotsLayer, tip: "layer.hotspotsTip" },
       { key: "layer.mis", layer: mis, tip: "layer.misTip" },
       { key: "layer.landcover", layer: landcover, tip: "layer.landcoverTip" },
-      { key: "layer.wdpa", layer: wdpa },
-      { key: "layer.ramsar", layer: ramsar },
-      { key: "layer.natura2000", layer: n2k },
+      { key: "layer.wdpa", layer: wdpa, tip: "layer.wdpaTip" },
+      { key: "layer.ramsar", layer: ramsar, tip: "layer.ramsarTip" },
+      { key: "layer.natura2000", layer: n2k, tip: "layer.natura2000Tip" },
       { key: "layer.emerald", layer: emerald, tip: "layer.emeraldTip" },
       { key: "layer.gbif", layer: gbif, tip: "layer.gbifTip" },
       { key: "layer.osmpa", layer: osmProtectedLayer(), tip: "layer.osmpaTip" }
@@ -20694,16 +20700,16 @@
       ly.on("load", function () { overlayBusy(nm(), false); });
       ly.on("remove", function () { overlayBusy(nm(), false); });   // toggled off mid-load → stop pulsing
     });
-    var overlays = {};
-    // Experimental overlays (EXPERIMENTAL_OVERLAY_KEYS) are only offered when Settings →
-    // Experimental features is on; syncExperimentalOverlays() adds/removes them live.
+    // No layer control on the map: the overlays are ticked in the Overlays popup (bird
+    // button → Overlays…). Leaflet's control used to raise overlayadd / overlayremove for
+    // its layers; raise them here so the persist / legend / suspend handlers below (and
+    // the eBird nudge) see every toggle, whichever path added the layer.
     overlayDefsRef.forEach(function (d) {
-      if (isExperimentalOverlay(d.key) && !experimentalOn()) return;
-      overlays[isExperimentalOverlay(d.key) ? expMark(t(d.key)) : t(d.key)] = d.layer;   // "*" marks experimental overlays
+      var ly = d.layer; if (!ly || !ly.on) return;
+      ly.on("add", function () { map.fire("overlayadd", { layer: ly, name: t(d.key) }); });
+      ly.on("remove", function () { map.fire("overlayremove", { layer: ly, name: t(d.key) }); });
     });
-    overlayLayersCtrl = L.control.layers(null, overlays, { collapsed: true, position: "topleft" }).addTo(map);
-    applyOverlayTips();
-    map.on("zoomend", updateBirdSpotsZoomHint);   // keep the "zoom in" badge in sync
+    map.on("zoomend", updateBirdSpotsZoomHint);   // keep the ⚙ hover text in sync
     collapseMapAttribution();                     // attribution bar → tap-to-expand © chip
     // Dot declutter follows ZOOM only — clusters live in world-projected pixel
     // space, so panning never changes membership. A zoom change does (dots that
@@ -20750,7 +20756,7 @@
       var r = regionHere(); if (r === detRegionHere) return;
       detRegionHere = r; try { detFiltersRefresh(); } catch (e) {}
     });
-    // A "Reload" button just below the overlays control — visible only in "New" mode.
+    // A "Reload" button in the top-left stack — visible only in "New" mode.
     // Click re-fetches every fetched area so the fresh finds are highlighted for all.
     var ReloadControl = L.Control.extend({
       options: { position: "topleft" },
@@ -20766,18 +20772,12 @@
       }
     });
     map.addControl(new ReloadControl());
-    // Persist on every toggle. Registered BEFORE the saved-set restore below:
-    // every map.addLayer during the restore makes Leaflet rebuild the control's
-    // labels (dropping the ⚙ badges applyOverlayTips just attached) — this
-    // handler's reattach must already be listening or the badges only appear
-    // after the first manual toggle.
+    // Persist on every toggle (registered before the saved-set restore below).
     map.on("overlayadd overlayremove", function () {
       var on = []; overlayDefsRef.forEach(function (d) { if (map.hasLayer(d.layer)) on.push(d.key); });
       window.GeoState.save({ activeOverlays: on });
       updateClcLegend();   // toggle the CORINE legend with its overlay
-      // Leaflet rebuilds the control's labels on every toggle — reattach the
-      // hover tips, the ⚙ settings badge and the long-press wiring.
-      setTimeout(applyOverlayTips, 0);
+      syncOverlayRows();   // the popup's boxes follow toggles made elsewhere
     });
     // Remember which overlays are enabled across reloads: restore the saved set
     // (adding a layer ticks its box + runs its fetch).
@@ -20789,46 +20789,11 @@
       });
     }
     updateClcLegend();   // restore may have re-enabled the land-cover overlay
-    // Press-and-hold (or right-click) the overlays button → toggle the ticked overlays
-    // off/on in one go: the active set is remembered (persisted), so holding again
-    // restores exactly the overlays you had. Quick peek at the bare map.
-    (function () {
-      var ctr = overlayLayersCtrl.getContainer();
-      var btn = ctr && ctr.querySelector(".leaflet-control-layers-toggle");
-      if (!btn) return;
-      btn.title = t("layer.holdHint");
-      // The suspended state shows as an ORANGE overlays button (--warn, like an active
-      // filter) instead of a toast; the layer list is collapsed so it doesn't pop over
-      // the freshly-bared map.
-      function updateOverlayBtnState() {
-        var anyOn = overlayDefsRef.some(function (d) { return map.hasLayer(d.layer); });
-        var susp = window.GeoState.get("suspendedOverlays", []) || [];
-        btn.classList.toggle("ovl-suspended", !anyOn && susp.length > 0);
-      }
-      function toggleAllOverlays() {
-        var on = overlayDefsRef.filter(function (d) { return map.hasLayer(d.layer); });
-        if (on.length) {
-          window.GeoState.save({ suspendedOverlays: on.map(function (d) { return d.key; }) });
-          on.forEach(function (d) { try { map.removeLayer(d.layer); } catch (e) {} });
-        } else {
-          var keys = window.GeoState.get("suspendedOverlays", []) || [];
-          overlayDefsRef.forEach(function (d) {
-            if (keys.indexOf(d.key) < 0) return;
-            if (isExperimentalOverlay(d.key) && !experimentalOn()) return;
-            try { map.addLayer(d.layer); } catch (e) {}
-          });
-        }
-        try { overlayLayersCtrl.collapse(); } catch (e) {}
-        updateOverlayBtnState();
-      }
-      // Manually ticking any overlay ends the suspended state (the set is spent).
-      map.on("overlayadd", function () { window.GeoState.save({ suspendedOverlays: [] }); updateOverlayBtnState(); });
-      map.on("overlayadd", function (ev) { if (ev && ev.layer === hotspotsLayer) maybeEbirdNudge(); });
-      map.on("overlayremove", updateOverlayBtnState);
-      updateOverlayBtnState();   // reload while suspended → keep the orange cue
-      // Hold = suspend/restore every ticked overlay; the tap still expands the list.
-      wireHoldButton(btn, toggleAllOverlays);
-    })();
+    // Manually ticking any overlay ends the suspended state (the set is spent).
+    map.on("overlayadd", function () { window.GeoState.save({ suspendedOverlays: [] }); updateOverlayBtnState(); });
+    map.on("overlayadd", function (ev) { if (ev && ev.layer === hotspotsLayer) maybeEbirdNudge(); });
+    map.on("overlayremove", updateOverlayBtnState);
+    updateOverlayBtnState();   // reload while suspended → keep the orange cue
     setupAreaHover();
   }
 
@@ -22929,15 +22894,26 @@
       // — the "Reload to update" button included — would then be unreachable. (v1795-97
       // was exactly that trap on Android: the hold opened Settings and the emulated
       // click shut it again, with no other door.)
-      html += '<div class="gq-foot"><button type="button" class="gq-item gq-settings">' + ico("menu") +
+      // Overlays… (above Settings…): the map-overlay list, which used to be a layers
+      // button on the map. Hold the row = hide/show every ticked overlay in one go.
+      html += '<div class="gq-foot"><button type="button" class="gq-item gq-overlays" title="' + escapeHtml(t("layer.holdHint")) + '">' + ico("layers") +
+        "<span>" + escapeHtml(t("ctrl.overlays")) + "…</span></button>" +
+        '<button type="button" class="gq-item gq-settings">' + ico("menu") +
         "<span>" + escapeHtml(t("ctrl.settings")) + "…</span></button></div>";
       panel.innerHTML = html;
       panel.style.display = "block";
       var setBtn = panel.querySelector(".gq-settings");
       if (setBtn) setBtn.addEventListener("click", function () { toggleSettingsPanel(); });
+      var ovBtn = panel.querySelector(".gq-overlays");
+      if (ovBtn) {
+        ovBtn.addEventListener("click", function () { panel.style.display = "none"; openOverlaysPopup(); });
+        wireHoldButton(ovBtn, function () { toggleAllOverlays(); panel.style.display = "none"; });
+        updateOverlayBtnState();
+      }
       Array.prototype.forEach.call(panel.querySelectorAll(".gq-item"), function (b) {
         b.addEventListener("click", function () {
           var v = this.getAttribute("data-val");
+          if (v == null) return;   // the foot rows (Overlays…, Settings…) are not groups
           if (sel.value !== v) { sel.value = v; sel.dispatchEvent(new Event("change", { bubbles: true })); }
           panel.style.display = "none";
         });

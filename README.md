@@ -106,7 +106,7 @@ fetched at once; it is a *display* choice, so what a fetch asks for is still dec
 birds/mammals/amphibians/insects; **Plants 🌿 and Fungi 🍄 are observation-only**
 (Range/Richness/Migration are hidden for them).
 
-**Overlay layers** (layer control; the menu lists the birding layers first — Best sites, Viewpoints, eBird hotspots, MiS forest habitats, Land cover — then the protected-area outlines): **WDPA · Protected Planet** (*Experimental* — enable in Settings), **Ramsar wetlands**,
+**Overlay layers** (tap the bird button, top-left → *Overlays…*: a popup with a tick box and a one-line description per overlay, a **?** for the full explanation and a ⚙ on the three layers with their own settings; the birding layers come first — Best sites, Viewpoints, eBird hotspots, MiS forest habitats, Land cover — then the protected-area outlines): **WDPA · Protected Planet** (*Experimental* — enable in Settings), **Ramsar wetlands**,
 **Natura 2000** (EU SPA/SCI; *Experimental* — enable in Settings), **Emerald Network** (Bern Convention — the non-EU counterpart
 to Natura 2000), **Land cover** (CORINE / Copernicus-EEA — habitat backdrop, Europe/EEA, with a
 colour-coded class legend in the lower-right while it's on), **MiS forest habitats** (NIBIO's inventory of Norwegian forest —
@@ -153,7 +153,7 @@ holding a button:
 
 | hold… | to get |
 |---|---|
-| the **overlays** (layers) button | hide/show all ticked overlays in one go (button turns orange while they're suspended) |
+| the **Overlays…** row in the bird button's quick panel (or tap the button at the top of the Overlays popup) | hide/show all ticked overlays in one go (the row and the bird button turn orange while they're suspended) |
 | the **🔍** search button | the **stored locations** popup |
 | the **locate crosshair** | continuous **GPS-follow** (hold again = red read cursor) |
 | the **Settings ⚙** gear | the full **Settings** panel (a *tap* gives the quick panel instead) |
@@ -164,7 +164,7 @@ holding a button:
 | the **collapsed legend pill** | pan/zoom to frame **all fetched points** |
 | the **rarity bell 🔔** | poll eBird's notable sightings at all 🔔 locations right now |
 | the **✓ update** button (right of the map) | its two settings — how many **overlap days** to re-fetch before each area's last fetch (default 2) and **only areas in view** |
-| the **Viewpoints**, **Best sites** or **eBird hotspots** row in the overlays menu | that layer's settings: the zoom from which its icons appear, how many are shown at once, and for Best sites the **site detail level** (Auto / 500 m / 25 km / 75 km) + the chart's AI-model cutoff |
+| the **Viewpoints**, **Best sites** or **eBird hotspots** row in the Overlays popup (or tap its ⚙) | that layer's settings: the zoom from which its icons appear, how many are shown at once, and for Best sites the **site detail level** (Auto / 500 m / 25 km / 75 km) + the chart's AI-model cutoff |
 
 ---
 
@@ -1357,7 +1357,8 @@ the one thing left out by default — they are much the largest thing the app ho
   settings that decide what the next tap on the map brings back: the **species group**, the
   **fetch radius** and **how many days back** to fetch (1 · 2 · 3 · 7 · 14 · 21 · 28 · 42 · 91).
   **Press-and-hold** (or right-click) opens the full **Settings** panel — and so does the quick
-  panel's last row, **Settings…**, so Settings is always reachable with plain taps. Both sliders
+  panel's last row, **Settings…**, so Settings is always reachable with plain taps. The row above
+  it, **Overlays…**, opens the map-overlay popup (hold the row = hide/show the ticked overlays). Both sliders
   drive the same controls that live in Settings, so a change made either way is saved the same way.
 - **Model compare** (Settings → About row → *Model compare ↗*, `model-compare/`) — a standalone page that runs
   the **BirdNET+ Geomodel V3.0.4** (14,082 species) next to the app's own model (12,012) for one species over all
