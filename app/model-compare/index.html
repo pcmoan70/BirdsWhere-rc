@@ -53,6 +53,18 @@
   #tip b { font-variant-numeric: tabular-nums; } #tip .d { color: #cfe3ee; } #tip .m { color: #cdd6cf; }
   .stats { font-size: 13px; color: var(--ink-muted); padding: 8px 12px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 6px 18px; }
   .stats b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .examples { margin-top: 12px; }
+  .ex-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px; }
+  @media (max-width: 760px) { .ex-grid { grid-template-columns: 1fr; } }
+  .ex { display: flex; gap: 12px; align-items: stretch; }
+  .ex-map { flex: 0 0 240px; height: 180px; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+  @media (max-width: 480px) { .ex { flex-direction: column; } .ex-map { flex: none; } }
+  .ex-txt { font-size: 13px; line-height: 1.45; color: var(--ink-muted); display: flex; flex-direction: column; gap: 6px; }
+  .ex-txt b { color: var(--ink); } .ex-txt i { font-size: 12px; }
+  .ex-txt p { margin: 0; }
+  .ex-val { font-size: 12px; font-variant-numeric: tabular-nums; }
+  .ex-val b { color: var(--ink); }
+  .ex-txt .btn { align-self: flex-start; padding: 5px 12px; font-size: 13px; margin-top: auto; }
   footer { font-size: 12px; color: var(--ink-muted); margin-top: 14px; line-height: 1.5; }
   footer a { color: var(--info); }
 </style>
@@ -85,9 +97,23 @@
   <section class="card diff-card"><h2>Difference <small>V3.0.4 − V3.0.0 · blue = higher in the new model, red = lower</small></h2><div id="map-diff" class="map"></div>
     <div class="legend"><span id="diff-lo">−1</span><span class="bar" id="bar-div"></span><span id="diff-hi">+1</span></div>
     <div class="stats" id="stats"></div></section>
+  <section class="card examples"><h2>Two examples from Norway <small>the difference V3.0.4 − V3.0.0 around Oslo (● 59.91° N, 10.75° E) · 0.1° cells · <span id="ex-week"></span></small></h2>
+    <div class="ex-grid">
+      <div class="ex"><div id="ex-map-0" class="ex-map"></div><div class="ex-txt">
+        <div><b>White-backed woodpecker</b> <i>Dendrocopos leucotos</i></div>
+        <p>Norway holds most of north-west Europe’s white-backed woodpeckers, in old deciduous forest along the west and south coasts. Around Oslo the new model rates the fjord basin clearly higher than the app’s model all year (blue), and in autumn and winter it lowers the forests towards the Swedish border instead (red).</p>
+        <div class="ex-val" id="ex-val-0"></div>
+        <button type="button" class="btn ex-go" data-i="0">Show over Europe</button></div></div>
+      <div class="ex"><div id="ex-map-1" class="ex-map"></div><div class="ex-txt">
+        <div><b>Gyrfalcon</b> <i>Falco rusticolus</i></div>
+        <p>A breeder of the Norwegian mountains that reaches the Oslo lowlands only as a wandering bird outside the breeding season. The app’s model never lets it reach the fjord (near zero all year); the new model gives it a real chance there from autumn to late winter, and the two agree again in summer.</p>
+        <div class="ex-val" id="ex-val-1"></div>
+        <button type="button" class="btn ex-go" data-i="1">Show over Europe</button></div></div>
+    </div>
+  </section>
   <div id="tip"></div>
 <footer>
-    Hover a map — or tap it — for the cell’s values in both models and their difference (a tap pins the readout; tap again to release). Both models take raw latitude, longitude and week (1–48) and return a per-species occurrence probability (sigmoid). The grid covers 25° W – 45° E, 34° N – 72° N at the chosen step; every cell is one model call per model, run on this device with ONNX Runtime Web. Species are matched between the two label files by their species code (11,880 shared; 132 only in V3.0.0, 2,202 only in V3.0.4), with the scientific name as the fallback.
+    The two Norwegian examples at the bottom show the difference map around Oslo for the week set above; <i>Show over Europe</i> picks that species for the three large maps. Hover a map — or tap it — for the cell’s values in both models and their difference (a tap pins the readout; tap again to release). Both models take raw latitude, longitude and week (1–48) and return a per-species occurrence probability (sigmoid). The grid covers 25° W – 45° E, 34° N – 72° N at the chosen step; every cell is one model call per model, run on this device with ONNX Runtime Web. Species are matched between the two label files by their species code (11,880 shared; 132 only in V3.0.0, 2,202 only in V3.0.4), with the scientific name as the fallback.
     V3.0.4 weights © BirdNET team, Apache 2.0, from the <a href="https://github.com/birdnet-team/geomodel/releases/tag/v3.0.4" target="_blank" rel="noopener">v3.0.4 release</a>; the app’s bundled weights are CC BY-SA 4.0. Map tiles © Esri (World Topo Map).
   </footer>
 </main>
@@ -131,6 +157,50 @@
       syncing = false;
     });
     maps[k] = m;
+  });
+
+  // ---- the two Norwegian examples: small static difference maps around Oslo ----
+  var EX = [{ sci: "Dendrocopos leucotos" }, { sci: "Falco rusticolus" }];
+  var EX_BBOX = { w: 7.4, e: 14.0, s: 58.6, n: 61.2 }, EX_STEP = 0.1, OSLO = [59.91, 10.75];
+  EX.forEach(function (x, i) {
+    var m = L.map("ex-map-" + i, { attributionControl: false, zoomControl: false, dragging: false, scrollWheelZoom: false, touchZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: false, zoomSnap: 0.1 });
+    L.tileLayer(TILES, { maxZoom: 14 }).addTo(m);
+    m.fitBounds([[EX_BBOX.s, EX_BBOX.w], [EX_BBOX.n, EX_BBOX.e]]);
+    L.circleMarker(OSLO, { radius: 4, color: "#20261f", weight: 2, fillColor: "#fff", fillOpacity: 1 }).addTo(m);
+    x.map = m; x.key = "ex" + i;
+  });
+  var exDirty = true;
+  async function renderExamples() {
+    if (!oldSess) return;
+    if (running) { exDirty = true; return; }
+    running = true; exDirty = false;
+    try {
+      var week = +$("wk").value, W = Math.round((EX_BBOX.e - EX_BBOX.w) / EX_STEP), H = Math.round((EX_BBOX.n - EX_BBOX.s) / EX_STEP);
+      var lats = new Float32Array(W * H), lons = new Float32Array(W * H);
+      for (var r = 0; r < H; r++) for (var c = 0; c < W; c++) { lats[r*W+c] = EX_BBOX.n - (r + 0.5) * EX_STEP; lons[r*W+c] = EX_BBOX.w + (c + 0.5) * EX_STEP; }
+      var oi = Math.min(H - 1, Math.floor((EX_BBOX.n - OSLO[0]) / EX_STEP)) * W + Math.min(W - 1, Math.floor((OSLO[1] - EX_BBOX.w) / EX_STEP));
+      $("ex-week").textContent = "week " + week + " (" + weekLabel(week) + ")";
+      for (var k = 0; k < EX.length; k++) {
+        var x = EX[k], sp = species.filter(function (s) { return s.sci === x.sci; })[0];
+        if (!sp) continue;
+        var pOld = await runGrid(oldSess, sp.iOld, lats, lons, week, function () {});
+        var pNew = await runGrid(newSess, sp.iNew, lats, lons, week, function () {});
+        var diff = new Float32Array(W * H), maxAbs = 0;
+        for (var i = 0; i < diff.length; i++) { diff[i] = pNew[i] - pOld[i]; if (Math.abs(diff[i]) > maxAbs) maxAbs = Math.abs(diff[i]); }
+        var scale = Math.max(0.05, maxAbs);
+        drawTo(x.map, EX_BBOX, x.key, diff, W, H, EX_STEP, function (v) { var t = v / scale; return [divColor(t), 0.15 + 0.8 * Math.min(1, Math.abs(t))]; });
+        var d = diff[oi];
+        $("ex-val-" + k).innerHTML = "At Oslo: V3.0.0 <b>" + pOld[oi].toFixed(3) + "</b> · V3.0.4 <b>" + pNew[oi].toFixed(3) + "</b> · Δ <b>" + (d >= 0 ? "+" : "−") + Math.abs(d).toFixed(3) + "</b> · colour scale ±" + scale.toFixed(2);
+      }
+    } catch (e) {}
+    running = false; next();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll(".ex-go"), function (b) {
+    b.addEventListener("click", function () {
+      var sp = species.filter(function (s) { return s.sci === EX[+b.getAttribute("data-i")].sci; })[0];
+      if (!sp) return;
+      choose(sp); compute(); window.scrollTo({ top: 0, behavior: "smooth" });
+    });
   });
 
   // ---- labels + sessions ----
@@ -181,7 +251,7 @@
 
   $("wk").value = weekNow();
   function showWeek() { $("wk-val").textContent = $("wk").value; $("wk-month").textContent = weekLabel(+$("wk").value); }
-  $("wk").addEventListener("input", showWeek); $("wk").addEventListener("change", compute); showWeek();
+  $("wk").addEventListener("input", showWeek); $("wk").addEventListener("change", function () { exDirty = true; compute(); }); showWeek();
   $("step").addEventListener("change", compute);
   $("go").addEventListener("click", compute);
 
@@ -260,29 +330,31 @@
         "<span>" + n + " cells · " + Math.round(performance.now() - t0) + " ms</span>";
       setStatus("<b>" + chosen.com + "</b> <i>" + chosen.sci + "</i>" + (chosen.comNew !== chosen.com ? " (V3.0.4 calls it " + chosen.comNew + ")" : "") + " · week " + week + " (" + weekLabel(week) + ") · " + step + "° grid");
     } catch (e) { setStatus('<span style="color:var(--danger)">Compute failed: ' + (e && e.message ? e.message : e) + "</span>"); }
-    running = false; $("go").disabled = false;
-    if (queued) { queued = false; compute(); }
+    running = false; $("go").disabled = false; next();
   }
+  // The two sessions run one job at a time: a queued recompute first, then the example maps.
+  function next() { if (queued) { queued = false; compute(); } else if (exDirty) renderExamples(); }
 
   // Draw the lat/lon grid as an image in Mercator space so the overlay lines up with the map:
   // each image row is a Mercator y, inverted to a latitude, then looked up in the grid.
-  function draw(which, vals, W, H, step, colorFn) {
+  function draw(which, vals, W, H, step, colorFn) { drawTo(maps[which], BBOX, which, vals, W, H, step, colorFn); }
+  function drawTo(m, box, which, vals, W, H, step, colorFn) {
     var PW = Math.min(1400, W * 6), PH = Math.round(PW * 0.75);
     var cv = document.createElement("canvas"); cv.width = PW; cv.height = PH;
     var img = cv.getContext("2d").createImageData(PW, PH), d = img.data;
     function merc(lat) { return Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)); }
-    var y0 = merc(BBOX.n), y1 = merc(BBOX.s);
+    var y0 = merc(box.n), y1 = merc(box.s);
     for (var py = 0; py < PH; py++) {
       var lat = (2 * Math.atan(Math.exp(y0 + (y1 - y0) * (py + 0.5) / PH)) - Math.PI / 2) * 180 / Math.PI;
-      var r = Math.min(H - 1, Math.max(0, Math.floor((BBOX.n - lat) / step)));
+      var r = Math.min(H - 1, Math.max(0, Math.floor((box.n - lat) / step)));
       for (var px = 0; px < PW; px++) {
         var c = Math.min(W - 1, Math.floor(px * W / PW)), v = vals[r * W + c], ca = colorFn(v), col = ca[0], o = px * 4 + py * PW * 4;
         d[o] = col[0]; d[o+1] = col[1]; d[o+2] = col[2]; d[o+3] = Math.round(255 * Math.max(0, Math.min(1, ca[1])));
       }
     }
     cv.getContext("2d").putImageData(img, 0, 0);
-    if (overlays[which]) maps[which].removeLayer(overlays[which]);
-    overlays[which] = L.imageOverlay(cv.toDataURL("image/png"), [[BBOX.s, BBOX.w], [BBOX.n, BBOX.e]], { opacity: 1, interactive: false }).addTo(maps[which]);
+    if (overlays[which]) m.removeLayer(overlays[which]);
+    overlays[which] = L.imageOverlay(cv.toDataURL("image/png"), [[box.s, box.w], [box.n, box.e]], { opacity: 1, interactive: false }).addTo(m);
   }
 })();
 </script>

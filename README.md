@@ -1365,7 +1365,9 @@ the one thing left out by default — they are much the largest thing the app ho
   models side by side on the probability ramp and their **difference** below (blue = higher in V3.0.4, red =
   lower) with mean / largest difference, correlation and the change in cells ≥ 0.1. Species are matched between
   the two label files by species code (11,880 shared), scientific name as the fallback; the picker shows both
-  models' common names when they differ. Default: White-backed Woodpecker. Online only (not cached).
+  models' common names when they differ. Default: White-backed Woodpecker. Two Norwegian examples at the foot of the page
+  (White-backed Woodpecker, Gyrfalcon) show a small 0.1° difference map around Oslo for the chosen week with the
+  values at Oslo; *Show over Europe* loads that species into the three large maps. Online only (not cached).
 - **Persistence** — settings, view, species/year/life lists, checklists, points and plotted
   detections survive across visits. Small settings live in **localStorage**; bulky per-list data
   (saved sets, detections) lives in **IndexedDB** to avoid the ~5 MB cap. Saved point lists load **lazily**: at start only

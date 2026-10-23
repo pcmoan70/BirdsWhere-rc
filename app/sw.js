@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2171";
+var VERSION = "v2172";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Map overlays menu: Best sites, Viewpoints, eBird hotspots, MiS forest habitats and Land cover now sit at the top; the protected-area outlines follow.",
+  "\u2022 Model compare: two examples from Norway at the foot of the page (White-backed woodpecker, Gyrfalcon) with small difference maps around Oslo for the chosen week, and a button that loads each over Europe.",
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
