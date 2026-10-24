@@ -479,10 +479,17 @@ select:focus, textarea:focus { outline: none; border-color: var(--brand); box-sh
 .country-menu .cm-close:hover { background: var(--surface-2); color: var(--ink); }
 
 /* ---- Leaflet control styling (match the app theme) ---- */
-.leaflet-bar,
+.leaflet-bar {
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-xs) !important;
+  box-shadow: var(--shadow-md) !important;
+  overflow: hidden;
+}
 /* The Mode dropdown is retired: modes are entered from the point popup (Historic /
    Migration) and the species menu (Species Range). The hidden select remains the
-   mode switchboard for programmatic changes. */
+   mode switchboard for programmatic changes. (v2177: this rule once read
+   ".leaflet-bar, #mode-wrap" after v2173 dropped the layers-control block above it
+   and left the first selector dangling — every map button vanished for two versions.) */
 #mode-wrap { display: none; }
 /* Overlays popup (bird button → Overlays…): a row per overlay — tick box + name, then the
    description; ⚙ (the three layers with settings) and "?" (the explanation) at the right. */

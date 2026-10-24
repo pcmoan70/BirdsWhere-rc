@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2176";
+var VERSION = "v2177";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Points \u2192 search: every point a search puts on the map now shows in the legend \u2014 a record without a species under one row named by the search words \u2014 so the legend\u2019s filters apply to them and the legend\u2019s red \u00d7 takes them off the map again (after the fetched observations, before the shown lists).",
+  "\u2022 The map buttons are back \u2014 locate, search, zoom, the red \u00d7 and the filter funnel had been hidden by mistake since v2173.",
+  "\u2022 The red \u00d7 (clear observations) and the filter funnel now sit at the lower right of the map, above the search and locate buttons."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

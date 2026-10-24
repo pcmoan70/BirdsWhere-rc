@@ -9678,11 +9678,13 @@
       document.addEventListener("webkitfullscreenchange", onFsChange);   // Safari's name for it
     }
 
-    // One leaflet-bar on the right, holding (top) a red × that clears all plotted
-    // observations and (below it) a funnel-with-red-× that clears all detection
-    // filters. Each button shows only when it applies; the bar hides when neither does.
+    // One leaflet-bar in the lower-right corner (above the zoom / search / crosshair
+    // buttons — bottom corners stack newest-on-top), holding (top) a red × that clears
+    // all plotted observations and (below it) a funnel-with-red-× that clears all
+    // detection filters. Each button shows only when it applies; the bar hides when
+    // neither does. (Owner, 2026-10-24: moved here from the top right.)
     var ClearControl = L.Control.extend({
-      options: { position: "topright" },
+      options: { position: "bottomright" },
       onAdd: function () {
         var c = L.DomUtil.create("div", "leaflet-bar leaflet-control clearpts-ctrl");
         L.DomEvent.disableClickPropagation(c);
@@ -9752,10 +9754,6 @@
     });
 
     setupAreaOverlays();   // protected/priority-area overlay toggles (off by default)
-    // Leaflet stacks top-right controls in add order; the overlay-toggles control was
-    // just added ABOVE the clear-× (added earlier). Re-append the × so it sits BELOW
-    // both the download and overlay-toggle icons, not between them.
-    if (clearGroupEl && clearGroupEl.parentNode) clearGroupEl.parentNode.appendChild(clearGroupEl);
     loadDetections(true);  // restore any "Show in map" detection points — at START: no selection, no filters
     // ...and their fetched-area outlines (per-area red × needs them) — but only WITH the
     // observations: opening clean (the default) used to leave the squares and the ✓ update
