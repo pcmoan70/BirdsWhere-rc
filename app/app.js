@@ -518,7 +518,7 @@
   // neither applies. Kept in sync from updateDetLegend (runs on every plot/clear).
   function updateClearGroup() {
     if (!clearGroupEl) return;
-    var hasPts = typeof detPlot !== "undefined" && Object.keys(detPlot).length > 0;
+    var hasPts = (typeof detPlot !== "undefined" && Object.keys(detPlot).length > 0) || !!(mpState && mpState.ptSelActive());   // a points-legend pick is a filter to clear, observations or not
     var hasFilt = typeof detHasFilter === "function" && detHasFilter();
     var hasAreas = typeof fetchedAreas !== "undefined" && fetchedAreas.length > 0;   // squares can outlive their dots (every species deleted) → still clearable
     var a = clearGroupEl.querySelector(".clearpts-btn");
@@ -9324,7 +9324,7 @@
     // every pan: grey the counts as "stale" the moment the map moves, then re-render only
     // once the map has been still for LEGEND_REDRAW_IDLE ms (no further pan/zoom).
     var legendRedrawTimer = null, LEGEND_REDRAW_IDLE = 2000;   // ms of map stillness before the legend re-renders
-    function legendHasData() { return detLegend && typeof detPlot !== "undefined" && (Object.keys(detPlot).length || Object.keys(alertPlot).length); }
+    function legendHasData() { return detLegend && typeof detPlot !== "undefined" && (Object.keys(detPlot).length || Object.keys(alertPlot).length || (mpState && mpState.ptAvail())); }
     map.on("movestart zoomstart", function () {
       if (!legendHasData()) return;
       clearTimeout(legendRedrawTimer);
@@ -15099,7 +15099,7 @@
   // recency days / date range.) Drives the black × (clear all) in both the legend
   // and the detections-list filter bar.
   function detHasFilter() {
-    return detTextActive() || detBflyFilter || detSelectionActive() || detExclusionActive() || detDaySelActive() || detStarFilter || detRareFilter || detYearFilter || detLifeFilter || detAlertFilter || (detLegendRows !== "all") || detNewFilter || !!detObsFilter || !!detLocFilter || !!detSrcFilter || (detRecencyDays() !== 0) || !!detDateRange() || detMonths().length > 0 || countFilterActive() || probFilterActive() || (detRegionMode !== "off");
+    return detTextActive() || detBflyFilter || detSelectionActive() || detExclusionActive() || detDaySelActive() || detStarFilter || detRareFilter || detYearFilter || detLifeFilter || detAlertFilter || (detLegendRows !== "all") || detNewFilter || !!detObsFilter || !!detLocFilter || !!detSrcFilter || (detRecencyDays() !== 0) || !!detDateRange() || detMonths().length > 0 || countFilterActive() || probFilterActive() || (detRegionMode !== "off") || !!(mpState && mpState.ptSelActive());
   }
   // Reset every legend filter at once (the black ×): the species selection, the
   // ★/◉/🟡 mode filter, the observer filter, and the recency (days) window → All.
@@ -15120,6 +15120,7 @@
     spObsSort = { col: "", dir: "" };                                         // observation-list sort → its natural (rarest-first) order
     detDaySel = Object.create(null); detDayHover = null;                      // histogram day selection → off
     detLegendRows = "all";                                                    // legend "Total" back to listing every species (the default); sort order is left as-is
+    if (mpState) mpState.setPtSel(null);                                      // the points legend's selection → none
     spHeadPanel = null; spHeadPanelDate = null;                              // close any open header panel
     document.getElementById("prob-min").value = 0; document.getElementById("prob-max").value = 100;   // probability range → 0–100
     var pmv0 = document.getElementById("prob-min-val"), pxv0 = document.getElementById("prob-max-val");
@@ -15344,7 +15345,7 @@
   window.addEventListener("pagehide", flushLegendState);
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") flushLegendState(); });
   function saveLegendStateNow() {
-    window.GeoState.save({ mapLegend: { mini: detLegendMini, bflyFilter: detBflyFilter, starFilter: detStarFilter, rareFilter: detRareFilter, yearFilter: detYearFilter, lifeFilter: detLifeFilter, alertFilter: detAlertFilter, selected: Object.keys(detSelected), excluded: Object.keys(detExcluded), selBase: { sel: Object.keys(detSelBase.sel), exc: Object.keys(detSelBase.exc) }, obsFilter: detObsFilter ? Array.from(detObsFilter) : null, locFilter: detLocFilter ? Array.from(detLocFilter) : null, srcFilter: detSrcFilter ? Array.from(detSrcFilter) : null, areaExcl: detAreaExcl ? Array.from(detAreaExcl) : null, deleted: deletedSpecies, countMin: spCountMin, countMax: spCountMax, countMetric: spCountMetric, ageDays: speciesAgeFilterDays, newFilter: detNewFilter, newSince: detNewSince, todayFilter: detTodayFilter, textInc: detTextInc, textExc: detTextExc, daySel: Object.keys(detDaySel), rows: detLegendRows, sort: detLegendSort, regionMode: detRegionMode, regionPick: detRegionPick } });
+    window.GeoState.save({ mapLegend: { mini: detLegendMini, bflyFilter: detBflyFilter, starFilter: detStarFilter, rareFilter: detRareFilter, yearFilter: detYearFilter, lifeFilter: detLifeFilter, alertFilter: detAlertFilter, selected: Object.keys(detSelected), excluded: Object.keys(detExcluded), selBase: { sel: Object.keys(detSelBase.sel), exc: Object.keys(detSelBase.exc) }, obsFilter: detObsFilter ? Array.from(detObsFilter) : null, locFilter: detLocFilter ? Array.from(detLocFilter) : null, srcFilter: detSrcFilter ? Array.from(detSrcFilter) : null, areaExcl: detAreaExcl ? Array.from(detAreaExcl) : null, deleted: deletedSpecies, countMin: spCountMin, countMax: spCountMax, countMetric: spCountMetric, ageDays: speciesAgeFilterDays, newFilter: detNewFilter, newSince: detNewSince, todayFilter: detTodayFilter, textInc: detTextInc, textExc: detTextExc, daySel: Object.keys(detDaySel), rows: detLegendRows, sort: detLegendSort, regionMode: detRegionMode, regionPick: detRegionPick, view: detLegendView, ptDim: mpState ? mpState.ptDim() : "list", ptSel: mpState ? mpState.ptSel() : null } });
   }
   function loadDetections(atStart) {
     // Self-heal a store left over-quota by an older build: cap the stored
@@ -15376,7 +15377,7 @@
     // preferences (minimised legend, sort order) and deleted species are kept.
     // A reload after a sync (reloadPlottedFromStore) still restores the live state as it was.
     if (atStart) {
-      ls = { mini: ls.mini, sort: ls.sort, deleted: ls.deleted, countMetric: ls.countMetric };   // row set, age window, every filter → defaults
+      ls = { mini: ls.mini, sort: ls.sort, deleted: ls.deleted, countMetric: ls.countMetric, view: ls.view, ptDim: ls.ptDim };   // row set, age window, every filter (the points selection too) → defaults
       // The filters kept outside the legend state too — the same ones the black × resets (without
       // its map fit or species-list re-render: opening the app must not move or fetch anything).
       window.GeoState.save({ detRecencyDays: 0, detDateRange: null, detMonths: [], probMin: 0, probMax: 100 });
@@ -15386,6 +15387,8 @@
       if (pmv) pmv.textContent = "0%"; if (pxv) pxv.textContent = "100%";
     }
     detLegendMini = !!ls.mini;
+    detLegendView = ls.view === "points" ? "points" : "species";   // the legend view last used
+    if (mpState) { mpState.setPtDim(ls.ptDim); mpState.setPtSel(ls.ptSel); }   // the points view's grouping and (not at start) its selection
     detBflyFilter = !!ls.bflyFilter;   // butterflies-only
     if (detBflyFilter) ensureButterflyGenera().then(function () { try { rebuildDetLayers(); updateDetLegend(); applyAgeFilter(); } catch (e) {} });
     detLegendRows = DET_ROWS_STATES.indexOf(ls.rows) >= 0 ? ls.rows : "all";   // legend "Total" row-set (default: All)
@@ -15466,6 +15469,10 @@
   }
   // Collapsed/expanded state for the detection legend (persisted in mapLegend).
   var detLegendMini = false;
+  // Which view the ONE legend shows (owner, 2026-10-24: "a toggle on the legend … not a second section"):
+  // the plotted species, or the shown lists' site points (see renderPtLegend). Remembered; the points
+  // view also takes over by itself while the species view would be empty.
+  var detLegendView = "species";
   // Legend "Total" row-set: which species the legend lists — cycled by tapping "Total".
   var DET_ROWS_STATES = ["all", "selected", "starred", "rare", "year"];
   var detLegendRows = "all";
@@ -16843,6 +16850,197 @@
       if (!ind) { ind = document.createElement("span"); ind.className = "stale-ind"; ind.textContent = "⏳"; ind.setAttribute("aria-hidden", "true"); tt.appendChild(ind); }
     } else if (ind && ind.parentNode) ind.parentNode.removeChild(ind);
   }
+  // One wiring for every legend row, species or points view. ⚠ CONFIRMED BEHAVIOUR — keep as-is
+  // (user-approved 2026-06-26). Do NOT revert to a plain mouseenter/mouseleave hover on touch (it
+  // sticks and breaks multi-select). The contract: mouse = hover-to-isolate (debounced ~110 ms, so
+  // sliding down the list does not rebuild the markers per row); touch quick tap = multi-select
+  // toggle; press-and-hold on the NAME (or right-click) = the row's menu, with the synthesized
+  // click after a touch long-press suppressed. `cb`: hover(key) · unhover() · menu(key, x, y) →
+  // false when nothing opened · tap(key).
+  var legendCanHover = !window.matchMedia || window.matchMedia("(hover: hover)").matches;
+  function wireLegendRowCb(row, cb) {
+    if (legendCanHover) {
+      row.addEventListener("mouseenter", function () {
+        var key = this.getAttribute("data-key");
+        clearTimeout(detHoverTimer);
+        detHoverTimer = setTimeout(function () { cb.hover(key); }, 110);
+      });
+      row.addEventListener("mouseleave", function () { clearTimeout(detHoverTimer); cb.unhover(); });
+    }
+    var lpTimer = null, suppressClick = false, lpY = 0;
+    function openMenu(x, y, fromTouch) {
+      var key = row.getAttribute("data-key"); if (key == null) return;
+      if (cb.menu(key, x, y) !== false && fromTouch) suppressClick = true;
+    }
+    row.addEventListener("touchstart", function (e) {
+      suppressClick = false;
+      var onName = !!(e.target.closest && e.target.closest(".det-nm"));   // only the name opens the menu
+      lpY = (e.touches && e.touches[0]) ? e.touches[0].clientY : 0;
+      var sx = (e.touches && e.touches[0]) ? e.touches[0].clientX : 0, sy = lpY;
+      clearTimeout(lpTimer);
+      if (onName) lpTimer = setTimeout(function () { holdFeedback(row); openMenu(sx, sy, true); }, holdDelay());
+    }, { passive: true });
+    row.addEventListener("touchmove", function (e) {
+      var y = (e.touches && e.touches[0]) ? e.touches[0].clientY : lpY;
+      if (Math.abs(y - lpY) > 10) clearTimeout(lpTimer);   // scrolling → not a long-press
+    }, { passive: true });
+    var lpEnd = function () { clearTimeout(lpTimer); };
+    row.addEventListener("touchend", lpEnd);
+    row.addEventListener("touchcancel", lpEnd);
+    row.addEventListener("contextmenu", function (e) {   // desktop parity: right-click the name → the same menu
+      if (!(e.target.closest && e.target.closest(".det-nm"))) return;
+      e.preventDefault(); e.stopPropagation(); clearTimeout(lpTimer);
+      openMenu(e.clientX, e.clientY, false);
+    });
+    // Click a row to toggle its selection: the picks stick — click several to show them together;
+    // clearing the last one shows all again. Stopped here so it cannot leak to the map.
+    row.addEventListener("click", function (e) {
+      e.stopPropagation();
+      mapClickGuardUntil = Date.now() + 250;
+      if (suppressClick) { suppressClick = false; return; }   // the long-press opened the menu, not a select
+      cb.tap(this.getAttribute("data-key"));
+    });
+  }
+  // The species view's callbacks: hover isolates the species on the map; the name's menu is the
+  // unified species menu; a tap toggles the species in the selection.
+  var spRowCb = {
+    hover: function (key) { focusDetSpecies(key); },
+    unhover: function () { unfocusDetSpecies(); },
+    menu: function (key, x, y) {
+      var en = detPlot[key]; if (!en) return false;
+      var lbl = labelsByKey[key];
+      showDetRowMenu({ key: key, name: detName(en), sci: (lbl && lbl.sci) || "" }, x, y, function () { try { updateDetLegend(); } catch (e2) {} });
+      return true;
+    },
+    tap: function (k) {
+      detFocusKey = null;   // a tap commits a selection — clear any transient hover-focus
+      if (detSelected[k]) delete detSelected[k]; else detSelected[k] = true;
+      saveLegendState();
+      rebuildDetLayers();
+      updateDetLegend();
+    }
+  };
+  // ---- the legend's POINTS view (owner, 2026-10-24) ------------------------------------------
+  // The same control, row markup and wiring, listing the shown lists' SITE points grouped by one
+  // dimension (mpState.ptLegendData): their lists, tags, species or any kept attribute. The head row's
+  // dots button swaps the two views. Observation-kind points never appear here — they are species rows.
+  function legendViewBtnHtml(on) {
+    var tip = escapeHtml(t(on ? "det.viewSpecies" : "det.viewPoints"));
+    return '<button type="button" class="det-view-pts' + (on ? " is-on" : "") + '" title="' + tip + '" aria-label="' + tip + '" aria-pressed="' + (on ? "true" : "false") + '">' + ico("dots") + "</button>";
+  }
+  function wireLegendViewBtn(el, to) {
+    var b = el.querySelector(".det-view-pts"); if (!b) return;
+    b.addEventListener("click", function (e) {
+      e.stopPropagation(); mapClickGuardUntil = Date.now() + 250;
+      detLegendView = to; saveLegendState(); updateDetLegend();   // (the pins recolour by themselves when the view flips — setPtViewOn)
+    });
+  }
+  var ptRowCb = {
+    hover: function (v) { mpState.setPtFocus(mpState.ptDim(), v); },
+    unhover: function () { mpState.setPtFocus(null); },
+    menu: function (v, x, y) { showPtRowMenu(v, x, y); return true; },
+    tap: function (v) { mpState.ptToggle(v); saveLegendState(); mpState.mpFilterRefresh(); }
+  };
+  // Hold a row's name: zoom to its points · show only these.
+  function showPtRowMenu(v, x, y) {
+    var el = openAnchoredMenu("detrow-menu");
+    var hdr = document.createElement("div");
+    hdr.className = "detrow-menu-hdr detrow-menu-name";
+    hdr.textContent = (mpState.ptLegendData(null).rows.filter(function (r) { return r.v === v; })[0] || { label: v }).label;
+    el.appendChild(hdr);
+    el.appendChild(drmBtn(t("det.ptZoom"), function () {
+      closeAnchoredMenu();
+      var b = L.latLngBounds([]);
+      mpState.ptValuePoints(v).forEach(function (p) { b.extend([+p.lat, +p.lon]); });
+      if (b.isValid()) { try { fitBoundsMin(b, 0.1); } catch (e) {} }
+    }, "target"));
+    el.appendChild(drmBtn(t("det.ptOnly"), function () { closeAnchoredMenu(); mpState.ptOnly(v); saveLegendState(); mpState.mpFilterRefresh(); }, "funnel"));
+    ensureAnchClose(el);
+    positionAnchoredMenu(el, x, y);
+  }
+  function renderPtLegend(el, hasSpecies) {
+    if (!el) return;
+    el.classList.remove("det-counts-stale"); setListStaleInd(false);
+    if (mpState.ptFocusOn()) mpState.setPtFocus(null);   // a redraw replaces the hovered row: never leave the map isolated
+    var vb = map ? map.getBounds() : null;
+    var d = mpState.ptLegendData(vb ? [vb.getSouth(), vb.getWest(), vb.getNorth(), vb.getEast()] : null);
+    var showMini = detLegendMini && d.rows.length > 0;
+    el.classList.toggle("det-legend-mini", showMini);
+    if (showMini) {   // the corner pill: the dots glyph and the row count
+      el.innerHTML = '<button type="button" class="det-restore ico-btn" title="' + escapeHtml(t("det.expand")) + '">' + ico("dots") + "<span>" + d.rows.length + "</span></button>";
+      el.querySelector(".det-restore").addEventListener("click", function () { mapClickGuardUntil = Date.now() + 250; detLegendMini = false; saveLegendState(); updateDetLegend(); });
+      return;
+    }
+    var sumCt = (d.shownN === d.total) ? String(d.shownN) : (d.shownN + "/" + d.total);   // pins on screen passing the filters / all site points shown
+    el.innerHTML = '<div class="det-legend-head" data-help="maphelp.legend">' +
+        '<button type="button" class="det-min" title="' + escapeHtml(t("det.minimise")) + '" aria-label="' + escapeHtml(t("det.minimise")) + '">−</button>' +
+        (hasSpecies ? legendViewBtnHtml(true) : "") +   // back to the species view (only when there is one)
+      "</div>" +
+      // The heading is the DIMENSION toggle: tap cycles lists → tags → species → each kept attribute.
+      '<div class="det-row det-legend-total"><span class="det-nm det-total-toggle" role="button" tabindex="0" title="' + escapeHtml(t("det.ptDimHint")) + '">' + escapeHtml(mpState.ptDimLabel(d.dim)) + '</span><span class="det-ct">' + sumCt + "</span></div>" +
+      (d.rows.length ? d.rows.map(function (r) {
+        var nm = escapeHtml(r.label);
+        return '<div class="det-row det-row-click' + (r.sel ? " det-row-on" : "") + (r.off ? " det-row-off" : "") + '" data-key="' + escapeHtml(r.v) + '">' +
+          '<span class="det-sw det-sw-site" style="color:' + r.color + '"></span><span class="det-nm" title="' + nm + '">' + nm + '</span><span class="det-ct">' + r.n + "</span></div>";
+      }).join("") : '<div class="det-empty">' + escapeHtml(t("det.ptNone")) + "</div>");
+    el.querySelector(".det-min").addEventListener("click", function () { mapClickGuardUntil = Date.now() + 250; detLegendMini = true; saveLegendState(); updateDetLegend(); });
+    wireLegendViewBtn(el, "species");
+    el.querySelector(".det-total-toggle").addEventListener("click", function (e) {
+      e.stopPropagation(); mapClickGuardUntil = Date.now() + 250;
+      mpState.cyclePtDim(d.dims); saveLegendState();
+      mpState.renderMapPoints();   // recolours the pins and re-renders this view
+    });
+    el.querySelectorAll(".det-row-click").forEach(function (row) { wireLegendRowCb(row, ptRowCb); });
+  }
+  // The legend control itself — one for both views, created on first need.
+  function ensureDetLegendCtrl() {
+    if (detLegend) return;
+      detLegend = L.control({ position: "bottomleft" });
+      detLegend.onAdd = function () {
+        var d = L.DomUtil.create("div", "det-legend"); d.id = "det-legend";
+        d.title = t("legend.fitTip");   // surfaces the double-click zoom-to-fit on hover
+        L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
+        // Double-click anywhere on the legend → frame every detection the current
+        // filters leave visible, with ~5% margin. (The pair of clicks it rides on
+        // toggles a species row twice = a net no-op, so nothing else changes.)
+        d.addEventListener("dblclick", function (e) { e.preventDefault(); e.stopPropagation(); fitVisibleDetections(); });
+        // Any legend interaction other than the red × itself cancels the armed
+        // per-area delete mode (closing/minimising the legend, or using another
+        // control). Capture-phase + attached ONCE (d persists across re-renders),
+        // so it disarms before the clicked control's own handler runs — without a
+        // re-render here that would detach that control mid-click.
+        d.addEventListener("click", function (e) {
+          if (!detAreaDeleteMode) return;
+          if (e.target.closest && e.target.closest(".det-clear")) return;   // the red × runs its own two-stage logic
+          exitAreaDeleteMode();
+          var x = d.querySelector(".det-clear"); if (x) x.classList.remove("armed");
+        }, true);
+        // Long-press (or right-click) the COLLAPSED pill or an EMPTY legend → pan/zoom
+        // so the view frames every fetched point (falling back to the fetched-area
+        // outlines when the filters hide all dots). Expanded legends with species rows
+        // keep their own per-row long-press menus — this only fires when "idle".
+        function legendIdle() { return d.classList.contains("det-legend-mini") || !d.querySelector(".det-row"); }
+        function fitFetched() {
+          mapClickGuardUntil = Date.now() + 300;
+          if (fitAllDetectionPoints()) return;
+          var b = L.latLngBounds([]);
+          (fetchedAreas || []).forEach(function (a) { if (a.bounds) b.extend(a.bounds); });
+          if (b.isValid()) { try { fitBoundsMin(b, 0.1); } catch (e) {} }
+        }
+        var lgT = null, lgFired = false, lgX = 0, lgY = 0;
+        d.addEventListener("click", function (e) { if (lgFired) { lgFired = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+        function lgStart(x, y) { if (!legendIdle()) return; lgFired = false; clearTimeout(lgT); lgX = x; lgY = y; lgT = setTimeout(function () { lgFired = true; holdFeedback(d); fitFetched(); }, holdDelay()); }
+        d.addEventListener("touchstart", function (e) { var tt = e.touches && e.touches[0]; lgStart(tt ? tt.clientX : 0, tt ? tt.clientY : 0); }, { passive: true });
+        d.addEventListener("touchmove", function (e) { var tt = e.touches && e.touches[0]; if (tt && (Math.abs(tt.clientX - lgX) > 12 || Math.abs(tt.clientY - lgY) > 12)) clearTimeout(lgT); }, { passive: true });
+        d.addEventListener("touchend", function () { clearTimeout(lgT); });
+        d.addEventListener("mousedown", function (e) { if (e.button === 0) lgStart(e.clientX, e.clientY); });
+        d.addEventListener("mouseup", function () { clearTimeout(lgT); });
+        d.addEventListener("mouseleave", function () { clearTimeout(lgT); });
+        d.addEventListener("contextmenu", function (e) { if (!legendIdle()) return; e.preventDefault(); e.stopPropagation(); fitFetched(); });
+        return d;
+      };
+      detLegend.addTo(map);
+  }
   function updateDetLegend() {
     syncAlertPlot();   // surface rarity-alert species as legend rows (empty unless subscribed)
     var allKeys = unionDetKeys();
@@ -16850,7 +17048,13 @@
     updateFilterClearBtn();   // reveal/hide the funnel-× with the active-filter state
     updateHdrHisto();      // the header's per-day bars track the same plotted/filtered set
     var delKeys = Object.keys(deletedSpecies);
-    if (!allKeys.length && !delKeys.length) { if (detLegend) { map.removeControl(detLegend); detLegend = null; } return; }
+    // The POINTS view (owner, 2026-10-24): the shown lists' site points keep the legend up with nothing
+    // plotted, and take the legend over by themselves while the species view would be empty.
+    var ptAvail = !!(mpState && mpState.ptAvail()), hasSp = !!(allKeys.length || delKeys.length);
+    if (!hasSp && !ptAvail) { if (detLegend) { map.removeControl(detLegend); detLegend = null; } if (mpState) mpState.setPtViewOn(false); return; }
+    var ptView = ptAvail && (detLegendView === "points" || !hasSp);
+    if (mpState) mpState.setPtViewOn(ptView);
+    if (ptView) { ensureDetLegendCtrl(); renderPtLegend(document.getElementById("det-legend"), hasSp); return; }
     ensureDedup();
     maybeComputeDetProbs();   // (re)compute habitat probabilities when the plotted set changed
     // The dropdown's "Starred only" narrows which species the legend lists (and
@@ -16927,53 +17131,7 @@
     nDet += dotClusterHiddenN;   // rows shown merged inside declutter clusters still count as shown
     var fetched = detDrawableCount(), capped = fetched > detMaxPoints();
     var capTip = capped ? t("det.cappedTip", { shown: nDet, total: fetched }) : "";
-    if (!detLegend) {
-      detLegend = L.control({ position: "bottomleft" });
-      detLegend.onAdd = function () {
-        var d = L.DomUtil.create("div", "det-legend"); d.id = "det-legend";
-        d.title = t("legend.fitTip");   // surfaces the double-click zoom-to-fit on hover
-        L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
-        // Double-click anywhere on the legend → frame every detection the current
-        // filters leave visible, with ~5% margin. (The pair of clicks it rides on
-        // toggles a species row twice = a net no-op, so nothing else changes.)
-        d.addEventListener("dblclick", function (e) { e.preventDefault(); e.stopPropagation(); fitVisibleDetections(); });
-        // Any legend interaction other than the red × itself cancels the armed
-        // per-area delete mode (closing/minimising the legend, or using another
-        // control). Capture-phase + attached ONCE (d persists across re-renders),
-        // so it disarms before the clicked control's own handler runs — without a
-        // re-render here that would detach that control mid-click.
-        d.addEventListener("click", function (e) {
-          if (!detAreaDeleteMode) return;
-          if (e.target.closest && e.target.closest(".det-clear")) return;   // the red × runs its own two-stage logic
-          exitAreaDeleteMode();
-          var x = d.querySelector(".det-clear"); if (x) x.classList.remove("armed");
-        }, true);
-        // Long-press (or right-click) the COLLAPSED pill or an EMPTY legend → pan/zoom
-        // so the view frames every fetched point (falling back to the fetched-area
-        // outlines when the filters hide all dots). Expanded legends with species rows
-        // keep their own per-row long-press menus — this only fires when "idle".
-        function legendIdle() { return d.classList.contains("det-legend-mini") || !d.querySelector(".det-row"); }
-        function fitFetched() {
-          mapClickGuardUntil = Date.now() + 300;
-          if (fitAllDetectionPoints()) return;
-          var b = L.latLngBounds([]);
-          (fetchedAreas || []).forEach(function (a) { if (a.bounds) b.extend(a.bounds); });
-          if (b.isValid()) { try { fitBoundsMin(b, 0.1); } catch (e) {} }
-        }
-        var lgT = null, lgFired = false, lgX = 0, lgY = 0;
-        d.addEventListener("click", function (e) { if (lgFired) { lgFired = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
-        function lgStart(x, y) { if (!legendIdle()) return; lgFired = false; clearTimeout(lgT); lgX = x; lgY = y; lgT = setTimeout(function () { lgFired = true; holdFeedback(d); fitFetched(); }, holdDelay()); }
-        d.addEventListener("touchstart", function (e) { var tt = e.touches && e.touches[0]; lgStart(tt ? tt.clientX : 0, tt ? tt.clientY : 0); }, { passive: true });
-        d.addEventListener("touchmove", function (e) { var tt = e.touches && e.touches[0]; if (tt && (Math.abs(tt.clientX - lgX) > 12 || Math.abs(tt.clientY - lgY) > 12)) clearTimeout(lgT); }, { passive: true });
-        d.addEventListener("touchend", function () { clearTimeout(lgT); });
-        d.addEventListener("mousedown", function (e) { if (e.button === 0) lgStart(e.clientX, e.clientY); });
-        d.addEventListener("mouseup", function () { clearTimeout(lgT); });
-        d.addEventListener("mouseleave", function () { clearTimeout(lgT); });
-        d.addEventListener("contextmenu", function (e) { if (!legendIdle()) return; e.preventDefault(); e.stopPropagation(); fitFetched(); });
-        return d;
-      };
-      detLegend.addTo(map);
-    }
+    ensureDetLegendCtrl();
     var el = document.getElementById("det-legend");
     if (el) el.classList.remove("det-counts-stale");   // a full render = fresh counts, so drop any "stale" greying
     setListStaleInd(false);                            // recalculated → drop the ⏳ by the list title
@@ -17029,6 +17187,7 @@
         '<button type="button" class="det-min" title="' + escapeHtml(t("det.minimise")) + '" aria-label="' + escapeHtml(t("det.minimise")) + '">−</button>' +
         // The filter funnel and the red × live ONLY on the map's lower-right bar (owner, 2026-10-24:
         // "sufficient that they are on the map"); the legend head keeps − and the selection-only ×.
+        (ptAvail ? legendViewBtnHtml(false) : "") +   // → the points view (only while a shown list has site points)
         (selOverride ? '<button type="button" class="det-clear-selonly" title="' + escapeHtml(t("det.clearSel")) + '" aria-label="' + escapeHtml(t("det.clearSel")) + '">' + X_MARK_SVG + '</button>' : "") +
         (capped ? '<span class="det-cap-warn" role="img" title="' + escapeHtml(capTip) + '" aria-label="' + escapeHtml(capTip) + '">⚠</span>' : "") +
       "</div>" +
@@ -17075,6 +17234,7 @@
       detFiltersRefresh();
     });
     el.querySelector(".det-min").addEventListener("click", function () { mapClickGuardUntil = Date.now() + 250; detLegendMini = true; saveLegendState(); updateDetLegend(); });
+    wireLegendViewBtn(el, "points");
     var wireLegendRows = function (root) {
     root.querySelectorAll(".det-del").forEach(function (b) { b.addEventListener("click", function (e) { e.stopPropagation(); removeDetection(this.getAttribute("data-key")); }); });
     root.querySelectorAll(".det-row-click").forEach(wireLegendRow);
@@ -17100,70 +17260,7 @@
     // does — so it would stick and break multi-select. Instead, touch gets an
     // explicit PRESS-AND-HOLD: hold a row to isolate its species while held, lift
     // to restore. A quick tap stays a multi-select toggle.
-    var canHover = !window.matchMedia || window.matchMedia("(hover: hover)").matches;
-    var wireLegendRow = function (row) {
-      if (canHover) {
-        // Hover previews a species by isolating it on the map (transiently) — the same
-        // whether or not a selection is active; leaving restores the selection view.
-        // Debounced: sliding the pointer down the list would otherwise rebuild every
-        // marker for each row passed over (very slow with a big set). Isolate only once
-        // the pointer rests on a row (~110 ms); a leave cancels a pending isolate.
-        row.addEventListener("mouseenter", function () {
-          var key = this.getAttribute("data-key");
-          clearTimeout(detHoverTimer);
-          detHoverTimer = setTimeout(function () { focusDetSpecies(key); }, 110);
-        });
-        row.addEventListener("mouseleave", function () { clearTimeout(detHoverTimer); unfocusDetSpecies(); });
-      }
-      // Long-press the species NAME → the unified species menu (info · lists &
-      // actions), the same one a species-list name opens. Isolate-on-hold was
-      // retired for this: a plain tap already isolates by selecting the one species,
-      // and mouse devices still hover-isolate (above). suppressClick stops the
-      // synthesized click after a touch long-press from also toggling the selection.
-      var lpTimer = null, suppressClick = false, lpY = 0;
-      function openLegendSpMenu(x, y, fromTouch) {
-        var key = row.getAttribute("data-key"); if (!key) return;
-        var en = detPlot[key]; if (!en) return;
-        var lbl = labelsByKey[key];
-        if (fromTouch) suppressClick = true;
-        showDetRowMenu({ key: key, name: detName(en), sci: (lbl && lbl.sci) || "" }, x, y, function () { try { updateDetLegend(); } catch (e2) {} });
-      }
-      row.addEventListener("touchstart", function (e) {
-        suppressClick = false;
-        var onName = !!(e.target.closest && e.target.closest(".det-nm"));   // only the name opens the menu
-        lpY = (e.touches && e.touches[0]) ? e.touches[0].clientY : 0;
-        var sx = (e.touches && e.touches[0]) ? e.touches[0].clientX : 0, sy = lpY;
-        clearTimeout(lpTimer);
-        if (onName) lpTimer = setTimeout(function () { holdFeedback(row); openLegendSpMenu(sx, sy, true); }, holdDelay());
-      }, { passive: true });
-      row.addEventListener("touchmove", function (e) {
-        var y = (e.touches && e.touches[0]) ? e.touches[0].clientY : lpY;
-        if (Math.abs(y - lpY) > 10) clearTimeout(lpTimer);   // scrolling → not a long-press
-      }, { passive: true });
-      var lpEnd = function () { clearTimeout(lpTimer); };
-      row.addEventListener("touchend", lpEnd);
-      row.addEventListener("touchcancel", lpEnd);
-      // Desktop parity: right-click the name → the same menu (no trailing click to suppress).
-      row.addEventListener("contextmenu", function (e) {
-        if (!(e.target.closest && e.target.closest(".det-nm"))) return;
-        e.preventDefault(); e.stopPropagation(); clearTimeout(lpTimer);
-        openLegendSpMenu(e.clientX, e.clientY, false);
-      });
-      row.addEventListener("click", function (e) {
-        e.stopPropagation();
-        mapClickGuardUntil = Date.now() + 250;
-        if (suppressClick) { suppressClick = false; return; }   // the long-press opened the menu, not a select
-        detFocusKey = null;   // a tap commits a selection — clear any transient hover-focus
-        var k = this.getAttribute("data-key");
-        // Multi-select: each click toggles that species, and the picks stick —
-        // click several to show them together. Clicking a selected species
-        // deselects it; clearing the last one shows all species again.
-        if (detSelected[k]) delete detSelected[k]; else detSelected[k] = true;
-        saveLegendState();
-        rebuildDetLayers();
-        updateDetLegend();
-      });
-    };
+    var wireLegendRow = function (row) { wireLegendRowCb(row, spRowCb); };   // the species callbacks; the points view shares the wiring
     wireLegendRows(el);
     if (legNow < keys.length) {
       var legI = legNow, legMark = el.querySelector(".det-more");
@@ -17913,7 +18010,7 @@
     mpTipHtml: mpTipHtml, listPointPasses: listPointPasses, openExternal: openExternal, openPointEditor: openPointEditor,
     copyPointToList: copyPointToList, deleteListPoint: deleteListPoint,
     refreshMpPanel: refreshMpPanel, renderMpAdmin: renderMpAdmin, setStatus: setStatus,
-    showDetRowMenu: showDetRowMenu, syncListDetections: syncListDetections, labelForSci: labelForSci,
+    showDetRowMenu: showDetRowMenu, syncListDetections: syncListDetections, labelForSci: labelForSci, updateDetLegend: updateDetLegend,
     updateDetSetOverlays: updateDetSetOverlays, updateMpBadge: updateMpBadge,
     pulseFunnels: pulseFunnels, tagDisplay: tagDisplay,
     updateSpDistances: updateSpDistances, t: t,

@@ -39,6 +39,7 @@ window.AppPoints = (function () {
     openPointEditor = ctx.openPointEditor; refreshMpPanel = ctx.refreshMpPanel;
     renderMpAdmin = ctx.renderMpAdmin; setStatus = ctx.setStatus; showDetRowMenu = ctx.showDetRowMenu;
     syncListDetections = ctx.syncListDetections; updateDetSetOverlays = ctx.updateDetSetOverlays;
+    updateDetLegend = ctx.updateDetLegend || function () {};   // the legend's points view follows every pin redraw
     pulseFunnels = ctx.pulseFunnels || function () {};
     tagDisplay = ctx.tagDisplay || function (x) { return x; };
     labelForSci = ctx.labelForSci || function () { return null; };   // scientific name → model label (app.js owns the index)
@@ -61,6 +62,14 @@ window.AppPoints = (function () {
   // empty include list alone means "no filter, show all", so "none" needs its own flag.
   var mpNone = false;
   var mpShown = true;   // master visibility toggle — hides all markers but keeps the data
+  // ---- the legend's POINTS view (owner, 2026-10-24) — the state; app.js draws the rows ----
+  var updateDetLegend = function () {};
+  var ptDim = "list";       // what the rows group by: "list" · "tag" · "species" · "attr:<name>"
+  var ptSel = null;         // the legend selection: { by: <dim>, vals: { value: true } } — no pick = all shown
+  var ptFocus = null;       // { by, v } while a row is hovered: the map isolates that value (transient)
+  var ptViewOn = false;     // the legend is in its points view (app.js says) → pins take the dimension's colour
+  var mpSiteN = 0;          // site points in the shown lists, as counted by the last renderMapPoints
+  var mpQuiet = false;      // a hover redraw: do not touch the legend (the hovered row must survive)
   var mpLayer = null;
   // Named collections — saveable/retrievable point lists (e.g. "Owl nests",
   // "Spring trip"). mpActiveName is the loaded list; edits to the working set
@@ -2395,6 +2404,140 @@ window.AppPoints = (function () {
     });
     return { from: lo, to: hi };
   }
+
+  // ---- the legend's points view: values, selection, rows -------------------------------------
+  // A point's value(s) on a dimension: its list's name, its tags ("" = untagged), its species (the
+  // stored scientific name) or one kept attribute. Always an array — a point with three tags sits
+  // in three rows.
+  function ptValues(p, c, dim) {
+    if (dim === "list") return [c ? c.name : ""];
+    if (dim === "tag") return (p.tags && p.tags.length) ? p.tags : [""];
+    if (dim === "species") return [detKeyOf(p) ? String(p.sci || p.spKey || "") : ""];
+    if (dim.indexOf("attr:") === 0) { var a = p.attrs ? p.attrs[dim.slice(5)] : null; return [a == null ? "" : String(a)]; }
+    return [""];
+  }
+  function ptHas(p, c, dim, v) { return ptValues(p, c, dim).indexOf(v) >= 0; }
+  function ptSelActive() { return !!(ptSel && ptSel.vals && Object.keys(ptSel.vals).length); }
+  // The legend selection as a SITE point sees it. The Tag dimension has no state of its own: its
+  // rows read and write the tag chips (mpFilter / mpExclude / mpNone), so mpTagPasses covers it.
+  function ptSelOk(p, c) {
+    if (!ptSelActive() || ptSel.by === "tag") return true;
+    var vs = ptValues(p, c, ptSel.by);
+    for (var i = 0; i < vs.length; i++) if (ptSel.vals[vs[i]]) return true;
+    return false;
+  }
+  function ptSelPasses(p, c) { return (!ptFocus || ptHas(p, c, ptFocus.by, ptFocus.v)) && ptSelOk(p, c); }
+  // The colour a dimension gives a value — the legend swatch and the pin share it: the list's own
+  // colour, the tag's / value's hash colour, a species' own colour when the point carries one.
+  function ptValueColor(dim, v, p, c) {
+    if (dim === "list") return collColor(c);
+    if (!v) return "#888";
+    if (dim === "species") return (p && p.spColor) || mpHashColor("sp:" + v);
+    return mpHashColor(v);
+  }
+  function ptValueLabel(dim, v) {
+    if (!v) return dim === "tag" ? t("points.notag") : t("det.ptNoValue");
+    if (dim === "tag" || dim === "species") return tagDisplay(v) || v;   // a scientific name reads as the local species name
+    return v;
+  }
+  function ptDimLabel(dim) {
+    if (dim === "list") return t("det.ptLists");
+    if (dim === "tag") return t("det.ptTags");
+    if (dim === "species") return t("det.ptSpecies");
+    return dim.slice(5);   // a kept attribute, by its own name
+  }
+  // Everything the points view needs, in ONE pass over the shown lists' site points: the dimensions
+  // present (list always; tag / species / an attribute name only when some point carries it), the rows
+  // of the current dimension with their count of pins on screen (`bb` = [s, w, n, e], null = anywhere)
+  // and the totals. A row's count ignores the selection on ITS OWN dimension — an unpicked row stays
+  // listed, greyed, so a tap can bring it back — and honours every other filter. Rows are A–Z.
+  function ptLegendData(bb) {
+    var hasTag = false, hasSp = false, attrs = {}, rows = {}, order = [], total = 0, shownN = 0;
+    var ownSel = ptSelActive() && ptSel.by === ptDim, routeShows = routePoints.length === 0;
+    mpCollections.forEach(function (c) {
+      if (!shownColls[c.name] || (routeShows && isRouteColl(c))) return;
+      var lf = listFilter(c.name);
+      (c.points || []).forEach(function (p) {
+        if (!p || !isFinite(p.lat) || !isFinite(p.lon) || isObsPoint(p, c)) return;
+        total++;
+        if (p.tags && p.tags.length) hasTag = true;
+        if (detKeyOf(p)) hasSp = true;
+        if (p.attrs) for (var k in p.attrs) if (p.attrs[k] != null && p.attrs[k] !== "") attrs[k] = true;
+        if (bb && (p.lat < bb[0] || p.lat > bb[2] || p.lon < bb[1] || p.lon > bb[3])) return;
+        if (listPointPasses && !listPointPasses(p, true)) return;
+        if (!listOwnFilterPasses(p, lf)) return;
+        var tagOk = mpTagPasses(p), selOk = ptSelOk(p, c);
+        if (tagOk && selOk) shownN++;
+        if (!(ptDim === "tag" ? selOk : (ownSel ? tagOk : (tagOk && selOk)))) return;
+        ptValues(p, c, ptDim).forEach(function (v) {
+          var r = rows[v];
+          if (!r) { r = rows[v] = { v: v, n: 0, color: ptValueColor(ptDim, v, p, c), label: ptValueLabel(ptDim, v) }; order.push(v); }
+          r.n++;
+        });
+      });
+    });
+    var dims = ["list"];
+    if (hasTag) dims.push("tag");
+    if (hasSp) dims.push("species");
+    Object.keys(attrs).sort().forEach(function (k) { dims.push("attr:" + k); });
+    if (dims.indexOf(ptDim) < 0) { ptDim = "list"; return ptLegendData(bb); }   // the grouping attribute left with its list
+    var out = order.map(function (v) {
+      var r = rows[v];
+      if (ptDim === "tag") { r.sel = mpFilter.indexOf(v) >= 0; r.off = !mpTagPasses({ tags: v ? [v] : [] }); }
+      else { r.sel = !!(ownSel && ptSel.vals[v]); r.off = !!(ownSel && !ptSel.vals[v]); }
+      return r;
+    });
+    out.sort(function (a, b) { if (!a.v !== !b.v) return a.v ? -1 : 1; return a.label.localeCompare(b.label); });   // "(none)" last
+    return { dim: ptDim, dims: dims, rows: out, total: total, shownN: shownN };
+  }
+  // Persist the tag chips' state the way the chips themselves do (a tiny write, not part of the sync).
+  function saveTagChips() { window.GeoState.save({ mapPointsFilter: mpFilter.slice(), mapPointsExclude: mpExclude.slice(), mapPointsNone: mpNone }); }
+  // A tap on a row: the pick sticks, several stack, the last one taken away shows all again. On the Tag
+  // dimension the tap writes the chips (an excluded tag comes back first).
+  function ptToggle(v) {
+    ptFocus = null;
+    if (ptDim === "tag") {
+      var xi = mpExclude.indexOf(v);
+      if (xi >= 0) mpExclude.splice(xi, 1);
+      else { var fi = mpFilter.indexOf(v); if (fi >= 0) mpFilter.splice(fi, 1); else mpFilter.push(v); }
+      mpNone = false;
+      saveTagChips();
+      return;
+    }
+    if (!ptSel || ptSel.by !== ptDim) ptSel = { by: ptDim, vals: {} };
+    if (ptSel.vals[v]) delete ptSel.vals[v]; else ptSel.vals[v] = true;
+    if (!Object.keys(ptSel.vals).length) ptSel = null;
+  }
+  function ptOnly(v) {
+    ptFocus = null;
+    if (ptDim === "tag") { mpFilter = [v]; mpExclude = []; mpNone = false; saveTagChips(); return; }
+    ptSel = { by: ptDim, vals: {} }; ptSel.vals[v] = true;
+  }
+  // Hover isolate: redraw the pins to this one value, quietly — the legend must not re-render under
+  // the pointer, or the row's mouseleave never fires and the map stays isolated.
+  function setPtFocus(by, v) {
+    ptFocus = (by == null) ? null : { by: by, v: v };
+    mpQuiet = true;
+    try { renderMapPoints(); } finally { mpQuiet = false; }
+  }
+  // The legend says which view it shows. The pins wear the dimension's colour only in the points view,
+  // so a flip of the view (a tap, or the species view emptying) redraws them — deferred, because the
+  // legend update that reports the flip may itself be running from the end of renderMapPoints.
+  function setPtViewOn(v) {
+    v = !!v;
+    if (v === ptViewOn) return;
+    ptViewOn = v;
+    if (ptDim !== "list") setTimeout(function () { try { renderMapPoints(); } catch (e) {} }, 0);
+  }
+  // The shown site points holding a value of the current dimension (for "zoom to these").
+  function ptValuePoints(v) {
+    var out = [], routeShows = routePoints.length === 0;
+    mpCollections.forEach(function (c) {
+      if (!shownColls[c.name] || (routeShows && isRouteColl(c))) return;
+      (c.points || []).forEach(function (p) { if (p && isFinite(p.lat) && isFinite(p.lon) && !isObsPoint(p, c) && ptHas(p, c, ptDim, v)) out.push(p); });
+    });
+    return out;
+  }
   function mpVisible(p, c) {
     // The pane's own filters (date, observer, …) reach list pins too — see
     // listPointPasses in app.js. A pin is judged only on the fields it HAS, so a list
@@ -2402,6 +2545,7 @@ window.AppPoints = (function () {
     // see pointKind) is not an event: the date and observer filters pass it by; the name and
     // text searches still reach it.
     if (listPointPasses && !listPointPasses(p, !isObsPoint(p, c))) return false;
+    if (c && !isObsPoint(p, c) && !ptSelPasses(p, c)) return false;   // the legend's points view: its selection (and a hovered row) reach a list's site pins
     return mpTagPasses(p);
   }
   // The tag-chip part alone (include / exclude), for the species records a list injects
@@ -2495,7 +2639,7 @@ window.AppPoints = (function () {
       '<polygon points="10,1.5 18.5,16.5 1.5,16.5" fill="' + c + '" stroke="#111" stroke-width="1.5" stroke-linejoin="round"/></svg>';
     return L.divIcon({ className: "mp-tri-icon", html: svg, iconSize: [20, 18], iconAnchor: [10, 11] });
   }
-  function renderMpPin(p, editable, color) {
+  function renderMpPin(p, editable, color, force) {
     if (+p.radius > 0) {   // the position's uncertainty: a transparent circle in metres, under the pin
       var rc = p.color || color || mpColorFor(p);
       // faint fill, so the map stays readable under many overlapping circles (owner, 2026-10-10), with a
@@ -2532,7 +2676,7 @@ window.AppPoints = (function () {
       mpLayer.addLayer(sm);
       return;
     }
-    var fill = p.color || color || mpColorFor(p);   // explicit per-point colour wins over list/tag colour
+    var fill = force ? color : (p.color || color || mpColorFor(p));   // explicit per-point colour wins over list/tag colour — unless the legend's dimension colours the pins
     // Points that arrived via a shared link are drawn as TRIANGLES so they stand
     // out from your own (circular) pins; everything else stays a circle.
     // marker "ring": an unfilled circle in the point's colour (still clickable inside: fill with opacity 0)
@@ -2927,13 +3071,14 @@ window.AppPoints = (function () {
     var vb = mpCulling ? mpViewBounds() : null, bb = null;
     if (vb) { var sw = vb.getSouthWest(), ne = vb.getNorthEast(); bb = [sw.lat, sw.lng, ne.lat, ne.lng]; }
     var budget = mpCulling ? mpPinBudget() : Infinity;
-    var drawn = 0, passed = 0;
+    var drawn = 0, passed = 0, siteN = 0, sitePrev = mpSiteN;
     // Pass 1: how many pins each list may draw.
     var share = {}, left = budget, nLeft = shownLists.length;
     shownLists.forEach(function (c) {
       var want = nLeft > 0 ? Math.max(1, Math.floor(left / nLeft)) : 0;
       var have = 0;
       (c.points || []).forEach(function (p) { if (p && !isObsPoint(p, c) && isFinite(p.lat) && isFinite(p.lon)) have++; });
+      siteN += have;
       var give = Math.min(want, have);
       share[c.name] = (budget === Infinity) ? Infinity : give;
       left -= give; nLeft--;
@@ -2971,6 +3116,10 @@ window.AppPoints = (function () {
         mpLayer.addLayer(L.polyline(ln.r, { color: ln.c || collColor(c), weight: 3, opacity: 0.85, interactive: false }));
       });
     });
+    mpSiteN = siteN;
+    // In the legend's points view the pins wear the colour of the dimension the rows group by (so the
+    // swatches match the map); the list colour otherwise, as always.
+    var dimCol = ptViewOn && ptDim !== "list";
     // Pass 2: draw, largest list first so the smallest end up on top.
     shownLists.slice().reverse().forEach(function (c) {
       var col = collColor(c);
@@ -2990,7 +3139,8 @@ window.AppPoints = (function () {
         passed++;
         if (used >= quota) return;
         used++; drawn++;
-        renderMpPin(p, false, col);
+        if (dimCol) renderMpPin(p, false, ptValueColor(ptDim, ptValues(p, c, ptDim)[0], p, c), true);
+        else renderMpPin(p, false, col);
       });
     });
     // Say what is missing rather than quietly drawing a subset.
@@ -3000,6 +3150,9 @@ window.AppPoints = (function () {
     updateRouteChip();        // and its bottom nav bar
     refreshMpPanel();
     updateMpBadge();
+    // The legend's points view lists what was just drawn; and the legend appears / goes with the
+    // first / last site point (a quiet hover redraw leaves it alone).
+    if (!mpQuiet && (ptViewOn || mpSiteN !== sitePrev)) updateDetLegend();
   }
 
   return {
@@ -3042,6 +3195,13 @@ window.AppPoints = (function () {
     collCount: collCount, anyLazy: anyLazy, whenAllLoaded: whenAllLoaded, hydrateOne: hydrateOne,
     mpExclude: function () { return mpExclude; }, setMpExclude: function (v) { mpExclude = v; },
     mpNone: function () { return mpNone; }, setMpNone: function (v) { mpNone = !!v; },
+    // ---- the legend's points view ----
+    ptDim: function () { return ptDim; }, setPtDim: function (v) { ptDim = (typeof v === "string" && v) ? v : "list"; },
+    ptSel: function () { return ptSel; }, setPtSel: function (v) { ptSel = (v && v.by && v.vals) ? v : null; }, ptSelActive: ptSelActive,
+    ptLegendData: ptLegendData, ptDimLabel: ptDimLabel, ptToggle: ptToggle, ptOnly: ptOnly, ptValuePoints: ptValuePoints,
+    setPtFocus: setPtFocus, ptFocusOn: function () { return !!ptFocus; },
+    ptAvail: function () { return mpSiteN > 0; }, setPtViewOn: setPtViewOn,
+    cyclePtDim: function (dims) { ptDim = dims[(dims.indexOf(ptDim) + 1) % dims.length]; },
     mpShown: function () { return mpShown; },
     setMpShown: function (v) { mpShown = v; },
     mpLayer: function () { return mpLayer; },

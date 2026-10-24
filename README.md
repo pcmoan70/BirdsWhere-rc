@@ -583,6 +583,17 @@ Tap a row to select it (picks stack, so several show together); on a mouse, hove
 it on the map. Long-press (or right-click) a species **name** for its menu (info, references, lists
 & actions) — the same menu a species-list name opens.
 
+**Points view (v2191).** When a shown list has *site* points (see *Observations and sites* under
+Points, lists & saved sets), a **dots button** in the legend's top row swaps the species rows for those
+points — and the legend opens in this view by itself when there are no species to list. The heading is
+the grouping: tap it to cycle **Lists → Tags → Species → each kept field** (status, type, …); the rows
+are that grouping's values with their **count on screen**, each with a ring swatch in the colour the
+pins wear while that grouping is on. Tap a row to show only those points (picks stack; clearing the
+last one shows all), hover to isolate, long-press a name for **Zoom to these** / **Show only these**.
+The Tags grouping *is* the Points panel's tag chips — a tap here ticks the chip there. The funnel
+clears a points pick like any other filter. Observation-kind points are never listed here: they are
+species rows in the species view.
+
 The control line opens three mutually-exclusive **filter subwindows**:
 
 - **Time** — presets in a grid (days 1–6, weeks 1–6, months 1–3), an **all/∞** chip, a
@@ -698,6 +709,7 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   edit/remove individual points.
 - **Observations and sites (v2190)** — every list point has a **kind**. An *observation* is a species
   record: it joins the species legend and follows its date, observer and group filters and the red ×.
+  Sites get the legend's **points view** instead (see *The map legend & filters*).
   A *site* is a static location: a round see-through dot a little larger than an observation dot, in the
   list's colour, never filtered as a record whatever species it names (the name and text searches still
   reach it). *Auto* decides per point — a species with a date or a source link is an observation, anything

@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2190";
+var VERSION = "v2191";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Point lists: a point is now an OBSERVATION (a species record \u2014 species legend, date / observer filters, the red \u00d7) or a SITE (a static location \u2014 a round see-through dot, never filtered as a record, whatever species it names). Auto decides per point; set it for a whole list under Edit list \u2192 Points are, per point under Edit values, or on import.",
-  "\u2022 Imported files keep their other fields (status, type, year \u2026) on each point: shown on the card, editable as columns under Edit values (+ Column adds one), written back to KML / GeoJSON downloads."
+  "\u2022 Legend \u2192 points view: when a shown list has site points, a dots button in the legend\u2019s top row lists those points instead of the species \u2014 grouped by list, tag, species or any field the file brought (tap the heading to change), each with its count on screen, the pins coloured to match. Tap a row to show only those points (several stack), long-press a name to zoom to them; the Tags grouping is the Points panel\u2019s tag chips. With nothing fetched the legend opens in this view by itself."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
