@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2191";
+var VERSION = "v2192";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Legend \u2192 points view: when a shown list has site points, a dots button in the legend\u2019s top row lists those points instead of the species \u2014 grouped by list, tag, species or any field the file brought (tap the heading to change), each with its count on screen, the pins coloured to match. Tap a row to show only those points (several stack), long-press a name to zoom to them; the Tags grouping is the Points panel\u2019s tag chips. With nothing fetched the legend opens in this view by itself."
+  "\u2022 Point lists are separate from the fetched species: a list point never enters the species legend, the date / observer / mode filters leave it alone, and every list point is a round see-through dot in the list\u2019s colour. The lists\u2019 own legend is the points view (the dots button in the legend\u2019s top row): the shown points grouped by list, tag, species or any field the file brought, switched on and off per row. The observation / site kind from v2190 is gone \u2014 it is not needed."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

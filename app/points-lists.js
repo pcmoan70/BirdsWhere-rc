@@ -21,7 +21,7 @@ window.AppPoints = (function () {
 
   // ---- injected by app.js (init) -----------------------------------------
   // Plain function aliases (stable references) …
-  var clearSpider, detRenderer, detStarMarker, downloadCsv, escapeHtml, haversineKm, ico,
+  var clearSpider, downloadCsv, escapeHtml, haversineKm, ico,
       copyPointToList, deleteListPoint, listPointPasses, looksLikeHtml, makePopupBtn, modalPrompt, mpTipHtml, openExternal, openPointEditor,
       refreshMpPanel, renderMpAdmin, setStatus, showDetRowMenu, syncListDetections,
       pulseFunnels, tagDisplay, labelForSci, updateDetSetOverlays, updateMpBadge, updateSpDistances, t,
@@ -31,7 +31,7 @@ window.AppPoints = (function () {
   var getMap, getMarker, getSpiderHidden, setSpiderLayer;
 
   function init(ctx) {
-    clearSpider = ctx.clearSpider; detRenderer = ctx.detRenderer; detStarMarker = ctx.detStarMarker;
+    clearSpider = ctx.clearSpider;
     downloadCsv = ctx.downloadCsv; escapeHtml = ctx.escapeHtml; haversineKm = ctx.haversineKm;
     ico = ctx.ico; looksLikeHtml = ctx.looksLikeHtml; makePopupBtn = ctx.makePopupBtn;
     copyPointToList = ctx.copyPointToList; deleteListPoint = ctx.deleteListPoint;
@@ -40,6 +40,7 @@ window.AppPoints = (function () {
     renderMpAdmin = ctx.renderMpAdmin; setStatus = ctx.setStatus; showDetRowMenu = ctx.showDetRowMenu;
     syncListDetections = ctx.syncListDetections; updateDetSetOverlays = ctx.updateDetSetOverlays;
     updateDetLegend = ctx.updateDetLegend || function () {};   // the legend's points view follows every pin redraw
+    speciesColor = ctx.speciesColor || function () { return ""; };   // the species legend's colour, for the Species grouping
     pulseFunnels = ctx.pulseFunnels || function () {};
     tagDisplay = ctx.tagDisplay || function (x) { return x; };
     labelForSci = ctx.labelForSci || function () { return null; };   // scientific name → model label (app.js owns the index)
@@ -63,12 +64,12 @@ window.AppPoints = (function () {
   var mpNone = false;
   var mpShown = true;   // master visibility toggle — hides all markers but keeps the data
   // ---- the legend's POINTS view (owner, 2026-10-24) — the state; app.js draws the rows ----
-  var updateDetLegend = function () {};
+  var updateDetLegend = function () {}, speciesColor = function () { return ""; };
   var ptDim = "list";       // what the rows group by: "list" · "tag" · "species" · "attr:<name>"
   var ptSel = null;         // the legend selection: { by: <dim>, vals: { value: true } } — no pick = all shown
   var ptFocus = null;       // { by, v } while a row is hovered: the map isolates that value (transient)
   var ptViewOn = false;     // the legend is in its points view (app.js says) → pins take the dimension's colour
-  var mpSiteN = 0;          // site points in the shown lists, as counted by the last renderMapPoints
+  var mpListN = 0;          // points in the shown lists, as counted by the last renderMapPoints
   var mpQuiet = false;      // a hover redraw: do not touch the legend (the hovered row must survive)
   var mpLayer = null;
   // Named collections — saveable/retrievable point lists (e.g. "Owl nests",
@@ -136,7 +137,6 @@ window.AppPoints = (function () {
     { k: "act", t: "ptedit.act", type: "text", w: "8em" },
     { k: "observer", t: "th.obs", type: "text", w: "9em" },
     { k: "sci", t: "th.sci", type: "text", w: "11em" },
-    { k: "kind", t: "ptedit.kind", type: "kind", w: "9em" },
     { k: "radius", t: "ptedit.radius", type: "number", w: "5em" },
     { k: "url", t: "ptedit.url", type: "text", w: "10em" },
     { k: "color", t: "points.color", type: "color", w: "3em" },
@@ -174,11 +174,6 @@ window.AppPoints = (function () {
   function peRowHtml(p, i, cols) {
     var esc = escapeHtml, cells = cols.map(function (col) {
       var v = peVal(p, col.k), a = ' data-i="' + i + '" data-k="' + col.k + '"';
-      if (col.type === "kind") {   // Auto shows what it resolves to for this point
-        var q = Object.assign({}, p); delete q.kind;
-        var auto = t("points.kindAuto") + " (" + t(pointKind(q, peState.c) === "obs" ? "points.kindObs" : "points.kindSite") + ")";
-        return '<td><select class="pe-in"' + a + ">" + kindOptions(auto).map(function (o) { return '<option value="' + o.v + '"' + (o.v === (p.kind || "") ? " selected" : "") + ">" + esc(o.l) + "</option>"; }).join("") + "</select></td>";
-      }
       if (col.type === "coord") return '<td class="pe-coord"' + a + '><button type="button" class="pe-coord-btn" title="' + esc(t("ptedit.pickTitle")) + '"' + a + ">" + esc(peCoordTxt(p[col.k])) + "</button></td>";
       if (col.type === "check") return '<td class="pe-chk"><input type="checkbox" class="pe-in"' + (p[col.k] ? " checked" : "") + a + " /></td>";
       if (col.type === "color") return '<td class="pe-chk"><input type="color" class="pe-in" value="' + esc(mpHex6(p.color || mpColorFor(p))) + '"' + a + " /></td>";
@@ -243,7 +238,6 @@ window.AppPoints = (function () {
       st.dirty = true;
       if (inp.type === "checkbox") { if (inp.checked) p[k] = true; else delete p[k]; return; }
       var v = inp.value;
-      if (k === "kind") { if (v === "obs" || v === "site") p.kind = v; else delete p.kind; return; }
       if (k.indexOf("attr:") === 0) {
         var an = k.slice(5); v = v.trim();
         if (!v) { if (p.attrs) { delete p.attrs[an]; if (!Object.keys(p.attrs).length) delete p.attrs; } }
@@ -325,7 +319,6 @@ window.AppPoints = (function () {
     }
     var c = st.c;
     c.points = st.rows.map(function (p) { var q = Object.assign({}, p); q.lat = +q.lat; q.lon = +q.lon; if (!q.id) q.id = mpUid(); if (!q.color) delete q.color; return q; });
-    hide(c, "_rev", (c._rev || 0) + 1);   // same count, other species / kinds: the legend sync must not take the list for unchanged
     if (mpActiveName === c.name) mapPoints = c.points.map(function (p) { return Object.assign({}, p); });
     saveMapPoints(); renderMapPoints(); refreshMpPanel();
     setStatus(t("ptedit.saved", { n: c.points.length, name: c.name }));
@@ -358,11 +351,6 @@ window.AppPoints = (function () {
         '<button type="button" id="ce-color-auto" class="mp-color-reset" title="' + esc(t("points.colorAuto")) + '" aria-label="' + esc(t("points.colorAuto")) + '">↺</button></span>' +
       '<label class="kml-row kml-check"><input type="checkbox" id="ce-note-html"' + (allHtml ? " checked" : "") + " />" + esc(t("points.noteHtml")) + "</label>" +
       '<label class="kml-row kml-check"><input type="checkbox" id="ce-protect"' + (isCollProtected(c.name) ? " checked" : "") + " />" + esc(t("lists.protect")) + "</label>" +
-      // observation records or static sites, for the whole list (owner, 2026-10-24); Auto shows what it
-      // resolves to today (per-point choices kept) — a lazy stub has no points to count yet
-      '<label class="kml-row">' + esc(t("points.kindLabel")) + '<select id="ce-kind">' + kindOptions(kindAutoLabel(c)).map(function (o) {
-        return '<option value="' + o.v + '"' + (o.v === (c.kind || "") ? " selected" : "") + ">" + esc(o.l) + "</option>"; }).join("") + "</select></label>" +
-      '<p class="cu-hint">' + esc(t("points.kindHint")) + "</p>" +
       '<p class="cu-hint">' + esc(t("points.editListHint")) + "</p>" +
       '<div class="kml-actions"><button type="button" id="ce-save" class="btn">' + esc(t("points.save")) + "</button></div>" +
       "</div>";
@@ -379,8 +367,6 @@ window.AppPoints = (function () {
       var noteHtml = document.getElementById("ce-note-html").checked;
       var isActive = mpActiveName === c.name;   // capture before any rename
       c.color = col || undefined;
-      var kv = document.getElementById("ce-kind").value;
-      if (kv === "obs" || kv === "site") c.kind = kv; else delete c.kind;
       // Apply the colour + tags + note-is-HTML flag to every point. The colour is
       // written per-point too (not just on the list) so it shows through both draw
       // paths — the active working set colours per-point via mpColorFor, shown lists
@@ -404,12 +390,6 @@ window.AppPoints = (function () {
       if (typeof renderMpAdmin === "function") renderMpAdmin();
       close();
     });
-  }
-  function kindAutoLabel(c) {
-    if (!c || c._lazy || !(c.points || []).length) return t("points.kindAuto");
-    var nObs = 0, nSite = 0;
-    c.points.forEach(function (p) { if (pointKind(p, null) === "obs") nObs++; else nSite++; });
-    return t("points.kindAuto") + " (" + t("points.kindCounts", { obs: nObs, site: nSite }) + ")";
   }
   // <input type=color> needs a 6-digit hex; expand "#888" → "#888888".
   function mpHex6(c) {
@@ -938,7 +918,6 @@ window.AppPoints = (function () {
     if (c.lines && c.lines.length) body.lines = c.lines;
     if (c.color) body.color = c.color;
     if (c.route) body.route = true;
-    if (c.kind === "obs" || c.kind === "site") body.kind = c.kind;
     return body;
   }
   var bodyJson = function (b) { return JSON.stringify(b, function (k, v) { return k.charAt(0) === "_" || k === "viewOnly" ? undefined : v; }); };
@@ -962,7 +941,6 @@ window.AppPoints = (function () {
       if (Array.isArray(o.lines) && o.lines.length) c.lines = o.lines;
       if (o.color) c.color = o.color;
       if (o.route) c.route = true;
-      if (o.kind === "obs" || o.kind === "site") c.kind = o.kind;
       internPoints([c]); mpCollections.push(c); shownColls[nm] = true; n += c.points.length; made.push(nm);
     });
     allTagsOn();
@@ -1572,8 +1550,6 @@ window.AppPoints = (function () {
       '<label class="kml-row">' + escapeHtml(t("kml.tagFrom")) + sel("kml-tag", opts([{ v: "", l: t("kml.fNone") }]), defTag) + "</label>" +
       '<label class="kml-row">' + escapeHtml(t("kml.noteFrom")) + multiSel("kml-note", opts([]), defNote) + "</label>" +
       '<label class="kml-row kml-check"><input type="checkbox" id="kml-note-html"' + (defHtml ? " checked" : "") + " />" + escapeHtml(t("points.noteHtml")) + "</label>" +
-      // observation records or static sites (owner, 2026-10-24) — Auto derives per point, see pointKind
-      '<label class="kml-row" title="' + escapeHtml(t("points.kindHint")) + '">' + escapeHtml(t("points.kindLabel")) + sel("kml-kind", kindOptions(), "") + "</label>" +
       '<div class="kml-actions"><button type="button" id="kml-do" class="btn">' + escapeHtml(t("kml.import")) + "</button></div>" +
       "</div>";
     var ov = document.createElement("div");
@@ -1584,9 +1560,6 @@ window.AppPoints = (function () {
     document.getElementById("kml-close").addEventListener("click", closeKmlImportDialog);
     document.getElementById("kml-do").addEventListener("click", doKmlImport);
     wireNoteMulti(ov);
-  }
-  function kindOptions(autoLabel) {
-    return [{ v: "", l: autoLabel || t("points.kindAuto") }, { v: "obs", l: t("points.kindObs") }, { v: "site", l: t("points.kindSite") }];
   }
   function closeKmlImportDialog() { var m = document.getElementById("kml-import-modal"); if (m && m.parentNode) m.parentNode.removeChild(m); }
   // Which fields the note is built from, in the order the dialog lists them (not the order
@@ -1776,20 +1749,6 @@ window.AppPoints = (function () {
     var l = labelForSci(sci, p.cls);
     return l ? l.key : "x:" + sci;
   }
-  // The KIND of a point decides its pipeline (owner, 2026-10-24: static points "should not be controlled
-  // as species records"). "obs" = an observation record: detPlot, the species legend, the date / observer /
-  // group filters, the red ×. "site" = a static location: a see-through pin; a species it names is a label.
-  // Explicit `p.kind`, else the list's `c.kind` (Edit list / the import dialog), else DERIVED: a species
-  // plus a date or a record reference (saved from a popup, a GBIF / Artsobs link, a source badge) is an
-  // observation; a species-less point, or a species with neither, is a site. So a list made before this
-  // field existed changes only where it named a species without any date or source — a site by nature.
-  function pointKind(p, c) {
-    if (!p || !detKeyOf(p)) return "site";   // without a species nothing is an observation, whatever the list says
-    if (p.kind === "obs" || p.kind === "site") return p.kind;
-    if (c && (c.kind === "obs" || c.kind === "site")) return c.kind;
-    return (p.source === "detection" || p.source === "gbif" || p.url || p.src || p.date) ? "obs" : "site";
-  }
-  function isObsPoint(p, c) { return pointKind(p, c) === "obs"; }
   // Kept attributes (owner, 2026-10-24): every ExtendedData / GeoJSON property a file carries that is not
   // a known field stays on the point as `attrs` { name: value } — status, type, year, habitat … — the
   // categories a static point is filtered on. Capped so one odd file cannot bloat a list.
@@ -1848,7 +1807,6 @@ window.AppPoints = (function () {
         x = x.trim(); if (x && (pt.tags || []).indexOf(x) < 0) (pt.tags = pt.tags || []).push(x);
       });
     }
-    if (/^(obs|site)$/.test(String(data.kind || "").trim())) pt.kind = String(data.kind).trim();   // a point's own kind, round-tripped
     // Everything else the placemark carried is KEPT as attrs (see ATTR_KNOWN); the fields the
     // dialog mapped to name / tag / note (`used`) are not repeated.
     var attrs = pt.attrs || null, nA = attrs ? Object.keys(attrs).length : 0;
@@ -1884,7 +1842,6 @@ window.AppPoints = (function () {
     var noteToks = noteTokens();
     var noteHtmlBox = document.getElementById("kml-note-html");
     var noteIsHtml = !!(noteHtmlBox && noteHtmlBox.checked);
-    var kindEl = document.getElementById("kml-kind"), kindVal = kindEl ? kindEl.value : "";   // the dialog's "Points are": auto / observations / sites
     var used = {};   // the fields the dialog mapped — not repeated as attrs
     [nameTok, tagTok].concat(noteToks).forEach(function (tk) { if (tk && tk.indexOf("data:") === 0) used[tk.slice(5)] = 1; });
     function finish(listName, marks, show, polys, lines) {
@@ -1930,7 +1887,6 @@ window.AppPoints = (function () {
       });
       var c = mpCollections.filter(function (x) { return x.name === listName && !x.viewOnly; })[0];
       if (!c) { c = { name: listName, points: [] }; mpCollections.push(c); }
-      if (kindVal === "obs" || kindVal === "site") c.kind = kindVal;   // chosen in the dialog → the whole list
       c.points = c.points.concat(pts);
       polys = polys || (marks ? [] : (p.polys || []));
       if (polys.length) c.polys = (c.polys || []).concat(polys);   // areas travel with the list (drawn when it is ticked)
@@ -2418,7 +2374,7 @@ window.AppPoints = (function () {
   }
   function ptHas(p, c, dim, v) { return ptValues(p, c, dim).indexOf(v) >= 0; }
   function ptSelActive() { return !!(ptSel && ptSel.vals && Object.keys(ptSel.vals).length); }
-  // The legend selection as a SITE point sees it. The Tag dimension has no state of its own: its
+  // The legend selection as a list point sees it. The Tag dimension has no state of its own: its
   // rows read and write the tag chips (mpFilter / mpExclude / mpNone), so mpTagPasses covers it.
   function ptSelOk(p, c) {
     if (!ptSelActive() || ptSel.by === "tag") return true;
@@ -2432,7 +2388,7 @@ window.AppPoints = (function () {
   function ptValueColor(dim, v, p, c) {
     if (dim === "list") return collColor(c);
     if (!v) return "#888";
-    if (dim === "species") return (p && p.spColor) || mpHashColor("sp:" + v);
+    if (dim === "species") { var key = p ? detKeyOf(p) : ""; return (key && speciesColor(key)) || (p && p.spColor) || mpHashColor("sp:" + v); }   // the species legend's colour for the same species
     return mpHashColor(v);
   }
   function ptValueLabel(dim, v) {
@@ -2446,7 +2402,7 @@ window.AppPoints = (function () {
     if (dim === "species") return t("det.ptSpecies");
     return dim.slice(5);   // a kept attribute, by its own name
   }
-  // Everything the points view needs, in ONE pass over the shown lists' site points: the dimensions
+  // Everything the points view needs, in ONE pass over the shown lists' points: the dimensions
   // present (list always; tag / species / an attribute name only when some point carries it), the rows
   // of the current dimension with their count of pins on screen (`bb` = [s, w, n, e], null = anywhere)
   // and the totals. A row's count ignores the selection on ITS OWN dimension — an unpicked row stays
@@ -2458,7 +2414,7 @@ window.AppPoints = (function () {
       if (!shownColls[c.name] || (routeShows && isRouteColl(c))) return;
       var lf = listFilter(c.name);
       (c.points || []).forEach(function (p) {
-        if (!p || !isFinite(p.lat) || !isFinite(p.lon) || isObsPoint(p, c)) return;
+        if (!p || !isFinite(p.lat) || !isFinite(p.lon)) return;
         total++;
         if (p.tags && p.tags.length) hasTag = true;
         if (detKeyOf(p)) hasSp = true;
@@ -2529,23 +2485,22 @@ window.AppPoints = (function () {
     ptViewOn = v;
     if (ptDim !== "list") setTimeout(function () { try { renderMapPoints(); } catch (e) {} }, 0);
   }
-  // The shown site points holding a value of the current dimension (for "zoom to these").
+  // The shown points holding a value of the current dimension (for "zoom to these").
   function ptValuePoints(v) {
     var out = [], routeShows = routePoints.length === 0;
     mpCollections.forEach(function (c) {
       if (!shownColls[c.name] || (routeShows && isRouteColl(c))) return;
-      (c.points || []).forEach(function (p) { if (p && isFinite(p.lat) && isFinite(p.lon) && !isObsPoint(p, c) && ptHas(p, c, ptDim, v)) out.push(p); });
+      (c.points || []).forEach(function (p) { if (p && isFinite(p.lat) && isFinite(p.lon) && ptHas(p, c, ptDim, v)) out.push(p); });
     });
     return out;
   }
   function mpVisible(p, c) {
-    // The pane's own filters (date, observer, …) reach list pins too — see
-    // listPointPasses in app.js. A pin is judged only on the fields it HAS, so a list
-    // imported before those fields existed is never hidden by them. A SITE (static location,
-    // see pointKind) is not an event: the date and observer filters pass it by; the name and
-    // text searches still reach it.
-    if (listPointPasses && !listPointPasses(p, !isObsPoint(p, c))) return false;
-    if (c && !isObsPoint(p, c) && !ptSelPasses(p, c)) return false;   // the legend's points view: its selection (and a hovered row) reach a list's site pins
+    // A list point is NOT a species record (owner, 2026-10-24: "point lists … separate from fetched
+    // species"): the fetched-species filters (date, observer, mode) never touch it. What reaches a pin:
+    // the name / text search (listPointPasses in app.js), the legend's points view (its selection and a
+    // hovered row), and the tag chips. A list's own observer / date filter is applied by the caller.
+    if (listPointPasses && !listPointPasses(p)) return false;
+    if (c && !ptSelPasses(p, c)) return false;
     return mpTagPasses(p);
   }
   // The tag-chip part alone (include / exclude), for the species records a list injects
@@ -2646,27 +2601,6 @@ window.AppPoints = (function () {
       // thin black edge so the circle itself is easy to see (owner, 2026-10-12)
       mpLayer.addLayer(L.circle([p.lat, p.lon], { radius: +p.radius, color: "#000", weight: +p.edge > 0 ? +p.edge : 0.8, opacity: +p.edge > 0 ? 0.8 : 0.55, fillColor: rc, fillOpacity: 0.04, interactive: false }));
     }
-    // A detection-saved pin (read-only, carries the species' colour) is drawn
-    // like the plotted detection — species colour + ★ for interesting + a black
-    // centre dot for rare — sitting on a slightly larger list-coloured disc, so
-    // the list is recognisable by its background colour.
-    if (!editable && p.spColor && isObsPoint(p)) {
-      var listCol = color || mpColorFor(p);
-      // Draw the list-colour disc in the SAME renderer as the species symbol and
-      // add it FIRST, so within that one <svg> the DOM order guarantees the disc
-      // sits behind the marker pattern/colour (different renderers wouldn't).
-      var halo = L.circleMarker([p.lat, p.lon], { radius: 10, color: listCol, weight: 1.5, opacity: 0.95, fillColor: listCol, fillOpacity: 0.5, renderer: detRenderer() });
-      var hrec = { m: halo, p: p, editable: false };
-      mpPins.push(hrec);
-      halo.on("click", function (e) { if (e && e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent); onMpPinClick(hrec); });
-      mpLayer.addLayer(halo);
-      var sym = p.star
-        ? detStarMarker([p.lat, p.lon], { radius: 6.5, color: "#1a1a1a", weight: 1, fillColor: p.spColor, fillOpacity: 0.95, interactive: false, renderer: detRenderer() })
-        : L.circleMarker([p.lat, p.lon], { radius: 5, color: "#1a1a1a", weight: 1, fillColor: p.spColor, fillOpacity: 0.95, interactive: false, renderer: detRenderer() });
-      mpLayer.addLayer(sym);
-      if (p.rare) mpLayer.addLayer(L.circleMarker([p.lat, p.lon], { radius: 1.7, weight: 0, fillColor: "#111", fillOpacity: 1, interactive: false, renderer: detRenderer() }));
-      return;
-    }
     // a search's pin (no species): one plain circle in its search's colour, 25 % fill (owner, 2026-10-11)
     if (p.fromSearch) {
       var sc = mpHashColor("search:" + p.fromSearch);
@@ -2686,8 +2620,8 @@ window.AppPoints = (function () {
         ? L.circleMarker([p.lat, p.lon], { radius: 7, color: fill, weight: 2.5, opacity: 0.95, fill: true, fillOpacity: 0 })
         : editable
           ? L.circleMarker([p.lat, p.lon], { radius: 7, color: "#111", weight: 1, opacity: 0.9, fillColor: fill, fillOpacity: 0.9 })
-          // a SITE pin of a shown list: a round see-through dot a touch larger than an observation dot (radius 5),
-          // stroked in its own colour, no black ring (owner, 2026-10-24)
+          // a shown list's pin: a round see-through dot a touch larger than an observation dot (radius 5),
+          // stroked in its own colour, no black ring (owner, 2026-10-24) — species or not
           : L.circleMarker([p.lat, p.lon], { radius: 6.5, color: fill, weight: 1.5, opacity: 0.9, fillColor: fill, fillOpacity: 0.35 });
     var rec = { m: m, p: p, editable: editable };
     mpPins.push(rec);
@@ -3044,10 +2978,8 @@ window.AppPoints = (function () {
       if (p.fromSearch) return;   // a search's pins are drawn by the detection pipeline (legend rows, filters, red ×), in the search's colour
       renderMpPin(p, true);                      // loose working pins (editable, tag colour)
     });
-    // Ticked saved point-lists: a list's DETECTION points (those carrying a species
-    // key) are plotted through the shared detection pipeline (syncListDetections),
-    // so they obey the same legend filters and open the same popups as fetched
-    // data. Manually-tagged points (no species key) keep their own pin + editor.
+    // Ticked saved point-lists: every point is drawn here as the list's pin, species or not — a list
+    // point is never a species record (owner, 2026-10-24). The legend's points view is their legend.
     var routeShows = routePoints.length === 0;   // reloaded saved routes own the numbered-pin display only when the basket is empty
     // How many list points are in play at all? Only that decides whether to cull, so a
     // handful of hand-made lists keep behaving exactly as before.
@@ -3071,14 +3003,14 @@ window.AppPoints = (function () {
     var vb = mpCulling ? mpViewBounds() : null, bb = null;
     if (vb) { var sw = vb.getSouthWest(), ne = vb.getNorthEast(); bb = [sw.lat, sw.lng, ne.lat, ne.lng]; }
     var budget = mpCulling ? mpPinBudget() : Infinity;
-    var drawn = 0, passed = 0, siteN = 0, sitePrev = mpSiteN;
+    var drawn = 0, passed = 0, listN = 0, listPrev = mpListN;
     // Pass 1: how many pins each list may draw.
     var share = {}, left = budget, nLeft = shownLists.length;
     shownLists.forEach(function (c) {
       var want = nLeft > 0 ? Math.max(1, Math.floor(left / nLeft)) : 0;
       var have = 0;
-      (c.points || []).forEach(function (p) { if (p && !isObsPoint(p, c) && isFinite(p.lat) && isFinite(p.lon)) have++; });
-      siteN += have;
+      (c.points || []).forEach(function (p) { if (p && isFinite(p.lat) && isFinite(p.lon)) have++; });
+      listN += have;
       var give = Math.min(want, have);
       share[c.name] = (budget === Infinity) ? Infinity : give;
       left -= give; nLeft--;
@@ -3116,7 +3048,7 @@ window.AppPoints = (function () {
         mpLayer.addLayer(L.polyline(ln.r, { color: ln.c || collColor(c), weight: 3, opacity: 0.85, interactive: false }));
       });
     });
-    mpSiteN = siteN;
+    mpListN = listN;
     // In the legend's points view the pins wear the colour of the dimension the rows group by (so the
     // swatches match the map); the list colour otherwise, as always.
     var dimCol = ptViewOn && ptDim !== "list";
@@ -3127,7 +3059,6 @@ window.AppPoints = (function () {
       var quota = share[c.name], used = 0;
       (c.points || []).forEach(function (p) {
         if (!p || !isFinite(p.lat) || !isFinite(p.lon)) return;
-        if (isObsPoint(p, c)) return;   // an observation record → detPlot pipeline (handled below); a SITE is drawn here, species or not
         // The view test goes FIRST because it is the cheapest by far: four number
         // comparisons against the filters' string folding and date arithmetic.
         if (bb && (p.lat < bb[0] || p.lat > bb[2] || p.lon < bb[1] || p.lon > bb[3])) return;
@@ -3145,14 +3076,14 @@ window.AppPoints = (function () {
     });
     // Say what is missing rather than quietly drawing a subset.
     if (mpCulling && drawn < passed) setStatus(t("points.capped", { n: drawn, total: passed }));
-    syncListDetections();     // merge shown lists' detection points into detPlot
+    syncListDetections();     // the pins a SEARCH put on the map join the species legend (v2176); lists never do
     renderRoutePoints();      // numbered stops for the basket, or a reloaded saved route
     updateRouteChip();        // and its bottom nav bar
     refreshMpPanel();
     updateMpBadge();
     // The legend's points view lists what was just drawn; and the legend appears / goes with the
-    // first / last site point (a quiet hover redraw leaves it alone).
-    if (!mpQuiet && (ptViewOn || mpSiteN !== sitePrev)) updateDetLegend();
+    // first / last list point (a quiet hover redraw leaves it alone).
+    if (!mpQuiet && (ptViewOn || mpListN !== listPrev)) updateDetLegend();
   }
 
   return {
@@ -3191,7 +3122,7 @@ window.AppPoints = (function () {
     mapPoints: function () { return mapPoints; },
     setMapPoints: function (v) { mapPoints = v; },
     mpFilter: function () { return mpFilter; }, normTag: normTag,
-    setMpFilter: function (v) { mpFilter = v; }, detKeyOf: detKeyOf, pointKind: pointKind, isObsPoint: isObsPoint, mpTagPasses: mpTagPasses,
+    setMpFilter: function (v) { mpFilter = v; }, detKeyOf: detKeyOf, mpTagPasses: mpTagPasses,
     collCount: collCount, anyLazy: anyLazy, whenAllLoaded: whenAllLoaded, hydrateOne: hydrateOne,
     mpExclude: function () { return mpExclude; }, setMpExclude: function (v) { mpExclude = v; },
     mpNone: function () { return mpNone; }, setMpNone: function (v) { mpNone = !!v; },
@@ -3200,7 +3131,7 @@ window.AppPoints = (function () {
     ptSel: function () { return ptSel; }, setPtSel: function (v) { ptSel = (v && v.by && v.vals) ? v : null; }, ptSelActive: ptSelActive,
     ptLegendData: ptLegendData, ptDimLabel: ptDimLabel, ptToggle: ptToggle, ptOnly: ptOnly, ptValuePoints: ptValuePoints,
     setPtFocus: setPtFocus, ptFocusOn: function () { return !!ptFocus; },
-    ptAvail: function () { return mpSiteN > 0; }, setPtViewOn: setPtViewOn,
+    ptAvail: function () { return mpListN > 0; }, setPtViewOn: setPtViewOn,
     cyclePtDim: function (dims) { ptDim = dims[(dims.indexOf(ptDim) + 1) % dims.length]; },
     mpShown: function () { return mpShown; },
     setMpShown: function (v) { mpShown = v; },

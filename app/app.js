@@ -11956,7 +11956,7 @@
     (mpState.mpCollections() || []).forEach(function (c) {
       if (!mpState.shownColls()[c.name]) return;
       (c.points || []).forEach(function (p) {
-        if (p && !mpState.isObsPoint(p, c) && isFinite(p.lat) && isFinite(p.lon)) out.push({ point: true, name: p.name || c.name || t("nearby.point"), lat: +p.lat, lon: +p.lon });   // sites (a species named on one is a label)
+        if (p && isFinite(p.lat) && isFinite(p.lon)) out.push({ point: true, name: p.name || c.name || t("nearby.point"), lat: +p.lat, lon: +p.lon });
       });
     });
     return out;
@@ -13591,7 +13591,7 @@
       if (typeof speciesPanelPopulated === "function" && speciesPanelPopulated()) refilterSpTable();
       if (allFiltersPane) renderAllFiltersPane();   // keep the "all filters" pane in sync
     });
-    // the pane's filters reach imported list pins too (mpVisible → listPointPasses)
+    // the name / text search reaches imported list pins too (mpVisible → listPointPasses)
     try { if (mpState && mpState.mpFilterRefresh) mpState.mpFilterRefresh(); } catch (e) {}
   }
   // A filter change re-scopes the rows of the EXISTING table (one pass, then the sort when a
@@ -16921,9 +16921,9 @@
     }
   };
   // ---- the legend's POINTS view (owner, 2026-10-24) ------------------------------------------
-  // The same control, row markup and wiring, listing the shown lists' SITE points grouped by one
-  // dimension (mpState.ptLegendData): their lists, tags, species or any kept attribute. The head row's
-  // dots button swaps the two views. Observation-kind points never appear here — they are species rows.
+  // The same control, row markup and wiring, listing the shown lists' points grouped by one dimension
+  // (mpState.ptLegendData): their lists, tags, species or any kept attribute. The head row's dots button
+  // swaps the two views. A list point is never a species row: this view is the lists' own legend.
   function legendViewBtnHtml(on) {
     var tip = escapeHtml(t(on ? "det.viewSpecies" : "det.viewPoints"));
     return '<button type="button" class="det-view-pts' + (on ? " is-on" : "") + '" title="' + tip + '" aria-label="' + tip + '" aria-pressed="' + (on ? "true" : "false") + '">' + ico("dots") + "</button>";
@@ -16971,7 +16971,7 @@
       el.querySelector(".det-restore").addEventListener("click", function () { mapClickGuardUntil = Date.now() + 250; detLegendMini = false; saveLegendState(); updateDetLegend(); });
       return;
     }
-    var sumCt = (d.shownN === d.total) ? String(d.shownN) : (d.shownN + "/" + d.total);   // pins on screen passing the filters / all site points shown
+    var sumCt = (d.shownN === d.total) ? String(d.shownN) : (d.shownN + "/" + d.total);   // pins on screen passing the filters / all list points shown
     el.innerHTML = '<div class="det-legend-head" data-help="maphelp.legend">' +
         '<button type="button" class="det-min" title="' + escapeHtml(t("det.minimise")) + '" aria-label="' + escapeHtml(t("det.minimise")) + '">−</button>' +
         (hasSpecies ? legendViewBtnHtml(true) : "") +   // back to the species view (only when there is one)
@@ -17048,7 +17048,7 @@
     updateFilterClearBtn();   // reveal/hide the funnel-× with the active-filter state
     updateHdrHisto();      // the header's per-day bars track the same plotted/filtered set
     var delKeys = Object.keys(deletedSpecies);
-    // The POINTS view (owner, 2026-10-24): the shown lists' site points keep the legend up with nothing
+    // The POINTS view (owner, 2026-10-24): the shown lists' points keep the legend up with nothing
     // plotted, and take the legend over by themselves while the species view would be empty.
     var ptAvail = !!(mpState && mpState.ptAvail()), hasSp = !!(allKeys.length || delKeys.length);
     if (!hasSp && !ptAvail) { if (detLegend) { map.removeControl(detLegend); detLegend = null; } if (mpState) mpState.setPtViewOn(false); return; }
@@ -17187,7 +17187,7 @@
         '<button type="button" class="det-min" title="' + escapeHtml(t("det.minimise")) + '" aria-label="' + escapeHtml(t("det.minimise")) + '">−</button>' +
         // The filter funnel and the red × live ONLY on the map's lower-right bar (owner, 2026-10-24:
         // "sufficient that they are on the map"); the legend head keeps − and the selection-only ×.
-        (ptAvail ? legendViewBtnHtml(false) : "") +   // → the points view (only while a shown list has site points)
+        (ptAvail ? legendViewBtnHtml(false) : "") +   // → the points view (only while a list is shown)
         (selOverride ? '<button type="button" class="det-clear-selonly" title="' + escapeHtml(t("det.clearSel")) + '" aria-label="' + escapeHtml(t("det.clearSel")) + '">' + X_MARK_SVG + '</button>' : "") +
         (capped ? '<span class="det-cap-warn" role="img" title="' + escapeHtml(capTip) + '" aria-label="' + escapeHtml(capTip) + '">⚠</span>' : "") +
       "</div>" +
@@ -18004,13 +18004,13 @@
       renderMpPin = mpState.renderMpPin, onMpPinClick = mpState.onMpPinClick,
       setMpDistOrigin = mpState.setMpDistOrigin;
   window.AppPoints.init({
-    clearSpider: clearSpider, detRenderer: detRenderer, detStarMarker: detStarMarker,
+    clearSpider: clearSpider,
     downloadCsv: downloadCsv, escapeHtml: escapeHtml, haversineKm: haversineKm, ico: ico,
     looksLikeHtml: looksLikeHtml, makePopupBtn: makePopupBtn, modalPrompt: modalPrompt,
     mpTipHtml: mpTipHtml, listPointPasses: listPointPasses, openExternal: openExternal, openPointEditor: openPointEditor,
     copyPointToList: copyPointToList, deleteListPoint: deleteListPoint,
     refreshMpPanel: refreshMpPanel, renderMpAdmin: renderMpAdmin, setStatus: setStatus,
-    showDetRowMenu: showDetRowMenu, syncListDetections: syncListDetections, labelForSci: labelForSci, updateDetLegend: updateDetLegend,
+    showDetRowMenu: showDetRowMenu, syncListDetections: syncListDetections, labelForSci: labelForSci, updateDetLegend: updateDetLegend, speciesColor: speciesColor,
     updateDetSetOverlays: updateDetSetOverlays, updateMpBadge: updateMpBadge,
     pulseFunnels: pulseFunnels, tagDisplay: tagDisplay,
     updateSpDistances: updateSpDistances, t: t,
@@ -18193,10 +18193,11 @@
     try { if (mpHasUnsaved()) return true; } catch (e) {}
     return false;
   }
-  function listPointPasses(p, site) {
+  // What of the species pane reaches a LIST pin: only the name and text searches. The date / observer /
+  // mode filters belong to the fetched species — a list point is not a species record (owner, 2026-10-24);
+  // a list's own observer / date filter lives in the Points panel (listOwnFilterPasses).
+  function listPointPasses(p) {
     if (!p) return true;
-    if (!site && p.date && !detDatePasses(p.date)) return false;        // a site is not an event (owner, 2026-10-24): its
-    if (!site && p.observer && !detObsPasses({ observer: p.observer })) return false;   // date / observer are attributes, not filters
     var q = spNameQuery.trim();
     if (q && !pointNameMatches(p, q)) return false;
     if (detTextActive() && !textPasses(p, [p.note, p.desc, p.name, (p.tags || []).join(" "), p.place, p.act, p.observer])) return false;
@@ -18247,14 +18248,7 @@
   // species' array — dedup only against FETCHED rows of the same species.
   var _listSyncSig = "", _listSyncN = 0, _listRowOf = (typeof WeakMap === "function") ? new WeakMap() : null;
   function listSyncSig() {
-    var parts = [mpState.mpFilter().join("\u0001"), mpState.mpExclude().join("\u0001"), mpState.mpNone() ? "none" : ""];
-    mpState.mpCollections().forEach(function (c) {
-      if (!mpState.shownColls()[c.name]) return;
-      var lf = mpState.listFilter(c.name);
-      parts.push(c.name + "#" + ((c.points || []).length) + "#" + (c.kind || "") + "#" + (c._rev || 0) + "#" + (lf ? JSON.stringify(lf) : ""));   // kind: Edit list can flip a list between sites and records
-    });
-    parts.push("search#" + mpSearchPins().length);
-    return parts.join("\u0002");
+    return "search#" + mpSearchPins().length;   // only the search pins are injected now (lists are drawn as pins)
   }
   function countListRows() {
     var n = 0, ks = Object.keys(detPlot);
@@ -18277,41 +18271,8 @@
       // that truly left is harmless: detSelectionActive only counts keys in detPlot.
       if (!e.rows.length) { if (e.group) { map.removeLayer(e.group); } delete detPlot[k]; }
     });
-    // 2. Inject the current shown lists' records, grouped by species key.
-    var fetchedIds = Object.create(null);   // species key → Set of its fetched rows' ids (built lazily)
-    function rid(r) { return r.lat + "," + r.lon + "|" + (r.date || "") + "|" + (r.url || "") + "|" + (r.src || ""); }
-    mpState.mpCollections().forEach(function (c) {
-      if (!mpState.shownColls()[c.name]) return;
-      var col = collColor(c), lf = mpState.listFilter(c.name), pts = c.points || [];
-      for (var i = 0; i < pts.length; i++) {
-        var p = pts[i]; if (!p) continue;
-        if (!mpState.isObsPoint(p, c)) continue;   // a SITE (static location) is a pin, never a species record (owner, 2026-10-24)
-        var key = mpState.detKeyOf(p);   // stored key, model species by sci, or an "x:" extra (old KMZ lists too)
-        if (!key || !isFinite(p.lat) || !isFinite(p.lon)) continue;
-        if (!mpState.mpTagPasses(p) || !mpState.listOwnFilterPasses(p, lf)) { skipped++; continue; }
-        // The whole record rides along (observer, note, place, flags …) so a list made from an
-        // observation file — a .share person list, a KMZ with ExtendedData — reads like a fetch.
-        var row = _listRowOf && _listRowOf.get(p);
-        if (!row) {
-          row = { lat: +p.lat, lon: +p.lon, date: p.date || "", url: p.url || "", count: p.count, act: p.act || "", src: p.src || "list",
-            observer: p.observer || "", note: p.note || "", place: p.place || "", flags: p.flags || "", origin: p.origin || "",
-            placeCoarse: !!p.placeCoarse, posFuzzM: +p.posFuzzM || 0, _list: true, listColor: col, _listName: c.name, _mpId: p.id, _vo: !!c.viewOnly };
-          if (p.prob != null && +p.prob >= 0) { row._prob = +p.prob; seedObsProb(key, row); }   // probability stored on the list point → no inference again
-          if (_listRowOf) _listRowOf.set(p, row);
-        } else { row.listColor = col; row._listName = c.name; }
-        var e = detPlot[key];
-        if (!e) e = detPlot[key] = { key: key, name: (key.indexOf("x:") === 0 ? (p.sci || p.name) : p.name) || key, color: p.spColor || "#888", rows: [], group: null, cls: p.spCls || (taxByCode[key] && taxByCode[key].class_name) || "" };
-        else if (e.rows.length) {
-          // The species also has FETCHED rows → skip a list row that duplicates one of them.
-          var ids = fetchedIds[key];
-          if (!ids) { ids = fetchedIds[key] = Object.create(null); for (var q = 0; q < e.rows.length; q++) if (!e.rows[q]._list) ids[rid(e.rows[q])] = 1; }
-          if (ids[rid(row)]) { skipped++; continue; }
-        }
-        if (row._ts == null) row._ts = Date.now();
-        e.rows.push(row);
-        changed = true; injected++;
-      }
-    });
+    // Shown LISTS are not injected any more (owner, 2026-10-24: point lists are separate from the fetched
+    // species — the legend's points view is their legend); only the pins a search put on the map are.
     // Map points put there by a search, with a species (owner, 2026-10-11: "the species names should be
     // parsed correctly and added to legend"): they join the legend like a shown list's records, drawn as
     // one circle per point in their SEARCH's colour (see the _search branch of the dot drawing).
@@ -18320,7 +18281,7 @@
     // reach every point a search put on the map (owner, 2026-10-23).
     mpSearchPins().forEach(function (p) {
       if (!isFinite(+p.lat) || !isFinite(+p.lon)) return;
-      var key = (mpState.isObsPoint(p) ? mpState.detKeyOf(p) : "") || searchKey(p.fromSearch);   // a site's species is a label: its pin joins the search row
+      var key = mpState.detKeyOf(p) || searchKey(p.fromSearch);
       var col = mpSearchColor(p.fromSearch);
       var row = _listRowOf && _listRowOf.get(p);
       if (!row) {

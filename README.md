@@ -583,16 +583,16 @@ Tap a row to select it (picks stack, so several show together); on a mouse, hove
 it on the map. Long-press (or right-click) a species **name** for its menu (info, references, lists
 & actions) — the same menu a species-list name opens.
 
-**Points view (v2191).** When a shown list has *site* points (see *Observations and sites* under
-Points, lists & saved sets), a **dots button** in the legend's top row swaps the species rows for those
-points — and the legend opens in this view by itself when there are no species to list. The heading is
+**Points view (v2192).** The species legend lists only the fetched species; a shown point list never
+joins it. Instead, while a list is shown, a **dots button** in the legend's top row swaps the species rows
+for the lists' points — and the legend opens in this view by itself when there are no species to list. The heading is
 the grouping: tap it to cycle **Lists → Tags → Species → each kept field** (status, type, …); the rows
 are that grouping's values with their **count on screen**, each with a ring swatch in the colour the
 pins wear while that grouping is on. Tap a row to show only those points (picks stack; clearing the
 last one shows all), hover to isolate, long-press a name for **Zoom to these** / **Show only these**.
 The Tags grouping *is* the Points panel's tag chips — a tap here ticks the chip there. The funnel
-clears a points pick like any other filter. Observation-kind points are never listed here: they are
-species rows in the species view.
+clears a points pick like any other filter. The fetched-species filters (date, observer, mode) never
+touch list points; a list's own observer / date funnel sits in the Points panel.
 
 The control line opens three mutually-exclusive **filter subwindows**:
 
@@ -707,16 +707,15 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   colour/tags for every point and tick **Protect from deletion** there (a protected list then shows a
   🔒 in place of its red × — hover it for the note), delete it, or expand it to
   edit/remove individual points.
-- **Observations and sites (v2190)** — every list point has a **kind**. An *observation* is a species
-  record: it joins the species legend and follows its date, observer and group filters and the red ×.
-  Sites get the legend's **points view** instead (see *The map legend & filters*).
-  A *site* is a static location: a round see-through dot a little larger than an observation dot, in the
-  list's colour, never filtered as a record whatever species it names (the name and text searches still
-  reach it). *Auto* decides per point — a species with a date or a source link is an observation, anything
-  else a site; set it for a whole list under **Edit list → Points are** (Auto shows the counts), per point in
-  the **Kind** column of **Edit values**, or in the import dialog. Imported files keep their other fields
-  (status, type, year, habitat …) on each point: on the pin card, as columns in **Edit values** (**+ Column**
-  adds one), and in KML / GeoJSON downloads. Old lists need nothing: without the fields the kind is derived.
+- **Point lists are separate from the fetched species (v2192)** — a list point is never a species
+  record: it does not enter the species legend, and the date, observer and mode filters of the fetched
+  species leave it alone (the name and text searches still reach it). Every list point is drawn as a round
+  see-through dot a little larger than an observation dot, in the list's colour. The lists' own controls:
+  the Points panel (tick, the per-list observer / date funnel, the tag chips) and the legend's **points
+  view** (see *The map legend & filters*), which groups the shown points by list, tag, species or any
+  field the file brought and switches them on and off. Imported files keep their other fields (status,
+  type, year, habitat …) on each point: on the pin card, as columns in **Edit values** (**+ Column** adds
+  one), and in KML / GeoJSON downloads.
 - **Opening a file from the OS** — a `.kml`, `.kmz` or `.geojson` can be opened **from outside the
   app**, landing in the same import dialog. On **desktop Chromium** (Chrome/Edge 102+, Windows ·
   macOS · Linux · ChromeOS) install BirdsWhere and it registers as a file handler, so the file lists
