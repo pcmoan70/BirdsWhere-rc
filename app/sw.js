@@ -21,15 +21,16 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2177";
+var VERSION = "v2179";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The map buttons are back \u2014 locate, search, zoom, the red \u00d7 and the filter funnel had been hidden by mistake since v2173.",
-  "\u2022 The red \u00d7 (clear observations) and the filter funnel now sit at the lower right of the map, above the search and locate buttons."
+  "\u2022 The legend is slimmer: the filter funnel and the red \u00d7 are only on the map (lower right).",
+  "\u2022 The red \u00d7 clears fetched observations only \u2014 shown lists and the points a search put on the map stay (take them off from Points).",
+  "\u2022 Licence: the app code is now public domain (CC0 1.0). The BirdsWhere name, thebirding.site and the hosted service stay proprietary \u2014 see Credits & licence."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -4,7 +4,7 @@
 
 > Release-candidate test channel. Production: <https://thebirding.site/>
 
-**Licence:** the application code is open source under the **MIT licence** (`LICENSE`); the model, maps and data carry their own licences, listed in the app under *How it works → Credits & licence* and in `THIRD-PARTY-NOTICES.md`.
+**Licence:** the application code is **public domain — CC0 1.0 Universal** (`LICENSE`). **Not included:** the name **BirdsWhere**, its icons, the domain **thebirding.site** and the hosted service's endpoints, counters, keys and sign-in client are **proprietary, all rights reserved** — a fork needs its own name, domain and keys (`NOTICE.md`, which also holds the terms of use). The model, maps and data carry their own licences, listed in the app under *How it works → Credits & licence* and in `THIRD-PARTY-NOTICES.md`.
 
 An interactive, **100% in-browser** explorer of species **distribution, migration and live
 observations**. Everything runs on your device — there is **no server and no backend of our own**;
@@ -620,11 +620,9 @@ Palearctic ones), re-evaluated as you move; and **From a region** — species ty
 pick. It combines with every other filter and steers the **map dots, legend, day-histogram and
 lists** together.
 
-Plus **−** minimise (to a corner pill), a black **× Clear filters** (keeps the dots), and a
-red **×** that clears all detections — or, when fetched-area outlines exist, first arms
-**per-area delete** (a red × on each area removes just that area's detections; a second click
-clears every fetched detection). Shown saved point lists and detection sets are **not** removed —
-they stay ticked and on the map. A **⚠** appears when the *Max points on map* draw cap is hiding dots.
+Plus **−** minimise (to a corner pill) and, while a species selection is active, a black **×** that
+drops just that selection. A **⚠** appears when the *Max points on map* draw cap is hiding dots. The
+filter funnel and the red × are **not** in the legend — they sit on the map at the lower right (below).
 
 **Opening the app starts clean**: no species selection and no filters (only display preferences —
 the minimised legend, sort order — and deleted species are kept), and the observations fetched last
@@ -632,10 +630,12 @@ time are **not** put back unless Settings → Fetching & detections → **Show t
 observations on open** is on (off by default); their fetched-area squares (and the ✓ update button)
 stay away with them. Shown point lists still appear; "Fetch on open" is the only start-up fetch.
 
-There's also a standalone red **×** at the **lower right of the map** (above the 🔍 search and locate buttons; the
-filter **funnel** sits under it in the same bar), shown while observations, fetched-area squares or lists are on the map: the first tap clears the fetched observations
-(saved point lists stay shown); a second tap — once nothing fetched is left — takes the shown lists
-and trips off the map too (un-ticked; the lists themselves are kept).
+The red **×** sits at the **lower right of the map** (above the 🔍 search and locate buttons; the filter
+**funnel** sits under it in the same bar), shown while fetched observations or fetched-area squares are on the
+map. It clears the **fetched observations only** — or, when fetched-area outlines exist, first arms
+**per-area delete** (a red × on each area removes just that area's detections; a second tap clears every
+fetched detection). The points of shown saved lists, detection sets and the pins a search put on the map are
+**never** touched by it: take those off from the Points panel (un-tick the list, or the × on its "On the map" row).
 
 A **✓ Update** button (also on the right of the map, shown only when you have fetched areas) brings
 **every area you've already fetched up to today's latest observations** in one tap: each area is
@@ -1032,9 +1032,8 @@ Right-click / long-press / tap any species name for a menu **led by the species 
   several lists (same spot to ~1 m, date and species, else name) counts and is added once, and a
   record already on the map is not added again. Every point a search put on the map goes through the
   legend: a record with a species sits under its species, a record matched on its note under one row
-  named by the search words (in the search's colour), so the legend's filters reach them all and the
-  legend's red × takes them off again (after the fetched observations, before the shown lists). Save
-  the pins into a list to keep them.
+  named by the search words (in the search's colour), so the filters reach them all. The map's red × leaves
+  them alone — the × on the search's "On the map" row takes them off. Save the pins into a list to keep them.
   A search's points are drawn as plain circles in that search's own colour (25 % fill); those with a
   species — read from the point's stored species or scientific name through the model labels — also
   join the legend and its filters like a shown list's records.
@@ -1528,7 +1527,9 @@ The 3-D terrain viewer (1 m Kartverket terrain with the sun and its shadows for 
 
 ## Attribution & licensing
 
-- **App code**: MIT (see `LICENSE`).
+- **App code**: public domain, CC0 1.0 Universal (see `LICENSE`). The **BirdsWhere** name and icons, the
+  **thebirding.site** domain and the hosted service's endpoints, counters, keys and sign-in client are
+  **proprietary** (`NOTICE.md`, with the terms of use).
 - **BirdNET Geomodel** by the [BirdNET team](https://github.com/birdnet-team/geomodel): source
   MIT; **trained weights (`geomodel_fp16.onnx`) are CC BY-SA 4.0** and redistributed here under
   those terms (share-alike + attribution required). The **Model compare** subpage

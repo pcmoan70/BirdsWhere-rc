@@ -1,7 +1,8 @@
 # Third-party notices
 
-The application code in this repository is licensed under the MIT License (see
-[`LICENSE`](LICENSE), © 2026 Pär Wiklund). This file reproduces the copyright and
+The application code in this repository is dedicated to the public domain under
+CC0 1.0 Universal (see [`LICENSE`](LICENSE); the BirdsWhere name, the thebirding.site
+domain and the hosted service are proprietary — see [`NOTICE.md`](NOTICE.md)). This file reproduces the copyright and
 licence notices of the third-party components that are **redistributed inside this
 repository**, and attributes the models, data and services the app relies on at
 runtime, as those licences require.

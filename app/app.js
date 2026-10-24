@@ -523,13 +523,14 @@
     var hasAreas = typeof fetchedAreas !== "undefined" && fetchedAreas.length > 0;   // squares can outlive their dots (every species deleted) → still clearable
     var a = clearGroupEl.querySelector(".clearpts-btn");
     if (a) {
-      var listsOn = mpState && (Object.keys(mpState.shownColls()).length || Object.keys(mpState.shownDetSets()).length);
-      a.style.display = (hasPts || listsOn || hasAreas) ? "" : "none";
+      // Shown lists' points and search pins are never cleared here (the Points panel does
+      // that), so the × shows only while something FETCHED (or a fetched area) is on the map.
+      a.style.display = (detFetchedCount() || hasAreas) ? "" : "none";
       // Reflect the shared arm-and-delete state: armed → "click again to clear"; else
       // "arm per-area delete" when there are areas, plain "clear all" otherwise.
       var armed = !!detAreaDeleteMode;
       a.classList.toggle("armed", armed);
-      var title = armed ? t("det.delAreaHint") : (fetchedAreas.length ? t("det.delAreaArm") : (detFetchedCount() ? t("ctrl.clearPoints") : t("ctrl.clearLists")));
+      var title = armed ? t("det.delAreaHint") : (fetchedAreas.length ? t("det.delAreaArm") : t("ctrl.clearPoints"));
       a.title = title; a.setAttribute("aria-label", title);
     }
     var f = clearGroupEl.querySelector(".filterclear-btn");
@@ -15141,19 +15142,9 @@
   // are left, the shown lists and trips come off the map (un-ticked; the lists themselves are kept).
   function clearStep() {
     if (!detAreaDeleteMode && fetchedAreas.length) { enterAreaDeleteMode(); updateDetLegend(); return; }
-    if (detAreaDeleteMode || detFetchedCount()) { clearDetections(); return; }
-    if (mpSearchPins().length) {   // the points a search put on the map (owner, 2026-10-23: the red × deletes them)
-      mpState.setMapPoints(mpState.mapPoints().filter(function (p) { return !p.fromSearch; }));
-      saveMapPoints(); renderMapPoints();
-      if (typeof refreshMpPanel === "function") refreshMpPanel();
-      setStatus(t("ctrl.searchPinsCleared")); return;
-    }
-    if (Object.keys(mpState.shownColls()).length || Object.keys(mpState.shownDetSets()).length) {
-      mpState.setShownColls({}); mpState.setShownDetSets({});
-      saveShownState(); updateDetSetOverlays(); renderMapPoints();
-      if (typeof refreshMpPanel === "function") refreshMpPanel();
-      setStatus(t("ctrl.listsCleared"));
-    }
+    if (detAreaDeleteMode || detFetchedCount()) clearDetections();
+    // Only FETCHED observations ever go (owner, 2026-10-24): the points of shown lists and
+    // the points a search put on the map stay — they are cleared from the Points panel.
   }
   function clearDetections() {
     detPlotGen++;   // invalidate in-flight fetches' late plotting (they finish, but won't repopulate a cleared map)
@@ -17036,13 +17027,9 @@
     };
     el.innerHTML = '<div class="det-legend-head" data-help="maphelp.legend">' +
         '<button type="button" class="det-min" title="' + escapeHtml(t("det.minimise")) + '" aria-label="' + escapeHtml(t("det.minimise")) + '">−</button>' +
-        (function () {   // legend funnel: orange only when the filters actually REMOVE observations
-          var st = hasFilter ? detFilteredStats() : null;
-          return '<button type="button" class="det-clear-sel' + (st && st.removed > 0 ? " on" : "") + '" title="' + escapeHtml(hasFilter ? t("det.clearFiltersHint") : t("det.filtersHint")) + '" aria-label="' + escapeHtml(hasFilter ? t("det.clearFilters") : t("det.filters")) + '">' + (hasFilter ? filterXSvg(15) : ico("funnel")) +
-            fxBarHtml(st) + '</button>';
-        })() +
+        // The filter funnel and the red × live ONLY on the map's lower-right bar (owner, 2026-10-24:
+        // "sufficient that they are on the map"); the legend head keeps − and the selection-only ×.
         (selOverride ? '<button type="button" class="det-clear-selonly" title="' + escapeHtml(t("det.clearSel")) + '" aria-label="' + escapeHtml(t("det.clearSel")) + '">' + X_MARK_SVG + '</button>' : "") +
-        '<button type="button" class="det-clear' + (detAreaDeleteMode ? " armed" : "") + '" title="' + escapeHtml(detAreaDeleteMode ? t("det.delAreaHint") : (fetchedAreas.length ? t("det.delAreaArm") : t("det.clearAll"))) + '" aria-label="' + escapeHtml(t("det.clearAll")) + '">' + X_MARK_SVG + '</button>' +
         (capped ? '<span class="det-cap-warn" role="img" title="' + escapeHtml(capTip) + '" aria-label="' + escapeHtml(capTip) + '">⚠</span>' : "") +
       "</div>" +
       // "Total" is a 4-state TOGGLE picking which species the legend LISTS: All / Selected /
@@ -17062,14 +17049,6 @@
       delKeys.map(function (k) {
         return '<div class="det-row det-row-deleted" data-key="' + escapeHtml(k) + '" title="' + escapeHtml(t("det.deletedHint")) + '"><span class="det-nm">' + escapeHtml(deletedSpecies[k]) + "</span></div>";
       }).join("");
-    // Red ×, two-stage: with remembered fetched areas and not yet armed, the first
-    // click arms per-area delete (a red × appears on each area). Otherwise it wipes
-    // everything (a 2nd click while armed, or when there are no areas to pick from).
-    el.querySelector(".det-clear").addEventListener("click", function (e) {
-      e.stopPropagation(); mapClickGuardUntil = Date.now() + 250;
-      clearStep(); updateClearGroup();
-    });
-    wireClearFilterBtn(el.querySelector(".det-clear-sel"));   // click = clear all; long-press/right-click = all-filters pane
     // "Total" cycles the listed row-set: All → Selected → Starred → Rare → New for {year} → All, skipping the sets that would be empty (see detRowsStates).
     var totTg = el.querySelector(".det-total-toggle");
     if (totTg) totTg.addEventListener("click", function (e) {
