@@ -696,6 +696,15 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   colour/tags for every point and tick **Protect from deletion** there (a protected list then shows a
   🔒 in place of its red × — hover it for the note), delete it, or expand it to
   edit/remove individual points.
+- **Observations and sites (v2190)** — every list point has a **kind**. An *observation* is a species
+  record: it joins the species legend and follows its date, observer and group filters and the red ×.
+  A *site* is a static location: a round see-through dot a little larger than an observation dot, in the
+  list's colour, never filtered as a record whatever species it names (the name and text searches still
+  reach it). *Auto* decides per point — a species with a date or a source link is an observation, anything
+  else a site; set it for a whole list under **Edit list → Points are** (Auto shows the counts), per point in
+  the **Kind** column of **Edit values**, or in the import dialog. Imported files keep their other fields
+  (status, type, year, habitat …) on each point: on the pin card, as columns in **Edit values** (**+ Column**
+  adds one), and in KML / GeoJSON downloads. Old lists need nothing: without the fields the kind is derived.
 - **Opening a file from the OS** — a `.kml`, `.kmz` or `.geojson` can be opened **from outside the
   app**, landing in the same import dialog. On **desktop Chromium** (Chrome/Edge 102+, Windows ·
   macOS · Linux · ChromeOS) install BirdsWhere and it registers as a file handler, so the file lists

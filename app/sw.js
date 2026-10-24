@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2189";
+var VERSION = "v2190";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 NOTICE.md: the version stamp at the top now matches the text (it still said v2185 after the v2186 and v2187 edits)."
+  "\u2022 Point lists: a point is now an OBSERVATION (a species record \u2014 species legend, date / observer filters, the red \u00d7) or a SITE (a static location \u2014 a round see-through dot, never filtered as a record, whatever species it names). Auto decides per point; set it for a whole list under Edit list \u2192 Points are, per point under Edit values, or on import.",
+  "\u2022 Imported files keep their other fields (status, type, year \u2026) on each point: shown on the card, editable as columns under Edit values (+ Column adds one), written back to KML / GeoJSON downloads."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

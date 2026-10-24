@@ -127,6 +127,7 @@ window.AppPoints = (function () {
     { k: "act", t: "ptedit.act", type: "text", w: "8em" },
     { k: "observer", t: "th.obs", type: "text", w: "9em" },
     { k: "sci", t: "th.sci", type: "text", w: "11em" },
+    { k: "kind", t: "ptedit.kind", type: "kind", w: "9em" },
     { k: "radius", t: "ptedit.radius", type: "number", w: "5em" },
     { k: "url", t: "ptedit.url", type: "text", w: "10em" },
     { k: "color", t: "points.color", type: "color", w: "3em" },
@@ -140,20 +141,35 @@ window.AppPoints = (function () {
     if (isViewOnly(c)) { setStatus(t("drive.noCopy")); return; }
     hydrateOne(c).then(function () {
       var rows = (c.points || []).map(function (p) {
-        var q = {}; Object.keys(p).forEach(function (k) { if (k.charAt(0) !== "_") q[k] = (k === "tags") ? (p.tags || []).slice() : p[k]; }); return q;
+        var q = {}; Object.keys(p).forEach(function (k) { if (k.charAt(0) !== "_") q[k] = (k === "tags") ? (p.tags || []).slice() : (k === "attrs" ? Object.assign({}, p.attrs) : p[k]); }); return q;
       });
-      peState = { c: c, rows: rows, dirty: false };
+      peState = { c: c, rows: rows, dirty: false, extraCols: [] };
       peRender();
     });
   }
   function peEl() { var el = document.getElementById("ptedit-page"); if (!el) { el = document.createElement("div"); el.id = "ptedit-page"; document.body.appendChild(el); } return el; }
   function peClose() { var el = document.getElementById("ptedit-page"); if (el) el.style.display = "none"; peState = null; }
   function peTryClose() { var st = peState; if (st && st.dirty && modalConfirm) modalConfirm(t("ptedit.discard")).then(function (ok) { if (ok) peClose(); }); else peClose(); }
-  function peVal(p, k) { var v = p[k]; if (v == null) return ""; if (k === "tags") return v.join(", "); return String(v); }
+  function peVal(p, k) {
+    if (k.indexOf("attr:") === 0) { var av = p.attrs ? p.attrs[k.slice(5)] : null; return av == null ? "" : String(av); }
+    var v = p[k]; if (v == null) return ""; if (k === "tags") return v.join(", "); return String(v);
+  }
+  // The page's columns: the fixed ones, then one per kept attribute name in the list (plus any added
+  // with "+ Column" this session).
+  function peCols(st) {
+    var names = {}; st.rows.forEach(function (p) { if (p.attrs) Object.keys(p.attrs).forEach(function (k) { names[k] = 1; }); });
+    (st.extraCols || []).forEach(function (k) { names[k] = 1; });
+    return PE_COLS.concat(Object.keys(names).sort().map(function (k) { return { k: "attr:" + k, label: k, type: "text", w: "9em" }; }));
+  }
   function peCoordTxt(v) { return (v === "" || v == null || !isFinite(+v)) ? "—" : (+v).toFixed(5); }
-  function peRowHtml(p, i) {
-    var esc = escapeHtml, cells = PE_COLS.map(function (col) {
+  function peRowHtml(p, i, cols) {
+    var esc = escapeHtml, cells = cols.map(function (col) {
       var v = peVal(p, col.k), a = ' data-i="' + i + '" data-k="' + col.k + '"';
+      if (col.type === "kind") {   // Auto shows what it resolves to for this point
+        var q = Object.assign({}, p); delete q.kind;
+        var auto = t("points.kindAuto") + " (" + t(pointKind(q, peState.c) === "obs" ? "points.kindObs" : "points.kindSite") + ")";
+        return '<td><select class="pe-in"' + a + ">" + kindOptions(auto).map(function (o) { return '<option value="' + o.v + '"' + (o.v === (p.kind || "") ? " selected" : "") + ">" + esc(o.l) + "</option>"; }).join("") + "</select></td>";
+      }
       if (col.type === "coord") return '<td class="pe-coord"' + a + '><button type="button" class="pe-coord-btn" title="' + esc(t("ptedit.pickTitle")) + '"' + a + ">" + esc(peCoordTxt(p[col.k])) + "</button></td>";
       if (col.type === "check") return '<td class="pe-chk"><input type="checkbox" class="pe-in"' + (p[col.k] ? " checked" : "") + a + " /></td>";
       if (col.type === "color") return '<td class="pe-chk"><input type="color" class="pe-in" value="' + esc(mpHex6(p.color || mpColorFor(p))) + '"' + a + " /></td>";
@@ -167,18 +183,20 @@ window.AppPoints = (function () {
   function peRender(focusRow, focusKey) {
     var st = peState, el = peEl(), esc = escapeHtml;
     var tagOpts = {}; st.rows.forEach(function (p) { (p.tags || []).forEach(function (x) { tagOpts[x] = 1; }); });
-    var head = PE_COLS.map(function (col) { return '<th style="min-width:' + col.w + '">' + esc(t(col.t)) + "</th>"; }).join("");
+    var cols = peCols(st);
+    var head = cols.map(function (col) { return '<th style="min-width:' + col.w + '">' + esc(col.t ? t(col.t) : col.label) + "</th>"; }).join("");
     el.innerHTML = '<div class="field-page-bar">' +
         '<button type="button" class="fp-back" id="pe-back" title="' + esc(t("btn.close")) + '" aria-label="' + esc(t("btn.close")) + '">' + ico("back") + "</button>" +
         '<span class="pe-title">' + esc(t("points.editValues")) + " · " + esc(st.c.name) + "</span>" +
         '<span class="pe-count">' + esc(t("ptedit.rows", { n: st.rows.length })) + "</span>" +
         '<span class="pe-actions">' +
           '<button type="button" class="btn btn-light" id="pe-add">' + esc(t("ptedit.addRow")) + "</button>" +
+          '<button type="button" class="btn btn-light" id="pe-addcol">' + esc(t("ptedit.addCol")) + "</button>" +
           '<button type="button" class="btn" id="pe-save">' + esc(t("points.save")) + "</button>" +
         "</span></div>" +
       '<p class="cu-hint pe-hint">' + esc(t("ptedit.hint")) + "</p>" +
       '<div class="pe-wrap"><table class="pe-tbl"><thead><tr><th>#</th>' + head + "<th></th></tr></thead><tbody>" +
-        st.rows.map(function (p, i) { return peRowHtml(p, i); }).join("") + "</tbody></table></div>" +
+        st.rows.map(function (p, i) { return peRowHtml(p, i, cols); }).join("") + "</tbody></table></div>" +
       '<datalist id="pe-tags">' + Object.keys(tagOpts).sort().map(function (x) { return '<option value="' + esc(x) + '">'; }).join("") + "</datalist>";
     el.style.display = "flex";
     peWire(el);
@@ -201,12 +219,28 @@ window.AppPoints = (function () {
       st.dirty = true; peRender(st.rows.length - 1, "name");
     });
     el.querySelector("#pe-save").addEventListener("click", peSave);
+    // "+ Column": a new kept attribute, as a column on every row (a value is stored only where typed)
+    el.querySelector("#pe-addcol").addEventListener("click", function () {
+      if (!modalPrompt) return;
+      modalPrompt(t("ptedit.colName"), "").then(function (nm) {
+        nm = String(nm == null ? "" : nm).trim().slice(0, ATTR_NAME_MAX); if (!nm || ATTR_KNOWN[nm]) return;
+        if (st.extraCols.indexOf(nm) < 0) st.extraCols.push(nm);
+        peRender(0, "attr:" + nm);
+      });
+    });
     el.addEventListener("input", function (e) {
       var inp = e.target; if (!inp.classList || !inp.classList.contains("pe-in")) return;
       var p = st.rows[+inp.getAttribute("data-i")], k = inp.getAttribute("data-k"); if (!p || !k) return;
       st.dirty = true;
       if (inp.type === "checkbox") { if (inp.checked) p[k] = true; else delete p[k]; return; }
       var v = inp.value;
+      if (k === "kind") { if (v === "obs" || v === "site") p.kind = v; else delete p.kind; return; }
+      if (k.indexOf("attr:") === 0) {
+        var an = k.slice(5); v = v.trim();
+        if (!v) { if (p.attrs) { delete p.attrs[an]; if (!Object.keys(p.attrs).length) delete p.attrs; } }
+        else (p.attrs = p.attrs || {})[an] = v.slice(0, ATTR_MAX_LEN);
+        return;
+      }
       if (k === "tags") p.tags = mpParseTags(v);
       else if (k === "count" || k === "radius") { if (v === "") delete p[k]; else p[k] = +v; }
       else if (k === "color") p.color = v;
@@ -282,6 +316,7 @@ window.AppPoints = (function () {
     }
     var c = st.c;
     c.points = st.rows.map(function (p) { var q = Object.assign({}, p); q.lat = +q.lat; q.lon = +q.lon; if (!q.id) q.id = mpUid(); if (!q.color) delete q.color; return q; });
+    hide(c, "_rev", (c._rev || 0) + 1);   // same count, other species / kinds: the legend sync must not take the list for unchanged
     if (mpActiveName === c.name) mapPoints = c.points.map(function (p) { return Object.assign({}, p); });
     saveMapPoints(); renderMapPoints(); refreshMpPanel();
     setStatus(t("ptedit.saved", { n: c.points.length, name: c.name }));
@@ -314,6 +349,11 @@ window.AppPoints = (function () {
         '<button type="button" id="ce-color-auto" class="mp-color-reset" title="' + esc(t("points.colorAuto")) + '" aria-label="' + esc(t("points.colorAuto")) + '">↺</button></span>' +
       '<label class="kml-row kml-check"><input type="checkbox" id="ce-note-html"' + (allHtml ? " checked" : "") + " />" + esc(t("points.noteHtml")) + "</label>" +
       '<label class="kml-row kml-check"><input type="checkbox" id="ce-protect"' + (isCollProtected(c.name) ? " checked" : "") + " />" + esc(t("lists.protect")) + "</label>" +
+      // observation records or static sites, for the whole list (owner, 2026-10-24); Auto shows what it
+      // resolves to today (per-point choices kept) — a lazy stub has no points to count yet
+      '<label class="kml-row">' + esc(t("points.kindLabel")) + '<select id="ce-kind">' + kindOptions(kindAutoLabel(c)).map(function (o) {
+        return '<option value="' + o.v + '"' + (o.v === (c.kind || "") ? " selected" : "") + ">" + esc(o.l) + "</option>"; }).join("") + "</select></label>" +
+      '<p class="cu-hint">' + esc(t("points.kindHint")) + "</p>" +
       '<p class="cu-hint">' + esc(t("points.editListHint")) + "</p>" +
       '<div class="kml-actions"><button type="button" id="ce-save" class="btn">' + esc(t("points.save")) + "</button></div>" +
       "</div>";
@@ -330,6 +370,8 @@ window.AppPoints = (function () {
       var noteHtml = document.getElementById("ce-note-html").checked;
       var isActive = mpActiveName === c.name;   // capture before any rename
       c.color = col || undefined;
+      var kv = document.getElementById("ce-kind").value;
+      if (kv === "obs" || kv === "site") c.kind = kv; else delete c.kind;
       // Apply the colour + tags + note-is-HTML flag to every point. The colour is
       // written per-point too (not just on the list) so it shows through both draw
       // paths — the active working set colours per-point via mpColorFor, shown lists
@@ -353,6 +395,12 @@ window.AppPoints = (function () {
       if (typeof renderMpAdmin === "function") renderMpAdmin();
       close();
     });
+  }
+  function kindAutoLabel(c) {
+    if (!c || c._lazy || !(c.points || []).length) return t("points.kindAuto");
+    var nObs = 0, nSite = 0;
+    c.points.forEach(function (p) { if (pointKind(p, null) === "obs") nObs++; else nSite++; });
+    return t("points.kindAuto") + " (" + t("points.kindCounts", { obs: nObs, site: nSite }) + ")";
   }
   // <input type=color> needs a 6-digit hex; expand "#888" → "#888888".
   function mpHex6(c) {
@@ -881,6 +929,7 @@ window.AppPoints = (function () {
     if (c.lines && c.lines.length) body.lines = c.lines;
     if (c.color) body.color = c.color;
     if (c.route) body.route = true;
+    if (c.kind === "obs" || c.kind === "site") body.kind = c.kind;
     return body;
   }
   var bodyJson = function (b) { return JSON.stringify(b, function (k, v) { return k.charAt(0) === "_" || k === "viewOnly" ? undefined : v; }); };
@@ -904,6 +953,7 @@ window.AppPoints = (function () {
       if (Array.isArray(o.lines) && o.lines.length) c.lines = o.lines;
       if (o.color) c.color = o.color;
       if (o.route) c.route = true;
+      if (o.kind === "obs" || o.kind === "site") c.kind = o.kind;
       internPoints([c]); mpCollections.push(c); shownColls[nm] = true; n += c.points.length; made.push(nm);
     });
     allTagsOn();
@@ -921,6 +971,10 @@ window.AppPoints = (function () {
       out += '<Data name="' + (ED_NAME[k] || k) + '"><value>' + xml(v) + "</value></Data>";
     });
     if (p.color) out += '<Data name="color"><value>' + xml(p.color) + "</value></Data>";
+    if (p.attrs) Object.keys(p.attrs).forEach(function (k) {   // the kept attributes, under their own names
+      var v = p.attrs[k]; if (ATTR_KNOWN[k] || v == null || v === "") return;
+      out += '<Data name="' + xml(k).replace(/"/g, "&quot;") + '"><value>' + xml(v) + "</value></Data>";
+    });
     return out;
   }
   function kmlColor(hex) {   // #rrggbb → KML aabbggrr
@@ -1010,6 +1064,7 @@ window.AppPoints = (function () {
         if (ED_SKIP[k] || k.charAt(0) === "_" || k in props || k === "radius" || k === "edge") return;
         var v = p[k]; if (v != null && v !== "" && typeof v !== "object") props[k] = v;
       });
+      if (p.attrs) Object.keys(p.attrs).forEach(function (k) { if (!(k in props) && !ATTR_KNOWN[k] && p.attrs[k] != null && p.attrs[k] !== "") props[k] = p.attrs[k]; });
       if (listName) props.list = listName;
       if (p.source === "route" || p._route) props.route = true;   // a route stop stays one through a download + load (owner, 2026-10-04)
       return { type: "Feature", properties: props, geometry: { type: "Point", coordinates: [+(+p.lon).toFixed(6), +(+p.lat).toFixed(6)] } };
@@ -1508,6 +1563,8 @@ window.AppPoints = (function () {
       '<label class="kml-row">' + escapeHtml(t("kml.tagFrom")) + sel("kml-tag", opts([{ v: "", l: t("kml.fNone") }]), defTag) + "</label>" +
       '<label class="kml-row">' + escapeHtml(t("kml.noteFrom")) + multiSel("kml-note", opts([]), defNote) + "</label>" +
       '<label class="kml-row kml-check"><input type="checkbox" id="kml-note-html"' + (defHtml ? " checked" : "") + " />" + escapeHtml(t("points.noteHtml")) + "</label>" +
+      // observation records or static sites (owner, 2026-10-24) — Auto derives per point, see pointKind
+      '<label class="kml-row" title="' + escapeHtml(t("points.kindHint")) + '">' + escapeHtml(t("points.kindLabel")) + sel("kml-kind", kindOptions(), "") + "</label>" +
       '<div class="kml-actions"><button type="button" id="kml-do" class="btn">' + escapeHtml(t("kml.import")) + "</button></div>" +
       "</div>";
     var ov = document.createElement("div");
@@ -1518,6 +1575,9 @@ window.AppPoints = (function () {
     document.getElementById("kml-close").addEventListener("click", closeKmlImportDialog);
     document.getElementById("kml-do").addEventListener("click", doKmlImport);
     wireNoteMulti(ov);
+  }
+  function kindOptions(autoLabel) {
+    return [{ v: "", l: autoLabel || t("points.kindAuto") }, { v: "obs", l: t("points.kindObs") }, { v: "site", l: t("points.kindSite") }];
   }
   function closeKmlImportDialog() { var m = document.getElementById("kml-import-modal"); if (m && m.parentNode) m.parentNode.removeChild(m); }
   // Which fields the note is built from, in the order the dialog lists them (not the order
@@ -1707,8 +1767,36 @@ window.AppPoints = (function () {
     var l = labelForSci(sci, p.cls);
     return l ? l.key : "x:" + sci;
   }
+  // The KIND of a point decides its pipeline (owner, 2026-10-24: static points "should not be controlled
+  // as species records"). "obs" = an observation record: detPlot, the species legend, the date / observer /
+  // group filters, the red ×. "site" = a static location: a see-through pin; a species it names is a label.
+  // Explicit `p.kind`, else the list's `c.kind` (Edit list / the import dialog), else DERIVED: a species
+  // plus a date or a record reference (saved from a popup, a GBIF / Artsobs link, a source badge) is an
+  // observation; a species-less point, or a species with neither, is a site. So a list made before this
+  // field existed changes only where it named a species without any date or source — a site by nature.
+  function pointKind(p, c) {
+    if (!p || !detKeyOf(p)) return "site";   // without a species nothing is an observation, whatever the list says
+    if (p.kind === "obs" || p.kind === "site") return p.kind;
+    if (c && (c.kind === "obs" || c.kind === "site")) return c.kind;
+    return (p.source === "detection" || p.source === "gbif" || p.url || p.src || p.date) ? "obs" : "site";
+  }
+  function isObsPoint(p, c) { return pointKind(p, c) === "obs"; }
+  // Kept attributes (owner, 2026-10-24): every ExtendedData / GeoJSON property a file carries that is not
+  // a known field stays on the point as `attrs` { name: value } — status, type, year, habitat … — the
+  // categories a static point is filtered on. Capped so one odd file cannot bloat a list.
+  var ATTR_MAX_NAMES = 24, ATTR_MAX_LEN = 200, ATTR_NAME_MAX = 40;
+  var ATTR_KNOWN = (function () {
+    var k = {};
+    ["id", "createdAt", "lat", "lon", "name", "note", "notes", "noteHtml", "tags", "tag", "shared", "viewOnly", "color", "source", "spKey",
+     "spColor", "spCls", "cls", "star", "rare", "url", "link", "references", "occurrenceURL", "gbifID", "src", "dataset", "datasetName",
+     "class", "klass", "taxonClass", "route", "kind", "list", "desc", "description", "files", "fromSearch", "prob", "attrs", "birdswhere-list"]
+      .forEach(function (x) { k[x] = 1; });
+    Object.keys(FIELD_ALIASES).forEach(function (f) { k[f] = 1; FIELD_ALIASES[f].forEach(function (a) { k[a] = 1; }); });
+    Object.keys(ED_NAME).forEach(function (f) { k[ED_NAME[f]] = 1; });
+    return k;
+  })();
   var SRC_OF = { ao: "Artsobs", gbif_sql: "GBIF", gbif_api: "GBIF", parquet: "GBIF", artsobservasjoner: "Artsobs", artportalen: "Artportalen" };
-  function applyKmlFields(pt, data) {
+  function applyKmlFields(pt, data, used) {
     if (!data) return;
     Object.keys(FIELD_ALIASES).forEach(function (field) {
       if (pt[field] != null && pt[field] !== "") return;   // the dialog's mapping wins
@@ -1751,6 +1839,18 @@ window.AppPoints = (function () {
         x = x.trim(); if (x && (pt.tags || []).indexOf(x) < 0) (pt.tags = pt.tags || []).push(x);
       });
     }
+    if (/^(obs|site)$/.test(String(data.kind || "").trim())) pt.kind = String(data.kind).trim();   // a point's own kind, round-tripped
+    // Everything else the placemark carried is KEPT as attrs (see ATTR_KNOWN); the fields the
+    // dialog mapped to name / tag / note (`used`) are not repeated.
+    var attrs = pt.attrs || null, nA = attrs ? Object.keys(attrs).length : 0;
+    Object.keys(data).forEach(function (k) {
+      if (ATTR_KNOWN[k] || (used && used[k]) || k.length > ATTR_NAME_MAX) return;
+      var v = data[k]; if (v == null) return; v = String(v).trim(); if (!v) return;
+      if (!attrs) attrs = {};
+      if (!(k in attrs)) { if (nA >= ATTR_MAX_NAMES) return; nA++; }
+      attrs[k] = v.length > ATTR_MAX_LEN ? v.slice(0, ATTR_MAX_LEN) : v;
+    });
+    if (attrs) pt.attrs = attrs;
   }
   function doKmlImport() {
     var p = kmlImport; if (!p) return;
@@ -1775,6 +1875,9 @@ window.AppPoints = (function () {
     var noteToks = noteTokens();
     var noteHtmlBox = document.getElementById("kml-note-html");
     var noteIsHtml = !!(noteHtmlBox && noteHtmlBox.checked);
+    var kindEl = document.getElementById("kml-kind"), kindVal = kindEl ? kindEl.value : "";   // the dialog's "Points are": auto / observations / sites
+    var used = {};   // the fields the dialog mapped — not repeated as attrs
+    [nameTok, tagTok].concat(noteToks).forEach(function (tk) { if (tk && tk.indexOf("data:") === 0) used[tk.slice(5)] = 1; });
     function finish(listName, marks, show, polys, lines) {
       var pts = (marks || p.marks).map(function (pm) {
         var tag = normTag(kmlFieldValue(pm, tagTok));
@@ -1793,7 +1896,7 @@ window.AppPoints = (function () {
         // the point builders already write species / date / observer / count, and throwing
         // them away is what left an imported list unfilterable. Purely additive: a file
         // without them yields exactly the point it did before.
-        applyKmlFields(pt, pm.data);
+        applyKmlFields(pt, pm.data, used);
         // The note the dialog mapped is our own generated table → keep only what it was
         // duplicating. applyKmlFields has just put the observer's remark into pt.note when the
         // placemark carried one, so prefer that; otherwise the table said nothing the
@@ -1818,6 +1921,7 @@ window.AppPoints = (function () {
       });
       var c = mpCollections.filter(function (x) { return x.name === listName && !x.viewOnly; })[0];
       if (!c) { c = { name: listName, points: [] }; mpCollections.push(c); }
+      if (kindVal === "obs" || kindVal === "site") c.kind = kindVal;   // chosen in the dialog → the whole list
       c.points = c.points.concat(pts);
       polys = polys || (marks ? [] : (p.polys || []));
       if (polys.length) c.polys = (c.polys || []).concat(polys);   // areas travel with the list (drawn when it is ticked)
@@ -2291,11 +2395,13 @@ window.AppPoints = (function () {
     });
     return { from: lo, to: hi };
   }
-  function mpVisible(p) {
+  function mpVisible(p, c) {
     // The pane's own filters (date, observer, …) reach list pins too — see
     // listPointPasses in app.js. A pin is judged only on the fields it HAS, so a list
-    // imported before those fields existed is never hidden by them.
-    if (listPointPasses && !listPointPasses(p)) return false;
+    // imported before those fields existed is never hidden by them. A SITE (static location,
+    // see pointKind) is not an event: the date and observer filters pass it by; the name and
+    // text searches still reach it.
+    if (listPointPasses && !listPointPasses(p, !isObsPoint(p, c))) return false;
     return mpTagPasses(p);
   }
   // The tag-chip part alone (include / exclude), for the species records a list injects
@@ -2400,7 +2506,7 @@ window.AppPoints = (function () {
     // like the plotted detection — species colour + ★ for interesting + a black
     // centre dot for rare — sitting on a slightly larger list-coloured disc, so
     // the list is recognisable by its background colour.
-    if (!editable && p.spColor) {
+    if (!editable && p.spColor && isObsPoint(p)) {
       var listCol = color || mpColorFor(p);
       // Draw the list-colour disc in the SAME renderer as the species symbol and
       // add it FIRST, so within that one <svg> the DOM order guarantees the disc
@@ -2434,7 +2540,11 @@ window.AppPoints = (function () {
       ? L.marker([p.lat, p.lon], { icon: mpTriangleIcon(fill), keyboard: false })
       : p.marker === "ring"
         ? L.circleMarker([p.lat, p.lon], { radius: 7, color: fill, weight: 2.5, opacity: 0.95, fill: true, fillOpacity: 0 })
-        : L.circleMarker([p.lat, p.lon], { radius: 7, color: "#111", weight: 1, opacity: 0.9, fillColor: fill, fillOpacity: editable ? 0.9 : 0.65 });
+        : editable
+          ? L.circleMarker([p.lat, p.lon], { radius: 7, color: "#111", weight: 1, opacity: 0.9, fillColor: fill, fillOpacity: 0.9 })
+          // a SITE pin of a shown list: a round see-through dot a touch larger than an observation dot (radius 5),
+          // stroked in its own colour, no black ring (owner, 2026-10-24)
+          : L.circleMarker([p.lat, p.lon], { radius: 6.5, color: fill, weight: 1.5, opacity: 0.9, fillColor: fill, fillOpacity: 0.35 });
     var rec = { m: m, p: p, editable: editable };
     mpPins.push(rec);
     // Stop propagation so a marker click doesn't open the species-list popup
@@ -2823,7 +2933,7 @@ window.AppPoints = (function () {
     shownLists.forEach(function (c) {
       var want = nLeft > 0 ? Math.max(1, Math.floor(left / nLeft)) : 0;
       var have = 0;
-      (c.points || []).forEach(function (p) { if (p && !detKeyOf(p) && isFinite(p.lat) && isFinite(p.lon)) have++; });
+      (c.points || []).forEach(function (p) { if (p && !isObsPoint(p, c) && isFinite(p.lat) && isFinite(p.lon)) have++; });
       var give = Math.min(want, have);
       share[c.name] = (budget === Infinity) ? Infinity : give;
       left -= give; nLeft--;
@@ -2868,14 +2978,14 @@ window.AppPoints = (function () {
       var quota = share[c.name], used = 0;
       (c.points || []).forEach(function (p) {
         if (!p || !isFinite(p.lat) || !isFinite(p.lon)) return;
-        if (detKeyOf(p)) return;   // a record with a species → detPlot pipeline (handled below)
+        if (isObsPoint(p, c)) return;   // an observation record → detPlot pipeline (handled below); a SITE is drawn here, species or not
         // The view test goes FIRST because it is the cheapest by far: four number
         // comparisons against the filters' string folding and date arithmetic.
         if (bb && (p.lat < bb[0] || p.lat > bb[2] || p.lon < bb[1] || p.lon > bb[3])) return;
         // Until now this loop drew every point in a ticked list unconditionally, so the
         // pane's filters AND the tag chips were no-ops for list pins. Both apply here now,
         // together with the list's own observer / date-range filter.
-        if (!mpVisible(p)) return;
+        if (!mpVisible(p, c)) return;
         if (!listOwnFilterPasses(p, lf)) return;
         passed++;
         if (used >= quota) return;
@@ -2928,7 +3038,7 @@ window.AppPoints = (function () {
     mapPoints: function () { return mapPoints; },
     setMapPoints: function (v) { mapPoints = v; },
     mpFilter: function () { return mpFilter; }, normTag: normTag,
-    setMpFilter: function (v) { mpFilter = v; }, detKeyOf: detKeyOf, mpTagPasses: mpTagPasses,
+    setMpFilter: function (v) { mpFilter = v; }, detKeyOf: detKeyOf, pointKind: pointKind, isObsPoint: isObsPoint, mpTagPasses: mpTagPasses,
     collCount: collCount, anyLazy: anyLazy, whenAllLoaded: whenAllLoaded, hydrateOne: hydrateOne,
     mpExclude: function () { return mpExclude; }, setMpExclude: function (v) { mpExclude = v; },
     mpNone: function () { return mpNone; }, setMpNone: function (v) { mpNone = !!v; },

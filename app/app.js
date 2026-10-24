@@ -11956,7 +11956,7 @@
     (mpState.mpCollections() || []).forEach(function (c) {
       if (!mpState.shownColls()[c.name]) return;
       (c.points || []).forEach(function (p) {
-        if (p && !p.spKey && isFinite(p.lat) && isFinite(p.lon)) out.push({ point: true, name: p.name || c.name || t("nearby.point"), lat: +p.lat, lon: +p.lon });
+        if (p && !mpState.isObsPoint(p, c) && isFinite(p.lat) && isFinite(p.lon)) out.push({ point: true, name: p.name || c.name || t("nearby.point"), lat: +p.lat, lon: +p.lon });   // sites (a species named on one is a label)
       });
     });
     return out;
@@ -18096,10 +18096,10 @@
     try { if (mpHasUnsaved()) return true; } catch (e) {}
     return false;
   }
-  function listPointPasses(p) {
+  function listPointPasses(p, site) {
     if (!p) return true;
-    if (p.date && !detDatePasses(p.date)) return false;
-    if (p.observer && !detObsPasses({ observer: p.observer })) return false;
+    if (!site && p.date && !detDatePasses(p.date)) return false;        // a site is not an event (owner, 2026-10-24): its
+    if (!site && p.observer && !detObsPasses({ observer: p.observer })) return false;   // date / observer are attributes, not filters
     var q = spNameQuery.trim();
     if (q && !pointNameMatches(p, q)) return false;
     if (detTextActive() && !textPasses(p, [p.note, p.desc, p.name, (p.tags || []).join(" "), p.place, p.act, p.observer])) return false;
@@ -18154,7 +18154,7 @@
     mpState.mpCollections().forEach(function (c) {
       if (!mpState.shownColls()[c.name]) return;
       var lf = mpState.listFilter(c.name);
-      parts.push(c.name + "#" + ((c.points || []).length) + "#" + (lf ? JSON.stringify(lf) : ""));
+      parts.push(c.name + "#" + ((c.points || []).length) + "#" + (c.kind || "") + "#" + (c._rev || 0) + "#" + (lf ? JSON.stringify(lf) : ""));   // kind: Edit list can flip a list between sites and records
     });
     parts.push("search#" + mpSearchPins().length);
     return parts.join("\u0002");
@@ -18188,6 +18188,7 @@
       var col = collColor(c), lf = mpState.listFilter(c.name), pts = c.points || [];
       for (var i = 0; i < pts.length; i++) {
         var p = pts[i]; if (!p) continue;
+        if (!mpState.isObsPoint(p, c)) continue;   // a SITE (static location) is a pin, never a species record (owner, 2026-10-24)
         var key = mpState.detKeyOf(p);   // stored key, model species by sci, or an "x:" extra (old KMZ lists too)
         if (!key || !isFinite(p.lat) || !isFinite(p.lon)) continue;
         if (!mpState.mpTagPasses(p) || !mpState.listOwnFilterPasses(p, lf)) { skipped++; continue; }
@@ -18222,7 +18223,7 @@
     // reach every point a search put on the map (owner, 2026-10-23).
     mpSearchPins().forEach(function (p) {
       if (!isFinite(+p.lat) || !isFinite(+p.lon)) return;
-      var key = mpState.detKeyOf(p) || searchKey(p.fromSearch);
+      var key = (mpState.isObsPoint(p) ? mpState.detKeyOf(p) : "") || searchKey(p.fromSearch);   // a site's species is a label: its pin joins the search row
       var col = mpSearchColor(p.fromSearch);
       var row = _listRowOf && _listRowOf.get(p);
       if (!row) {
@@ -18598,6 +18599,9 @@
   }
   function mpTipHtml(p) {
     var name = escapeHtml(p.name || "(point)");
+    // the kept attributes (status, type, year …) as "name: value" on their own line (owner, 2026-10-24)
+    var attrKeys = p.attrs ? Object.keys(p.attrs).filter(function (k) { return p.attrs[k] != null && p.attrs[k] !== ""; }) : [];
+    var attrsLine = attrKeys.length ? '<span class="mp-card-attrs">' + attrKeys.map(function (k) { return escapeHtml(k) + ": " + escapeHtml(p.attrs[k]); }).join(" · ") + "</span>" : "";
     // A pin saved from a detection hovers exactly like the live plotted dot: the
     // full species swatch (colour disc + ★ + rare centre-dot + need-ring) then the
     // name and the same "×N (nd)" meta, with the recorded date / activity below.
@@ -18610,7 +18614,7 @@
         (meta.length ? ' <span class="dh-meta">' + escapeHtml(meta.join(" ")) + "</span>" : "");
       var subL = String(p.note || "").split("\n").map(function (s) { return s.trim(); })
         .filter(function (s) { return s && !/^https?:\/\//i.test(s); });
-      return head + (subL.length ? '<span class="area-tip-note">' + subL.map(escapeHtml).join("<br>") + "</span>" : "");
+      return head + (subL.length ? '<span class="area-tip-note">' + subL.map(escapeHtml).join("<br>") + "</span>" : "") + attrsLine;
     }
     // Don't repeat a tag that just duplicates the name (detection pins tag the
     // species, which is also the name) — nor the activity, which now has its own line.
@@ -18651,7 +18655,7 @@
         .filter(function (s) { return s && !/^https?:\/\//i.test(s); });
       note = noteLines.length ? '<span class="area-tip-note">' + noteLines.map(escapeHtml).join("<br>") + "</span>" : "";
     }
-    return "<b>" + name + "</b>" + tags + meta + actLine + note + by;
+    return "<b>" + name + "</b>" + tags + meta + actLine + note + by + attrsLine;
   }
   function updateMpBadge() {
     // Badge = number of saved point-lists (not the count of loose working pins).

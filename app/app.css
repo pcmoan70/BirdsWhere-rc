@@ -1935,6 +1935,7 @@ button.dd-name:hover { text-decoration: underline; }
 .area-tip .mp-card-meta { display: block; margin-top: 2px; color: var(--ink-muted); font-size: var(--fs-xs); font-variant-numeric: tabular-nums; }
 .area-tip .mp-card-act { display: block; margin-top: 2px; font-size: var(--fs-xs); font-weight: 600; }
 .area-tip .mp-card-by { display: block; margin-top: 2px; color: var(--ink-muted); font-size: var(--fs-xs); opacity: 0.85; }
+.area-tip .mp-card-attrs { display: block; margin-top: 2px; color: var(--ink-muted); font-size: var(--fs-xs); }   /* kept attributes: "status: active · type: nest" */
 .area-tip .area-tip-sep { display: block; height: 5px; }
 .dd-dot-near { background: var(--ok); }
 .dd-dot-mid { background: var(--warn); }
