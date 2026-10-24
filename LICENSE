@@ -8,8 +8,10 @@ UI design are his, and credit is appreciated but not required.
 
 NOT COVERED — see NOTICE.md, the defining text: the Brand Assets (the name
 BirdsWhere, thebirding.site, the icon files), the Service Identifiers (the
-hosted site, counters, relay, sign-in client, keys), the Reserved Datasets
-(best-sites, best-sites-week, coverage.html, confusion.csv,
+hosted site, counters, relay, sign-in client, keys), the Reserved Datasets,
+based on modelling performed by Per Christian Moan (Best sites with its
+weekly rankings and coverage map: best-sites, best-sites-week, coverage.html;
+the confusion-species lists and trait table: confusion.csv,
 species-traits.json — (c) 2026 Per Christian Moan, all rights reserved) and
 the Third-Party Components (THIRD-PARTY-NOTICES.md).
 

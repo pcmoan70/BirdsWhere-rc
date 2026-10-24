@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2185";
+var VERSION = "v2186";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Credits & licence: shorter, and the licence notice (NOTICE.md in the public repository) now defines every file class by path \u2014 code (CC0), brand, service identifiers, reserved datasets, third-party \u2014 with the terms of use."
+  "\u2022 Credits & licence names the reserved datasets \u2014 Best sites with its weekly rankings, and the confusion-species lists and traits \u2014 as based on modelling performed by Per Christian Moan."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

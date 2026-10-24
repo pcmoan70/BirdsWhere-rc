@@ -27,9 +27,13 @@ Every file in this repository belongs to exactly one of these classes.
   - the Google OAuth client `309967713424-o0vgr5cgb1t8bvc9pk78br2mmo4v8kkm.apps.googleusercontent.com`;
   - the site-verification file `app/google93f4faba0f13b05e.html`;
   - any API key, token or credential configured for the hosted service now or later.
-- **"Reserved Datasets"** — these paths, produced by the author's own pipelines:
-  `app/best-sites/**`, `app/best-sites-week/**`, `app/coverage.html`, `app/confusion.csv`,
-  `app/species-traits.json`.
+- **"Reserved Datasets"** — the datasets based on modelling performed by Per Christian Moan:
+  - **Best sites** with its weekly rankings and coverage map — `app/best-sites/**`,
+    `app/best-sites-week/**`, `app/coverage.html` (≈276k birding sites ranked per ISO week at
+    three detail levels, modelled from 236.8 million GBIF bird occurrences 2010–2026);
+  - **Confusion species** — the per-species confusion lists and the species trait table —
+    `app/confusion.csv`, `app/species-traits.json` (the misID model's partner lists and the
+    trait synthesis behind the compare card).
 - **"Third-Party Components"** — everything listed in `THIRD-PARTY-NOTICES.md`: `app/vendor/**`,
   the BirdNET Geomodel weights and labels (`app/geomodel_fp16.onnx`, `app/labels.txt`,
   `app/model-compare/**`), the taxonomy and name files derived from third-party lists, the
@@ -57,8 +61,9 @@ Nothing obliges you to credit him, but if you build on BirdsWhere, this line wou
    impersonate the hosted service or any identifier above is granted. A copy or derivative of the
    Code must replace them with its own hosts, counters, relay and sign-in client, or remove the
    features that use them.
-3. **Reserved Datasets** — **© 2026 Per Christian Moan, all rights reserved.** They are present in
-   this repository only so that the hosted service can display them. No licence is granted to
+3. **Reserved Datasets** — **© 2026 Per Christian Moan, all rights reserved.** They are the product of
+   modelling performed by Per Christian Moan, not raw third-party data, and are present in this
+   repository only so that the hosted service can display them. No licence is granted to
    copy, extract, redistribute, re-host, mine, train on or build on them, in whole or in part. A
    copy or derivative of the Code that is redistributed or hosted must **delete these paths** unless
    the author has licensed them in writing. The underlying facts remain subject to their sources'

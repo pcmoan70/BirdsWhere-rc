@@ -4,7 +4,7 @@
 
 > Release-candidate test channel. Production: <https://thebirding.site/>
 
-**Licence:** the application code is **public domain, CC0 1.0 Universal** (`LICENSE`); the BirdsWhere name and icons, the thebirding.site domain and service, and the app's own datasets (best sites, week rankings, confusion lists and traits) are **reserved** — the defining text, with the exact file list and the terms of use, is [`NOTICE.md`](NOTICE.md); third-party licences are in `THIRD-PARTY-NOTICES.md`.
+**Licence:** the application code is **public domain, CC0 1.0 Universal** (`LICENSE`); the BirdsWhere name and icons, the thebirding.site domain and service, and the datasets based on modelling by Per Christian Moan (**Best sites** with its weekly rankings; the **confusion-species** lists and traits) are **reserved** — the defining text, with the exact file list and the terms of use, is [`NOTICE.md`](NOTICE.md); third-party licences are in `THIRD-PARTY-NOTICES.md`.
 
 An interactive, **100% in-browser** explorer of species **distribution, migration and live
 observations**. Everything runs on your device — there is **no server and no backend of our own**;
@@ -1527,8 +1527,8 @@ The 3-D terrain viewer (1 m Kartverket terrain with the sun and its shadows for 
 
 ## Attribution & licensing
 
-- **App code**: public domain, CC0 1.0 Universal (`LICENSE`). Brand, service identifiers and the app's own
-  datasets are reserved — see [`NOTICE.md`](NOTICE.md), which defines each class by file path and holds the terms of use.
+- **App code**: public domain, CC0 1.0 Universal (`LICENSE`). Brand, service identifiers and the datasets based on modelling by Per Christian
+  Moan (Best sites with its weekly rankings; the confusion-species lists and traits) are reserved — see [`NOTICE.md`](NOTICE.md), which defines each class by file path and holds the terms of use.
 - **BirdNET Geomodel** by the [BirdNET team](https://github.com/birdnet-team/geomodel): source
   MIT; **trained weights (`geomodel_fp16.onnx`) are CC BY-SA 4.0** and redistributed here under
   those terms (share-alike + attribution required). The **Model compare** subpage
