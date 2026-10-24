@@ -21,19 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2184";
+var VERSION = "v2185";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The map buttons are back \u2014 locate, search, zoom, the red \u00d7 and the filter funnel were hidden by mistake since v2173. The red \u00d7 and the funnel now sit at the lower right of the map, and only there (the legend keeps \u2212 and the selection \u00d7).",
-  "\u2022 The red \u00d7 clears fetched observations only \u2014 shown lists and the points a search put on the map stay (take them off from Points).",
-  "\u2022 Points \u2192 search: every point a search puts on the map shows in the legend (a record without a species under one row named by the search words), so the filters reach them.",
-  "\u2022 Save works again in the point editor when a point is added from an observation\u2019s place name.",
-  "\u2022 Maps & overlays: the base-map chooser moved from Settings into the bird button\u2019s Maps & overlays popup, above the overlay list.",
-  "\u2022 Licence: the app code is now public domain (CC0 1.0) \u2014 CC0 because it was written by AI; the idea, concept and UI design are Per Christian Moan\u2019s, attribution appreciated. The BirdsWhere name, thebirding.site, the hosted service and the app\u2019s own datasets (best sites etc.) stay proprietary \u2014 see Credits & licence."
+  "\u2022 Credits & licence: shorter, and the licence notice (NOTICE.md in the public repository) now defines every file class by path \u2014 code (CC0), brand, service identifiers, reserved datasets, third-party \u2014 with the terms of use."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

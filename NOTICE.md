@@ -1,80 +1,96 @@
-# NOTICE — what is free and what is not
+# NOTICE — definitions, dedication, reservations, terms of use
 
-_Updated 2026-10-24. This notice is binding and travels with every copy of the repository._
+_Version 2026-10-24 (v2185). This file is the defining text. The LICENSE header, the README and the
+in-app "Credits & licence" text are summaries of it; where they differ, this file governs. It does not
+and cannot restrict the Code (section 2): it states what the dedication does **not** cover (section 3)
+and the terms of the hosted service (section 5)._
 
-## 1. The code is public domain (CC0 1.0)
+## 1. Definitions
 
-The application code in this repository (`app/**` and the tooling, except the third-party
-components listed in `THIRD-PARTY-NOTICES.md`) is dedicated to the public domain under
-**CC0 1.0 Universal** — see `LICENSE`. Copy it, change it, sell it, ship it: no permission, no
-attribution, no share-alike, no warranty. Where a true public-domain dedication is not possible,
-CC0 grants an unconditional, royalty-free licence instead.
+Every file in this repository belongs to exactly one of these classes.
 
-**Why CC0, and a request.** The code was written by AI, which is why it is dedicated to the public
-domain rather than licensed. The **idea, the concept and the user-interface design** are Per Christian
-Moan's own work. Attribution is not a condition of CC0 — but if you build on BirdsWhere, proper credit
-("based on BirdsWhere by Per Christian Moan, thebirding.site") would be appreciated.
+- **"Code"** — all files in the repository except the Brand Assets, the Reserved Datasets and the
+  Third-Party Components defined below. It includes `app/**` (HTML, JavaScript, CSS, the service
+  worker, the UI-string packs under `app/i18n/lang/`, the about pages), `deploy.sh`, the GitHub
+  workflow, and the documentation files (`README.md`, `CHANGES.md`).
+- **"Brand Assets"** — the name **BirdsWhere**, the name **thebirding.site**, and these files:
+  `app/icon.svg`, `app/icon-192.png`, `app/icon-512.png`, `app/apple-touch-icon.png`,
+  `app/qr-app.svg`, and the `name` / `short_name` values in `app/manifest.webmanifest`.
+- **"Service Identifiers"** — the hosted service and the exact identifiers that address or
+  authenticate it:
+  - the hosts `thebirding.site`, `www.thebirding.site`, `pcmoan70.github.io/BirdsWhere` and
+    `pcmoan70.github.io/BirdsWhere-rc`, and every path under them (including `/f/…` short links);
+  - the hit-counter namespace `thebirding.site` at `abacus.jasoncameron.dev` (keys `page-visits`,
+    `poster-scans`);
+  - the EmailJS relay public key `-5S2PctOrxEViV5Pf`, service `service_1wr4am1` and template
+    `template_2qq926a`;
+  - the Google OAuth client `309967713424-o0vgr5cgb1t8bvc9pk78br2mmo4v8kkm.apps.googleusercontent.com`;
+  - the site-verification file `app/google93f4faba0f13b05e.html`;
+  - any API key, token or credential configured for the hosted service now or later.
+- **"Reserved Datasets"** — these paths, produced by the author's own pipelines:
+  `app/best-sites/**`, `app/best-sites-week/**`, `app/coverage.html`, `app/confusion.csv`,
+  `app/species-traits.json`.
+- **"Third-Party Components"** — everything listed in `THIRD-PARTY-NOTICES.md`: `app/vendor/**`,
+  the BirdNET Geomodel weights and labels (`app/geomodel_fp16.onnx`, `app/labels.txt`,
+  `app/model-compare/**`), the taxonomy and name files derived from third-party lists, the
+  birding-spots extracts from OpenStreetMap (`app/birding-spots/**`, `app/birding-spots.json`),
+  and the map tiles and observations fetched at run time.
 
-## 2. The brand, the domain and the service are PROPRIETARY
+## 2. Dedication: the Code is public domain (CC0 1.0 Universal)
 
-The CC0 dedication covers **code only**. The following are **not** licensed, dedicated or waived in
-any way and remain the exclusive property of the author, with all rights reserved:
+The Code is dedicated to the public domain under CC0 1.0 Universal (`LICENSE`), without
+conditions. Where a dedication is not effective, CC0 grants an unconditional, irrevocable,
+royalty-free licence instead.
 
-- **The name "BirdsWhere"**, its logo, icons, artwork and the look that identifies the app.
-  CC0 §4(a) expressly excludes trademark rights, and none are granted here.
-- **The domain `thebirding.site`** and every URL under it (including the `/f/…` short links and
-  the `-rc` preview site).
-- **The service's endpoints**: the hosted site itself, its visit and poster-scan counters, the
-  contact-form relay, the Google sign-in (OAuth) client registered for thebirding.site, and every
-  API key, token or credential configured for the hosted service. Nothing in this repository grants
-  a right to call, reuse or impersonate any of them.
+**Request, not a condition.** The Code was written by AI; that is why it is dedicated rather than
+licensed. The idea, the concept and the user-interface design are Per Christian Moan's own work.
+Nothing obliges you to credit him, but if you build on BirdsWhere, this line would be appreciated:
+*"Based on BirdsWhere by Per Christian Moan — thebirding.site"*.
 
-**If you fork or redistribute:** give your copy its own name, icons and domain; register your own
-API keys and sign-in client; do not present it as BirdsWhere or as endorsed by, affiliated with or
-connected to BirdsWhere or thebirding.site; do not point it at the service's endpoints.
+## 3. Reservations: what the dedication does not cover
 
-## 3. The app's own generated datasets are COPYRIGHTED — all rights reserved
+1. **Brand Assets** — all trademark and copyright rights reserved (CC0 §4(a) excludes trademark
+   rights). No right to use them is granted. A copy or derivative of the Code must not use the
+   name BirdsWhere or thebirding.site, the icon files, or anything confusingly similar, and must
+   not present itself as BirdsWhere or as endorsed by, affiliated with or connected to it.
+2. **Service Identifiers** — all rights reserved. No right to call, reuse, embed, proxy or
+   impersonate the hosted service or any identifier above is granted. A copy or derivative of the
+   Code must replace them with its own hosts, counters, relay and sign-in client, or remove the
+   features that use them.
+3. **Reserved Datasets** — **© 2026 Per Christian Moan, all rights reserved.** They are present in
+   this repository only so that the hosted service can display them. No licence is granted to
+   copy, extract, redistribute, re-host, mine, train on or build on them, in whole or in part. A
+   copy or derivative of the Code that is redistributed or hosted must **delete these paths** unless
+   the author has licensed them in writing. The underlying facts remain subject to their sources'
+   terms (GBIF and its publishers, AVONET CC BY 4.0, iNaturalist, HBW-RGB).
+4. **Third-Party Components** — each keeps its own licence as listed in `THIRD-PARTY-NOTICES.md`;
+   the dedication does not touch them. The BirdNET Geomodel weights are CC BY-SA 4.0 and their
+   licence forbids use for poaching or any military purpose.
 
-Several datasets shipped with the app were produced by the author's own pipelines in other
-projects and are **not** part of the CC0 dedication. They are **© 2026 Per Christian Moan, all
-rights reserved**, and are redistributed in this repository solely so that the app can display them:
+## 4. No warranty
 
-| files | what they are |
-|---|---|
-| `app/best-sites/**`, `app/best-sites-week/**`, `app/coverage.html` | the Best sites overlay: ~276k ranked birding sites with 53-week profiles at three detail levels, and their coverage map, derived from 236.8 million GBIF bird occurrences 2010–2026 |
-| `app/confusion.csv`, `app/species-traits.json` | the confusion-species lists (the misID model's Match / misID partners) and the per-species trait table behind the compare card |
-
-You may look at them through the app. You may **not** extract, copy, redistribute, re-host, mine or
-build on these datasets, in whole or in part, without the author's written permission — the CC0
-licence of the code does not reach them. The underlying facts remain subject to their sources'
-terms (GBIF and its publishers, AVONET CC BY 4.0, iNaturalist, HBW-RGB — see
-`THIRD-PARTY-NOTICES.md`). The birding-spots data (`app/birding-spots/**`,
-`app/birding-spots.json`) is extracted from OpenStreetMap and stays under the ODbL,
-© OpenStreetMap contributors.
-
-## 4. Third-party components keep their own terms
-
-The bundled BirdNET Geomodel weights are **CC BY-SA 4.0** (attribution and share-alike apply to
-them, and their licence forbids use for poaching or any military purpose). Leaflet, ONNX Runtime
-Web, h3-js, the datasets and the map tiles each carry their own licences, listed in
-`THIRD-PARTY-NOTICES.md`. The observations the app shows belong to their providers (eBird, GBIF,
-iNaturalist, Artsdatabanken, SLU Artdatabanken, FinBIF, BirdWeather, Observation.org …) and are
-subject to each provider's terms and API rules.
+The Code, the Reserved Datasets and the hosted service are provided "as is", without warranty of
+any kind. Model output is a probabilistic prediction, not a confirmed observation.
 
 ## 5. Terms of use of the hosted service (thebirding.site)
 
-1. **As is.** The service is provided free of charge, without any warranty, and may change, break
-   or stop at any time without notice. The author is not liable for any loss arising from its use.
+By using the hosted service you agree to these terms.
+
+1. **Free, as is, may stop.** The service is free of charge, carries no warranty, and may change,
+   break or stop at any time without notice. To the extent permitted by law the author is not
+   liable for any loss arising from its use.
 2. **No account, no server.** The app runs in your browser; your lists, settings and points stay on
-   your device unless you choose to sync them to your own Google Drive.
-3. **Data providers' rules apply.** Observations, model predictions and map tiles come from third
-   parties; by using the service you accept their terms, rate limits and attribution requirements.
-   Model output is a probabilistic prediction, not a confirmed observation.
+   your device unless you sync them to your own Google Drive.
+3. **Providers' rules apply.** Observations, predictions and map tiles come from third parties; you
+   accept their terms, rate limits and attribution requirements when you use them through the service.
 4. **Responsible use.** Do not use the service to disturb wildlife, to locate sensitive species for
    harm, or for poaching or any military purpose. Respect protected areas, private land and local
    rules.
-5. **Fair use of the service.** Automated access, scraping of the hosted endpoints or of the
-   datasets in section 3, reuse of its keys or counters, and anything that impersonates the service
-   are not permitted.
-6. **Changes.** These terms may be updated; the current version is this file in the public repository
-   and the *Credits & licence* section inside the app.
+5. **No automated or derivative use of the service.** Automated access, scraping of the hosted site
+   or of the Reserved Datasets, reuse of the Service Identifiers, and anything that impersonates the
+   service are not permitted.
+6. **Governing law.** These terms are governed by the laws of Norway; disputes go to the Norwegian
+   courts.
+7. **Contact and changes.** Questions and licence requests go through the app's contact form (How
+   it works → Contact). These terms may change; the current version is this file in the public
+   repository.
