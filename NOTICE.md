@@ -46,10 +46,16 @@ The Code is dedicated to the public domain under CC0 1.0 Universal (`LICENSE`), 
 conditions. Where a dedication is not effective, CC0 grants an unconditional, irrevocable,
 royalty-free licence instead.
 
-**Request, not a condition.** The Code was written by AI; that is why it is dedicated rather than
-licensed. The idea, the concept and the user-interface design are Per Christian Moan's own work.
-Nothing obliges you to credit him, but if you build on BirdsWhere, this line would be appreciated:
-*"Based on BirdsWhere by Per Christian Moan — thebirding.site"*.
+**Basis.** The Code is AI-generated. That is the basis for dedicating it to the public domain
+instead of licensing it.
+
+**Request, not a condition.** The idea, the concept and the user-interface design are Per Christian
+Moan's own work. Nothing obliges you to credit him, but if you build on BirdsWhere, this line would be
+appreciated: *"Based on BirdsWhere by Per Christian Moan — thebirding.site"*.
+
+**Better than a fork: send feedback.** Suggestions and improvements are welcome through the app's
+Feedback form (How it works → Feedback) and will be implemented in BirdsWhere itself, so that effort
+is not spent twice and we build one useful tool together.
 
 ## 3. Reservations: what the dedication does not cover
 
@@ -96,6 +102,6 @@ By using the hosted service you agree to these terms.
    service are not permitted.
 6. **Governing law.** These terms are governed by the laws of Norway; disputes go to the Norwegian
    courts.
-7. **Contact and changes.** Questions and licence requests go through the app's contact form (How
-   it works → Contact). These terms may change; the current version is this file in the public
+7. **Contact and changes.** Questions and licence requests go through the app's Feedback form (How
+   it works → Feedback). These terms may change; the current version is this file in the public
    repository.

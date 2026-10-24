@@ -4,7 +4,7 @@
 
 > Release-candidate test channel. Production: <https://thebirding.site/>
 
-**Licence:** the application code is **public domain, CC0 1.0 Universal** (`LICENSE`); the BirdsWhere name and icons, the thebirding.site domain and service, and the datasets based on modelling by Per Christian Moan (**Best sites** with its weekly rankings; the **confusion-species** lists and traits) are **reserved** — the defining text, with the exact file list and the terms of use, is [`NOTICE.md`](NOTICE.md); third-party licences are in `THIRD-PARTY-NOTICES.md`.
+**Licence:** the application code is **public domain, CC0 1.0 Universal** (`LICENSE`; basis: the code is AI-generated — the idea, concept and UI design are Per Christian Moan's, credit appreciated; suggestions and improvements sent through the app's **Feedback** form will be implemented, so that effort is not spent twice and we build one useful tool together); the BirdsWhere name and icons, the thebirding.site domain and service, and the datasets based on modelling by Per Christian Moan (**Best sites** with its weekly rankings; the **confusion-species** lists and traits) are **reserved** — the defining text, with the exact file list and the terms of use, is [`NOTICE.md`](NOTICE.md); third-party licences are in `THIRD-PARTY-NOTICES.md`.
 
 An interactive, **100% in-browser** explorer of species **distribution, migration and live
 observations**. Everything runs on your device — there is **no server and no backend of our own**;
