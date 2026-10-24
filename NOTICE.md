@@ -10,6 +10,11 @@ components listed in `THIRD-PARTY-NOTICES.md`) is dedicated to the public domain
 attribution, no share-alike, no warranty. Where a true public-domain dedication is not possible,
 CC0 grants an unconditional, royalty-free licence instead.
 
+**Why CC0, and a request.** The code was written by AI, which is why it is dedicated to the public
+domain rather than licensed. The **idea, the concept and the user-interface design** are Per Christian
+Moan's own work. Attribution is not a condition of CC0 — but if you build on BirdsWhere, proper credit
+("based on BirdsWhere by Per Christian Moan, thebirding.site") would be appreciated.
+
 ## 2. The brand, the domain and the service are PROPRIETARY
 
 The CC0 dedication covers **code only**. The following are **not** licensed, dedicated or waived in

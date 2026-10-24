@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2181";
+var VERSION = "v2182";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Credits & licence: the list of the app\u2019s own copyrighted datasets (best sites, the week rankings, confusion-species lists and traits) was tightened."
+  "\u2022 Credits & licence now says why the code is CC0 (it was written by AI) and that the idea, concept and UI design are Per Christian Moan\u2019s \u2014 attribution appreciated, not required."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
