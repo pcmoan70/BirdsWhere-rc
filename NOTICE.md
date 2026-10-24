@@ -1,6 +1,6 @@
 # NOTICE — definitions, dedication, reservations, terms of use
 
-_Version 2026-10-24 (v2185). This file is the defining text. The LICENSE header, the README and the
+_Version 2026-10-24 (v2189). This file is the defining text. The LICENSE header, the README and the
 in-app "Credits & licence" text are summaries of it; where they differ, this file governs. It does not
 and cannot restrict the Code (section 2): it states what the dedication does **not** cover (section 3)
 and the terms of the hosted service (section 5)._
