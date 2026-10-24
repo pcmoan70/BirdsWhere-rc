@@ -4,7 +4,7 @@
 
 > Release-candidate test channel. Production: <https://thebirding.site/>
 
-**Licence:** the application code is **public domain — CC0 1.0 Universal** (`LICENSE`). **Not included:** the name **BirdsWhere**, its icons, the domain **thebirding.site** and the hosted service's endpoints, counters, keys and sign-in client are **proprietary, all rights reserved** — a fork needs its own name, domain and keys (`NOTICE.md`, which also holds the terms of use). The datasets the author's own pipelines generate (**Best sites** and its week rankings, the confusion-species lists and traits, the owl-observer network) are **© Per Christian Moan, all rights reserved** — not CC0. The model, maps and other data carry their own licences, listed in the app under *How it works → Credits & licence* and in `THIRD-PARTY-NOTICES.md`.
+**Licence:** the application code is **public domain — CC0 1.0 Universal** (`LICENSE`). **Not included:** the name **BirdsWhere**, its icons, the domain **thebirding.site** and the hosted service's endpoints, counters, keys and sign-in client are **proprietary, all rights reserved** — a fork needs its own name, domain and keys (`NOTICE.md`, which also holds the terms of use). The datasets the author's own pipelines generate (**Best sites** and its week rankings, the confusion-species lists and traits) are **© Per Christian Moan, all rights reserved** — not CC0. The model, maps and other data carry their own licences, listed in the app under *How it works → Credits & licence* and in `THIRD-PARTY-NOTICES.md`.
 
 An interactive, **100% in-browser** explorer of species **distribution, migration and live
 observations**. Everything runs on your device — there is **no server and no backend of our own**;
@@ -1531,7 +1531,7 @@ The 3-D terrain viewer (1 m Kartverket terrain with the sun and its shadows for 
   **thebirding.site** domain and the hosted service's endpoints, counters, keys and sign-in client are
   **proprietary** (`NOTICE.md`, with the terms of use).
 - **The app's own generated datasets** — `app/best-sites/**`, `app/best-sites-week/**`, `app/coverage.html`,
-  `app/confusion.csv`, `app/species-traits.json`, `app/owl_network/**` — are **© 2026 Per Christian Moan, all
+  `app/confusion.csv`, `app/species-traits.json` — are **© 2026 Per Christian Moan, all
   rights reserved** (NOTICE.md §3): view them in the app, no extraction or redistribution without permission.
   Birding spots (`app/birding-spots/**`) are OpenStreetMap extracts, ODbL © OpenStreetMap contributors.
 - **BirdNET Geomodel** by the [BirdNET team](https://github.com/birdnet-team/geomodel): source

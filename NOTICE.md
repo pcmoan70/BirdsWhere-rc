@@ -38,7 +38,6 @@ rights reserved**, and are redistributed in this repository solely so that the a
 |---|---|
 | `app/best-sites/**`, `app/best-sites-week/**`, `app/coverage.html` | the Best sites overlay: ~276k ranked birding sites with 53-week profiles at three detail levels, and their coverage map, derived from 236.8 million GBIF bird occurrences 2010–2026 |
 | `app/confusion.csv`, `app/species-traits.json` | the confusion-species lists (the misID model's Match / misID partners) and the per-species trait table behind the compare card |
-| `app/owl_network/**` | the owl-observer network page and its data |
 
 You may look at them through the app. You may **not** extract, copy, redistribute, re-host, mine or
 build on these datasets, in whole or in part, without the author's written permission — the CC0
