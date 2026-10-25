@@ -518,7 +518,7 @@
   // neither applies. Kept in sync from updateDetLegend (runs on every plot/clear).
   function updateClearGroup() {
     if (!clearGroupEl) return;
-    var hasPts = (typeof detPlot !== "undefined" && Object.keys(detPlot).length > 0) || !!(mpState && mpState.ptSelActive());   // a points-legend pick is a filter to clear, observations or not
+    var hasPts = (typeof detPlot !== "undefined" && Object.keys(detPlot).length > 0) || !!(mpState && (mpState.ptSelActive() || mpState.mpTextActive()));   // a points-legend pick is a filter to clear, observations or not
     var hasFilt = typeof detHasFilter === "function" && detHasFilter();
     var hasAreas = typeof fetchedAreas !== "undefined" && fetchedAreas.length > 0;   // squares can outlive their dots (every species deleted) → still clearable
     var a = clearGroupEl.querySelector(".clearpts-btn");
@@ -2976,7 +2976,6 @@
     return detFuzzy(q, detSearchText({ key: key, name: name }));
   }
   function filterSpRows() {
-    // The same search also filters list pins on the map (listPointPasses → pointNameMatches).
     try { if (mpState && mpState.mpFilterRefresh) mpState.mpFilterRefresh(); } catch (e) {}
     var tb = document.getElementById("sp-tbody"); if (!tb) return;
     var q = spNameQuery.trim();
@@ -13591,7 +13590,7 @@
       if (typeof speciesPanelPopulated === "function" && speciesPanelPopulated()) refilterSpTable();
       if (allFiltersPane) renderAllFiltersPane();   // keep the "all filters" pane in sync
     });
-    // the name / text search reaches imported list pins too (mpVisible → listPointPasses)
+    // (since v2194 the pane's searches leave list pins alone — the lists have their own text box)
     try { if (mpState && mpState.mpFilterRefresh) mpState.mpFilterRefresh(); } catch (e) {}
   }
   // A filter change re-scopes the rows of the EXISTING table (one pass, then the sort when a
@@ -14560,7 +14559,7 @@
       e.group.addTo(map);
     });
     if (dotDC && dotDC.clusters.length) renderDotClusters(dotDC.clusters);
-    // A filter change reaches the list pins too (mpVisible → listPointPasses); coalesced to
+    // A filter change used to reach the list pins too (not since v2194); still coalesced to
     // one redraw per frame inside mpFilterRefresh, and guarded against re-entry.
     try { if (mpState && mpState.mpFilterRefresh) mpState.mpFilterRefresh(); } catch (e) {}
   }
@@ -15099,7 +15098,7 @@
   // recency days / date range.) Drives the black × (clear all) in both the legend
   // and the detections-list filter bar.
   function detHasFilter() {
-    return detTextActive() || detBflyFilter || detSelectionActive() || detExclusionActive() || detDaySelActive() || detStarFilter || detRareFilter || detYearFilter || detLifeFilter || detAlertFilter || (detLegendRows !== "all") || detNewFilter || !!detObsFilter || !!detLocFilter || !!detSrcFilter || (detRecencyDays() !== 0) || !!detDateRange() || detMonths().length > 0 || countFilterActive() || probFilterActive() || (detRegionMode !== "off") || !!(mpState && mpState.ptSelActive());
+    return detTextActive() || detBflyFilter || detSelectionActive() || detExclusionActive() || detDaySelActive() || detStarFilter || detRareFilter || detYearFilter || detLifeFilter || detAlertFilter || (detLegendRows !== "all") || detNewFilter || !!detObsFilter || !!detLocFilter || !!detSrcFilter || (detRecencyDays() !== 0) || !!detDateRange() || detMonths().length > 0 || countFilterActive() || probFilterActive() || (detRegionMode !== "off") || !!(mpState && (mpState.ptSelActive() || mpState.mpTextActive()));
   }
   // Reset every legend filter at once (the black ×): the species selection, the
   // ★/◉/🟡 mode filter, the observer filter, and the recency (days) window → All.
@@ -15120,7 +15119,7 @@
     spObsSort = { col: "", dir: "" };                                         // observation-list sort → its natural (rarest-first) order
     detDaySel = Object.create(null); detDayHover = null;                      // histogram day selection → off
     detLegendRows = "all";                                                    // legend "Total" back to listing every species (the default); sort order is left as-is
-    if (mpState) mpState.setPtSel(null);                                      // the points legend's selection → none
+    if (mpState) { mpState.setPtSel(null); mpState.setMpText(""); }           // the points legend's picks and the lists' text box → none
     spHeadPanel = null; spHeadPanelDate = null;                              // close any open header panel
     document.getElementById("prob-min").value = 0; document.getElementById("prob-max").value = 100;   // probability range → 0–100
     var pmv0 = document.getElementById("prob-min-val"), pxv0 = document.getElementById("prob-max-val");
@@ -17026,7 +17025,16 @@
     });
     el.querySelectorAll(".det-ptsel-chip").forEach(function (ch) {
       var dim = ch.getAttribute("data-dim");
-      ch.querySelector(".det-ptsel-nm").addEventListener("click", function (e) { e.stopPropagation(); mapClickGuardUntil = Date.now() + 250; mpState.setPtDim(dim); saveLegendState(); mpState.renderMapPoints(); });
+      ch.querySelector(".det-ptsel-nm").addEventListener("click", function (e) {
+        e.stopPropagation(); mapClickGuardUntil = Date.now() + 250;
+        if (dim === "text") {   // the text filter has no rows: open the Points panel on its box
+          var pn = document.getElementById("mp-panel"), tg = document.getElementById("mp-toggle");
+          if ((!pn || pn.offsetParent === null) && tg) tg.click();
+          wireMpText._focus = true; var inp = document.getElementById("mp-text-in"); if (inp) inp.focus();
+          return;
+        }
+        mpState.setPtDim(dim); saveLegendState(); mpState.renderMapPoints();
+      });
       ch.querySelector(".det-ptsel-x").addEventListener("click", function (e) { e.stopPropagation(); mapClickGuardUntil = Date.now() + 250; mpState.ptClearDim(dim); saveLegendState(); mpState.mpFilterRefresh(); });
     });
     el.querySelectorAll(".det-row-click").forEach(function (row) { wireLegendRowCb(row, ptRowCb); });
@@ -18046,7 +18054,7 @@
     clearSpider: clearSpider,
     downloadCsv: downloadCsv, escapeHtml: escapeHtml, haversineKm: haversineKm, ico: ico,
     looksLikeHtml: looksLikeHtml, makePopupBtn: makePopupBtn, modalPrompt: modalPrompt,
-    mpTipHtml: mpTipHtml, listPointPasses: listPointPasses, openExternal: openExternal, openPointEditor: openPointEditor,
+    mpTipHtml: mpTipHtml, openExternal: openExternal, openPointEditor: openPointEditor,
     copyPointToList: copyPointToList, deleteListPoint: deleteListPoint,
     refreshMpPanel: refreshMpPanel, renderMpAdmin: renderMpAdmin, setStatus: setStatus,
     showDetRowMenu: showDetRowMenu, syncListDetections: syncListDetections, labelForSci: labelForSci, updateDetLegend: updateDetLegend, speciesColor: speciesColor,
@@ -18233,16 +18241,6 @@
     try { if (mpHasUnsaved()) return true; } catch (e) {}
     return false;
   }
-  // What of the species pane reaches a LIST pin: only the name and text searches. The date / observer /
-  // mode filters belong to the fetched species — a list point is not a species record (owner, 2026-10-24);
-  // a list's own observer / date filter lives in the Points panel (listOwnFilterPasses).
-  function listPointPasses(p) {
-    if (!p) return true;
-    var q = spNameQuery.trim();
-    if (q && !pointNameMatches(p, q)) return false;
-    if (detTextActive() && !textPasses(p, [p.note, p.desc, p.name, (p.tags || []).join(" "), p.place, p.act, p.observer])) return false;
-    return true;
-  }
   // A pin's species, as the app knows it: the file's scientific name looked up in the
   // model's index, so the LOCAL name (and the second language) match too — typing
   // "kattugle" finds a pin whose file only ever said "Strix aluco".
@@ -18262,22 +18260,6 @@
     if (!l) return tag;
     var nm = speciesName(l);
     return nm || tag;
-  }
-  function pointNameMatches(p, q) {
-    q = String(q).toLowerCase();
-    if (String(p.name || "").toLowerCase().indexOf(q) >= 0) return true;
-    var sci = p.sci || "";
-    if (sci && sci.toLowerCase().indexOf(q) >= 0) return true;
-    var l = labelForSci(sci) || (p.spKey ? labelsByKey[p.spKey] : null);
-    if (l) {
-      if (String(speciesName(l) || "").toLowerCase().indexOf(q) >= 0) return true;
-      if (secondLang) { var n2 = secondName(l); if (n2 && n2.toLowerCase().indexOf(q) >= 0) return true; }
-      if (String(l.sci || "").toLowerCase().indexOf(q) >= 0) return true;
-    }
-    // A pin with no species at all is never hidden by a species search — the
-    // backward-compatibility rule, same as for dates and observers.
-    if (!sci && !p.spKey) return true;
-    return false;
   }
   // Re-injection is skipped outright when nothing that decides it changed: the ticked lists
   // (and their sizes), the tag chips, the list funnels. The pane filters (date, observer …)
@@ -19311,6 +19293,24 @@
       setStatus(t("points.searchToMapDone", { n: added }));
     });
   }
+  // The lists' own text filter (owner, 2026-10-25): fuzzy over every field of the shown points and their
+  // lists' name and note (mpTextPasses); the legend's strip shows it as a chip. Session state only.
+  function mpTextBoxHtml() {
+    return '<div class="mp-textfilt"><input type="search" id="mp-text-in" autocomplete="off" spellcheck="false" placeholder="' + escapeHtml(t("points.textFilter")) +
+      '" title="' + escapeHtml(t("points.textFilterHint")) + '" value="' + escapeHtml(mpState.mpText()) + '" /></div>';
+  }
+  var mpTextT = null;
+  function wireMpText(panel) {
+    var inp = panel.querySelector("#mp-text-in"); if (!inp) return;
+    if (wireMpText._focus) { try { inp.focus({ preventScroll: true }); } catch (e) { inp.focus(); } try { inp.setSelectionRange(inp.value.length, inp.value.length); } catch (e2) {} }   // the panel was rebuilt under the typing
+    inp.addEventListener("focus", function () { wireMpText._focus = true; });
+    inp.addEventListener("blur", function () { setTimeout(function () { if (document.activeElement !== inp) wireMpText._focus = false; }, 0); });
+    inp.addEventListener("click", function (e) { e.stopPropagation(); });
+    inp.addEventListener("input", function () {
+      mpState.setMpText(inp.value);
+      clearTimeout(mpTextT); mpTextT = setTimeout(function () { mpState.mpFilterRefresh(inp); }, 250);
+    });
+  }
   function wireMpSearch(panel) {
     var inp = panel.querySelector("#mp-search-in"); if (!inp) return;
     if (mpSearchRes && mpSearchRes.q === mpSearchQ.trim()) mpSearchPaint();          // the panel was rebuilt: put the results back
@@ -19570,7 +19570,7 @@
       grp[i].order = j; grp[j].order = i;
       saveMapPoints(); refreshMpPanel(); keepMpPanelOpen();
     }
-    function mpCollRowHtml(type, name, count, swatch, checked, delTip, isProt, isRoute) {
+    function mpCollRowHtml(type, name, count, swatch, checked, delTip, isProt, isRoute, note) {
       // Protected point-lists show a 🔒 instead of the delete × (manage protection
       // in the lists-admin popup — press-and-hold the Points button).
       var del = isProt
@@ -19608,7 +19608,8 @@
         '<label class="mp-coll-lbl' + (hidStash ? " mp-hidden" : "") + '"><input type="checkbox" class="mp-coll-cb" data-type="' + type + '" data-name="' + escapeHtml(name) + '"' + ((hidStash ? hidStash[type].indexOf(name) >= 0 : checked) ? " checked" : "") + (hidStash ? " disabled" : "") + ">" +
           swIcon + '<span class="mp-coll-name">' + escapeHtml(name) + ' <span class="mp-coll-n">(' + count + ")</span></span></label>" +
         filtBtn + moreBtn +
-        "</div>";
+        "</div>" +
+        (note ? '<div class="mp-coll-note" title="' + escapeHtml(note) + '">' + escapeHtml(String(note).split("\n")[0]) + "</div>" : "");   // the list's own note, first line
     }
     // Lists in the user's own order, grouped in folders (owner, 2026-10-02): a list carries
     // `folder` (name, "" = loose) and `order` (set by Move up / Move down); folders come
@@ -19618,7 +19619,7 @@
     mpSortedColls().forEach(function (c) {
       var f = String(c.folder || "");
       if (!(f in groups)) { groups[f] = []; groupNames.push(f); }
-      groups[f].push({ c: c, html: mpCollRowHtml("p", c.name, mpState.collCount(c), "", !!mpState.shownColls()[c.name], t("points.deleteColl"), isCollProtected(c.name), isRouteColl(c)) });
+      groups[f].push({ c: c, html: mpCollRowHtml("p", c.name, mpState.collCount(c), "", !!mpState.shownColls()[c.name], t("points.deleteColl"), isCollProtected(c.name), isRouteColl(c), c.note) });
     });
     var collItems = [];
     groupNames.filter(Boolean).sort(function (a, b) { return a.localeCompare(b); }).forEach(function (f) {
@@ -19661,6 +19662,7 @@
         '<span id="mp-search-busy" class="mp-search-busy" aria-hidden="true"' + (mpSearchBusyOn ? "" : " hidden") + '>\u231B</span></div>' +
         '<div id="mp-search-res" class="mp-search-res"></div></div>' +
       collSection +
+      (Object.keys(mpState.shownColls()).length ? mpTextBoxHtml() : "") +
       (chipsHtml ? '<div class="mp-chips">' + chipsHtml + "</div>" : "") +
       (unionPts.length > 1 ?
         '<div class="mp-sort"><span class="mp-sort-lbl">⇅</span>' +
@@ -19672,6 +19674,7 @@
           : "") + "</div>";
     // Wire interactions
     wireMpSearch(panel);
+    wireMpText(panel);
     panel.querySelectorAll(".mp-fs-del").forEach(function (b) {
       b.addEventListener("click", function (e) {
         e.stopPropagation();

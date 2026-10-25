@@ -22,7 +22,7 @@ window.AppPoints = (function () {
   // ---- injected by app.js (init) -----------------------------------------
   // Plain function aliases (stable references) …
   var clearSpider, downloadCsv, escapeHtml, haversineKm, ico,
-      copyPointToList, deleteListPoint, listPointPasses, looksLikeHtml, makePopupBtn, modalPrompt, mpTipHtml, openExternal, openPointEditor,
+      copyPointToList, deleteListPoint, looksLikeHtml, makePopupBtn, modalPrompt, mpTipHtml, openExternal, openPointEditor,
       refreshMpPanel, renderMpAdmin, setStatus, showDetRowMenu, syncListDetections,
       pulseFunnels, tagDisplay, labelForSci, updateDetSetOverlays, updateMpBadge, updateSpDistances, t,
       modalConfirm, wireLocHover, pickOnMap, bringToFront;
@@ -35,7 +35,7 @@ window.AppPoints = (function () {
     downloadCsv = ctx.downloadCsv; escapeHtml = ctx.escapeHtml; haversineKm = ctx.haversineKm;
     ico = ctx.ico; looksLikeHtml = ctx.looksLikeHtml; makePopupBtn = ctx.makePopupBtn;
     copyPointToList = ctx.copyPointToList; deleteListPoint = ctx.deleteListPoint;
-    listPointPasses = ctx.listPointPasses; modalPrompt = ctx.modalPrompt; mpTipHtml = ctx.mpTipHtml; openExternal = ctx.openExternal;
+    modalPrompt = ctx.modalPrompt; mpTipHtml = ctx.mpTipHtml; openExternal = ctx.openExternal;
     openPointEditor = ctx.openPointEditor; refreshMpPanel = ctx.refreshMpPanel;
     renderMpAdmin = ctx.renderMpAdmin; setStatus = ctx.setStatus; showDetRowMenu = ctx.showDetRowMenu;
     syncListDetections = ctx.syncListDetections; updateDetSetOverlays = ctx.updateDetSetOverlays;
@@ -75,6 +75,7 @@ window.AppPoints = (function () {
   var ptViewOn = false;     // the legend is in its points view (app.js says) → pins take the dimension's colour
   var mpListN = 0;          // points in the shown lists, as counted by the last renderMapPoints
   var mpQuiet = false;      // a hover redraw: do not touch the legend (the hovered row must survive)
+  var mpText = "", mpTextGen = 0;   // the lists' own text filter (the Points panel's box); the generation invalidates the per-point token memo
   var mpLayer = null;
   // Named collections — saveable/retrievable point lists (e.g. "Owl nests",
   // "Spring trip"). mpActiveName is the loaded list; edits to the working set
@@ -350,6 +351,7 @@ window.AppPoints = (function () {
       "<h3>" + esc(t("points.editList")) + "</h3>" +
       '<label class="kml-row">' + esc(t("points.name")) + '<input type="text" id="ce-name" value="' + esc(c.name) + '" /></label>' +
       '<label class="kml-row">' + esc(t("points.tags")) + '<input type="text" id="ce-tags" value="' + esc(tagStr) + '" placeholder="' + esc(t("points.tagsPh")) + '" /></label>' +
+      '<label class="kml-row">' + esc(t("points.listNote")) + '<textarea id="ce-note" rows="2" placeholder="' + esc(t("points.listNotePh")) + '">' + esc(c.note || "") + "</textarea></label>" +
       '<span class="mp-color-row"><span class="mp-color-lbl">' + esc(t("points.color")) + "</span>" +
         '<input type="color" id="ce-color" data-auto="' + esc(auto) + '" value="' + esc(cur) + '" />' +
         '<button type="button" id="ce-color-auto" class="mp-color-reset" title="' + esc(t("points.colorAuto")) + '" aria-label="' + esc(t("points.colorAuto")) + '">↺</button></span>' +
@@ -371,6 +373,8 @@ window.AppPoints = (function () {
       var noteHtml = document.getElementById("ce-note-html").checked;
       var isActive = mpActiveName === c.name;   // capture before any rename
       c.color = col || undefined;
+      var lnote = (document.getElementById("ce-note").value || "").trim();   // the list's own note (searched by the text box)
+      if (lnote) c.note = lnote; else delete c.note;
       // Apply the colour + tags + note-is-HTML flag to every point. The colour is
       // written per-point too (not just on the list) so it shows through both draw
       // paths — the active working set colours per-point via mpColorFor, shown lists
@@ -511,7 +515,7 @@ window.AppPoints = (function () {
     return new Promise(function (res) { mpAllLoadedWaiters.push(res); });
   }
   function adopt(c) {   // a list just read from the store, whole
-    (c.points || []).forEach(function (p) { delete p._dn; delete p._ot; });
+    (c.points || []).forEach(function (p) { delete p._dn; delete p._ot; delete p._ft; });
     internPoints([c]);
     mpCheap[c.name] = cheapSig(c);
   }
@@ -794,6 +798,7 @@ window.AppPoints = (function () {
     saveChecked({ mapPointsShownColls: Object.keys(shownColls).filter(function (n) { return !vo[n]; }), mapDetSetsShown: Object.keys(shownDetSets) });
   }
   function saveMapPoints() {
+    mpTextGen++;   // points may have changed: the text-filter tokens are rebuilt lazily
     // Keep the loaded collection in lock-step with the working set so a list
     // stays current as the user adds/edits/removes pins after loading it.
     if (mpActiveName) {
@@ -921,6 +926,7 @@ window.AppPoints = (function () {
     if (c.polys && c.polys.length) body.polys = c.polys;
     if (c.lines && c.lines.length) body.lines = c.lines;
     if (c.color) body.color = c.color;
+    if (c.note) body.note = c.note;
     if (c.route) body.route = true;
     return body;
   }
@@ -944,6 +950,7 @@ window.AppPoints = (function () {
       if (Array.isArray(o.polys) && o.polys.length) c.polys = o.polys;
       if (Array.isArray(o.lines) && o.lines.length) c.lines = o.lines;
       if (o.color) c.color = o.color;
+      if (o.note) c.note = String(o.note);
       if (o.route) c.route = true;
       internPoints([c]); mpCollections.push(c); shownColls[nm] = true; n += c.points.length; made.push(nm);
     });
@@ -998,6 +1005,7 @@ window.AppPoints = (function () {
     };
     colls.forEach(function (c) {
       parts.push("<Folder><name>" + xml(c.name) + "</name>");
+      if (c.note) parts.push("<description><![CDATA[" + String(c.note).replace(/]]>/g, "]]&gt;") + "]]></description>");   // the list's note, where Google Earth shows it
       // the whole list, exactly — what makes the file load back as it was saved
       if (block) parts.push("<ExtendedData>" + LIST_BLOCK_OPEN + bodyJson(listBody(c)).replace(/]]>/g, "]]]]><![CDATA[>") + LIST_BLOCK_CLOSE + "</ExtendedData>");
       rich = (c.points || []).length <= 20000;   // a huge list: bare placemarks for other apps (the block above is complete)
@@ -1252,6 +1260,12 @@ window.AppPoints = (function () {
     if (doc.getElementsByTagName("parsererror").length) throw new Error(t("kml.parseErr"));
     var marks = [], polys = [], lines = [], fieldSet = {}, folderSet = {};
     var styleCol = kmlStyleColors(doc);
+    // The file's own description (the <Document>'s, else a lone <Folder>'s) becomes the list's note.
+    var docDesc = "", docEl = doc.getElementsByTagName("Document")[0], folders = doc.getElementsByTagName("Folder");
+    [docEl, folders.length === 1 ? folders[0] : null].forEach(function (el) {
+      if (docDesc || !el) return;
+      for (var ch = el.firstChild; ch; ch = ch.nextSibling) if (ch.nodeType === 1 && ch.tagName === "description") { docDesc = (ch.textContent || "").trim(); break; }
+    });
     var pms = doc.getElementsByTagName("Placemark");
     function txt(el, tag) { var n = el.getElementsByTagName(tag)[0]; return n ? (n.textContent || "").trim() : ""; }
     for (var i = 0; i < pms.length; i++) {
@@ -1298,7 +1312,7 @@ window.AppPoints = (function () {
       }
       marks.push({ name: txt(pm, "name"), lat: lat, lon: lon, desc: txt(pm, "description"), data: data, folder: folder, color: pcol });
     }
-    return { marks: marks, polys: polys, lines: lines, fields: Object.keys(fieldSet), folders: Object.keys(folderSet) };
+    return { marks: marks, polys: polys, lines: lines, fields: Object.keys(fieldSet), folders: Object.keys(folderSet), desc: docDesc };
   }
   // A placemark's <Data name="…"> value ("" when absent).
   function kmlData(pm, name) {
@@ -1491,7 +1505,7 @@ window.AppPoints = (function () {
       it.parsed.fields.forEach(function (f) { fieldSet[f] = 1; });
       it.parsed.folders.forEach(function (f) { folderSet[f] = 1; });
       marks = marks.concat(it.parsed.marks);
-      batch.push({ name: it.name, marks: it.parsed.marks, polys: it.parsed.polys || [], lines: it.parsed.lines || [] });
+      batch.push({ name: it.name, marks: it.parsed.marks, polys: it.parsed.polys || [], lines: it.parsed.lines || [], desc: it.parsed.desc || "" });
     });
     kmlImport = { marks: marks, fields: Object.keys(fieldSet), folders: Object.keys(folderSet), files: batch };
     setStatus(failed.length ? t("kml.someFailed", { n: failed.length }) : "");
@@ -1848,7 +1862,7 @@ window.AppPoints = (function () {
     var noteIsHtml = !!(noteHtmlBox && noteHtmlBox.checked);
     var used = {};   // the fields the dialog mapped — not repeated as attrs
     [nameTok, tagTok].concat(noteToks).forEach(function (tk) { if (tk && tk.indexOf("data:") === 0) used[tk.slice(5)] = 1; });
-    function finish(listName, marks, show, polys, lines) {
+    function finish(listName, marks, show, polys, lines, desc) {
       var pts = (marks || p.marks).map(function (pm) {
         var tag = normTag(kmlFieldValue(pm, tagTok));
         // One field → exactly what it always was. Several → each line labelled, because
@@ -1891,6 +1905,7 @@ window.AppPoints = (function () {
       });
       var c = mpCollections.filter(function (x) { return x.name === listName && !x.viewOnly; })[0];
       if (!c) { c = { name: listName, points: [] }; mpCollections.push(c); }
+      if (desc && !c.note) c.note = desc;   // the file's description → the list's note
       c.points = c.points.concat(pts);
       polys = polys || (marks ? [] : (p.polys || []));
       if (polys.length) c.polys = (c.polys || []).concat(polys);   // areas travel with the list (drawn when it is ticked)
@@ -1910,7 +1925,7 @@ window.AppPoints = (function () {
     }
     if (p.files && p.files.length) {
       var total = 0;
-      p.files.forEach(function (b) { total += finish(b.name, b.marks, p.files.length === 1, b.polys || [], b.lines || []); });
+      p.files.forEach(function (b) { total += finish(b.name, b.marks, p.files.length === 1, b.polys || [], b.lines || [], b.desc); });
       commit();
       setStatus(p.files.length > 1 ? t("kml.importedN", { n: total, lists: p.files.length })
                                    : t("kml.imported", { n: total, name: p.files[0].name }));
@@ -2484,7 +2499,7 @@ window.AppPoints = (function () {
         total++;
         notePresent(p, has);
         if (bb && (p.lat < bb[0] || p.lat > bb[2] || p.lon < bb[1] || p.lon > bb[3])) return;
-        if (listPointPasses && !listPointPasses(p, true)) return;
+        if (!mpTextPasses(p, c)) return;
         if (!listOwnFilterPasses(p, lf)) return;
         var tagOk = mpTagPasses(p), selOk = ptSelOk(p, c, null);
         if (tagOk && selOk) shownN++;
@@ -2526,6 +2541,7 @@ window.AppPoints = (function () {
   // months reads as a range ("2019–2021"), anything else as its first labels.
   function ptSelSummary() {
     var out = [];
+    if (mpTextActive()) out.push({ dim: "text", label: t("det.ptText"), text: "\u201c" + mpText.trim() + "\u201d" });
     if (ptDimPicked("tag")) {
       var labs = mpFilter.map(function (v) { return ptValueLabel("tag", v); }).concat(mpExclude.map(function (v) { return "−" + ptValueLabel("tag", v); }));
       out.push({ dim: "tag", label: ptDimLabel("tag"), text: labs.length ? labs.slice(0, 3).join(", ") + (labs.length > 3 ? " +" + (labs.length - 3) : "") : "–" });
@@ -2573,6 +2589,7 @@ window.AppPoints = (function () {
   function ptClearDim(dim) {
     ptFocus = null;
     if (dim === "tag") { mpFilter = []; mpExclude = []; mpNone = false; saveTagChips(); return; }
+    if (dim === "text") { mpText = ""; return; }
     ptSelPut(dim, null);
   }
   // A range on an ordered dimension (years, months): pick every row between the picks so far and this
@@ -2621,12 +2638,55 @@ window.AppPoints = (function () {
     });
     return out;
   }
+  // ---- the lists' own text filter (owner, 2026-10-25: "notes fuzzy matches") -------------------
+  // One box in the Points panel. Fuzzy as the observer filter is: every word must be the START of a
+  // word in the point's text — name, note, place, observer, activity, tags, species (scientific and
+  // local), country, dataset, life stage, source, kept columns — or in its LIST's name and note (a list
+  // whose note matches keeps every point: the note is about the list). "-word" excludes.
+  var _mpQ = null, _mpQStr = "";
+  function mpTextQuery() {
+    var q = mpText.trim();
+    if (_mpQ && q === _mpQStr) return _mpQ;
+    var inc = [], exc = [];
+    q.split(/\s+/).forEach(function (w) {
+      if (!w) return;
+      var neg = /^[-\u2212]/.test(w) && w.length > 1;
+      var toks = obsTokens(neg ? w.slice(1) : w);
+      if (toks.length) (neg ? exc : inc).push(toks);
+    });
+    _mpQStr = q; _mpQ = { inc: inc, exc: exc, on: !!(inc.length || exc.length) };
+    return _mpQ;
+  }
+  function mpTextActive() { return mpTextQuery().on; }
+  function setMpText(v) { mpText = String(v || ""); }
+  function stripHtml(x) { return String(x || "").replace(/<[^>]*>/g, " ").replace(/&[a-z#0-9]+;/gi, " "); }
+  function pTextTokens(p) {
+    if (p._ft && p._fg === mpTextGen) return p._ft;
+    var parts = [p.name, stripHtml(p.note), p.place, p.observer, p.act, p.sci, p.country, p.dset, p.stage, SRC_OF[p.src] || p.src];
+    (p.tags || []).forEach(function (tg) { parts.push(tg); var d = tagDisplay(tg); if (d && d !== tg) parts.push(d); });
+    if (p.sci) { var ln = tagDisplay(p.sci); if (ln && ln !== p.sci) parts.push(ln); }   // the local species name too
+    if (p.attrs) for (var k in p.attrs) parts.push(p.attrs[k]);
+    p._ft = obsTokens(parts.filter(Boolean).join(" ")); p._fg = mpTextGen;
+    return p._ft;
+  }
+  function cTextTokens(c) {   // non-enumerable: the list's meta record and signature must not see it
+    var key = (c.name || "") + "\n" + (c.note || "");
+    if (c._ftk !== key) { hide(c, "_ftk", key); hide(c, "_ft", obsTokens(key)); }
+    return c._ft;
+  }
+  function mpTextPasses(p, c) {
+    var q = mpTextQuery(); if (!q.on) return true;
+    var rec = pTextTokens(p), lst = c ? cTextTokens(c) : [];
+    for (var i = 0; i < q.inc.length; i++) if (!obsFuzzyHit(rec, q.inc[i]) && !obsFuzzyHit(lst, q.inc[i])) return false;
+    for (var x = 0; x < q.exc.length; x++) if (obsFuzzyHit(rec, q.exc[x]) || obsFuzzyHit(lst, q.exc[x])) return false;
+    return true;
+  }
   function mpVisible(p, c) {
     // A list point is NOT a species record (owner, 2026-10-24: "point lists … separate from fetched
-    // species"): the fetched-species filters (date, observer, mode) never touch it. What reaches a pin:
-    // the name / text search (listPointPasses in app.js), the legend's points view (its selection and a
-    // hovered row), and the tag chips. A list's own observer / date filter is applied by the caller.
-    if (listPointPasses && !listPointPasses(p)) return false;
+    // species"): the fetched-species filters and searches never touch it. What reaches a pin: the lists'
+    // own text box, the legend's points view (its picks and a hovered row), and the tag chips. A list's
+    // own observer / date filter is applied by the caller.
+    if (!mpTextPasses(p, c)) return false;
     if (c && !ptSelPasses(p, c)) return false;
     return mpTagPasses(p);
   }
@@ -3257,6 +3317,7 @@ window.AppPoints = (function () {
     ptDim: function () { return ptDim; }, setPtDim: function (v) { ptDim = (typeof v === "string" && v) ? v : "list"; },
     ptSel: function () { return ptSel; }, setPtSel: setPtSel, ptSelActive: ptSelActive, ptClearDim: ptClearDim, ptPickThrough: ptPickThrough,
     ptSelSummary: ptSelSummary, ptDimStats: ptDimStats, ptDimPicked: ptDimPicked,
+    mpText: function () { return mpText; }, setMpText: setMpText, mpTextActive: mpTextActive, mpTextPasses: mpTextPasses,
     ptLegendData: ptLegendData, ptDimLabel: ptDimLabel, ptToggle: ptToggle, ptOnly: ptOnly, ptValuePoints: ptValuePoints,
     setPtFocus: setPtFocus, ptFocusOn: function () { return !!ptFocus; },
     ptAvail: function () { return mpListN > 0; }, setPtViewOn: setPtViewOn,

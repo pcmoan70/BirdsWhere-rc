@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2193";
+var VERSION = "v2194";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The legend\u2019s points view now groups \u2014 and filters \u2014 the shown lists\u2019 points by every field an observation record has: list, tag, species, group (the obs filter\u2019s groups), observer, place, activity, count, source, dataset, country, life stage, year, month and any kept column. Tap the heading for the menu of fields, hold it for the next one. Picks on different fields combine; a strip under the heading shows the picks on the fields you are not looking at, \u00d7 clears one. Long-press a year or month for \u201cPick through here\u201d (a range)."
+  "\u2022 Points panel: a filter box narrows the shown points by text \u2014 fuzzy, every word must start a word in a point\u2019s name, note, place, observer, activity, tags, species (scientific or local name) or in its list\u2019s name and note; \u2212word excludes. The legend shows it as a chip, the funnel clears it. Each list can carry a note of its own (Edit list \u2192 Note), shown under its row and saved in its files. The species pane\u2019s name and text searches no longer reach list pins \u2014 the lists are fully separate now."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

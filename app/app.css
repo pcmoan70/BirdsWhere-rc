@@ -2176,6 +2176,12 @@ button.offline-name:hover { text-decoration: underline; }
 .mp-saveas-btn { display: inline-block; margin-top: 4px; padding: 4px 10px; font: inherit; font-size: var(--fs-xs); font-weight: 700; cursor: pointer; border: 1px solid var(--warn); border-radius: var(--radius-xs); background: var(--surface); color: var(--warn-strong); }
 .mp-saveas-btn:active { background: var(--warn-soft); }
 .mp-chips { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 8px 6px; border-top: 1px solid var(--border); }
+/* The lists' own text filter, above the tag chips. */
+.mp-textfilt { padding: 6px 8px 2px; border-top: 1px solid var(--border); }
+.mp-textfilt input { width: 100%; box-sizing: border-box; font: inherit; font-size: var(--fs-s); padding: 4px 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); }
+.mp-textfilt input:focus { outline: none; border-color: var(--brand); }
+/* A list's own note: one muted line under its row. */
+.mp-coll-note { font-size: var(--fs-s); color: var(--ink-muted); padding: 0 28px 3px 44px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mp-chip {
   font-size: var(--fs-xs); padding: 2px 8px; border-radius: 999px; cursor: pointer;
   border: 1px solid var(--mp-c, var(--border)); background: var(--surface);

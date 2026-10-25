@@ -601,6 +601,12 @@ points matching both. A **strip under the heading** lists the picks on the field
 picks on its own field, so an unpicked row stays listed, greyed, for a tap to bring it back.
 The Tags grouping *is* the Points panel's tag chips — a tap here ticks the chip there. The funnel
 clears every points pick like any other filter. The fetched-species filters (date, observer, mode) never
+touch list points; a list's own observer / date funnel sits in the Points panel. **Text (v2194):** the Points
+panel's **filter box** narrows the shown points by text — fuzzy, as the observer filter is: every word must
+*start* a word in a point's name, note, place, observer, activity, tags, species (scientific or local name),
+country, dataset, life stage or kept columns, or in its **list's name and note** (a list whose note matches
+keeps every point); `−word` excludes. The legend shows the text as a chip in the same strip (tap it to get to the
+box, × clears it) and the funnel clears it with the rest.
 
 The control line opens three mutually-exclusive **filter subwindows**:
 
@@ -717,13 +723,17 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   edit/remove individual points.
 - **Point lists are separate from the fetched species (v2192)** — a list point is never a species
   record: it does not enter the species legend, and the date, observer and mode filters of the fetched
-  species leave it alone (the name and text searches still reach it). Every list point is drawn as a round
+  species leave it alone, and since v2194 so do the species pane's name and text searches — the lists have their
+  own filter box. Every list point is drawn as a round
   see-through dot a little larger than an observation dot, in the list's colour. The lists' own controls:
-  the Points panel (tick, the per-list observer / date funnel, the tag chips) and the legend's **points
+  the Points panel (tick, the per-list observer / date funnel, the tag chips, the text filter box) and the legend's **points
   view** (see *The map legend & filters*), which groups the shown points by list, tag, species or any
   field the file brought and switches them on and off. Imported files keep their other fields (status,
   type, year, habitat …) on each point: on the pin card, as columns in **Edit values** (**+ Column** adds
-  one), and in KML / GeoJSON downloads.
+  one), and in KML / GeoJSON downloads. **A list has a note of its own (v2194)** — Edit list → Note; the first
+  line shows under the list's row in the Points panel, the filter box searches it, and it travels in the list's
+  KMZ / KML (as the folder's description, where Google Earth shows it), GeoJSON and Drive copies. A plain KML's
+  document description becomes the note of the list it imports into.
 - **Opening a file from the OS** — a `.kml`, `.kmz` or `.geojson` can be opened **from outside the
   app**, landing in the same import dialog. On **desktop Chromium** (Chrome/Edge 102+, Windows ·
   macOS · Linux · ChromeOS) install BirdsWhere and it registers as a file handler, so the file lists
