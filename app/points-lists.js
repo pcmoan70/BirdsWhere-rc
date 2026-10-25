@@ -128,7 +128,7 @@ window.AppPoints = (function () {
       : shape === "triangle" ? '<polygon points="10,2 18.5,17.5 1.5,17.5"/>'
       : shape === "star" ? '<polygon points="10,1.5 12.5,7.4 18.8,7.8 13.9,11.9 15.5,18 10,14.6 4.5,18 6.1,11.9 1.2,7.8 7.5,7.4"/>'
       : '<circle cx="10" cy="10" r="7.5"/>';
-    return '<svg width="' + (size || 15) + '" height="' + (size || 15) + '" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="' + col + '" fill-opacity="0.35" stroke="' + col + '" stroke-width="1.5" stroke-linejoin="round">' + body + "</svg>";
+    return '<svg width="' + (size || 15) + '" height="' + (size || 15) + '" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="' + col + '" fill-opacity="0.6" stroke="' + col + '" stroke-width="1.5" stroke-linejoin="round">' + body + "</svg>";
   }
   function mpShapeIcon(shape, fill) { return L.divIcon({ className: "mp-shape-icon", html: mpShapeSvg(shape, fill, 15), iconSize: [15, 15], iconAnchor: [7.5, 7.5] }); }
   // A saved point-list is a "route" if it was saved from the route bar (c.route), or
@@ -2873,7 +2873,7 @@ window.AppPoints = (function () {
           // a shown list's pin: a round see-through dot a touch larger than an observation dot (radius 5),
           // stroked in its own colour, no black ring (owner, 2026-10-24) — species or not
           : shape === "circle"
-            ? L.circleMarker([p.lat, p.lon], { radius: 6.5, color: fill, weight: 1.5, opacity: 0.9, fillColor: fill, fillOpacity: 0.35 })
+            ? L.circleMarker([p.lat, p.lon], { radius: 6.5, color: fill, weight: 1.5, opacity: 0.9, fillColor: fill, fillOpacity: 0.6 })
             : L.marker([p.lat, p.lon], { icon: mpShapeIcon(shape, fill), keyboard: false });
     var rec = { m: m, p: p, editable: editable };
     mpPins.push(rec);

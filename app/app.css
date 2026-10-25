@@ -4114,7 +4114,7 @@ path.rc-pulse-dot { animation: rc-pulse-fade 1.1s ease-in-out infinite alternate
 .det-legend-head .det-view-pts .btn-ico { width: 16px; height: 16px; }
 .det-legend-head .det-view-pts:hover, .det-legend-head .det-view-pts.is-on { color: var(--brand); }
 .det-sw.det-sw-site { border: 1.5px solid currentColor; background: transparent; }
-.det-sw.det-sw-site::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: currentColor; opacity: .35; }
+.det-sw.det-sw-site::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: currentColor; opacity: .6; }
 /* The points view's swatch is the list's dot shape itself (mpShapeSvg). */
 .det-sw.det-sw-shape { border: none; background: none; border-radius: 0; width: 12px; height: 12px; }
 .det-sw-shape svg { display: block; width: 12px; height: 12px; }

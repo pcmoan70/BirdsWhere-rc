@@ -727,7 +727,7 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
   own filter box. Every list point is drawn as a
   see-through dot a little larger than an observation dot, in the list's colour — a circle unless the list or the
   point chose another **shape (v2195)**: circle · ring · square · diamond · triangle · star, all the same footprint
-  with a 35 % fill (the ring unfilled). The list's default sits in **Edit list → Dot shape**, a point's own in the
+  with a 60 % fill (the ring unfilled). The list's default sits in **Edit list → Dot shape**, a point's own in the
   **Shape** column of Edit values (or a `marker` / `symbol` field in an imported file); both travel in KMZ / KML /
   GeoJSON. The colour: the point's own, else the list's, else its auto colour — unless the legend's points view
   groups by something other than Lists, when the pins take that grouping's colours. The uncertainty circle
