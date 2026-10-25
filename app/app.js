@@ -17012,7 +17012,7 @@
       (d.rows.length ? d.rows.map(function (r) {
         var nm = escapeHtml(r.label);
         return '<div class="det-row det-row-click' + (r.sel ? " det-row-on" : "") + (r.off ? " det-row-off" : "") + '" data-key="' + escapeHtml(r.v) + '">' +
-          '<span class="det-sw det-sw-site" style="color:' + r.color + '"></span><span class="det-nm" title="' + nm + '">' + nm + '</span><span class="det-ct">' + r.n + "</span></div>";
+          '<span class="det-sw det-sw-shape">' + mpState.mpShapeSvg(r.shape, r.color, 12) + '</span><span class="det-nm" title="' + nm + '">' + nm + '</span><span class="det-ct">' + r.n + "</span></div>";
       }).join("") : '<div class="det-empty">' + escapeHtml(t("det.ptNone")) + "</div>");
     el.querySelector(".det-min").addEventListener("click", function () { mapClickGuardUntil = Date.now() + 250; detLegendMini = true; saveLegendState(); updateDetLegend(); });
     wireLegendViewBtn(el, "species");
@@ -19570,7 +19570,7 @@
       grp[i].order = j; grp[j].order = i;
       saveMapPoints(); refreshMpPanel(); keepMpPanelOpen();
     }
-    function mpCollRowHtml(type, name, count, swatch, checked, delTip, isProt, isRoute, note) {
+    function mpCollRowHtml(type, name, count, swatch, checked, delTip, isProt, isRoute, note, coll) {
       // Protected point-lists show a 🔒 instead of the delete × (manage protection
       // in the lists-admin popup — press-and-hold the Points button).
       var del = isProt
@@ -19580,7 +19580,9 @@
       // list, the navigation arrow for a route/navigation list. Detection sets keep the
       // folder swatch passed in.
       var swIcon = (type === "p")
-        ? '<span class="mp-sw-ico ' + (isRoute ? "mp-sw-nav" : "mp-sw-pin") + '">' + ico(isRoute ? "nav" : "pin") + "</span>"
+        ? (isRoute || !coll
+          ? '<span class="mp-sw-ico ' + (isRoute ? "mp-sw-nav" : "mp-sw-pin") + '">' + ico(isRoute ? "nav" : "pin") + "</span>"
+          : '<span class="mp-sw-ico mp-sw-shape">' + mpState.mpShapeSvg(mpState.collShape(coll), mpState.collColor(coll), 14) + "</span>")   // the list's dot, as drawn on the map
         : swatch;
       var navTip = isRoute ? t("nav.title") : t("nav.send");
       var navBtn = '<button type="button" class="mp-coll-nav ico-btn" data-type="' + type + '" data-name="' + escapeHtml(name) + '" title="' + escapeHtml(navTip) + '" aria-label="' + escapeHtml(navTip) + '">' + ico("nav") + "</button>";
@@ -19619,7 +19621,7 @@
     mpSortedColls().forEach(function (c) {
       var f = String(c.folder || "");
       if (!(f in groups)) { groups[f] = []; groupNames.push(f); }
-      groups[f].push({ c: c, html: mpCollRowHtml("p", c.name, mpState.collCount(c), "", !!mpState.shownColls()[c.name], t("points.deleteColl"), isCollProtected(c.name), isRouteColl(c), c.note) });
+      groups[f].push({ c: c, html: mpCollRowHtml("p", c.name, mpState.collCount(c), "", !!mpState.shownColls()[c.name], t("points.deleteColl"), isCollProtected(c.name), isRouteColl(c), c.note, c) });
     });
     var collItems = [];
     groupNames.filter(Boolean).sort(function (a, b) { return a.localeCompare(b); }).forEach(function (f) {

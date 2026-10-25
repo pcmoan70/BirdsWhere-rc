@@ -592,7 +592,7 @@ marking one that holds picks), **hold it** for the next one. The fields are ever
 (1 · 2–5 · 6–20 · 21–100 · 100+) **· Source · Datasets · Country · Life stage · Years · Months** — plus each kept
 column the file brought (status, type, …); a field is offered only when some point carries it. The rows are that
 field's values (species by their local name, months by name, years newest first) with their **count on screen**,
-each with a ring swatch in the colour the pins wear while that grouping is on. Tap a row to show only those
+each with a swatch showing the list's dot shape in the colour the pins wear while that grouping is on. Tap a row to show only those
 points (picks stack; clearing the last one shows all), hover to isolate, long-press a name for **Zoom to these** /
 **Show only these** — and, on a year or month, **Pick through here**, which picks every row between the picks so
 far and that one (a range). **Picks on different fields combine**: years 2019–2021 and one observer leaves the
@@ -724,8 +724,14 @@ and re-filters as you pan or zoom, the same way the legend counts only what is o
 - **Point lists are separate from the fetched species (v2192)** — a list point is never a species
   record: it does not enter the species legend, and the date, observer and mode filters of the fetched
   species leave it alone, and since v2194 so do the species pane's name and text searches — the lists have their
-  own filter box. Every list point is drawn as a round
-  see-through dot a little larger than an observation dot, in the list's colour. The lists' own controls:
+  own filter box. Every list point is drawn as a
+  see-through dot a little larger than an observation dot, in the list's colour — a circle unless the list or the
+  point chose another **shape (v2195)**: circle · ring · square · diamond · triangle · star, all the same footprint
+  with a 35 % fill (the ring unfilled). The list's default sits in **Edit list → Dot shape**, a point's own in the
+  **Shape** column of Edit values (or a `marker` / `symbol` field in an imported file); both travel in KMZ / KML /
+  GeoJSON. The colour: the point's own, else the list's, else its auto colour — unless the legend's points view
+  groups by something other than Lists, when the pins take that grouping's colours. The uncertainty circle
+  (`radius` in metres, `unc_edge` for its edge) stays as before and follows the pin's colour. The lists' own controls:
   the Points panel (tick, the per-list observer / date funnel, the tag chips, the text filter box) and the legend's **points
   view** (see *The map legend & filters*), which groups the shown points by list, tag, species or any
   field the file brought and switches them on and off. Imported files keep their other fields (status,

@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2194";
+var VERSION = "v2195";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Points panel: a filter box narrows the shown points by text \u2014 fuzzy, every word must start a word in a point\u2019s name, note, place, observer, activity, tags, species (scientific or local name) or in its list\u2019s name and note; \u2212word excludes. The legend shows it as a chip, the funnel clears it. Each list can carry a note of its own (Edit list \u2192 Note), shown under its row and saved in its files. The species pane\u2019s name and text searches no longer reach list pins \u2014 the lists are fully separate now."
+  "\u2022 Dot shapes for point lists: circle, ring, square, diamond, triangle or star \u2014 a default per list (Edit list \u2192 Dot shape) and a choice per point (the Shape column of Edit values, or a marker field in an imported file), all see-through at the same size. The legend\u2019s points view and the Points panel show each list\u2019s shape in its colour. The uncertainty circle follows the pin\u2019s colour."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

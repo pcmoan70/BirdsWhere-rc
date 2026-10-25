@@ -113,6 +113,22 @@ window.AppPoints = (function () {
   // A saved list's colour: an explicit list colour if set (via the list editor),
   // else the automatic name-hashed colour.
   function collColor(c) { return (c && c.color) || mpHashColor(c ? c.name : ""); }
+  // Dot shapes (owner, 2026-10-25: "different dot icons (standard simple)"): per point (`p.marker`), else the
+  // list's default (`c.marker`), else a circle. One SVG serves the pin, the legend swatch and the panel row,
+  // all at the same footprint: own-colour stroke, 35 % fill — see-through like the circle (a ring is unfilled).
+  var MP_SHAPES = ["circle", "ring", "square", "diamond", "triangle", "star"];
+  function collShape(c) { return (c && MP_SHAPES.indexOf(c.marker) >= 0) ? c.marker : "circle"; }
+  function mpShapeSvg(shape, color, size) {
+    var col = /^[#a-zA-Z0-9(),.%\s]+$/.test(String(color || "")) ? color : "#888";   // colour only — no attribute breakout
+    var body = shape === "ring" ? '<circle cx="10" cy="10" r="7" fill="none" stroke-width="2.5"/>'
+      : shape === "square" ? '<rect x="3" y="3" width="14" height="14" rx="1.5"/>'
+      : shape === "diamond" ? '<polygon points="10,1.5 18.5,10 10,18.5 1.5,10"/>'
+      : shape === "triangle" ? '<polygon points="10,2 18.5,17.5 1.5,17.5"/>'
+      : shape === "star" ? '<polygon points="10,1.5 12.5,7.4 18.8,7.8 13.9,11.9 15.5,18 10,14.6 4.5,18 6.1,11.9 1.2,7.8 7.5,7.4"/>'
+      : '<circle cx="10" cy="10" r="7.5"/>';
+    return '<svg width="' + (size || 15) + '" height="' + (size || 15) + '" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="' + col + '" fill-opacity="0.35" stroke="' + col + '" stroke-width="1.5" stroke-linejoin="round">' + body + "</svg>";
+  }
+  function mpShapeIcon(shape, fill) { return L.divIcon({ className: "mp-shape-icon", html: mpShapeSvg(shape, fill, 15), iconSize: [15, 15], iconAnchor: [7.5, 7.5] }); }
   // A saved point-list is a "route" if it was saved from the route bar (c.route), or
   // — for lists saved before that flag existed — every point came from the route
   // (source "route"). Shown route lists render as numbered stops + get the nav bar.
@@ -145,6 +161,7 @@ window.AppPoints = (function () {
     { k: "radius", t: "ptedit.radius", type: "number", w: "5em" },
     { k: "url", t: "ptedit.url", type: "text", w: "10em" },
     { k: "color", t: "points.color", type: "color", w: "3em" },
+    { k: "marker", t: "ptedit.marker", type: "select", w: "6.5em" },
     { k: "star", t: "ptedit.star", type: "check", w: "2.4em" },
     { k: "noteHtml", t: "points.noteHtml", type: "check", w: "3em" },
     { k: "files", t: "ptedit.photos", type: "ro", w: "3em" }
@@ -184,6 +201,8 @@ window.AppPoints = (function () {
       if (col.type === "color") return '<td class="pe-chk"><input type="color" class="pe-in" value="' + esc(mpHex6(p.color || mpColorFor(p))) + '"' + a + " /></td>";
       if (col.type === "ro") return '<td class="pe-ro">' + ((p.files && p.files.length) ? esc(String(p.files.length)) : "") + "</td>";
       if (col.type === "number") return '<td><input type="number" step="any" class="pe-in" value="' + esc(v) + '"' + a + " /></td>";
+      if (col.type === "select") return '<td><select class="pe-in"' + a + '><option value="">' + esc(t("points.shapeList")) + "</option>" +   // the dot shape: empty = the list's default
+        MP_SHAPES.map(function (sh) { return '<option value="' + sh + '"' + (v === sh ? " selected" : "") + ">" + esc(t("points.shape." + sh)) + "</option>"; }).join("") + "</select></td>";
       return '<td><input type="text" class="pe-in" value="' + esc(v) + '"' + (col.type === "tags" ? ' list="pe-tags"' : "") + a + " /></td>";
     }).join("");
     return '<tr data-i="' + i + '"><td class="pe-n">' + (i + 1) + "</td>" + cells +
@@ -355,6 +374,9 @@ window.AppPoints = (function () {
       '<span class="mp-color-row"><span class="mp-color-lbl">' + esc(t("points.color")) + "</span>" +
         '<input type="color" id="ce-color" data-auto="' + esc(auto) + '" value="' + esc(cur) + '" />' +
         '<button type="button" id="ce-color-auto" class="mp-color-reset" title="' + esc(t("points.colorAuto")) + '" aria-label="' + esc(t("points.colorAuto")) + '">↺</button></span>' +
+      '<span class="mp-color-row"><span class="mp-color-lbl">' + esc(t("points.shape")) + '</span><span class="mp-shape-pick" id="ce-shape">' +
+        MP_SHAPES.map(function (sh) { return '<button type="button" class="mp-shape-opt' + (collShape(c) === sh ? " is-on" : "") + '" data-shape="' + sh + '" title="' + esc(t("points.shape." + sh)) + '" aria-label="' + esc(t("points.shape." + sh)) + '">' + mpShapeSvg(sh, cur, 16) + "</button>"; }).join("") +
+      "</span></span>" +
       '<label class="kml-row kml-check"><input type="checkbox" id="ce-note-html"' + (allHtml ? " checked" : "") + " />" + esc(t("points.noteHtml")) + "</label>" +
       '<label class="kml-row kml-check"><input type="checkbox" id="ce-protect"' + (isCollProtected(c.name) ? " checked" : "") + " />" + esc(t("lists.protect")) + "</label>" +
       '<p class="cu-hint">' + esc(t("points.editListHint")) + "</p>" +
@@ -366,6 +388,9 @@ window.AppPoints = (function () {
     document.getElementById("ce-close").addEventListener("click", close);
     var ci = document.getElementById("ce-color"), reset = document.getElementById("ce-color-auto");
     reset.addEventListener("click", function () { ci.value = ci.getAttribute("data-auto") || "#888888"; });
+    ov.querySelectorAll("#ce-shape .mp-shape-opt").forEach(function (b) {
+      b.addEventListener("click", function () { ov.querySelectorAll("#ce-shape .mp-shape-opt").forEach(function (x) { x.classList.toggle("is-on", x === b); }); });
+    });
     document.getElementById("ce-save").addEventListener("click", function () {
       var newName = (document.getElementById("ce-name").value || "").trim();
       var tags = mpParseTags(document.getElementById("ce-tags").value);
@@ -375,6 +400,8 @@ window.AppPoints = (function () {
       c.color = col || undefined;
       var lnote = (document.getElementById("ce-note").value || "").trim();   // the list's own note (searched by the text box)
       if (lnote) c.note = lnote; else delete c.note;
+      var shOn = ov.querySelector("#ce-shape .mp-shape-opt.is-on"), sh = shOn ? shOn.getAttribute("data-shape") : "circle";   // the list's default dot shape
+      if (sh && sh !== "circle") c.marker = sh; else delete c.marker;
       // Apply the colour + tags + note-is-HTML flag to every point. The colour is
       // written per-point too (not just on the list) so it shows through both draw
       // paths — the active working set colours per-point via mpColorFor, shown lists
@@ -927,6 +954,7 @@ window.AppPoints = (function () {
     if (c.lines && c.lines.length) body.lines = c.lines;
     if (c.color) body.color = c.color;
     if (c.note) body.note = c.note;
+    if (c.marker) body.marker = c.marker;
     if (c.route) body.route = true;
     return body;
   }
@@ -951,6 +979,7 @@ window.AppPoints = (function () {
       if (Array.isArray(o.lines) && o.lines.length) c.lines = o.lines;
       if (o.color) c.color = o.color;
       if (o.note) c.note = String(o.note);
+      if (MP_SHAPES.indexOf(o.marker) >= 0) c.marker = o.marker;
       if (o.route) c.route = true;
       internPoints([c]); mpCollections.push(c); shownColls[nm] = true; n += c.points.length; made.push(nm);
     });
@@ -2506,7 +2535,7 @@ window.AppPoints = (function () {
         if (!(ptDim === "tag" ? selOk : (tagOk && ptSelOk(p, c, ptDim)))) return;
         ptValues(p, c, ptDim).forEach(function (v) {
           var r = rows[v];
-          if (!r) { r = rows[v] = { v: v, n: 0, color: ptValueColor(ptDim, v, p, c), label: ptValueLabel(ptDim, v) }; order.push(v); }
+          if (!r) { r = rows[v] = { v: v, n: 0, color: ptValueColor(ptDim, v, p, c), label: ptValueLabel(ptDim, v), shape: ptDim === "list" ? collShape(c) : "circle" }; order.push(v); }
           r.n++;
         });
       });
@@ -2781,9 +2810,9 @@ window.AppPoints = (function () {
       '<polygon points="10,1.5 18.5,16.5 1.5,16.5" fill="' + c + '" stroke="#111" stroke-width="1.5" stroke-linejoin="round"/></svg>';
     return L.divIcon({ className: "mp-tri-icon", html: svg, iconSize: [20, 18], iconAnchor: [10, 11] });
   }
-  function renderMpPin(p, editable, color, force) {
+  function renderMpPin(p, editable, color, force, listShape) {
     if (+p.radius > 0) {   // the position's uncertainty: a transparent circle in metres, under the pin
-      var rc = p.color || color || mpColorFor(p);
+      var rc = force ? color : (p.color || color || mpColorFor(p));   // the ring follows the pin's colour
       // faint fill, so the map stays readable under many overlapping circles (owner, 2026-10-10), with a
       // thin black edge so the circle itself is easy to see (owner, 2026-10-12)
       mpLayer.addLayer(L.circle([p.lat, p.lon], { radius: +p.radius, color: "#000", weight: +p.edge > 0 ? +p.edge : 0.8, opacity: +p.edge > 0 ? 0.8 : 0.55, fillColor: rc, fillOpacity: 0.04, interactive: false }));
@@ -2800,16 +2829,20 @@ window.AppPoints = (function () {
     var fill = force ? color : (p.color || color || mpColorFor(p));   // explicit per-point colour wins over list/tag colour — unless the legend's dimension colours the pins
     // Points that arrived via a shared link are drawn as TRIANGLES so they stand
     // out from your own (circular) pins; everything else stays a circle.
-    // marker "ring": an unfilled circle in the point's colour (still clickable inside: fill with opacity 0)
+    // The shape: the point's own, else its list's default, else a circle. "ring" is an unfilled circle in the
+    // point's colour (still clickable inside: fill with opacity 0); the other shapes are see-through SVG icons.
+    var shape = MP_SHAPES.indexOf(p.marker) >= 0 ? p.marker : (listShape || "circle");
     var m = p.shared
       ? L.marker([p.lat, p.lon], { icon: mpTriangleIcon(fill), keyboard: false })
-      : p.marker === "ring"
+      : shape === "ring"
         ? L.circleMarker([p.lat, p.lon], { radius: 7, color: fill, weight: 2.5, opacity: 0.95, fill: true, fillOpacity: 0 })
         : editable
           ? L.circleMarker([p.lat, p.lon], { radius: 7, color: "#111", weight: 1, opacity: 0.9, fillColor: fill, fillOpacity: 0.9 })
           // a shown list's pin: a round see-through dot a touch larger than an observation dot (radius 5),
           // stroked in its own colour, no black ring (owner, 2026-10-24) — species or not
-          : L.circleMarker([p.lat, p.lon], { radius: 6.5, color: fill, weight: 1.5, opacity: 0.9, fillColor: fill, fillOpacity: 0.35 });
+          : shape === "circle"
+            ? L.circleMarker([p.lat, p.lon], { radius: 6.5, color: fill, weight: 1.5, opacity: 0.9, fillColor: fill, fillOpacity: 0.35 })
+            : L.marker([p.lat, p.lon], { icon: mpShapeIcon(shape, fill), keyboard: false });
     var rec = { m: m, p: p, editable: editable };
     mpPins.push(rec);
     // Stop propagation so a marker click doesn't open the species-list popup
@@ -3257,8 +3290,8 @@ window.AppPoints = (function () {
         passed++;
         if (used >= quota) return;
         used++; drawn++;
-        if (dimCol) renderMpPin(p, false, ptValueColor(ptDim, ptValues(p, c, ptDim)[0], p, c), true);
-        else renderMpPin(p, false, col);
+        if (dimCol) renderMpPin(p, false, ptValueColor(ptDim, ptValues(p, c, ptDim)[0], p, c), true, collShape(c));
+        else renderMpPin(p, false, col, false, collShape(c));
       });
     });
     // Say what is missing rather than quietly drawing a subset.
@@ -3318,6 +3351,7 @@ window.AppPoints = (function () {
     ptSel: function () { return ptSel; }, setPtSel: setPtSel, ptSelActive: ptSelActive, ptClearDim: ptClearDim, ptPickThrough: ptPickThrough,
     ptSelSummary: ptSelSummary, ptDimStats: ptDimStats, ptDimPicked: ptDimPicked,
     mpText: function () { return mpText; }, setMpText: setMpText, mpTextActive: mpTextActive, mpTextPasses: mpTextPasses,
+    mpShapeSvg: mpShapeSvg, collShape: collShape, MP_SHAPES: MP_SHAPES,
     ptLegendData: ptLegendData, ptDimLabel: ptDimLabel, ptToggle: ptToggle, ptOnly: ptOnly, ptValuePoints: ptValuePoints,
     setPtFocus: setPtFocus, ptFocusOn: function () { return !!ptFocus; },
     ptAvail: function () { return mpListN > 0; }, setPtViewOn: setPtViewOn,
