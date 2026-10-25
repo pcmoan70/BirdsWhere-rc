@@ -597,6 +597,7 @@ window.GDriveSync = (function () {
     if (!connected || syncing || !clientId() || !navigator.onLine) return;
     await window.AppPoints.whenAllLoaded();   // lists load lazily: a sync must see them whole
     if (window.AppPoints.anyLazy()) return;   // one could not be read → never merge / upload a partial set
+    if (window.AppData.cachesReady) await window.AppData.cachesReady();   // the name caches too (read on first use)
     var dir = (options && options.direction) || "two";
     // Fetched observation dots are excluded unless asked for: re-fetchable, bulky, and
     // not something the user made. Anything already on Drive is left as it is.
@@ -895,6 +896,7 @@ window.GDriveSync = (function () {
         if (!data) throw new Error("backup could not be read");
         await window.AppPoints.whenAllLoaded();
         if (window.AppPoints.anyLazy()) throw new Error("lists could not be read");
+        if (window.AppData.cachesReady) await window.AppData.cachesReady();
         await hydrateLists(data, await parentOf(id));   // its lists are .kmz files in the same run folder
         window.AppData.applyRemote(data, { incomingWins: true, interactive: false });
         try { if (window.AppData.flushWrites) await window.AppData.flushWrites(); } catch (e) {}   // durable before we call it restored

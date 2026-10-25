@@ -1202,9 +1202,10 @@ window.AppSites = (function () {
   // hydrated into memory at boot; the old capped localStorage copy is migrated
   // over once and dropped to free quota. No IndexedDB (private mode) → the
   // legacy localStorage path, memory-first.
-  var hotspotStoreMem = null;
+  var hotspotStoreMem = null, hotspotHydrating = null;
   function loadHotspotStore() {
     if (!hotspotStoreMem) hotspotStoreMem = window.GeoState.get("ebirdHotspots", {}) || {};   // pre-hydration / no-IDB fallback
+    if (!hotspotHydrating) hydrateHotspotStore();   // first use reads the store (not at start any more, v2197); the read merges what came in meanwhile
     return hotspotStoreMem;
   }
   function saveHotspotStore(store) {
@@ -1213,9 +1214,10 @@ window.AppSites = (function () {
     else window.GeoState.save({ ebirdHotspots: store });
     return store;
   }
-  function hydrateHotspotStore() {
-    if (!(window.AppIDB && AppIDB.available())) return Promise.resolve();
-    return AppIDB.get("ebirdHotspots").then(function (m) {
+  function hydrateHotspotStore() {   // once; returns the same promise afterwards
+    if (hotspotHydrating) return hotspotHydrating;
+    if (!(window.AppIDB && AppIDB.available())) return (hotspotHydrating = Promise.resolve());
+    return (hotspotHydrating = AppIDB.get("ebirdHotspots").then(function (m) {
       var mem = (m && typeof m === "object") ? m : {};
       // One-time migration: fold the legacy localStorage copy in, then drop it.
       var old = window.GeoState.get("ebirdHotspots", null);
@@ -1228,7 +1230,7 @@ window.AppSites = (function () {
       if (hotspotStoreMem) Object.keys(hotspotStoreMem).forEach(function (id) { mem[id] = hotspotStoreMem[id]; });
       hotspotStoreMem = mem;
       if (getHotspotsLayer() && getHotspotsLayer()._reload) getHotspotsLayer()._reload();   // redraw with the full store
-    }).catch(function () {});
+    }).catch(function () {}));
   }
   // eBird birding hotspots as clickable markers (name + all-time species count +
   // last-seen). Uses the user's eBird key; panning fetches new areas and MERGES them
@@ -1238,7 +1240,7 @@ window.AppSites = (function () {
     // autoPan schedules one — so hold still while a popup is open (see openCards).
     var grp = L.layerGroup(), active = false, tok = 0, openCards = 0, pendingDraw = false;
     ensureSpotsPane();
-    var store = loadHotspotStore();          // locId → { locId, locName, lat, lng, numSpeciesAllTime, latestObsDt, ts }
+    var store = {};   // locId → { locId, locName, lat, lng, numSpeciesAllTime, latestObsDt, ts } — the real store on "add" (its first use reads it)
     var lastCtx = { capped: false, c: null, dist: 0 };
     // Which ~0.25° grid cells were fetched this session (1 h TTL) so panning back
     // over an area doesn't re-query eBird — the hotspots are already in the store.

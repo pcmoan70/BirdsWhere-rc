@@ -6251,7 +6251,7 @@
     }
   }
   function exportAppData() {
-    mpState.whenAllLoaded().then(function () { return syncCatOn("fetched") ? loadAllSights() : null; }).then(function () {   // lists (and fetched records) load lazily: a backup must hold them whole
+    mpState.whenAllLoaded().then(cachesReady).then(function () { return syncCatOn("fetched") ? loadAllSights() : null; }).then(function () {   // lists (and fetched records) load lazily: a backup must hold them whole
       if (mpState.anyLazy()) return;
       downloadCsv("BirdsWhere_backup_" + new Date().toISOString().slice(0, 10) + ".json", JSON.stringify(buildPayload(), null, 2), "application/json;charset=utf-8;");
     });
@@ -6957,7 +6957,7 @@
     SYNC_CATS: SYNC_CATS,
     filterIncomingForSync: filterIncomingForSync,
     overlayExcludedForPush: overlayExcludedForPush,
-    splitListsForDrive: splitListsForDrive, listFromKmz: listFromKmz, localListSig: localListSig, isListRef: isListRef,
+    splitListsForDrive: splitListsForDrive, listFromKmz: listFromKmz, localListSig: localListSig, isListRef: isListRef, cachesReady: cachesReady,
     _listKmzBytes: listKmzBytes, _listPointsSig: listPointsSig
   };
 
@@ -7574,7 +7574,6 @@
     try { if (window.AppPoints && window.AppPoints.initMpSetStore) await window.AppPoints.initMpSetStore(); } catch (e) {}   // named point lists → IndexedDB (same pattern as trips)
     try { if (window.bootPhase) window.bootPhase("obs"); } catch (e) {}
     try { await loadPersistedSightings(); } catch (e) {}   // so a reopen reuses the last downloads instead of refetching
-    try { hydrateHotspotStore(); hydrateVernacCache(); hydrateNameHarvest(); } catch (e) {}   // fire-and-forget: the general cache's IDB stores (hotspots, iNat names)
     ensurePersistentStorage();   // keep offline-map tiles + saved data from being evicted
     setTimeout(maybeAskRedownloadOffline, 3000);   // offer to re-fetch any browser-evicted offline areas
 
@@ -8624,7 +8623,7 @@
   // export snapshot (buildPayload) rides in the URL fragment — compressed, never sent
   // to any server — and the new origin merges it after a confirmation (below).
   function moveToNewHome() {
-    mpState.whenAllLoaded().then(function () {
+    mpState.whenAllLoaded().then(cachesReady).then(function () {
     var payload; try { payload = window.AppData.buildPayload(); } catch (e) { location.href = NEW_HOME; return; }
     return window.AppShare.encodeShare(payload).then(function (enc) {
       if (enc.length > MIGRATE_MAX) { modalAlert(t("moved.tooBig")).then(function () { location.href = NEW_HOME; }); return; }
@@ -8638,7 +8637,7 @@
     window.AppShare.decodeShare(m[1]).then(function (obj) {
       return modalConfirm(t("moved.confirm")).then(function (ok) {
         if (!ok) return;
-        return mpState.whenAllLoaded().then(function () {
+        return mpState.whenAllLoaded().then(cachesReady).then(function () {
         if (mpState.anyLazy()) return;
         applyRemote(obj, { incomingWins: true, interactive: true });
         setStatus(t("moved.done"));
@@ -11100,18 +11099,20 @@
   // sci-name match, current locale). Cached UNLIMITED in IndexedDB (part of the
   // general cache; the old capped GeoState copy migrates over once). Offline just
   // keeps the sci name and retries another session.
-  var vernacPending = Object.create(null), vernacTimer = null, extraVernacMem = null;
+  var vernacPending = Object.create(null), vernacTimer = null, extraVernacMem = null, vernacHydrating = null;
   function vernacCache() {
     if (!extraVernacMem) extraVernacMem = window.GeoState.get("extraVernac", {}) || {};   // pre-hydration / no-IDB fallback
+    if (!vernacHydrating) hydrateVernacCache();   // first use reads the store (not at start any more, v2197)
     return extraVernacMem;
   }
   function saveVernacCache() {
     if (window.AppIDB && AppIDB.available()) AppIDB.put("extraVernac", vernacCache()).catch(function () {});
     else window.GeoState.save({ extraVernac: vernacCache() });
   }
-  function hydrateVernacCache() {
-    if (!(window.AppIDB && AppIDB.available())) return Promise.resolve();
-    return AppIDB.get("extraVernac").then(function (m) {
+  function hydrateVernacCache() {   // once; returns the same promise afterwards
+    if (vernacHydrating) return vernacHydrating;
+    if (!(window.AppIDB && AppIDB.available())) return (vernacHydrating = Promise.resolve());
+    return (vernacHydrating = AppIDB.get("extraVernac").then(function (m) {
       var mem = (m && typeof m === "object") ? m : {};
       var old = window.GeoState.get("extraVernac", null);   // one-time migration off localStorage
       if (old && Object.keys(old).length) {
@@ -11121,8 +11122,11 @@
       }
       if (extraVernacMem) Object.keys(extraVernacMem).forEach(function (k) { mem[k] = extraVernacMem[k]; });   // keep pre-hydration lookups
       extraVernacMem = mem;
-    }).catch(function () {});
+    }).catch(function () {}));
   }
+  // The two name caches read and merged — before anything that serialises them (sync, backup,
+  // move, migrate-import): a payload built from an unread cache would carry an empty one.
+  function cachesReady() { return Promise.all([hydrateVernacCache(), hydrateNameHarvest()]).catch(function () {}); }
   // ---- Bundled names for the groups outside the model ----------------------
   // The positional packs (i18n/names/) only cover the model's own species list, so
   // plants, fungi and most insects have no row there at all. These per-language
@@ -11201,18 +11205,19 @@
   // only place their names can come from.
   //
   // iNaturalist's taxonomy is CC BY 4.0 (GBIF dataset 738041eb-…) — About credits it.
-  var nhMem = null, nhPending = Object.create(null), nhTimer = null, nhDirty = false, nhAsked = 0;
+  var nhMem = null, nhPending = Object.create(null), nhTimer = null, nhDirty = false, nhAsked = 0, nhHydrating = null;
   var NH_RATE_MS = 1100;     // iNaturalist asks for <= 60 requests/minute
   var NH_SESSION_MAX = 600;  // and <= ~10k/day: a polite ceiling per app session
-  function nameHarvest() { if (!nhMem) nhMem = {}; return nhMem; }
+  function nameHarvest() { if (!nhMem) nhMem = {}; if (!nhHydrating) hydrateNameHarvest(); return nhMem; }   // first use reads the store (v2197)
   function nhKey(sci) { return sciBinomial(sci).toLowerCase(); }
-  function hydrateNameHarvest() {
-    if (!(window.AppIDB && AppIDB.available())) return Promise.resolve();
-    return AppIDB.get("nameHarvest").then(function (m) {
+  function hydrateNameHarvest() {   // once; returns the same promise afterwards
+    if (nhHydrating) return nhHydrating;
+    if (!(window.AppIDB && AppIDB.available())) return (nhHydrating = Promise.resolve());
+    return (nhHydrating = AppIDB.get("nameHarvest").then(function (m) {
       var mem = (m && typeof m === "object") ? m : {};
       if (nhMem) Object.keys(nhMem).forEach(function (k) { mem[k] = nhMem[k]; });   // keep pre-hydration lookups
       nhMem = mem;
-    }).catch(function () {});
+    }).catch(function () {}));
   }
   function saveNameHarvest() {
     if (!nhDirty) return;
@@ -21542,8 +21547,7 @@
         var sz = fmtCacheBytes(bytes);
         c.textContent = (n != null && n > 0) ? String(n) + (sz ? " · " + (approx ? "~" : "") + sz : "") : "0";
       }
-      var hs = loadHotspotStore();
-      setCnt("hotspots", Object.keys(hs).length, jsonBytes(hs));
+      hydrateHotspotStore().then(function () { var hs = loadHotspotStore(); setCnt("hotspots", Object.keys(hs).length, jsonBytes(hs)); });   // read on first use (v2197)
       var sightN = 0, sightB = 0; Object.keys(sightIdx).forEach(function (k) { sightN++; sightB += +sightIdx[k].bytes || 0; });   // from the index: no record is read
       setCnt("obs", sightN, sightB);
       if (window.AppOffline && AppOffline.areaStats) AppOffline.areaStats().then(function (s) { setCnt("offline", s.n, s.bytes, true); }).catch(function () {});
