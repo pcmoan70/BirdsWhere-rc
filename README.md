@@ -583,16 +583,24 @@ Tap a row to select it (picks stack, so several show together); on a mouse, hove
 it on the map. Long-press (or right-click) a species **name** for its menu (info, references, lists
 & actions) — the same menu a species-list name opens.
 
-**Points view (v2192).** The species legend lists only the fetched species; a shown point list never
+**Points view (v2192, every field v2193).** The species legend lists only the fetched species; a shown point list never
 joins it. Instead, while a list is shown, a **dots button** in the legend's top row swaps the species rows
 for the lists' points — and the legend opens in this view by itself when there are no species to list. The heading is
-the grouping: tap it to cycle **Lists → Tags → Species → each kept field** (status, type, …); the rows
-are that grouping's values with their **count on screen**, each with a ring swatch in the colour the
-pins wear while that grouping is on. Tap a row to show only those points (picks stack; clearing the
-last one shows all), hover to isolate, long-press a name for **Zoom to these** / **Show only these**.
+the grouping: **tap it for the menu of fields** the shown points carry (each with its number of distinct values, a dot
+marking one that holds picks), **hold it** for the next one. The fields are every one an observation record has —
+**Lists · Tags · Species · Groups** (the obs filter's: birds, mammals, …) **· Observers · Places · Activity · Count**
+(1 · 2–5 · 6–20 · 21–100 · 100+) **· Source · Datasets · Country · Life stage · Years · Months** — plus each kept
+column the file brought (status, type, …); a field is offered only when some point carries it. The rows are that
+field's values (species by their local name, months by name, years newest first) with their **count on screen**,
+each with a ring swatch in the colour the pins wear while that grouping is on. Tap a row to show only those
+points (picks stack; clearing the last one shows all), hover to isolate, long-press a name for **Zoom to these** /
+**Show only these** — and, on a year or month, **Pick through here**, which picks every row between the picks so
+far and that one (a range). **Picks on different fields combine**: years 2019–2021 and one observer leaves the
+points matching both. A **strip under the heading** lists the picks on the fields you are not looking at
+(`Years: 2019–2021 ×`) — tap a name to go to that field, × to clear its picks; a row's own count ignores the
+picks on its own field, so an unpicked row stays listed, greyed, for a tap to bring it back.
 The Tags grouping *is* the Points panel's tag chips — a tap here ticks the chip there. The funnel
-clears a points pick like any other filter. The fetched-species filters (date, observer, mode) never
-touch list points; a list's own observer / date funnel sits in the Points panel.
+clears every points pick like any other filter. The fetched-species filters (date, observer, mode) never
 
 The control line opens three mutually-exclusive **filter subwindows**:
 

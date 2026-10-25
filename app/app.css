@@ -4103,6 +4103,14 @@ path.rc-pulse-dot { animation: rc-pulse-fade 1.1s ease-in-out infinite alternate
 .det-legend-head .det-view-pts:hover, .det-legend-head .det-view-pts.is-on { color: var(--brand); }
 .det-sw.det-sw-site { border: 1.5px solid currentColor; background: transparent; }
 .det-sw.det-sw-site::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: currentColor; opacity: .35; }
+/* The points view's strip of picks on the dimensions not shown: name (tap = go there) + × (clear). */
+.det-ptsel { display: flex; flex-wrap: wrap; gap: 3px 4px; margin: 0 0 3px; }
+.det-ptsel-chip { display: inline-flex; align-items: center; max-width: 100%; border: 1px solid var(--brand); border-radius: 10px; background: color-mix(in srgb, var(--brand) 12%, transparent); font-size: var(--fs-s); line-height: 1.2; }
+.det-ptsel-chip button { border: none; background: transparent; cursor: pointer; font: inherit; color: var(--ink); padding: 1px 4px 1px 6px; }
+.det-ptsel-nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; }
+.det-ptsel-x { padding: 1px 6px 1px 2px !important; color: var(--ink-muted) !important; }
+.det-ptsel-x:hover { color: var(--brand) !important; }
+.det-ptdim-menu .detrow-menu-item.is-on { font-weight: 700; }
 /* Collapsed legend: a chip in the corner showing the species count. */
 .det-legend.det-legend-mini { padding: 0; max-width: none; max-height: none; overflow: visible; border: none; background: transparent; box-shadow: none; }
 .det-restore {

@@ -41,6 +41,9 @@ window.AppPoints = (function () {
     syncListDetections = ctx.syncListDetections; updateDetSetOverlays = ctx.updateDetSetOverlays;
     updateDetLegend = ctx.updateDetLegend || function () {};   // the legend's points view follows every pin redraw
     speciesColor = ctx.speciesColor || function () { return ""; };   // the species legend's colour, for the Species grouping
+    if (ctx.detClassOf) detClassOf = ctx.detClassOf;       // a species key → its class (the Group dimension)
+    if (ctx.obsRealNames) obsRealNames = ctx.obsRealNames; // "A | B" → ["A", "B"] (the Observer dimension)
+    if (ctx.uiLang) uiLang = ctx.uiLang;                   // month names in the UI language
     pulseFunnels = ctx.pulseFunnels || function () {};
     tagDisplay = ctx.tagDisplay || function (x) { return x; };
     labelForSci = ctx.labelForSci || function () { return null; };   // scientific name → model label (app.js owns the index)
@@ -65,8 +68,9 @@ window.AppPoints = (function () {
   var mpShown = true;   // master visibility toggle — hides all markers but keeps the data
   // ---- the legend's POINTS view (owner, 2026-10-24) — the state; app.js draws the rows ----
   var updateDetLegend = function () {}, speciesColor = function () { return ""; };
+  var detClassOf = function () { return ""; }, obsRealNames = function (x) { return x ? [String(x)] : []; }, uiLang = function () { return undefined; };
   var ptDim = "list";       // what the rows group by: "list" · "tag" · "species" · "attr:<name>"
-  var ptSel = null;         // the legend selection: { by: <dim>, vals: { value: true } } — no pick = all shown
+  var ptSel = null;         // the legend selection: { "<dim>": { value: true, … }, … } — picks per dimension, ANDed; none = all shown
   var ptFocus = null;       // { by, v } while a row is hovered: the map isolates that value (transient)
   var ptViewOn = false;     // the legend is in its points view (app.js says) → pins take the dimension's colour
   var mpListN = 0;          // points in the shown lists, as counted by the last renderMapPoints
@@ -2362,27 +2366,77 @@ window.AppPoints = (function () {
   }
 
   // ---- the legend's points view: values, selection, rows -------------------------------------
-  // A point's value(s) on a dimension: its list's name, its tags ("" = untagged), its species (the
-  // stored scientific name) or one kept attribute. Always an array — a point with three tags sits
-  // in three rows.
+  // The dimensions a point can be grouped — and filtered — by: every field an observation record has
+  // (owner, 2026-10-25), in the order the dimension menu lists them; the kept "attr:<name>" fields follow.
+  var PT_DIMS = ["list", "tag", "species", "group", "observer", "place", "act", "count", "source", "dset", "country", "stage", "year", "month"];
+  var PT_DIM_KEY = { list: "det.ptLists", tag: "det.ptTags", species: "det.ptSpecies", group: "det.ptGroups", observer: "obs.people", place: "det.ptPlaces",
+                     act: "obs.activity", count: "ptedit.count", source: "th.source", dset: "det.ptDatasets", country: "popup.country", stage: "det.ptStage",
+                     year: "det.ptYears", month: "hist.months" };
+  var COUNT_BUCKETS = ["1", "2-5", "6-20", "21-100", "100+"];
+  function countBucket(n) {
+    n = +n; if (!isFinite(n) || n <= 0) return "";
+    return n <= 1 ? "1" : n <= 5 ? "2-5" : n <= 20 ? "6-20" : n <= 100 ? "21-100" : "100+";
+  }
+  function strVal(x) { return x == null ? "" : String(x).trim(); }
+  // A point's value(s) on a dimension. Always an array — a point with three tags sits in three rows;
+  // "" = no value, the "(none)" row.
   function ptValues(p, c, dim) {
-    if (dim === "list") return [c ? c.name : ""];
-    if (dim === "tag") return (p.tags && p.tags.length) ? p.tags : [""];
-    if (dim === "species") return [detKeyOf(p) ? String(p.sci || p.spKey || "") : ""];
-    if (dim.indexOf("attr:") === 0) { var a = p.attrs ? p.attrs[dim.slice(5)] : null; return [a == null ? "" : String(a)]; }
+    switch (dim) {
+      case "list": return [c ? c.name : ""];
+      case "tag": return (p.tags && p.tags.length) ? p.tags : [""];
+      case "species": return [detKeyOf(p) ? String(p.sci || p.spKey || "") : ""];
+      case "group": { var k = detKeyOf(p); return [k ? String(p.cls || p.spCls || detClassOf(k) || "").toLowerCase() : ""]; }   // the obs filter's groups
+      case "observer": { var o = obsRealNames(p.observer); return o.length ? o : [""]; }
+      case "place": return [strVal(p.place)];
+      case "act": return [strVal(p.act)];
+      case "count": return [countBucket(p.count)];
+      case "source": return [strVal(SRC_OF[p.src] || p.src)];   // the record's database, not how the point was made
+      case "dset": return [strVal(p.dset)];
+      case "country": return [strVal(p.country)];
+      case "stage": return [strVal(p.stage)];
+      case "year": { var d = String(p.date || ""); return [/^\d{4}/.test(d) ? d.slice(0, 4) : ""]; }
+      case "month": { var d2 = String(p.date || ""); return [/^\d{4}-\d{2}/.test(d2) ? d2.slice(5, 7) : ""]; }
+    }
+    if (dim.indexOf("attr:") === 0) { var a = p.attrs ? p.attrs[dim.slice(5)] : null; return [strVal(a)]; }
     return [""];
   }
-  function ptHas(p, c, dim, v) { return ptValues(p, c, dim).indexOf(v) >= 0; }
-  function ptSelActive() { return !!(ptSel && ptSel.vals && Object.keys(ptSel.vals).length); }
-  // The legend selection as a list point sees it. The Tag dimension has no state of its own: its
-  // rows read and write the tag chips (mpFilter / mpExclude / mpNone), so mpTagPasses covers it.
-  function ptSelOk(p, c) {
-    if (!ptSelActive() || ptSel.by === "tag") return true;
-    var vs = ptValues(p, c, ptSel.by);
-    for (var i = 0; i < vs.length; i++) if (ptSel.vals[vs[i]]) return true;
-    return false;
+  // Which dimensions this point gives a value on (cheap field tests, no ptValues call per dimension).
+  function notePresent(p, has) {
+    if (p.tags && p.tags.length) has.tag = true;
+    if (detKeyOf(p)) { has.species = true; has.group = true; }
+    if (p.observer) has.observer = true;
+    if (p.place) has.place = true;
+    if (p.act) has.act = true;
+    if (countBucket(p.count)) has.count = true;
+    if (p.src) has.source = true;
+    if (p.dset) has.dset = true;
+    if (p.country) has.country = true;
+    if (p.stage) has.stage = true;
+    var d = String(p.date || "");
+    if (/^\d{4}/.test(d)) { has.year = true; if (/^\d{4}-\d{2}/.test(d)) has.month = true; }
+    if (p.attrs) for (var k in p.attrs) if (p.attrs[k] != null && p.attrs[k] !== "") has["attr:" + k] = true;
   }
-  function ptSelPasses(p, c) { return (!ptFocus || ptHas(p, c, ptFocus.by, ptFocus.v)) && ptSelOk(p, c); }
+  function ptHas(p, c, dim, v) { return ptValues(p, c, dim).indexOf(v) >= 0; }
+  function ptSelActive() { if (!ptSel) return false; for (var d in ptSel) if (Object.keys(ptSel[d]).length) return true; return false; }
+  function ptSelPut(dim, vals) {
+    ptSel = ptSel || {};
+    if (vals && Object.keys(vals).length) ptSel[dim] = vals; else delete ptSel[dim];
+    if (!Object.keys(ptSel).length) ptSel = null;
+  }
+  // The legend selection as a list point sees it: on every picked dimension (but `skip`) one of the
+  // point's values must be picked. The Tag dimension has no state of its own: its rows read and write the
+  // tag chips (mpFilter / mpExclude / mpNone), so mpTagPasses covers it.
+  function ptSelOk(p, c, skip) {
+    if (!ptSel) return true;
+    for (var dim in ptSel) {
+      if (dim === skip || dim === "tag") continue;
+      var want = ptSel[dim], vs = ptValues(p, c, dim), hit = false;
+      for (var i = 0; i < vs.length; i++) if (want[vs[i]]) { hit = true; break; }
+      if (!hit) return false;
+    }
+    return true;
+  }
+  function ptSelPasses(p, c) { return (!ptFocus || ptHas(p, c, ptFocus.by, ptFocus.v)) && ptSelOk(p, c, null); }
   // The colour a dimension gives a value — the legend swatch and the pin share it: the list's own
   // colour, the tag's / value's hash colour, a species' own colour when the point carries one.
   function ptValueColor(dim, v, p, c) {
@@ -2391,40 +2445,50 @@ window.AppPoints = (function () {
     if (dim === "species") { var key = p ? detKeyOf(p) : ""; return (key && speciesColor(key)) || (p && p.spColor) || mpHashColor("sp:" + v); }   // the species legend's colour for the same species
     return mpHashColor(v);
   }
+  function monthLabel(mm) {
+    try { return new Date(2000, +mm - 1, 1).toLocaleString(uiLang() || undefined, { month: "short" }); } catch (e) { return mm; }
+  }
   function ptValueLabel(dim, v) {
     if (!v) return dim === "tag" ? t("points.notag") : t("det.ptNoValue");
     if (dim === "tag" || dim === "species") return tagDisplay(v) || v;   // a scientific name reads as the local species name
+    if (dim === "group") { var g = t("group." + v); return g === "group." + v ? v : g; }
+    if (dim === "month") return monthLabel(v);
     return v;
   }
   function ptDimLabel(dim) {
-    if (dim === "list") return t("det.ptLists");
-    if (dim === "tag") return t("det.ptTags");
-    if (dim === "species") return t("det.ptSpecies");
-    return dim.slice(5);   // a kept attribute, by its own name
+    if (PT_DIM_KEY[dim]) return t(PT_DIM_KEY[dim]);
+    return dim.indexOf("attr:") === 0 ? dim.slice(5) : dim;   // a kept attribute, by its own name
+  }
+  // Row order: "(none)" last; years newest first; months in calendar order; count buckets small → large;
+  // everything else A–Z by label.
+  function ptValCmp(dim, a, b) {
+    if (!a.v !== !b.v) return a.v ? -1 : 1;
+    if (dim === "year") return +b.v - +a.v;
+    if (dim === "month") return +a.v - +b.v;
+    if (dim === "count") return COUNT_BUCKETS.indexOf(a.v) - COUNT_BUCKETS.indexOf(b.v);
+    return a.label.localeCompare(b.label);
   }
   // Everything the points view needs, in ONE pass over the shown lists' points: the dimensions
-  // present (list always; tag / species / an attribute name only when some point carries it), the rows
-  // of the current dimension with their count of pins on screen (`bb` = [s, w, n, e], null = anywhere)
-  // and the totals. A row's count ignores the selection on ITS OWN dimension — an unpicked row stays
-  // listed, greyed, so a tap can bring it back — and honours every other filter. Rows are A–Z.
+  // present (list always; every other only when some point carries a value), the rows of the current
+  // dimension with their count of pins on screen (`bb` = [s, w, n, e], null = anywhere) and the totals.
+  // A row's count ignores the picks on ITS OWN dimension — an unpicked row stays listed, greyed, so a
+  // tap can bring it back — and honours every other filter.
   function ptLegendData(bb) {
-    var hasTag = false, hasSp = false, attrs = {}, rows = {}, order = [], total = 0, shownN = 0;
-    var ownSel = ptSelActive() && ptSel.by === ptDim, routeShows = routePoints.length === 0;
+    var has = {}, rows = {}, order = [], total = 0, shownN = 0;
+    var ownE = (ptSel && ptSel[ptDim]) || null, routeShows = routePoints.length === 0;
     mpCollections.forEach(function (c) {
       if (!shownColls[c.name] || (routeShows && isRouteColl(c))) return;
       var lf = listFilter(c.name);
       (c.points || []).forEach(function (p) {
         if (!p || !isFinite(p.lat) || !isFinite(p.lon)) return;
         total++;
-        if (p.tags && p.tags.length) hasTag = true;
-        if (detKeyOf(p)) hasSp = true;
-        if (p.attrs) for (var k in p.attrs) if (p.attrs[k] != null && p.attrs[k] !== "") attrs[k] = true;
+        notePresent(p, has);
         if (bb && (p.lat < bb[0] || p.lat > bb[2] || p.lon < bb[1] || p.lon > bb[3])) return;
         if (listPointPasses && !listPointPasses(p, true)) return;
         if (!listOwnFilterPasses(p, lf)) return;
-        var tagOk = mpTagPasses(p), selOk = ptSelOk(p, c);
+        var tagOk = mpTagPasses(p), selOk = ptSelOk(p, c, null);
         if (tagOk && selOk) shownN++;
-        if (!(ptDim === "tag" ? selOk : (ownSel ? tagOk : (tagOk && selOk)))) return;
+        if (!(ptDim === "tag" ? selOk : (tagOk && ptSelOk(p, c, ptDim)))) return;
         ptValues(p, c, ptDim).forEach(function (v) {
           var r = rows[v];
           if (!r) { r = rows[v] = { v: v, n: 0, color: ptValueColor(ptDim, v, p, c), label: ptValueLabel(ptDim, v) }; order.push(v); }
@@ -2432,24 +2496,60 @@ window.AppPoints = (function () {
         });
       });
     });
-    var dims = ["list"];
-    if (hasTag) dims.push("tag");
-    if (hasSp) dims.push("species");
-    Object.keys(attrs).sort().forEach(function (k) { dims.push("attr:" + k); });
-    if (dims.indexOf(ptDim) < 0) { ptDim = "list"; return ptLegendData(bb); }   // the grouping attribute left with its list
+    var dims = PT_DIMS.filter(function (d) { return d === "list" || has[d]; });
+    Object.keys(has).filter(function (k) { return k.indexOf("attr:") === 0; }).sort().forEach(function (k) { dims.push(k); });
+    if (dims.indexOf(ptDim) < 0) { ptDim = "list"; return ptLegendData(bb); }   // the grouping field left with its list
     var out = order.map(function (v) {
       var r = rows[v];
       if (ptDim === "tag") { r.sel = mpFilter.indexOf(v) >= 0; r.off = !mpTagPasses({ tags: v ? [v] : [] }); }
-      else { r.sel = !!(ownSel && ptSel.vals[v]); r.off = !!(ownSel && !ptSel.vals[v]); }
+      else { r.sel = !!(ownE && ownE[v]); r.off = !!(ownE && !ownE[v]); }
       return r;
     });
-    out.sort(function (a, b) { if (!a.v !== !b.v) return a.v ? -1 : 1; return a.label.localeCompare(b.label); });   // "(none)" last
+    out.sort(function (x, y) { return ptValCmp(ptDim, x, y); });
     return { dim: ptDim, dims: dims, rows: out, total: total, shownN: shownN };
+  }
+  // For the dimension menu: every dimension present, its number of distinct values, whether it holds picks.
+  function ptDimStats() {
+    var dims = ptLegendData(null).dims, sets = {}, routeShows = routePoints.length === 0;
+    dims.forEach(function (d) { sets[d] = {}; });
+    mpCollections.forEach(function (c) {
+      if (!shownColls[c.name] || (routeShows && isRouteColl(c))) return;
+      (c.points || []).forEach(function (p) {
+        if (!p || !isFinite(p.lat) || !isFinite(p.lon)) return;
+        dims.forEach(function (d) { ptValues(p, c, d).forEach(function (v) { sets[d][v] = 1; }); });
+      });
+    });
+    return dims.map(function (d) { return { dim: d, label: ptDimLabel(d), n: Object.keys(sets[d]).length, picked: ptDimPicked(d) }; });
+  }
+  function ptDimPicked(d) { return d === "tag" ? !!(mpFilter.length || mpExclude.length || mpNone) : !!(ptSel && ptSel[d]); }
+  // What is picked, per dimension, for the legend's strip of chips: [{dim, label, text}]. A run of years or
+  // months reads as a range ("2019–2021"), anything else as its first labels.
+  function ptSelSummary() {
+    var out = [];
+    if (ptDimPicked("tag")) {
+      var labs = mpFilter.map(function (v) { return ptValueLabel("tag", v); }).concat(mpExclude.map(function (v) { return "−" + ptValueLabel("tag", v); }));
+      out.push({ dim: "tag", label: ptDimLabel("tag"), text: labs.length ? labs.slice(0, 3).join(", ") + (labs.length > 3 ? " +" + (labs.length - 3) : "") : "–" });
+    }
+    Object.keys(ptSel || {}).forEach(function (dim) {
+      var vals = Object.keys(ptSel[dim]); if (!vals.length || dim === "tag") return;
+      out.push({ dim: dim, label: ptDimLabel(dim), text: ptValsText(dim, vals) });
+    });
+    return out;
+  }
+  function ptValsText(dim, vals) {
+    if ((dim === "year" || dim === "month") && vals.length > 1) {
+      var vs = vals.slice().sort(function (a, b) { return +a - +b; }), run = true;
+      for (var i = 1; i < vs.length; i++) if (+vs[i] !== +vs[i - 1] + 1) run = false;
+      if (run) return ptValueLabel(dim, vs[0]) + "–" + ptValueLabel(dim, vs[vs.length - 1]);
+    }
+    var labs = vals.map(function (v) { return { v: v, label: ptValueLabel(dim, v) }; }).sort(function (a, b) { return ptValCmp(dim, a, b); }).map(function (x) { return x.label; });
+    return labs.slice(0, 3).join(", ") + (labs.length > 3 ? " +" + (labs.length - 3) : "");
   }
   // Persist the tag chips' state the way the chips themselves do (a tiny write, not part of the sync).
   function saveTagChips() { window.GeoState.save({ mapPointsFilter: mpFilter.slice(), mapPointsExclude: mpExclude.slice(), mapPointsNone: mpNone }); }
-  // A tap on a row: the pick sticks, several stack, the last one taken away shows all again. On the Tag
-  // dimension the tap writes the chips (an excluded tag comes back first).
+  // A tap on a row: the pick sticks, several stack, the last one taken away shows all again; picks on
+  // different dimensions combine (AND). On the Tag dimension the tap writes the chips (an excluded tag
+  // comes back first).
   function ptToggle(v) {
     ptFocus = null;
     if (ptDim === "tag") {
@@ -2460,14 +2560,41 @@ window.AppPoints = (function () {
       saveTagChips();
       return;
     }
-    if (!ptSel || ptSel.by !== ptDim) ptSel = { by: ptDim, vals: {} };
-    if (ptSel.vals[v]) delete ptSel.vals[v]; else ptSel.vals[v] = true;
-    if (!Object.keys(ptSel.vals).length) ptSel = null;
+    var e = Object.assign({}, (ptSel && ptSel[ptDim]) || {});
+    if (e[v]) delete e[v]; else e[v] = true;
+    ptSelPut(ptDim, e);
   }
   function ptOnly(v) {
     ptFocus = null;
     if (ptDim === "tag") { mpFilter = [v]; mpExclude = []; mpNone = false; saveTagChips(); return; }
-    ptSel = { by: ptDim, vals: {} }; ptSel.vals[v] = true;
+    var e = {}; e[v] = true; ptSelPut(ptDim, e);
+  }
+  // The strip's ×: one dimension's picks go (the Tag dimension's are the chips).
+  function ptClearDim(dim) {
+    ptFocus = null;
+    if (dim === "tag") { mpFilter = []; mpExclude = []; mpNone = false; saveTagChips(); return; }
+    ptSelPut(dim, null);
+  }
+  // A range on an ordered dimension (years, months): pick every row between the picks so far and this
+  // one — with nothing picked yet, from the first row.
+  function ptPickThrough(v) {
+    ptFocus = null;
+    if (!v) return;
+    var rows = ptLegendData(null).rows.map(function (r) { return r.v; }).filter(Boolean);
+    var e = Object.assign({}, (ptSel && ptSel[ptDim]) || {}), idx = [rows.indexOf(v)];
+    if (idx[0] < 0) return;
+    rows.forEach(function (x, i) { if (e[x]) idx.push(i); });
+    if (idx.length === 1) idx.push(0);
+    var lo = Math.min.apply(null, idx), hi = Math.max.apply(null, idx);
+    for (var i = lo; i <= hi; i++) e[rows[i]] = true;
+    ptSelPut(ptDim, e);
+  }
+  // The stored selection; the one-dimension shape of v2191 ({by, vals}) is read once and converted.
+  function setPtSel(v) {
+    ptSel = null;
+    if (!v || typeof v !== "object") return;
+    if (v.by && v.vals) { var o = {}; o[v.by] = v.vals; v = o; }
+    Object.keys(v).forEach(function (d) { if (v[d] && typeof v[d] === "object" && Object.keys(v[d]).length) ptSelPut(d, v[d]); });
   }
   // Hover isolate: redraw the pins to this one value, quietly — the legend must not re-render under
   // the pointer, or the row's mouseleave never fires and the map stays isolated.
@@ -3128,7 +3255,8 @@ window.AppPoints = (function () {
     mpNone: function () { return mpNone; }, setMpNone: function (v) { mpNone = !!v; },
     // ---- the legend's points view ----
     ptDim: function () { return ptDim; }, setPtDim: function (v) { ptDim = (typeof v === "string" && v) ? v : "list"; },
-    ptSel: function () { return ptSel; }, setPtSel: function (v) { ptSel = (v && v.by && v.vals) ? v : null; }, ptSelActive: ptSelActive,
+    ptSel: function () { return ptSel; }, setPtSel: setPtSel, ptSelActive: ptSelActive, ptClearDim: ptClearDim, ptPickThrough: ptPickThrough,
+    ptSelSummary: ptSelSummary, ptDimStats: ptDimStats, ptDimPicked: ptDimPicked,
     ptLegendData: ptLegendData, ptDimLabel: ptDimLabel, ptToggle: ptToggle, ptOnly: ptOnly, ptValuePoints: ptValuePoints,
     setPtFocus: setPtFocus, ptFocusOn: function () { return !!ptFocus; },
     ptAvail: function () { return mpListN > 0; }, setPtViewOn: setPtViewOn,

@@ -16955,8 +16955,39 @@
       if (b.isValid()) { try { fitBoundsMin(b, 0.1); } catch (e) {} }
     }, "target"));
     el.appendChild(drmBtn(t("det.ptOnly"), function () { closeAnchoredMenu(); mpState.ptOnly(v); saveLegendState(); mpState.mpFilterRefresh(); }, "funnel"));
+    var dim = mpState.ptDim();
+    if ((dim === "year" || dim === "month") && v) el.appendChild(drmBtn(t("det.ptThrough"), function () { closeAnchoredMenu(); mpState.ptPickThrough(v); saveLegendState(); mpState.mpFilterRefresh(); }, "calendar"));
     ensureAnchClose(el);
     positionAnchoredMenu(el, x, y);
+  }
+  // The dimension menu (a tap on the heading): every field the shown points carry, with its number of
+  // distinct values; a dot marks one that holds picks. Hold the heading instead to step to the next.
+  function showPtDimMenu(anchor) {
+    var el = openAnchoredMenu("detrow-menu det-ptdim-menu", anchor);
+    var hdr = document.createElement("div");
+    hdr.className = "detrow-menu-hdr"; hdr.textContent = t("det.ptDimMenu");
+    el.appendChild(hdr);
+    var cur = mpState.ptDim();
+    mpState.ptDimStats().forEach(function (st) {
+      var b = drmBtn(st.label + " (" + st.n + ")" + (st.picked ? " \u2022" : ""), function () {
+        closeAnchoredMenu(); mpState.setPtDim(st.dim); saveLegendState(); mpState.renderMapPoints();
+      }, st.dim === cur ? "check" : "");
+      if (st.dim === cur) b.classList.add("is-on");
+      el.appendChild(b);
+    });
+    ensureAnchClose(el);
+    var br = anchor.getBoundingClientRect();
+    positionAnchoredMenu(el, br.left, br.bottom + 4);
+  }
+  // The strip under the heading: what is picked on the dimensions NOT shown (tap the name to go there,
+  // × to clear that dimension) — so a pick never hides pins without saying so.
+  function ptSelStripHtml(curDim) {
+    var items = mpState.ptSelSummary().filter(function (x) { return x.dim !== curDim; });
+    if (!items.length) return "";
+    return '<div class="det-ptsel">' + items.map(function (x) {
+      return '<span class="det-ptsel-chip" data-dim="' + escapeHtml(x.dim) + '"><button type="button" class="det-ptsel-nm" title="' + escapeHtml(t("det.ptChipHint")) + '">' +
+        escapeHtml(x.label) + ": " + escapeHtml(x.text) + '</button><button type="button" class="det-ptsel-x" aria-label="' + escapeHtml(t("det.clearFilters")) + '">\u00d7</button></span>';
+    }).join("") + "</div>";
   }
   function renderPtLegend(el, hasSpecies) {
     if (!el) return;
@@ -16976,8 +17007,9 @@
         '<button type="button" class="det-min" title="' + escapeHtml(t("det.minimise")) + '" aria-label="' + escapeHtml(t("det.minimise")) + '">−</button>' +
         (hasSpecies ? legendViewBtnHtml(true) : "") +   // back to the species view (only when there is one)
       "</div>" +
-      // The heading is the DIMENSION toggle: tap cycles lists → tags → species → each kept attribute.
+      // The heading is the DIMENSION chooser: tap opens the menu of fields, hold steps to the next one.
       '<div class="det-row det-legend-total"><span class="det-nm det-total-toggle" role="button" tabindex="0" title="' + escapeHtml(t("det.ptDimHint")) + '">' + escapeHtml(mpState.ptDimLabel(d.dim)) + '</span><span class="det-ct">' + sumCt + "</span></div>" +
+      ptSelStripHtml(d.dim) +
       (d.rows.length ? d.rows.map(function (r) {
         var nm = escapeHtml(r.label);
         return '<div class="det-row det-row-click' + (r.sel ? " det-row-on" : "") + (r.off ? " det-row-off" : "") + '" data-key="' + escapeHtml(r.v) + '">' +
@@ -16985,10 +17017,17 @@
       }).join("") : '<div class="det-empty">' + escapeHtml(t("det.ptNone")) + "</div>");
     el.querySelector(".det-min").addEventListener("click", function () { mapClickGuardUntil = Date.now() + 250; detLegendMini = true; saveLegendState(); updateDetLegend(); });
     wireLegendViewBtn(el, "species");
-    el.querySelector(".det-total-toggle").addEventListener("click", function (e) {
-      e.stopPropagation(); mapClickGuardUntil = Date.now() + 250;
+    var tg = el.querySelector(".det-total-toggle");
+    tg.addEventListener("click", function (e) { e.stopPropagation(); mapClickGuardUntil = Date.now() + 250; showPtDimMenu(tg); });
+    wireHoldButton(tg, function () {
+      mapClickGuardUntil = Date.now() + 250;
       mpState.cyclePtDim(d.dims); saveLegendState();
       mpState.renderMapPoints();   // recolours the pins and re-renders this view
+    });
+    el.querySelectorAll(".det-ptsel-chip").forEach(function (ch) {
+      var dim = ch.getAttribute("data-dim");
+      ch.querySelector(".det-ptsel-nm").addEventListener("click", function (e) { e.stopPropagation(); mapClickGuardUntil = Date.now() + 250; mpState.setPtDim(dim); saveLegendState(); mpState.renderMapPoints(); });
+      ch.querySelector(".det-ptsel-x").addEventListener("click", function (e) { e.stopPropagation(); mapClickGuardUntil = Date.now() + 250; mpState.ptClearDim(dim); saveLegendState(); mpState.mpFilterRefresh(); });
     });
     el.querySelectorAll(".det-row-click").forEach(function (row) { wireLegendRowCb(row, ptRowCb); });
   }
@@ -18011,6 +18050,7 @@
     copyPointToList: copyPointToList, deleteListPoint: deleteListPoint,
     refreshMpPanel: refreshMpPanel, renderMpAdmin: renderMpAdmin, setStatus: setStatus,
     showDetRowMenu: showDetRowMenu, syncListDetections: syncListDetections, labelForSci: labelForSci, updateDetLegend: updateDetLegend, speciesColor: speciesColor,
+    detClassOf: detClassOf, obsRealNames: detObsRealNames, uiLang: function () { return lang; },   // the points legend's Group / Observer / Month dimensions
     updateDetSetOverlays: updateDetSetOverlays, updateMpBadge: updateMpBadge,
     pulseFunnels: pulseFunnels, tagDisplay: tagDisplay,
     updateSpDistances: updateSpDistances, t: t,

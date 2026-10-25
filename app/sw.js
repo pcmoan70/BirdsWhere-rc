@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2192";
+var VERSION = "v2193";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Point lists are separate from the fetched species: a list point never enters the species legend, the date / observer / mode filters leave it alone, and every list point is a round see-through dot in the list\u2019s colour. The lists\u2019 own legend is the points view (the dots button in the legend\u2019s top row): the shown points grouped by list, tag, species or any field the file brought, switched on and off per row. The observation / site kind from v2190 is gone \u2014 it is not needed."
+  "\u2022 The legend\u2019s points view now groups \u2014 and filters \u2014 the shown lists\u2019 points by every field an observation record has: list, tag, species, group (the obs filter\u2019s groups), observer, place, activity, count, source, dataset, country, life stage, year, month and any kept column. Tap the heading for the menu of fields, hold it for the next one. Picks on different fields combine; a strip under the heading shows the picks on the fields you are not looking at, \u00d7 clears one. Long-press a year or month for \u201cPick through here\u201d (a range)."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
