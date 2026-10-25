@@ -1418,8 +1418,9 @@ the one thing left out by default — they are much the largest thing the app ho
 - **Persistence** — settings, view, species/year/life lists, checklists, points and plotted
   detections survive across visits. Small settings live in **localStorage**; bulky per-list data
   (saved sets, detections) lives in **IndexedDB** to avoid the ~5 MB cap. Saved point lists load **lazily**: at start only
-  the ticked lists are read; the others follow in the background (or at once when ticked or
-  opened), so many large lists no longer slow the start. Long lists (species table, observation
+  one small index (each list's name, fields and point count) and the ticked lists are read; an unticked list stays on
+  disk until something needs it — ticking it, opening it, the Points panel's search, a sync or a backup — so many
+  large lists do not slow the start or the first minute after it. Long lists (species table, observation
   list, legend) show their first rows at once and fill in the rest in the background.
   **Settings → Storage** lists every cache with its count and size — **Fetched observations**
   (every location's downloaded observations, kept on the device until you clear them: one

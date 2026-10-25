@@ -659,9 +659,12 @@ window.AppShare = (function () {
       if (obj.type === "points") {
         var pts = (obj.points || []).filter(function (p) { return p && isFinite(+p.lat) && isFinite(+p.lon); });
         if (!pts.length) { setStatus(t("share.badLink")); return; }
-        var upd = !!sharedCollByName(nm);   // re-import → update that copy in place
+        var ex0 = sharedCollByName(nm), upd = !!ex0;   // re-import → update that copy in place
         modalConfirm(t(upd ? "share.updatePrompt" : "share.importPrompt", { name: nm, n: pts.length })).then(function (ok) {
           if (!ok) return;
+          // the copy may still be an unread stub (lists load only when needed): read it first, or the
+          // replacement below would be appended to its stored points when it is
+          return (ex0 && ex0._lazy && mpState.hydrateOne ? mpState.hydrateOne(ex0) : Promise.resolve()).then(function () {
           var r = importPointsColl(nm, pts);
           var rc0 = mpState.mpCollections().filter(function (x) { return x.name === r.name; })[0];
           if (rc0) {   // the sender's areas, tracks and list colour
@@ -674,6 +677,7 @@ window.AppShare = (function () {
           }
           saveMapPoints(); saveShownState(); renderMapPoints();
           fitSharedLatLngs(r.ll); setStatus(t(r.updated ? "share.updated" : "share.imported", { name: r.name }));
+          });
         });
         return;
       }

@@ -18058,7 +18058,10 @@
     copyPointToList: copyPointToList, deleteListPoint: deleteListPoint,
     refreshMpPanel: refreshMpPanel, renderMpAdmin: renderMpAdmin, setStatus: setStatus,
     showDetRowMenu: showDetRowMenu, syncListDetections: syncListDetections, labelForSci: labelForSci, updateDetLegend: updateDetLegend, speciesColor: speciesColor,
-    detClassOf: detClassOf, obsRealNames: detObsRealNames, uiLang: function () { return lang; },   // the points legend's Group / Observer / Month dimensions
+    detClassOf: detClassOf,
+    onListLoaded: function () {   // a stub's records arrived: search pins it already holds go, the panel (if open) redraws — once per burst
+      clearTimeout(onListLoaded._t); onListLoaded._t = setTimeout(function () { try { mpDedupeSearchPins(); refreshMpPanel(); } catch (e) {} }, 150);
+    }, obsRealNames: detObsRealNames, uiLang: function () { return lang; },   // the points legend's Group / Observer / Month dimensions
     updateDetSetOverlays: updateDetSetOverlays, updateMpBadge: updateMpBadge,
     pulseFunnels: pulseFunnels, tagDisplay: tagDisplay,
     updateSpDistances: updateSpDistances, t: t,
@@ -19372,9 +19375,7 @@
     return gone;
   }
   function mpFromSearchHtml() {
-    mpDedupeSearchPins();
-    // a list still loading cannot be matched yet → redraw once they all are
-    if (mpState.anyLazy && mpState.anyLazy() && !mpFromSearchHtml._wait) { mpFromSearchHtml._wait = true; mpState.whenAllLoaded().then(function () { mpFromSearchHtml._wait = false; refreshMpPanel(); }); }
+    mpDedupeSearchPins();   // a list still on disk cannot be matched yet; onListLoaded dedupes again when one is read
     var groups = Object.create(null), order = [];
     mpState.mapPoints().forEach(function (q) { var k = mpSearchKey(q); if (k == null) k = MP_OTHER; if (!groups[k]) { groups[k] = 0; order.push(k); } groups[k]++; });
     order.sort(function (a, b) { return (a === MP_OTHER) - (b === MP_OTHER); });   // "other map points" last

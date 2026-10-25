@@ -30,8 +30,10 @@ window.AppPoints = (function () {
   // clicked-spot marker are built later; the spider layer is app.js's).
   var getMap, getMarker, getSpiderHidden, setSpiderLayer;
 
+  var onListLoaded = function () {};   // app.js: a stub's records arrived (search-pin dedupe, panel refresh)
   function init(ctx) {
     clearSpider = ctx.clearSpider;
+    if (ctx.onListLoaded) onListLoaded = ctx.onListLoaded;
     downloadCsv = ctx.downloadCsv; escapeHtml = ctx.escapeHtml; haversineKm = ctx.haversineKm;
     ico = ctx.ico; looksLikeHtml = ctx.looksLikeHtml; makePopupBtn = ctx.makePopupBtn;
     copyPointToList = ctx.copyPointToList; deleteListPoint = ctx.deleteListPoint;
@@ -514,16 +516,19 @@ window.AppPoints = (function () {
   // (initDetSetStore in app.js). The Drive payload shape is unchanged: buildPayload
   // re-attaches them, so existing backups stay compatible.
   var mpIdbReady = false;
-  // ---- Lazy list store (2026-10-04) ------------------------------------------------------
+  // ---- Lazy list store (2026-10-04; one index record 2026-10-25) ----------------------------
   // A start used to read EVERY saved list in full (twice: the trips step read the whole
   // store too), re-serialise each one for its change signature and walk every record — the
-  // same cost for a list never shown as for the one on screen. Now each list has a small
-  // META record ("ptm:<name>": its fields except the points, the point count and the
-  // signature) beside its data ("pts:<name>"). At start only the metas and the TICKED
-  // lists are read; the rest are stubs (`_lazy`, points empty, `_n` = count) that are
-  // filled in the background right after the app is up, or at once when one is ticked.
-  // While a stub exists nothing may be written or retired for it (see persistMpSets), and
-  // sync / import wait for whenAllLoaded().
+  // same cost for a list never shown as for the one on screen. Now ONE small record
+  // ("ptidx": every list's fields except the points, its point count and its signature)
+  // sits beside the lists' data ("pts:<name>"). At start the index and the TICKED lists are
+  // read; the rest are stubs (`_lazy`, points empty, `_n` = count from the index) that are
+  // read only when something needs their content: ticking, a tap on the list, the all-lists
+  // search, sync / backup / import (whenAllLoaded) — never in the background (owner,
+  // 2026-10-25: "no need to load lists until content is needed"). A stub's record is never
+  // written or retired (see persistMpSets). Until v2195 the index was one "ptm:<name>" record
+  // per list, read one after the other at start, and a background fill read every list
+  // 1.5 s after the app was up — about two seconds of main-thread work on a phone.
   function hide(o, k, v) { Object.defineProperty(o, k, { value: v, writable: true, enumerable: false, configurable: true }); }
   function metaOf(c) { var o = {}; Object.keys(c).forEach(function (k) { if (k !== "points") o[k] = c[k]; }); return o; }
   function cheapSig(c) { return ((c.points || []).length) + "|" + JSON.stringify(metaOf(c)); }
@@ -531,6 +536,9 @@ window.AppPoints = (function () {
   // one read whole, and must still sign the same.
   function fullSig(c) { return mpSig(JSON.stringify(metaOf(c)) + "\n" + JSON.stringify(c.points || [])); }
   function collCount(c) { return c ? (c._lazy ? (c._n || 0) : ((c.points && c.points.length) || 0)) : 0; }
+  var mpIndex = null;   // { v: 1, lists: { "<name>": meta + n + sig } } — the one record read at start
+  function indexEntry(c, sig) { var m = metaOf(c); m.n = (c.points || []).length; m.sig = sig || ""; return m; }
+  function putIndex() { if (!mpIndex) mpIndex = { v: 1, lists: {} }; return window.AppIDB.put("ptidx", mpIndex).catch(function () {}); }
   function anyLazy() { for (var i = 0; i < mpCollections.length; i++) if (mpCollections[i] && mpCollections[i]._lazy) return true; return false; }
   var mpCheap = Object.create(null), mpAllLoadedWaiters = [];
   // Resolves when the background fill has finished. A list that could not be read stays a
@@ -558,8 +566,21 @@ window.AppPoints = (function () {
       adopt(c);
       // Renamed / moved / reordered / added to while a stub → written now: waiting for "the next
       // save" lost points added to a big list that took longer to load than the 4 s verify.
-      if (added.length || cheapSig(c) !== c._cheap0) { mpCheap[c.name] = ""; writeIfChanged(c, false); }
+      if (added.length || cheapSig(c) !== c._cheap0) {
+        mpCheap[c.name] = "";
+        var w = writeIfChanged(c, false), old = String(c._key || "").slice(4);
+        // Renamed while a stub: its records were under the old name until now — written under the
+        // new one above, the old record and index entry go (left alone they would come back as a
+        // second list at the next start).
+        if (old && old !== c.name) Promise.resolve(w).then(function (ok) {
+          if (ok === false || mpCollections.some(function (x) { return x !== c && x.name === old; })) return;
+          if (mpIndex) delete mpIndex.lists[old]; delete mpSetSig[old]; delete mpCheap[old];
+          window.AppIDB.del("pts:" + old).catch(function () {});
+          putIndex();
+        });
+      }
       if (shownColls[c.name]) { try { renderMapPoints(); } catch (e) {} }
+      try { onListLoaded(c); } catch (e) {}
       settleLoaded();
     }, function () { hide(c, "_loading", null); hide(c, "_fails", (c._fails || 0) + 1); });
     hide(c, "_loading", pr);
@@ -603,11 +624,21 @@ window.AppPoints = (function () {
       var keys = (await window.AppIDB.keys()).map(String);
       var have = Object.create(null); keys.forEach(function (k) { have[k] = 1; });
       var ptsKeys = keys.filter(function (k) { return k.indexOf("pts:") === 0; });
+      var idx = have.ptidx ? await window.AppIDB.get("ptidx") : null;
+      mpIndex = (idx && idx.lists && typeof idx.lists === "object") ? idx : { v: 1, lists: {} };
+      var idxDirty = !idx;
+      // Once: the per-list "ptm:" metas of v2009–v2195 fold into the index and go.
+      var ptmKeys = keys.filter(function (k) { return k.indexOf("ptm:") === 0; });
+      for (var q = 0; q < ptmKeys.length; q++) {
+        var pm0 = await window.AppIDB.get(ptmKeys[q]).catch(function () { return null; });
+        if (pm0 && pm0.name === ptmKeys[q].slice(4) && !mpIndex.lists[pm0.name]) { mpIndex.lists[pm0.name] = pm0; idxDirty = true; }
+      }
+      Object.keys(mpIndex.lists).forEach(function (n) { if (!have["pts:" + n]) { delete mpIndex.lists[n]; idxDirty = true; } });   // an entry without data says nothing
       var shownNow = Object.create(null);
       (window.GeoState.get("mapPointsShownColls", []) || []).forEach(function (n) { shownNow[n] = 1; });
       var out = [], needMeta = [];
       for (var j = 0; j < ptsKeys.length; j++) {
-        var key = ptsKeys[j], nm = key.slice(4), meta = have["ptm:" + nm] ? await window.AppIDB.get("ptm:" + nm) : null;
+        var key = ptsKeys[j], nm = key.slice(4), meta = mpIndex.lists[nm] || null;
         if (meta && meta.name === nm && !shownNow[nm]) {             // not shown → a stub now, the records later
           var stub = {}; Object.keys(meta).forEach(function (k) { if (k !== "n" && k !== "sig") stub[k] = meta[k]; });
           stub.points = [];
@@ -639,18 +670,17 @@ window.AppPoints = (function () {
       mpCollections = out;
       mpCollections.forEach(function (c) { if (!c._lazy && !c.viewOnly) adopt(c); });
       addViewOnlyStubs();   // the shared lists' references (no points until shown and checked)
-      // First start with this version (or a list written by an older one): one meta each,
-      // signed AFTER adopt() so it matches what a later save would serialise.
+      // A list without an index entry (written by an older version, or its index write was
+      // lost): indexed now, signed AFTER adopt() so it matches what a later save would serialise.
       needMeta.forEach(function (c) {
         try { mpSetSig[c.name] = fullSig(c); } catch (e) {}
-        var m0 = metaOf(c); m0.n = (c.points || []).length; m0.sig = mpSetSig[c.name] || "";
-        window.AppIDB.put("ptm:" + c.name, m0).catch(function () {});
+        mpIndex.lists[c.name] = indexEntry(c, mpSetSig[c.name]); idxDirty = true;
       });
+      if (idxDirty) putIndex().then(function () { ptmKeys.forEach(function (k) { window.AppIDB.del(k).catch(function () {}); }); });
       loadListFilters();
       mpIdbReady = true;
       if (ptsKeys.length) askPersist();
       orphans.forEach(function (c) { writeIfChanged(c, false); });   // the kept in-memory lists, now stored
-      if (anyLazy()) setTimeout(hydrateRest, 1500);   // after the app is up
     } catch (e) {
       mpIdbReady = false;
       // IndexedDB can refuse to open for reasons that pass: another tab holding the
@@ -726,29 +756,34 @@ window.AppPoints = (function () {
     try { sig = fullSig(c); } catch (e) { sig = null; }
     mpCheap[c.name] = cheapSig(c);
     if (sig && mpSetSig[c.name] === sig) return null;   // unchanged since the last write
-    var meta = metaOf(c); meta.n = (c.points || []).length; meta.sig = sig || "";
+    if (!mpIndex) mpIndex = { v: 1, lists: {} };
+    mpIndex.lists[c.name] = indexEntry(c, sig);
     // Both requests are issued now (not one after the other), so a page closing right after
-    // a save cannot leave the data written and its meta stale.
+    // a save cannot leave the data written and the index stale.
     askPersist();
-    var pm = window.AppIDB.put("ptm:" + c.name, meta).catch(function () {});
+    var pm = putIndex();
     return window.AppIDB.put("pts:" + c.name, c)
       .then(function () { if (sig) mpSetSig[c.name] = sig; return pm.then(function () { return true; }); },
             function () { setStatus(t("err.storageFull")); return false; });   // false: this list did NOT reach the store
   }
   function persistMpSets(list, opts) {
     if (!mpIdbReady || !window.AppIDB) return Promise.resolve();
-    var fast = !!(opts && opts.fast), keep = Object.create(null), gone = false, writes = [], lazy = false;
+    var fast = !!(opts && opts.fast), keep = Object.create(null), gone = false, writes = [];
     (list || []).forEach(function (c) {
       if (!c || !c.name) return;
       keep[c.name] = 1;
-      if (c._lazy) { lazy = true; return; }               // a stub is never written: its records are still in the store only
+      if (c._lazy) return;                                // a stub is never written: its records are still in the store only
       var w = writeIfChanged(c, fast); if (w) writes.push(w);
     });
     if (fast && !(opts && opts.noVerify)) scheduleFullVerify();
-    // Nothing is retired while any list is still a stub (a renamed stub would lose its data).
-    if (lazy || anyLazy()) return Promise.all(writes);
-    Object.keys(mpSetSig).forEach(function (n) { if (!keep[n]) { gone = true; delete mpSetSig[n]; delete mpCheap[n]; } });
-    if (!gone) return Promise.all(writes);   // nothing was deleted → no need to scan the store for orphans
+    // Retire what the index holds and no list claims. A stub's data sits under its original
+    // name (`_key`) until it is read — a renamed stub keeps that record (lists stay stubs for
+    // the whole session now, so deleting one must not wait for the others to load).
+    var stubKeys = Object.create(null);
+    mpCollections.forEach(function (c) { if (c && c._lazy && c._key) stubKeys[String(c._key).slice(4)] = 1; });
+    var goneNames = Object.keys((mpIndex && mpIndex.lists) || {}).filter(function (n) { return !keep[n] && !stubKeys[n]; });
+    goneNames.forEach(function (n) { gone = true; delete mpSetSig[n]; delete mpCheap[n]; });
+    if (!gone) return Promise.all(writes);
     // Never let an EMPTY list wipe the store. A user deleting their last list is one
     // thing; a transient empty mirror (a failed hydrate, a code path that resets it
     // before a save) must not take every saved list with it. Deleting the last list
@@ -758,13 +793,9 @@ window.AppPoints = (function () {
     // write (storage full) must not take the old one with it.
     return Promise.all(writes).then(function (res) {
       if (res.some(function (r) { return r === false; })) return res;
-      return window.AppIDB.keys().then(function (ks) {
-        var dels = [];
-        ks.map(String).forEach(function (k) {
-          if ((k.indexOf("pts:") === 0 || k.indexOf("ptm:") === 0) && !keep[k.slice(4)]) dels.push(window.AppIDB.del(k).catch(function () {}));
-        });
-        return Promise.all(dels).then(function () { return res; });
-      }).catch(function () { return res; });
+      goneNames.forEach(function (n) { delete mpIndex.lists[n]; });
+      var dels = goneNames.map(function (n) { return window.AppIDB.del("pts:" + n).catch(function () {}); });
+      return Promise.all(dels).then(putIndex).then(function () { return res; });
     });
   }
   function loadMapPoints() {
@@ -1748,6 +1779,7 @@ window.AppPoints = (function () {
   // One-off: bring lists imported before v1923 down to the same size as a fresh import.
   // Returns {points, stripped, before, after} in bytes so the UI can say what it freed.
   async function compactStoredPoints() {
+    await whenAllLoaded();   // lists are read only when needed — a compaction needs them all
     var before = 0, after = 0, stripped = 0, npts = 0, recovered = 0;
     mpCollections.forEach(function (c) {
       (c.points || []).forEach(function (p) {
