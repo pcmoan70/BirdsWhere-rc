@@ -22,7 +22,7 @@ layered on top are the real sightings.
 > Model outputs are estimates, not ground truth; BirdWeather detections are AI acoustic
 > identifications, not human-verified.
 
-*Documentation last updated 2026-09-29 (app version ~v1928).*
+*Documentation last updated 2026-10-26 (app version ~v2199).*
 
 ---
 
@@ -1236,10 +1236,11 @@ an **eBird Record Format CSV** ready for [ebird.org/import](https://ebird.org/im
 ## Country resources & place links
 
 - **Map right-click / long-press menu** — *Add point*, *Share point*, *Save location*, *Navigate
-  here*, *Add to route* and *Offline maps* (the coordinates line copies them); the click popup adds
+  here*, *Add to route*, **3-D terrain** (Norway, with *Experimental features* on — see below) and
+  *Offline maps* (the coordinates line copies them); the click popup adds
   a **Birdingplaces** link (birdingplaces.eu at the point),
   and, for Sweden & Norway, a **Fågelkartan** link to that point's county / fylke page. In Norway,
-  with *Experimental features* on, the popup gets a **3-D terrain** button, which opens the
+  with *Experimental features* on, the long-press menu's **3-D terrain** button opens the
   [3-D terrain viewer](https://pcmoan70.github.io/3d_terrain/) at the clicked point (it builds a
   1 m elevation model 2 km around it from Kartverket's height data and lets you move the centre or
   radius before building). The dots on the map inside that square go along: your pins with their

@@ -19124,6 +19124,17 @@
     wrap.appendChild(makePopupBtn(t("nav.here"), "btn-light", function () { map.closePopup(); navigatePoints([{ lat: lat, lon: lon }]); }, "nav"));
     // Add this spot as the next stop of the in-progress route (named after the place if known).
     wrap.appendChild(makePopupBtn(tLabel("route.add"), "btn-light", function () { map.closePopup(); addToRoute(lat, lon, nameHdr.textContent || ""); }, "navplus"));
+    // 3-D terrain (owner, 2026-10-26: "move 3d-terrain to the double click/long click map point menu above Offline maps"):
+    // Norway only (Kartverket's 1 m model) with Experimental features on, as before in the click popup; opens
+    // pcmoan70.github.io/3d_terrain 2 km around the point, the map's dots inside that square along in the hash.
+    if (AppGeo.countryAt(lat, lon) === "NO" && experimentalOn()) {
+      wrap.appendChild(makePopupBtn(t("link.terrain3d") + " ↗", "btn-light", function () {
+        map.closePopup();
+        var pts = terrain3dPoints(lat, lon, 2000);
+        openExternal("https://pcmoan70.github.io/3d_terrain/?lat=" + lat.toFixed(5) + "&lon=" + lon.toFixed(5) + "&r=2000" +
+          (pts.length ? "#pts=" + encodeURIComponent(JSON.stringify(pts)) : ""));
+      }, "globe"));
+    }
     // Offline maps: opens the saved-areas panel, which carries the ⬇ Download map button.
     wrap.appendChild(makePopupBtn(t("offline.maps"), "btn-light", function () { map.closePopup(); openOfflineManager(); }, "folder"));
     L.popup({ className: "choose-popup", closeButton: true, autoClose: true, autoPan: true, offset: [0, -2] })
@@ -25370,19 +25381,7 @@
       // mapant.no centred on the clicked point instead (their hash is #zoom/lat/lon).
       // Norway-only by coverage, and Experimental-gated like the radar link.
       if (cc === "NO" && experimentalOn()) {
-        // 3-D terrain: the clicked point opens pcmoan70.github.io/3d_terrain, which builds a
-        // 1 m DTM view (Kartverket, Norway only) 2 km around it. MAIN-level, before More.
-        // The dots on the map inside that square go along in the link's hash (owner, 2026-10-18:
-        // "specify dots with descriptive text from BirdsWhere app to be drawn in 3d view").
-        wrap.insertBefore(
-          makePopupBtn(t("link.terrain3d") + " ↗", "", function () {
-            mk.closePopup();
-            var pts = terrain3dPoints(lat, lon, 2000);
-            openExternal("https://pcmoan70.github.io/3d_terrain/?lat=" + lat.toFixed(5) + "&lon=" + lon.toFixed(5) + "&r=2000" +
-              (pts.length ? "#pts=" + encodeURIComponent(JSON.stringify(pts)) : ""));
-          }),
-          moreBtn
-        );
+        // (The 3-D terrain button lived here until v2199; it is in the long-press / double-click map menu now.)
         moreSub.appendChild(makePopupBtn(t("link.mapant") + " ↗", "btn-light", function () {
           mk.closePopup();
           openExternal("https://mapant.no/#8/" + lat.toFixed(5) + "/" + lon.toFixed(5));

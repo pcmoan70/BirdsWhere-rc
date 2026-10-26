@@ -243,5 +243,6 @@ window.AppGeo = (function () {
     placeName: placeName,
     nearbyFeature: nearbyFeature,
     countryMatch: countryMatch,
+    countryAt: countryAt,          // synchronous, from the bundled borders (the map-menu's 3-D terrain gate)
   };
 })();
