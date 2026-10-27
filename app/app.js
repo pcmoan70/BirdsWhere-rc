@@ -13015,7 +13015,10 @@
   // for the point have a high soundscape score"): Soundscape = share of the bird's recordings with the partner heard
   // in the background × Here — the birds you hear ALONGSIDE it, whether or not they sound alike. Experimental, like Sound.
   var CONF_SORTS = ["score", "match", "misid", "sound", "scape"];
-  function scapeScore(w) { return w.hs < 0 ? -1 : w.hs * (w.p >= 0 ? w.p : 1); }
+  // Cutoff (owner, 2026-10-27: "Other species must have a reasonable probability of eg 15%"): with a point open, a bird
+  // under SCAPE_HERE_MIN here gets no Soundscape value and is left out of the Soundscape order.
+  var SCAPE_HERE_MIN = 0.15;
+  function scapeScore(w) { return (w.hs < 0 || (w.p >= 0 && w.p < SCAPE_HERE_MIN)) ? -1 : w.hs * (w.p >= 0 ? w.p : 1); }
   function scapeTxt(v) { v *= 100; return v >= 0.5 ? String(Math.round(v)) : (v > 0 ? "<1" : "0"); }   // a positive share × Here under 0.5 reads "<1", never "0"
   // The by-ear side (Sound button, column, card row, note, the sound.csv fetch) is Experimental (owner, 2026-10-27:
   // "Gate the audio confusion behind the experimental gate").
@@ -13049,6 +13052,7 @@
     } else if (by === "sound") {
       arr.sort(function (a, b) { return b.snd - a.snd; });
     } else if (by === "scape") {
+      arr = arr.filter(function (w) { return scapeScore(w) >= 0; });          // the Here cutoff
       arr.sort(function (a, b) { return scapeScore(b) - scapeScore(a); });   // heard alongside × Here
     } else {
       arr.sort(function (a, b) { return b.w - a.w; });                      // by Match (confusion score)

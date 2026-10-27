@@ -1157,7 +1157,7 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
     Xeno-canto recordings in which the other bird is detected in the background (BirdNET+ V3.0, p ≥ 0.1 in
     any window; `app/soundscape.csv`, 7,449 species × up to 12 partners with share ≥ 5 %) **× Here** — the
     birds you will hear next to it this week, whether or not they sound alike (share alone without a
-    point). The Soundscape order adds those birds to the list. Teal bar; not part of Score. Built from the
+    point). **Cutoff:** with a point open only birds with **Here ≥ 15 %** get a value and enter the Soundscape order. The Soundscape order adds those birds to the list. Teal bar; not part of Score. Built from the
     S8 pass (`tools/sound/measures_v2.py` → `heard.csv`); the time-resolved pass (`embed_bn3_frames.py`)
     will replace it with per-frame shares.
   Each input must be **significant** before it counts: a **Match below 10 %** or a **misID below
