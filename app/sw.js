@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2203";
+var VERSION = "v2204";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 How it works now describes the by-ear look-alikes (Sound). The Model compare page (Experimental features) explains the two look-alike models \u2014 BioCLIP 2 behind Match, BirdNET+ V3.0 behind Sound \u2014 with their measured accuracy."
+  "\u2022 How it works: the by-ear look-alikes paragraph is in English in every language (v2203 added it; the Model compare page explains the two look-alike models, Experimental features)."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
