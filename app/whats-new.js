@@ -3,6 +3,7 @@
 // Loaded before app.js; exposed on window.AppStaticData.
 window.AppStaticData = window.AppStaticData || {};
 window.AppStaticData.WHATS_NEW = [
+    { v: "v2205", date: "2026-10-27", text: "Soundscape (Experimental). The look-alike views have a Soundscape column and order: the birds heard alongside this one in its recordings, weighted by how likely they are here this week \u2014 the chorus around it, whether or not they sound alike." },
     { v: "v2203", date: "2026-10-27", text: "How it works explains the by-ear look-alikes, and the Model compare page (Experimental) ends with the two look-alike models \u2014 BioCLIP 2 behind Match and BirdNET+ V3.0 behind Sound \u2014 with their measured accuracy." },
     { v: "v2202", date: "2026-10-27", text: "Look-alikes by ear are Experimental. The Sound column, the Sound order button and the by-ear report only appear with Experimental features on (Settings)." },
     { v: "v2201", date: "2026-10-27", text: "Look-alikes in the order you want. The header line of the look-alike table and photo cards has four buttons \u2014 Score \u00b7 Match \u00b7 misID \u00b7 Sound \u2014 that order the list by that column (remembered). Sound lists the bird\u2019s eight nearest by ear from the sound table, whether or not they are visual look-alikes." },

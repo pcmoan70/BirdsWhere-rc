@@ -83,6 +83,8 @@
   var CONFUSION_REV = 18;                     // bump when confusion.csv changes — busts the runtime (cache-first) copy
   var SOUND_URL = "sound.csv";                // per-bird "sounds like" partners (tools/sound, BirdNET+ V3.0 over Xeno-canto): code -> "code:SCORE …"
   var SOUND_REV = 1;                          // bump when sound.csv changes
+  var SCAPE_URL = "soundscape.csv";           // per-bird "heard alongside" partners (tools/sound measures_v2.py heard.csv): code -> "code:SHARE …" (share of recordings, 0-100)
+  var SCAPE_REV = 1;                          // bump when soundscape.csv changes
   var TRAITS_URL = "species-traits.json";   // per-species characteristics (AVONET morphology/ecology + HBW colour)
   var TRAITS_REV = 2;                        // bump when species-traits.json changes
 
@@ -12729,26 +12731,30 @@
   // "Sounds like" partners: how close two birds are to a sound-recognition model's ear (0-1), from the
   // world sound table (tasks/sound-table_20261025.md; the report is about/audio-similarity.html).
   // Same shape as the confusion file; the map is code -> { partnerCode: score }.
-  var soundMap = null, _soundP = null;
-  function ensureSound() {
-    if (soundMap) return Promise.resolve(soundMap);
-    if (_soundP) return _soundP;
-    _soundP = fetch(new URL(SOUND_URL, SCRIPT_BASE).href + "?r=" + SOUND_REV)
-      .then(function (r) { if (!r.ok) throw new Error("sound " + r.status); return r.text(); })
-      .then(function (text) {
-        var m = Object.create(null), lines = text.split(/\r?\n/);
-        for (var i = 1; i < lines.length; i++) {
-          var line = lines[i]; if (!line) continue;
-          var c = line.indexOf(","); if (c < 0) continue;
-          var o = Object.create(null);
-          line.slice(c + 1).split(" ").forEach(function (pp) { var a = pp.split(":"); if (a[0]) o[a[0]] = (+a[1] || 0) / 100; });
-          m[line.slice(0, c)] = o;
-        }
-        soundMap = m; return m;
-      })
-      .catch(function () { _soundP = null; return null; });
-    return _soundP;
+  // soundscape.csv has the same shape: the share (0-1) of the bird's recordings in which the partner is heard in the background.
+  function pairsLoader(url, rev) {
+    var map = null, p = null;
+    return function () {
+      if (map) return Promise.resolve(map);
+      if (p) return p;
+      p = fetch(new URL(url, SCRIPT_BASE).href + "?r=" + rev)
+        .then(function (r) { if (!r.ok) throw new Error(url + " " + r.status); return r.text(); })
+        .then(function (text) {
+          var m = Object.create(null), lines = text.split(/\r?\n/);
+          for (var i = 1; i < lines.length; i++) {
+            var line = lines[i]; if (!line) continue;
+            var c = line.indexOf(","); if (c < 0) continue;
+            var o = Object.create(null);
+            line.slice(c + 1).split(" ").forEach(function (pp) { var a = pp.split(":"); if (a[0]) o[a[0]] = (+a[1] || 0) / 100; });
+            m[line.slice(0, c)] = o;
+          }
+          map = m; return m;
+        })
+        .catch(function () { p = null; return null; });
+      return p;
+    };
   }
+  var ensureSound = pairsLoader(SOUND_URL, SOUND_REV), ensureScape = pairsLoader(SCAPE_URL, SCAPE_REV);
   // Per-species characteristics (AVONET morphology/ecology + HBW plumage colour),
   // for the confusion "compare" card. Fetched on first use, cache-first like confusion.
   var traitsData = null, _traitsP = null;
@@ -13005,26 +13011,32 @@
   // Sound mode lists the bird's eight nearest BY EAR from the sound table, whether or not they are visual
   // look-alikes (owner, 2026-10-27: "for audio make sure to load the top matches when toggled to audio");
   // such a sound-only bird has no Match / misID. Shared by the Confusion-species table and its images view.
-  var CONF_SORTS = ["score", "match", "misid", "sound"];
+  // "scape" (owner, 2026-10-27: "species that are heard in the same audio clips and have reasonably high probability
+  // for the point have a high soundscape score"): Soundscape = share of the bird's recordings with the partner heard
+  // in the background × Here — the birds you hear ALONGSIDE it, whether or not they sound alike. Experimental, like Sound.
+  var CONF_SORTS = ["score", "match", "misid", "sound", "scape"];
+  function scapeScore(w) { return w.hs < 0 ? -1 : w.hs * (w.p >= 0 ? w.p : 1); }
+  function scapeTxt(v) { v *= 100; return v >= 0.5 ? String(Math.round(v)) : (v > 0 ? "<1" : "0"); }   // a positive share × Here under 0.5 reads "<1", never "0"
   // The by-ear side (Sound button, column, card row, note, the sound.csv fetch) is Experimental (owner, 2026-10-27:
   // "Gate the audio confusion behind the experimental gate").
   function soundOn() { return experimentalOn(); }
-  function confSort() { var v = window.GeoState.get("confusionSort", "score"); return (CONF_SORTS.indexOf(v) >= 0 && (v !== "sound" || soundOn())) ? v : "score"; }
+  function confSort() { var v = window.GeoState.get("confusionSort", "score"); return (CONF_SORTS.indexOf(v) >= 0 && ((v !== "sound" && v !== "scape") || soundOn())) ? v : "score"; }
   async function confusionRanked(key, by) {
-    var map = await ensureConfusion(), snd = soundOn() ? await ensureSound() : null;
-    var entries = (map && map[key]) || [], sm = (snd && snd[key]) || {};
-    var members = entries.map(function (e) { var l = labelsByKey[e.c]; return l ? { m: l, w: e.w, mid: e.mid || 0, snd: (e.c in sm) ? sm[e.c] : -1 } : null; }).filter(Boolean);
-    if (by === "sound") {
+    var map = await ensureConfusion(), snd = soundOn() ? await ensureSound() : null, scp = soundOn() ? await ensureScape() : null;
+    var entries = (map && map[key]) || [], sm = (snd && snd[key]) || {}, hm = (scp && scp[key]) || {};
+    function mem(l, c, w, mid) { return { m: l, w: w, mid: mid, snd: (c in sm) ? sm[c] : -1, hs: (c in hm) ? hm[c] : -1 }; }
+    var members = entries.map(function (e) { var l = labelsByKey[e.c]; return l ? mem(l, e.c, e.w, e.mid || 0) : null; }).filter(Boolean);
+    if (by === "sound" || by === "scape") {                 // the by-ear / heard-alongside partners join the list, look-alikes or not
       var have = {}; entries.forEach(function (e) { have[e.c] = 1; });
-      Object.keys(sm).forEach(function (c) { var l = labelsByKey[c]; if (l && !have[c]) members.push({ m: l, w: 0, mid: 0, snd: sm[c] }); });
-      members = members.filter(function (mm) { return mm.snd >= 0; });
+      Object.keys(by === "sound" ? sm : hm).forEach(function (c) { var l = labelsByKey[c]; if (l && !have[c]) members.push(mem(l, c, 0, 0)); });
+      members = members.filter(function (mm) { return (by === "sound" ? mm.snd : mm.hs) >= 0; });
     }
     var pt = (currentSpView && isFinite(+currentSpView.lat) && isFinite(+currentSpView.lon)) ? currentSpView : null;
     var out = null;
     if (pt) { try { out = await predictWeek(+pt.lat, +pt.lon, +document.getElementById("week-select").value); } catch (e) {} }
     by = (by === "score" && !out) ? "match" : (CONF_SORTS.indexOf(by) >= 0 ? by : "match");
     if (!members.length) return { none: true, arr: [], out: out, by: by };
-    var arr = members.map(function (mm) { return { m: mm.m, w: mm.w, mid: mm.mid, snd: mm.snd, p: out ? (out[mm.m.index] || 0) : -1 }; });
+    var arr = members.map(function (mm) { return { m: mm.m, w: mm.w, mid: mm.mid, snd: mm.snd, hs: mm.hs, p: out ? (out[mm.m.index] || 0) : -1 }; });
     if (by === "score") {
       // Occurs-here only, and only where the Score survives its floors: a look-alike that
       // scores 0 is one whose resemblance is under 10 % AND whose real-misidentification
@@ -13036,6 +13048,8 @@
       arr.sort(function (a, b) { return (b.mid - a.mid) || (b.w - a.w); });
     } else if (by === "sound") {
       arr.sort(function (a, b) { return b.snd - a.snd; });
+    } else if (by === "scape") {
+      arr.sort(function (a, b) { return scapeScore(b) - scapeScore(a); });   // heard alongside × Here
     } else {
       arr.sort(function (a, b) { return b.w - a.w; });                      // by Match (confusion score)
     }
@@ -13050,9 +13064,9 @@
     var hdr = document.createElement("div"); hdr.className = "detrow-menu-hdr detrow-menu-name";
     var ttl = document.createElement("span"); ttl.className = "conf-title"; ttl.textContent = t("menu.confusion"); hdr.appendChild(ttl);
     var bar = document.createElement("span"); bar.className = "conf-sort"; bar.title = t("confusion.sortTip");
-    var labels = { score: t("confusion.colCombined"), match: t("confusion.colScore"), misid: t("confusion.colMisid"), sound: t("confusion.colSound") };
+    var labels = { score: t("confusion.colCombined"), match: t("confusion.colScore"), misid: t("confusion.colMisid"), sound: t("confusion.colSound"), scape: t("confusion.colScape") };
     CONF_SORTS.forEach(function (s) {
-      if (s === "sound" && !soundOn()) return;
+      if ((s === "sound" || s === "scape") && !soundOn()) return;
       var b = document.createElement("button"); b.type = "button"; b.textContent = labels[s]; b.setAttribute("data-sort", s);
       b.addEventListener("click", function (e) { e.stopPropagation(); if (b.disabled) return; window.GeoState.save({ confusionSort: s }); closeAnchoredMenu(); reopen(); });
       bar.appendChild(b);
@@ -13177,11 +13191,11 @@
     var rk = await confusionRanked(key, confSort());
     if (!anchMenuOpen(el)) return;
     mark(rk);
-    if (rk.none) { wait.textContent = t(rk.by === "sound" ? "confusion.noneSound" : "confusion.none"); positionAnchoredMenu(el, x, y); return; }
+    if (rk.none) { wait.textContent = t(rk.by === "sound" ? "confusion.noneSound" : rk.by === "scape" ? "confusion.noneScape" : "confusion.none"); positionAnchoredMenu(el, x, y); return; }
     var out = rk.out, arr = rk.arr;
     if (!arr.length) { wait.textContent = t("confusion.noneHere"); positionAnchoredMenu(el, x, y); return; }
     if (wait.parentNode) wait.parentNode.removeChild(wait);
-    var L = { match: t("confusion.colScore"), misid: t("confusion.colMisid"), sound: t("confusion.colSound"), here: t("confusion.colHere"), score: t("confusion.colCombined") };
+    var L = { match: t("confusion.colScore"), misid: t("confusion.colMisid"), sound: t("confusion.colSound"), scape: t("confusion.colScape"), here: t("confusion.colHere"), score: t("confusion.colCombined") };
     // Each metric row carries data-hintkey → the wrapped hover tooltip the table headers
     // use (a native title can't wrap these explanations); phones have the legend below.
     function row(cls, label, txt, pct, color, tipKey) {
@@ -13200,6 +13214,7 @@
           row("cfi-match", L.match, (!isBase && w.w > 0) ? String(Math.round(w.w * 100)) : "—", (!isBase && w.w > 0) ? w.w * 100 : 0, "", "confusion.tipMatch") +
           row("cfi-misid", L.misid, (!isBase && w.mid > 0) ? w.mid + "%" : "—", (!isBase && w.mid > 0) ? Math.max(6, w.mid) : 0, "", "confusion.tipMisid") +
           (soundOn() ? row("cfi-sound", L.sound, (!isBase && w.snd >= 0) ? String(Math.round(w.snd * 100)) : "—", (!isBase && w.snd >= 0) ? Math.max(4, w.snd * 100) : 0, "", "confusion.tipSound") : "") +
+          (soundOn() ? row("cfi-scape", L.scape, (!isBase && scapeScore(w) >= 0) ? scapeTxt(scapeScore(w)) : "—", (!isBase && scapeScore(w) >= 0) ? Math.max(4, scapeScore(w) * 100) : 0, "", "confusion.tipScape") : "") +
           row("cfi-here", L.here, here >= 0 ? pctTxt(here) : "—", here >= 0 ? Math.max(4, here * 100) : 0, here >= 0 ? probHueColor(here) : "", "confusion.tipHere") +
           row("cfi-score", L.score, sv >= 0 ? (sv >= 0.5 ? String(Math.round(sv)) : (sv > 0 ? "<1" : "0")) : "—", sv >= 0 ? Math.max(2, sv) : 0, sv >= 0 ? probHueColor(sv / 100) : "", "confusion.tipScore") +
         "</div>" +
@@ -13262,7 +13277,7 @@
     var rk = await confusionRanked(key, confSort());
     if (!anchMenuOpen(el)) return;                          // menu closed while loading
     mark(rk);
-    if (rk.none) { wait.textContent = t(rk.by === "sound" ? "confusion.noneSound" : "confusion.none"); positionAnchoredMenu(el, x, y); return; }
+    if (rk.none) { wait.textContent = t(rk.by === "sound" ? "confusion.noneSound" : rk.by === "scape" ? "confusion.noneScape" : "confusion.none"); positionAnchoredMenu(el, x, y); return; }
     var out = rk.out, arr = rk.arr;
     if (!arr.length) { wait.textContent = t("confusion.noneHere"); positionAnchoredMenu(el, x, y); return; }
     if (wait.parentNode) wait.parentNode.removeChild(wait);
@@ -13274,6 +13289,7 @@
       '<th title="' + escapeHtml(t("confusion.tipMatch")) + '">' + escapeHtml(t("confusion.colScore")) + "</th>" +
       '<th title="' + escapeHtml(t("confusion.tipMisid")) + '">' + escapeHtml(t("confusion.colMisid")) + "</th>" +
       (soundOn() ? '<th title="' + escapeHtml(t("confusion.tipSound")) + '">' + escapeHtml(t("confusion.colSound")) + "</th>" : "") +
+      (soundOn() ? '<th title="' + escapeHtml(t("confusion.tipScape")) + '">' + escapeHtml(t("confusion.colScape")) + "</th>" : "") +
       '<th title="' + escapeHtml(t("confusion.tipHere")) + '">' + escapeHtml(t("confusion.colHere")) + "</th>" +
       '<th title="' + escapeHtml(t("confusion.tipScore")) + '">' + escapeHtml(t("confusion.colCombined")) + "</th>";
     tbl.appendChild(thr);
@@ -13303,9 +13319,11 @@
       }
       // Sound: the pair's by-ear closeness (0-100) from the sound table; empty when the pair is not among the bird's eight nearest by ear
       var sndCell = !soundOn() ? "" : w.snd >= 0 ? probBarCell(Math.round(w.snd * 100), Math.max(4, w.snd * 100), "", "conf-sound") : probBarNa("conf-sound");
+      // Soundscape: share of the bird's recordings with this one heard in the background × Here (share alone without a point)
+      var ss = scapeScore(w), scpCell = !soundOn() ? "" : ss >= 0 ? probBarCell(scapeTxt(ss), Math.max(4, ss * 100), "", "conf-scape") : probBarNa("conf-scape");
       tr.innerHTML = '<td class="conf-name" data-name="' + escapeHtml(nm) + '" data-sci="' + escapeHtml(m.sci) + '">' + escapeHtml(nm) + '</td>' +
         (w.w > 0 ? probBarCell(mv, mv, "", "conf-match") : probBarNa("conf-match")) +   // a sound-only bird has no Match
-        midCell + sndCell +
+        midCell + sndCell + scpCell +
         probCell + scoreCell;
       (function (w2) { tr.addEventListener("click", function (ev) { confPick(key, lbl, w2, out, ev.clientX, ev.clientY); }); })(w);
       tbl.appendChild(tr);
@@ -13320,7 +13338,7 @@
   // Under both look-alike views: what the Sound number is (a model's ear, not people's) and the report on how good it is.
   function soundNote() {
     var d = document.createElement("div"); d.className = "conf-legend conf-sound-note";
-    d.textContent = t("confusion.legendSound", { sound: t("confusion.colSound") }) + " ";
+    d.textContent = t("confusion.legendSound", { sound: t("confusion.colSound") }) + " " + t("confusion.legendScape", { scape: t("confusion.colScape"), here: t("confusion.colHere") }) + " ";
     var a = document.createElement("a"); a.href = "about/audio-similarity.html"; a.target = "_blank"; a.rel = "noopener"; a.textContent = t("confusion.soundReport");
     d.appendChild(a); return d;
   }

@@ -89,7 +89,7 @@ redistributed here under those terms.
   holds no name for, and stores those names on the device. The About panel carries the
   attribution and the licence link in all 15 UI languages.
 
-### "Sounds like" table (`app/sound.csv`) — derived numbers
+### "Sounds like" table (`app/sound.csv`) and "heard alongside" table (`app/soundscape.csv`) — derived numbers
 
 The per-bird Sound scores were computed offline with **BirdNET+ V3.0 developer preview 3.1**
 (K. Lisa Yang Center for Conservation Bioacoustics, Cornell University; Chemnitz University of
