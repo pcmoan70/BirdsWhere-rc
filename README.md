@@ -1429,6 +1429,10 @@ the one thing left out by default — they are much the largest thing the app ho
   models' common names when they differ. Default: White-backed Woodpecker. Two Norwegian examples at the foot of the page
   (White-backed Woodpecker, Gyrfalcon) show a small 0.1° difference map around Oslo for the chosen week with the
   values at Oslo; *Show over Europe* loads that species into the three large maps. Online only (not cached).
+  *Experimental* — the link shows with Experimental features on (v2203). The foot of the page describes the two
+  **look-alike models** with their measured numbers: Match (BioCLIP 2 name embeddings feeding the misID model —
+  held-out recall@10 0.62 against 0.52 for the name similarity alone and 0.47 for the measurement heuristic; AUC
+  0.88) and Sound (BirdNET+ V3.0 over Xeno-canto — held-out top-1 74.7 %, hard pairs 18 of 22, coverage by region).
 - **Persistence** — settings, view, species/year/life lists, checklists, points and plotted
   detections survive across visits. Small settings live in **localStorage**; bulky per-list data
   (saved sets, detections) lives in **IndexedDB** to avoid the ~5 MB cap. Saved point lists load **lazily**: at start only

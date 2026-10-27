@@ -7655,7 +7655,7 @@
               '<div class="settings-aboutrow">' +
                 '<a class="settings-about about-page-link" href="about/" target="_blank" rel="noopener" data-i18n="settings.aboutPage">About ↗</a>' +
                 '<button type="button" id="about-open" class="settings-about" data-i18n="ctrl.about">How it works</button>' +
-                '<a class="settings-about" href="model-compare/" target="_blank" rel="noopener" data-i18n="settings.modelCompare">Model compare ↗</a>' +
+                '<a class="settings-about" id="model-compare-link" href="model-compare/" target="_blank" rel="noopener" data-i18n="settings.modelCompare"' + (experimentalOn() ? "" : ' style="display:none"') + '>Model compare ↗</a>' +   // Experimental only (owner, 2026-10-27)
               '</div>' +
               '<div id="settings-version" class="settings-version" style="display:none"></div>' +
               '<button type="button" id="settings-update" class="settings-update" style="display:none"></button>' +
@@ -9904,6 +9904,8 @@
     if (cw) { if (!experimentalOn()) cw.style.display = "none"; else try { updateModeVisibility(); } catch (e) { cw.style.display = ""; } }
     var b = document.getElementById("sp-checklist-btn");
     if (b) b.style.display = "";   // always visible (was experimental-gated in v868)
+    var mc = document.getElementById("model-compare-link");
+    if (mc) mc.style.display = experimentalOn() ? "" : "none";   // the Model compare page is Experimental
     if (typeof syncExperimentalOverlays === "function") syncExperimentalOverlays();   // Birding spots + GBIF are experimental-only
     try { updateBasemapOptions(); } catch (e) {}   // refresh basemap options (harmless; maps are no longer experimental)
   }
