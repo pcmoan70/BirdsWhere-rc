@@ -69,6 +69,8 @@
   "confusion.tipSound": "Lyd: hvor ens de to fugle lyder for en lydgenkendelsesmodel (0–100), fra BirdNET+ V3.0 over Xeno-canto-optagelser — kun fuglens otte nærmeste på lyd får et tal.",
   "confusion.legendSound": "{sound}: lighed på lyd (0–100) for en lydgenkendelsesmodel, ikke for mennesker — kun hver fugls otte nærmeste på lyd er vurderet.",
   "confusion.soundReport": "Hvor godt er det? →",
+  "confusion.sortTip": "Sortér listen efter denne kolonne",
+  "confusion.noneSound": "Ingen fugle, der ligner på lyden, på fil",
   "traits.none": "Ingen kendetegn registreret",
   "traits.colour": "Fjerdragtsfarve",
   "traits.male": "Han",

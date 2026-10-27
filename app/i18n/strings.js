@@ -650,6 +650,8 @@ window.GeoI18N = (function () {
         "confusion.tipSound": "Sound: how alike the two birds are to a sound-recognition model's ear (0–100), from BirdNET+ V3.0 over Xeno-canto recordings — only the bird's eight nearest by ear carry a number.",
         "confusion.legendSound": "{sound}: closeness by ear (0–100) to a sound-recognition model, not to people — only each bird's eight nearest by ear are scored.",
         "confusion.soundReport": "How good is it? →",
+        "confusion.sortTip": "Order the list by this column",
+        "confusion.noneSound": "No birds close by ear on file",
         "traits.none": "No characteristics on file",
         "traits.colour": "Plumage colour",
         "traits.male": "Male",

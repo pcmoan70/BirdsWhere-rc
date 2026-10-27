@@ -69,6 +69,8 @@
   "confusion.tipSound": "Sonido: cuánto se parecen las dos aves al oído de un modelo de reconocimiento de sonidos (0–100), de BirdNET+ V3.0 sobre grabaciones de Xeno-canto — solo las ocho especies más cercanas al oído llevan número.",
   "confusion.legendSound": "{sound}: cercanía al oído (0–100) para un modelo de reconocimiento de sonidos, no para las personas — solo se puntúan las ocho más cercanas de cada ave.",
   "confusion.soundReport": "¿Qué tan bueno es? →",
+  "confusion.sortTip": "Ordenar la lista por esta columna",
+  "confusion.noneSound": "No hay aves parecidas de oído registradas",
   "traits.none": "Sin características registradas",
   "traits.colour": "Coloración del plumaje",
   "traits.male": "Macho",

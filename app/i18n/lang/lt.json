@@ -69,6 +69,8 @@
   "confusion.tipSound": "Garsas: kiek panašiai abu paukščiai skamba garsų atpažinimo modeliui (0–100), pagal BirdNET+ V3.0 iš Xeno-canto įrašų — skaičių turi tik aštuonios pagal garsą artimiausios rūšys.",
   "confusion.legendSound": "{sound}: panašumas pagal garsą (0–100) garsų atpažinimo modeliui, ne žmonėms — įvertintos tik kiekvieno paukščio aštuonios artimiausios pagal garsą.",
   "confusion.soundReport": "Kiek tai patikima? →",
+  "confusion.sortTip": "Rikiuoti sąrašą pagal šį stulpelį",
+  "confusion.noneSound": "Nėra įrašytų pagal garsą panašių paukščių",
   "traits.none": "Požymių duomenų nėra",
   "traits.colour": "Plunksnų spalva",
   "traits.male": "Patinas",

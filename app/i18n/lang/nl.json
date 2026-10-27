@@ -69,6 +69,8 @@
   "confusion.tipSound": "Geluid: hoe sterk de twee vogels voor een geluidsherkenningsmodel op elkaar lijken (0–100), uit BirdNET+ V3.0 over Xeno-canto-opnamen — alleen de acht op het gehoor dichtstbijzijnde soorten krijgen een getal.",
   "confusion.legendSound": "{sound}: gelijkenis op het gehoor (0–100) voor een geluidsherkenningsmodel, niet voor mensen — alleen de acht dichtstbijzijnde per vogel zijn beoordeeld.",
   "confusion.soundReport": "Hoe goed is het? →",
+  "confusion.sortTip": "Lijst op deze kolom sorteren",
+  "confusion.noneSound": "Geen op het gehoor gelijkende vogels bekend",
   "traits.none": "Geen kenmerken bekend",
   "traits.colour": "Verenkleedkleur",
   "traits.male": "Mannetje",

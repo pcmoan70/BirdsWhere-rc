@@ -69,6 +69,8 @@
   "confusion.tipSound": "Klang: wie ähnlich die beiden Vögel für ein Lauterkennungsmodell klingen (0–100), aus BirdNET+ V3.0 über Xeno-canto-Aufnahmen — nur die acht nach Gehör nächsten Arten tragen eine Zahl.",
   "confusion.legendSound": "{sound}: Ähnlichkeit nach Gehör (0–100) für ein Lauterkennungsmodell, nicht für Menschen — bewertet sind nur die acht nach Gehör nächsten Arten je Vogel.",
   "confusion.soundReport": "Wie gut ist es? →",
+  "confusion.sortTip": "Liste nach dieser Spalte ordnen",
+  "confusion.noneSound": "Keine klanglich ähnlichen Vögel verzeichnet",
   "traits.none": "Keine Merkmale hinterlegt",
   "traits.colour": "Gefiederfärbung",
   "traits.male": "Männchen",

@@ -942,7 +942,12 @@ select:focus, textarea:focus { outline: none; border-color: var(--brand); box-sh
 /* View switch (table ↔ photo cards), left of the ×. */
 .conf-switch { position: absolute; top: 6px; right: 34px; z-index: 3; border: 1px solid var(--border); background: var(--surface-2); color: var(--ink); font: inherit; font-size: var(--fs-xs); padding: 3px 8px; border-radius: 6px; cursor: pointer; }
 .conf-switch:hover { background: var(--brand-soft); }
-.conf-menu .detrow-menu-name { padding-right: 120px; }   /* room for the switch + × */
+.conf-menu .detrow-menu-hdr.detrow-menu-name { padding-right: 120px; max-width: none; display: flex; align-items: center; gap: 6px; }   /* room for the switch + ×; title + sort buttons on one line (outranks the 260px cap below) */
+.conf-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }   /* the title gives way to the buttons on a phone */
+.conf-sort { display: inline-flex; gap: 3px; flex: 0 0 auto; }
+.conf-sort button { border: 1px solid var(--border); background: var(--surface-2); color: var(--ink-muted); font: inherit; font-size: var(--fs-xs); font-weight: 400; padding: 2px 6px; border-radius: 6px; cursor: pointer; }
+.conf-sort button.on { background: var(--brand-soft); color: var(--ink); font-weight: 700; }
+.conf-sort button:disabled { opacity: .4; cursor: default; }
 /* Confusion COMPARE card: focal vs look-alike across colour / shape / ecology. */
 .cmp-menu .detrow-menu-name { padding-right: 28px; }
 .cmp-table { border-collapse: collapse; width: 100%; font-size: 12.5px; }

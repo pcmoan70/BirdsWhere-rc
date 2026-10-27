@@ -12997,30 +12997,64 @@
     var d = w.mid >= CONF_MISID_MIN ? w.mid : 0;
     return (0.25 * m + 0.75 * (d / 100)) * w.p;
   }
-  // The ranked look-alikes of a species: [{ m: label, w: Match, mid: misID %, p: Here }]
-  // by Score (most likely confusion first) when a point is open, else by Match; `out`
-  // is that week's prediction at the point (null without one). Shared by the
-  // Confusion-species table and its images view.
-  async function confusionRanked(key) {
+  // The ranked look-alikes of a species: [{ m: label, w: Match, mid: misID %, snd: Sound, p: Here }] in the
+  // order `by` asks for — "score" (most likely confusion first; needs a point, else Match), "match", "misid"
+  // or "sound"; `out` is that week's prediction at the point (null without one), `by` the order taken.
+  // Sound mode lists the bird's eight nearest BY EAR from the sound table, whether or not they are visual
+  // look-alikes (owner, 2026-10-27: "for audio make sure to load the top matches when toggled to audio");
+  // such a sound-only bird has no Match / misID. Shared by the Confusion-species table and its images view.
+  var CONF_SORTS = ["score", "match", "misid", "sound"];
+  function confSort() { var v = window.GeoState.get("confusionSort", "score"); return CONF_SORTS.indexOf(v) >= 0 ? v : "score"; }
+  async function confusionRanked(key, by) {
     var map = await ensureConfusion(), snd = await ensureSound();
     var entries = (map && map[key]) || [], sm = (snd && snd[key]) || {};
     var members = entries.map(function (e) { var l = labelsByKey[e.c]; return l ? { m: l, w: e.w, mid: e.mid || 0, snd: (e.c in sm) ? sm[e.c] : -1 } : null; }).filter(Boolean);
-    if (!members.length) return { none: true, arr: [], out: null };
+    if (by === "sound") {
+      var have = {}; entries.forEach(function (e) { have[e.c] = 1; });
+      Object.keys(sm).forEach(function (c) { var l = labelsByKey[c]; if (l && !have[c]) members.push({ m: l, w: 0, mid: 0, snd: sm[c] }); });
+      members = members.filter(function (mm) { return mm.snd >= 0; });
+    }
     var pt = (currentSpView && isFinite(+currentSpView.lat) && isFinite(+currentSpView.lon)) ? currentSpView : null;
     var out = null;
     if (pt) { try { out = await predictWeek(+pt.lat, +pt.lon, +document.getElementById("week-select").value); } catch (e) {} }
+    by = (by === "score" && !out) ? "match" : (CONF_SORTS.indexOf(by) >= 0 ? by : "match");
+    if (!members.length) return { none: true, arr: [], out: out, by: by };
     var arr = members.map(function (mm) { return { m: mm.m, w: mm.w, mid: mm.mid, snd: mm.snd, p: out ? (out[mm.m.index] || 0) : -1 }; });
-    if (out) {
+    if (by === "score") {
       // Occurs-here only, and only where the Score survives its floors: a look-alike that
       // scores 0 is one whose resemblance is under 10 % AND whose real-misidentification
       // share is under 5 %, which is not a confusion anyone would make — listing it at the
       // bottom said "consider this bird" about a bird nobody mistakes for this one.
       arr = arr.filter(function (w) { return w.p > 0 && confScore(w) > 0; });
       arr.sort(function (a, b) { return confScore(b) - confScore(a); });    // by Score, most likely-confusion first
+    } else if (by === "misid") {
+      arr.sort(function (a, b) { return (b.mid - a.mid) || (b.w - a.w); });
+    } else if (by === "sound") {
+      arr.sort(function (a, b) { return b.snd - a.snd; });
     } else {
-      arr.sort(function (a, b) { return b.w - a.w; });                      // no point: by Match (confusion score)
+      arr.sort(function (a, b) { return b.w - a.w; });                      // by Match (confusion score)
     }
-    return { arr: arr, out: out };
+    return { arr: arr, out: out, by: by };
+  }
+  // The header line of both look-alike views: the title, then the sort buttons Score · Match · misID · Sound
+  // (owner, 2026-10-27: "toggleable with button on top … Let toggle be on top line. Of confusion panes (both
+  // text and image)"). The choice is remembered (Settings-wide); a tap re-opens the same view at the same
+  // anchor in the new order. Returns the marker to call once the list is ranked: it lights the order taken
+  // and greys Score when no point is open (Score needs Here).
+  function confHeader(el, reopen) {
+    var hdr = document.createElement("div"); hdr.className = "detrow-menu-hdr detrow-menu-name";
+    var ttl = document.createElement("span"); ttl.className = "conf-title"; ttl.textContent = t("menu.confusion"); hdr.appendChild(ttl);
+    var bar = document.createElement("span"); bar.className = "conf-sort"; bar.title = t("confusion.sortTip");
+    var labels = { score: t("confusion.colCombined"), match: t("confusion.colScore"), misid: t("confusion.colMisid"), sound: t("confusion.colSound") };
+    CONF_SORTS.forEach(function (s) {
+      var b = document.createElement("button"); b.type = "button"; b.textContent = labels[s]; b.setAttribute("data-sort", s);
+      b.addEventListener("click", function (e) { e.stopPropagation(); if (b.disabled) return; window.GeoState.save({ confusionSort: s }); closeAnchoredMenu(); reopen(); });
+      bar.appendChild(b);
+    });
+    hdr.appendChild(bar); el.appendChild(hdr);
+    return function (rk) {
+      Array.prototype.forEach.call(bar.children, function (b) { var s = b.getAttribute("data-sort"); b.classList.toggle("on", s === rk.by); if (s === "score") b.disabled = !rk.out; });
+    };
   }
   function confusionView() { return window.GeoState.get("confusionView", "images") === "table" ? "table" : "images"; }
   // The view switch in the popup's top-right (next to ×): table ↔ photo cards, one-off (the
@@ -13125,10 +13159,7 @@
     var el = openAnchoredMenu("detrow-menu family-menu conf-menu conf-img-menu");
     el.style.maxHeight = "min(80vh,640px)"; el.style.overflowY = "auto";
     el.style.width = "min(97vw,900px)";
-    var hdr = document.createElement("div");
-    hdr.className = "detrow-menu-hdr detrow-menu-name";
-    hdr.textContent = t("menu.confusion");   // same title as the text view — the pictures speak for themselves
-    el.appendChild(hdr);
+    var mark = confHeader(el, function () { openConfusionImages(key, x, y); });   // same title as the text view, with the sort buttons
     var closeBtn = document.createElement("button");
     closeBtn.type = "button"; closeBtn.className = "conf-close"; closeBtn.textContent = "×";
     closeBtn.setAttribute("aria-label", "Close");
@@ -13137,9 +13168,10 @@
     confSwitchBtn(el, t("confusion.toText"), function () { openConfusionMenu(key, x, y); });   // "Text" → the table view
     var wait = document.createElement("div"); wait.className = "detrow-menu-hdr"; wait.textContent = "…";
     el.appendChild(wait); positionAnchoredMenu(el, x, y);
-    var rk = await confusionRanked(key);
+    var rk = await confusionRanked(key, confSort());
     if (!anchMenuOpen(el)) return;
-    if (rk.none) { wait.textContent = t("confusion.none"); positionAnchoredMenu(el, x, y); return; }
+    mark(rk);
+    if (rk.none) { wait.textContent = t(rk.by === "sound" ? "confusion.noneSound" : "confusion.none"); positionAnchoredMenu(el, x, y); return; }
     var out = rk.out, arr = rk.arr;
     if (!arr.length) { wait.textContent = t("confusion.noneHere"); positionAnchoredMenu(el, x, y); return; }
     if (wait.parentNode) wait.parentNode.removeChild(wait);
@@ -13159,7 +13191,7 @@
         '<div class="cfi-name">' + escapeHtml(nm) + "</div>" +   // the species itself is marked by its thicker frame (.cfi-base), not a label
         '<div class="cfi-sci">' + escapeHtml(m.sci) + "</div>" +
         '<div class="cfi-stats">' +
-          row("cfi-match", L.match, isBase ? "—" : String(Math.round(w.w * 100)), isBase ? 0 : w.w * 100, "", "confusion.tipMatch") +
+          row("cfi-match", L.match, (!isBase && w.w > 0) ? String(Math.round(w.w * 100)) : "—", (!isBase && w.w > 0) ? w.w * 100 : 0, "", "confusion.tipMatch") +
           row("cfi-misid", L.misid, (!isBase && w.mid > 0) ? w.mid + "%" : "—", (!isBase && w.mid > 0) ? Math.max(6, w.mid) : 0, "", "confusion.tipMisid") +
           row("cfi-sound", L.sound, (!isBase && w.snd >= 0) ? String(Math.round(w.snd * 100)) : "—", (!isBase && w.snd >= 0) ? Math.max(4, w.snd * 100) : 0, "", "confusion.tipSound") +
           row("cfi-here", L.here, here >= 0 ? pctTxt(here) : "—", here >= 0 ? Math.max(4, here * 100) : 0, here >= 0 ? probHueColor(here) : "", "confusion.tipHere") +
@@ -13211,10 +13243,7 @@
     var el = openAnchoredMenu("detrow-menu family-menu conf-menu");
     el.style.maxHeight = "min(72vh,560px)"; el.style.overflowY = "auto";
     el.style.width = "min(97vw,540px)";                       // full phone width (content-sized it came out squashed), capped on desktop
-    var hdr = document.createElement("div");
-    hdr.className = "detrow-menu-hdr detrow-menu-name";
-    hdr.textContent = t("menu.confusion");
-    el.appendChild(hdr);
+    var mark = confHeader(el, function () { openConfusionMenu(key, x, y); });
     var closeBtn = document.createElement("button");
     closeBtn.type = "button"; closeBtn.className = "conf-close"; closeBtn.textContent = "×";
     closeBtn.setAttribute("aria-label", "Close");
@@ -13224,9 +13253,10 @@
     positionAnchoredMenu(el, x, y);
     var wait = document.createElement("div"); wait.className = "detrow-menu-hdr"; wait.textContent = "…";
     el.appendChild(wait); positionAnchoredMenu(el, x, y);
-    var rk = await confusionRanked(key);
+    var rk = await confusionRanked(key, confSort());
     if (!anchMenuOpen(el)) return;                          // menu closed while loading
-    if (rk.none) { wait.textContent = t("confusion.none"); positionAnchoredMenu(el, x, y); return; }
+    mark(rk);
+    if (rk.none) { wait.textContent = t(rk.by === "sound" ? "confusion.noneSound" : "confusion.none"); positionAnchoredMenu(el, x, y); return; }
     var out = rk.out, arr = rk.arr;
     if (!arr.length) { wait.textContent = t("confusion.noneHere"); positionAnchoredMenu(el, x, y); return; }
     if (wait.parentNode) wait.parentNode.removeChild(wait);
@@ -13268,7 +13298,7 @@
       // Sound: the pair's by-ear closeness (0-100) from the sound table; empty when the pair is not among the bird's eight nearest by ear
       var sndCell = w.snd >= 0 ? probBarCell(Math.round(w.snd * 100), Math.max(4, w.snd * 100), "", "conf-sound") : probBarNa("conf-sound");
       tr.innerHTML = '<td class="conf-name" data-name="' + escapeHtml(nm) + '" data-sci="' + escapeHtml(m.sci) + '">' + escapeHtml(nm) + '</td>' +
-        probBarCell(mv, mv, "", "conf-match") +
+        (w.w > 0 ? probBarCell(mv, mv, "", "conf-match") : probBarNa("conf-match")) +   // a sound-only bird has no Match
         midCell + sndCell +
         probCell + scoreCell;
       (function (w2) { tr.addEventListener("click", function (ev) { confPick(key, lbl, w2, out, ev.clientX, ev.clientY); }); })(w);

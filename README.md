@@ -1148,6 +1148,10 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
     the list links **[How well does the "sounds like" table work?](app/about/audio-similarity.md)**
     (`about/audio-similarity.html` in the app): coverage by region / class / family, the window
     filter's recall and false-positive proxy, leave-one-recording-out accuracy and a hard-pair check.
+  - **Order** (v2201): the header line of both views has four buttons — **Score · Match · misID ·
+    Sound** — that order the list by that column; the choice is remembered. Score needs an open
+    point (it is greyed without one). **Sound** lists the bird's **eight nearest by ear** from the
+    sound table whether or not they are visual look-alikes; a sound-only bird shows no Match / misID.
   Each input must be **significant** before it counts: a **Match below 10 %** or a **misID below
   5 %** contributes nothing, so a species cannot earn a place in the ranking on a 3 % resemblance
   or a single stray misidentification. A look-alike under both floors scores **0 and is not listed

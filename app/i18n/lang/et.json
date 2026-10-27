@@ -69,6 +69,8 @@
   "confusion.tipSound": "Heli: kui sarnaselt kaks lindu helituvastusmudeli kõrvale kõlavad (0–100), BirdNET+ V3.0 põhjal Xeno-canto salvestistelt — numbri saavad vaid linnu kaheksa heli poolest lähimat liiki.",
   "confusion.legendSound": "{sound}: sarnasus heli järgi (0–100) helituvastusmudeli, mitte inimese kõrvale — hinnatud on vaid iga linnu kaheksa heli poolest lähimat.",
   "confusion.soundReport": "Kui hea see on? →",
+  "confusion.sortTip": "Järjesta loend selle veeru järgi",
+  "confusion.noneSound": "Kõlalt sarnaseid linde pole kirjas",
   "traits.none": "Tunnuseid pole kirjas",
   "traits.colour": "Sulestiku värvus",
   "traits.male": "Isane",

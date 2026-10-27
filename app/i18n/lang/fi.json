@@ -69,6 +69,8 @@
   "confusion.tipSound": "Ääni: kuinka samalta kaksi lintua kuulostavat äänentunnistusmallin korvaan (0–100), BirdNET+ V3.0:lla Xeno-canto-äänitteistä — vain linnun kahdeksan äänellisesti lähintä lajia saavat luvun.",
   "confusion.legendSound": "{sound}: äänen samankaltaisuus (0–100) äänentunnistusmallin, ei ihmisen korvaan — pisteytetty on vain kunkin linnun kahdeksan äänellisesti lähintä.",
   "confusion.soundReport": "Kuinka hyvä se on? →",
+  "confusion.sortTip": "Järjestä luettelo tämän sarakkeen mukaan",
+  "confusion.noneSound": "Ääneltä samankaltaisia lintuja ei ole tiedossa",
   "traits.none": "Ei ominaisuustietoja",
   "traits.colour": "Höyhenpuvun väri",
   "traits.male": "Koiras",
