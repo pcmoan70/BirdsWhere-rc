@@ -365,6 +365,7 @@
       sources:  '<circle cx="12" cy="12" r="2"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 16.2a6 6 0 0 0 0-8.4M4.9 4.9a10 10 0 0 0 0 14.2M19.1 19.1a10 10 0 0 0 0-14.2"/>',
       datasets: '<path d="M12 3 3 7.5 12 12l9-4.5L12 3zM3 12l9 4.5 9-4.5M3 16.5 12 21l9-4.5"/>',
       globe:    '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.6 2.6 15.4 0 18M12 3c-2.6 2.6-2.6 15.4 0 18"/>',
+      radar:    '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12l6.4-6.4"/>',
       camera:   '<path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.2" r="3.4"/>',
       download: '<path d="M12 3v11M7.5 9.5 12 14l4.5-4.5M5 20h14"/>',
       upload:   '<path d="M12 21V10M7.5 14.5 12 10l4.5 4.5M5 4h14"/>',
@@ -19219,6 +19220,13 @@
     wrap.appendChild(makePopupBtn(t("nav.here"), "btn-light", function () { map.closePopup(); navigatePoints([{ lat: lat, lon: lon }]); }, "nav"));
     // Add this spot as the next stop of the in-progress route (named after the place if known).
     wrap.appendChild(makePopupBtn(tLabel("route.add"), "btn-light", function () { map.closePopup(); addToRoute(lat, lon, nameHdr.textContent || ""); }, "navplus"));
+    // Radar → Migration Aloft (owner, 2026-10-27: "Move the Radar button to the long-click/right-click popup menu"):
+    // Europe only, Experimental features on — as before in the click popup. Its own repo / Pages site.
+    if (continentFor(AppGeo.countryAt(lat, lon)) === "EU" && experimentalOn()) {
+      wrap.appendChild(makePopupBtn(t("link.aloft") + " ↗", "btn-light", function () {
+        map.closePopup(); openExternal("https://pcmoan70.github.io/BirdsWhere-aloft/");
+      }, "radar"));
+    }
     // 3-D terrain (owner, 2026-10-26: "move 3d-terrain to the double click/long click map point menu above Offline maps"):
     // Norway only (Kartverket's 1 m model) with Experimental features on, as before in the click popup; opens
     // pcmoan70.github.io/3d_terrain 2 km around the point, the map's dots inside that square along in the hash.
@@ -25458,23 +25466,13 @@
     // Experimental gate any more — the collapsed section keeps the popup tidy).
     AppGeo.countryInfo(lat, lon).then(function (info) {
       var cc = (info && info.cc) || "", cname = (info && info.name) || "";
-      // Radar → Migration Aloft (European weather-radar migration map). A MAIN-level
-      // popup entry (not inside "More"), Europe only, Experimental-gated. Inserted before the More toggle.
-      if (continentFor(cc) === "EU" && experimentalOn()) {
-        wrap.insertBefore(
-          makePopupBtn(t("link.aloft") + " ↗", "", function () {
-            mk.closePopup(); openExternal("https://pcmoan70.github.io/BirdsWhere-aloft/");   // the Migration Aloft radar is its own repo/site now
-          }),
-          moreBtn
-        );
-        var _pp = mk.getPopup(); if (_pp && _pp.isOpen()) _pp.update();
-      }
+      // (The Radar → Migration Aloft entry lived here until v2207; it is in the long-press / right-click map menu now.)
       // MapAnt (Norway): the LiDAR-derived orienteering map of the whole country —
       // contours, boulders, marshes and vegetation density at up to ~0.5 m/px, which
       // reads terrain far better than any of our basemaps. It is published in UTM 33N
       // (EPSG:32633), not Web Mercator, so it cannot join the basemap list; this opens
       // mapant.no centred on the clicked point instead (their hash is #zoom/lat/lon).
-      // Norway-only by coverage, and Experimental-gated like the radar link.
+      // Norway-only by coverage, and Experimental-gated.
       if (cc === "NO" && experimentalOn()) {
         // (The 3-D terrain button lived here until v2199; it is in the long-press / double-click map menu now.)
         moreSub.appendChild(makePopupBtn(t("link.mapant") + " ↗", "btn-light", function () {

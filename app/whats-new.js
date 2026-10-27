@@ -3,6 +3,7 @@
 // Loaded before app.js; exposed on window.AppStaticData.
 window.AppStaticData = window.AppStaticData || {};
 window.AppStaticData.WHATS_NEW = [
+    { v: "v2207", date: "2026-10-27", text: "The Radar button (Europe, Experimental features on) now sits in the long-press / right-click map menu, above 3-D terrain and Offline maps, instead of the click popup." },
     { v: "v2205", date: "2026-10-27", text: "Soundscape (Experimental). The look-alike views have a Soundscape column and order: the birds heard alongside this one in its recordings, weighted by how likely they are here this week \u2014 the chorus around it, whether or not they sound alike. Only birds with at least a 15 % chance of being here count." },
     { v: "v2203", date: "2026-10-27", text: "How it works explains the by-ear look-alikes, and the Model compare page (Experimental) ends with the two look-alike models \u2014 BioCLIP 2 behind Match and BirdNET+ V3.0 behind Sound \u2014 with their measured accuracy." },
     { v: "v2202", date: "2026-10-27", text: "Look-alikes by ear are Experimental. The Sound column, the Sound order button and the by-ear report only appear with Experimental features on (Settings)." },

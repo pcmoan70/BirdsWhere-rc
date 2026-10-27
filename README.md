@@ -1257,7 +1257,9 @@ an **eBird Record Format CSV** ready for [ebird.org/import](https://ebird.org/im
 ## Country resources & place links
 
 - **Map right-click / long-press menu** — *Add point*, *Share point*, *Save location*, *Navigate
-  here*, *Add to route*, **3-D terrain** (Norway, with *Experimental features* on — see below) and
+  here*, *Add to route*, **Radar** (Europe, with *Experimental features* on — opens
+  [Migration Aloft](https://pcmoan70.github.io/BirdsWhere-aloft/), the weather-radar migration map),
+  **3-D terrain** (Norway, with *Experimental features* on — see below) and
   *Offline maps* (the coordinates line copies them); the click popup adds
   a **Birdingplaces** link (birdingplaces.eu at the point),
   and, for Sweden & Norway, a **Fågelkartan** link to that point's county / fylke page. In Norway,

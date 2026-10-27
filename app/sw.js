@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2206";
+var VERSION = "v2207";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Soundscape (Experimental features): the look-alike table and cards gain a Soundscape column and order \u2014 the birds heard alongside this one in its recordings, weighted by how likely they are here this week; only birds with at least a 15 % chance of being here count."
+  "\u2022 The Radar (Migration Aloft) button moved from the click popup to the long-press / right-click map menu, above 3-D terrain (Europe, Experimental features on)."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
