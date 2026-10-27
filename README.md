@@ -1139,7 +1139,7 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
     renormalised over the listed partners (sum ≈ 100 %).
   - The app ships only each species' **9 best partners** by the location-free score; the full
     ranked lists stay on the data disk (`confusion_full.csv`).
-  - **Sound** (v2200) is how alike the two birds are **by ear to a sound-recognition model** (0–100):
+  - **Sound** (v2200; *Experimental* — enable in Settings, v2202) is how alike the two birds are **by ear to a sound-recognition model** (0–100):
     BirdNET+ V3.0 embeddings of 5-second windows from Xeno-canto recordings (A grade, B grade where
     A ran out; a window counts when the model gives the labelled species ≥ 20 %), the pair's centroid
     closeness and soft confusion rank-averaged (`tools/sound/`, `app/sound.csv`, 7,462 species × up to

@@ -13004,9 +13004,12 @@
   // look-alikes (owner, 2026-10-27: "for audio make sure to load the top matches when toggled to audio");
   // such a sound-only bird has no Match / misID. Shared by the Confusion-species table and its images view.
   var CONF_SORTS = ["score", "match", "misid", "sound"];
-  function confSort() { var v = window.GeoState.get("confusionSort", "score"); return CONF_SORTS.indexOf(v) >= 0 ? v : "score"; }
+  // The by-ear side (Sound button, column, card row, note, the sound.csv fetch) is Experimental (owner, 2026-10-27:
+  // "Gate the audio confusion behind the experimental gate").
+  function soundOn() { return experimentalOn(); }
+  function confSort() { var v = window.GeoState.get("confusionSort", "score"); return (CONF_SORTS.indexOf(v) >= 0 && (v !== "sound" || soundOn())) ? v : "score"; }
   async function confusionRanked(key, by) {
-    var map = await ensureConfusion(), snd = await ensureSound();
+    var map = await ensureConfusion(), snd = soundOn() ? await ensureSound() : null;
     var entries = (map && map[key]) || [], sm = (snd && snd[key]) || {};
     var members = entries.map(function (e) { var l = labelsByKey[e.c]; return l ? { m: l, w: e.w, mid: e.mid || 0, snd: (e.c in sm) ? sm[e.c] : -1 } : null; }).filter(Boolean);
     if (by === "sound") {
@@ -13047,6 +13050,7 @@
     var bar = document.createElement("span"); bar.className = "conf-sort"; bar.title = t("confusion.sortTip");
     var labels = { score: t("confusion.colCombined"), match: t("confusion.colScore"), misid: t("confusion.colMisid"), sound: t("confusion.colSound") };
     CONF_SORTS.forEach(function (s) {
+      if (s === "sound" && !soundOn()) return;
       var b = document.createElement("button"); b.type = "button"; b.textContent = labels[s]; b.setAttribute("data-sort", s);
       b.addEventListener("click", function (e) { e.stopPropagation(); if (b.disabled) return; window.GeoState.save({ confusionSort: s }); closeAnchoredMenu(); reopen(); });
       bar.appendChild(b);
@@ -13193,7 +13197,7 @@
         '<div class="cfi-stats">' +
           row("cfi-match", L.match, (!isBase && w.w > 0) ? String(Math.round(w.w * 100)) : "—", (!isBase && w.w > 0) ? w.w * 100 : 0, "", "confusion.tipMatch") +
           row("cfi-misid", L.misid, (!isBase && w.mid > 0) ? w.mid + "%" : "—", (!isBase && w.mid > 0) ? Math.max(6, w.mid) : 0, "", "confusion.tipMisid") +
-          row("cfi-sound", L.sound, (!isBase && w.snd >= 0) ? String(Math.round(w.snd * 100)) : "—", (!isBase && w.snd >= 0) ? Math.max(4, w.snd * 100) : 0, "", "confusion.tipSound") +
+          (soundOn() ? row("cfi-sound", L.sound, (!isBase && w.snd >= 0) ? String(Math.round(w.snd * 100)) : "—", (!isBase && w.snd >= 0) ? Math.max(4, w.snd * 100) : 0, "", "confusion.tipSound") : "") +
           row("cfi-here", L.here, here >= 0 ? pctTxt(here) : "—", here >= 0 ? Math.max(4, here * 100) : 0, here >= 0 ? probHueColor(here) : "", "confusion.tipHere") +
           row("cfi-score", L.score, sv >= 0 ? (sv >= 0.5 ? String(Math.round(sv)) : (sv > 0 ? "<1" : "0")) : "—", sv >= 0 ? Math.max(2, sv) : 0, sv >= 0 ? probHueColor(sv / 100) : "", "confusion.tipScore") +
         "</div>" +
@@ -13206,7 +13210,7 @@
     var legend = document.createElement("div"); legend.className = "conf-legend";
     legend.textContent = t("confusion.legend", { match: L.match, misid: L.misid, here: L.here, score: L.score });
     el.appendChild(legend);
-    if (legend.parentNode) legend.parentNode.appendChild(soundNote());
+    if (soundOn()) legend.parentNode.appendChild(soundNote());
     centerPhotoPopup(el);
     wirePhotoCards(el, strip);
     wireYearProbTips(el);                                    // hold any metric row → the year curve
@@ -13267,7 +13271,7 @@
     thr.innerHTML = "<th></th>" +
       '<th title="' + escapeHtml(t("confusion.tipMatch")) + '">' + escapeHtml(t("confusion.colScore")) + "</th>" +
       '<th title="' + escapeHtml(t("confusion.tipMisid")) + '">' + escapeHtml(t("confusion.colMisid")) + "</th>" +
-      '<th title="' + escapeHtml(t("confusion.tipSound")) + '">' + escapeHtml(t("confusion.colSound")) + "</th>" +
+      (soundOn() ? '<th title="' + escapeHtml(t("confusion.tipSound")) + '">' + escapeHtml(t("confusion.colSound")) + "</th>" : "") +
       '<th title="' + escapeHtml(t("confusion.tipHere")) + '">' + escapeHtml(t("confusion.colHere")) + "</th>" +
       '<th title="' + escapeHtml(t("confusion.tipScore")) + '">' + escapeHtml(t("confusion.colCombined")) + "</th>";
     tbl.appendChild(thr);
@@ -13296,7 +13300,7 @@
         scoreCell = probBarNa();
       }
       // Sound: the pair's by-ear closeness (0-100) from the sound table; empty when the pair is not among the bird's eight nearest by ear
-      var sndCell = w.snd >= 0 ? probBarCell(Math.round(w.snd * 100), Math.max(4, w.snd * 100), "", "conf-sound") : probBarNa("conf-sound");
+      var sndCell = !soundOn() ? "" : w.snd >= 0 ? probBarCell(Math.round(w.snd * 100), Math.max(4, w.snd * 100), "", "conf-sound") : probBarNa("conf-sound");
       tr.innerHTML = '<td class="conf-name" data-name="' + escapeHtml(nm) + '" data-sci="' + escapeHtml(m.sci) + '">' + escapeHtml(nm) + '</td>' +
         (w.w > 0 ? probBarCell(mv, mv, "", "conf-match") : probBarNa("conf-match")) +   // a sound-only bird has no Match
         midCell + sndCell +
@@ -13308,7 +13312,7 @@
     // Column legend at the bottom — the header tooltips need a hover, which a phone hasn't got.
     var legend = document.createElement("div"); legend.className = "conf-legend";
     legend.textContent = t("confusion.legend", { match: t("confusion.colScore"), misid: t("confusion.colMisid"), here: t("confusion.colHere"), score: t("confusion.colCombined") });
-    el.appendChild(legend); el.appendChild(soundNote());
+    el.appendChild(legend); if (soundOn()) el.appendChild(soundNote());
     positionAnchoredMenu(el, x, y);
   }
   // Under both look-alike views: what the Sound number is (a model's ear, not people's) and the report on how good it is.

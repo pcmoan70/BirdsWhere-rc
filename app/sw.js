@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2201";
+var VERSION = "v2202";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Look-alikes: four buttons on the header line \u2014 Score \u00b7 Match \u00b7 misID \u00b7 Sound \u2014 order the table and the photo cards by that column (remembered). Sound lists the bird's eight nearest by ear, whether or not they are visual look-alikes."
+  "\u2022 Look-alikes: four buttons on the header line \u2014 Score \u00b7 Match \u00b7 misID \u00b7 Sound \u2014 order the table and the photo cards by that column (remembered). The by-ear side (Sound) is an Experimental feature: turn it on in Settings."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
