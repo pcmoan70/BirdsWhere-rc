@@ -81,6 +81,8 @@
   var TAX_NAMES_BASE = "i18n/names/";       // per-language name packs, line-aligned to taxonomy-base.csv rows
   var CONFUSION_URL = "confusion.csv";      // per-bird look-alike (confusion) partner codes; fetched on first use
   var CONFUSION_REV = 18;                     // bump when confusion.csv changes — busts the runtime (cache-first) copy
+  var SOUND_URL = "sound.csv";                // per-bird "sounds like" partners (tools/sound, BirdNET+ V3.0 over Xeno-canto): code -> "code:SCORE …"
+  var SOUND_REV = 1;                          // bump when sound.csv changes
   var TRAITS_URL = "species-traits.json";   // per-species characteristics (AVONET morphology/ecology + HBW colour)
   var TRAITS_REV = 2;                        // bump when species-traits.json changes
 
@@ -12722,6 +12724,29 @@
       .catch(function () { _confusionP = null; return null; });
     return _confusionP;
   }
+  // "Sounds like" partners: how close two birds are to a sound-recognition model's ear (0-1), from the
+  // world sound table (tasks/sound-table_20261025.md; the report is about/audio-similarity.html).
+  // Same shape as the confusion file; the map is code -> { partnerCode: score }.
+  var soundMap = null, _soundP = null;
+  function ensureSound() {
+    if (soundMap) return Promise.resolve(soundMap);
+    if (_soundP) return _soundP;
+    _soundP = fetch(new URL(SOUND_URL, SCRIPT_BASE).href + "?r=" + SOUND_REV)
+      .then(function (r) { if (!r.ok) throw new Error("sound " + r.status); return r.text(); })
+      .then(function (text) {
+        var m = Object.create(null), lines = text.split(/\r?\n/);
+        for (var i = 1; i < lines.length; i++) {
+          var line = lines[i]; if (!line) continue;
+          var c = line.indexOf(","); if (c < 0) continue;
+          var o = Object.create(null);
+          line.slice(c + 1).split(" ").forEach(function (pp) { var a = pp.split(":"); if (a[0]) o[a[0]] = (+a[1] || 0) / 100; });
+          m[line.slice(0, c)] = o;
+        }
+        soundMap = m; return m;
+      })
+      .catch(function () { _soundP = null; return null; });
+    return _soundP;
+  }
   // Per-species characteristics (AVONET morphology/ecology + HBW plumage colour),
   // for the confusion "compare" card. Fetched on first use, cache-first like confusion.
   var traitsData = null, _traitsP = null;
@@ -12977,14 +13002,14 @@
   // is that week's prediction at the point (null without one). Shared by the
   // Confusion-species table and its images view.
   async function confusionRanked(key) {
-    var map = await ensureConfusion();
-    var entries = (map && map[key]) || [];
-    var members = entries.map(function (e) { var l = labelsByKey[e.c]; return l ? { m: l, w: e.w, mid: e.mid || 0 } : null; }).filter(Boolean);
+    var map = await ensureConfusion(), snd = await ensureSound();
+    var entries = (map && map[key]) || [], sm = (snd && snd[key]) || {};
+    var members = entries.map(function (e) { var l = labelsByKey[e.c]; return l ? { m: l, w: e.w, mid: e.mid || 0, snd: (e.c in sm) ? sm[e.c] : -1 } : null; }).filter(Boolean);
     if (!members.length) return { none: true, arr: [], out: null };
     var pt = (currentSpView && isFinite(+currentSpView.lat) && isFinite(+currentSpView.lon)) ? currentSpView : null;
     var out = null;
     if (pt) { try { out = await predictWeek(+pt.lat, +pt.lon, +document.getElementById("week-select").value); } catch (e) {} }
-    var arr = members.map(function (mm) { return { m: mm.m, w: mm.w, mid: mm.mid, p: out ? (out[mm.m.index] || 0) : -1 }; });
+    var arr = members.map(function (mm) { return { m: mm.m, w: mm.w, mid: mm.mid, snd: mm.snd, p: out ? (out[mm.m.index] || 0) : -1 }; });
     if (out) {
       // Occurs-here only, and only where the Score survives its floors: a look-alike that
       // scores 0 is one whose resemblance is under 10 % AND whose real-misidentification
@@ -13118,7 +13143,7 @@
     var out = rk.out, arr = rk.arr;
     if (!arr.length) { wait.textContent = t("confusion.noneHere"); positionAnchoredMenu(el, x, y); return; }
     if (wait.parentNode) wait.parentNode.removeChild(wait);
-    var L = { match: t("confusion.colScore"), misid: t("confusion.colMisid"), here: t("confusion.colHere"), score: t("confusion.colCombined") };
+    var L = { match: t("confusion.colScore"), misid: t("confusion.colMisid"), sound: t("confusion.colSound"), here: t("confusion.colHere"), score: t("confusion.colCombined") };
     // Each metric row carries data-hintkey → the wrapped hover tooltip the table headers
     // use (a native title can't wrap these explanations); phones have the legend below.
     function row(cls, label, txt, pct, color, tipKey) {
@@ -13136,6 +13161,7 @@
         '<div class="cfi-stats">' +
           row("cfi-match", L.match, isBase ? "—" : String(Math.round(w.w * 100)), isBase ? 0 : w.w * 100, "", "confusion.tipMatch") +
           row("cfi-misid", L.misid, (!isBase && w.mid > 0) ? w.mid + "%" : "—", (!isBase && w.mid > 0) ? Math.max(6, w.mid) : 0, "", "confusion.tipMisid") +
+          row("cfi-sound", L.sound, (!isBase && w.snd >= 0) ? String(Math.round(w.snd * 100)) : "—", (!isBase && w.snd >= 0) ? Math.max(4, w.snd * 100) : 0, "", "confusion.tipSound") +
           row("cfi-here", L.here, here >= 0 ? pctTxt(here) : "—", here >= 0 ? Math.max(4, here * 100) : 0, here >= 0 ? probHueColor(here) : "", "confusion.tipHere") +
           row("cfi-score", L.score, sv >= 0 ? (sv >= 0.5 ? String(Math.round(sv)) : (sv > 0 ? "<1" : "0")) : "—", sv >= 0 ? Math.max(2, sv) : 0, sv >= 0 ? probHueColor(sv / 100) : "", "confusion.tipScore") +
         "</div>" +
@@ -13148,6 +13174,7 @@
     var legend = document.createElement("div"); legend.className = "conf-legend";
     legend.textContent = t("confusion.legend", { match: L.match, misid: L.misid, here: L.here, score: L.score });
     el.appendChild(legend);
+    if (legend.parentNode) legend.parentNode.appendChild(soundNote());
     centerPhotoPopup(el);
     wirePhotoCards(el, strip);
     wireYearProbTips(el);                                    // hold any metric row → the year curve
@@ -13210,6 +13237,7 @@
     thr.innerHTML = "<th></th>" +
       '<th title="' + escapeHtml(t("confusion.tipMatch")) + '">' + escapeHtml(t("confusion.colScore")) + "</th>" +
       '<th title="' + escapeHtml(t("confusion.tipMisid")) + '">' + escapeHtml(t("confusion.colMisid")) + "</th>" +
+      '<th title="' + escapeHtml(t("confusion.tipSound")) + '">' + escapeHtml(t("confusion.colSound")) + "</th>" +
       '<th title="' + escapeHtml(t("confusion.tipHere")) + '">' + escapeHtml(t("confusion.colHere")) + "</th>" +
       '<th title="' + escapeHtml(t("confusion.tipScore")) + '">' + escapeHtml(t("confusion.colCombined")) + "</th>";
     tbl.appendChild(thr);
@@ -13237,9 +13265,11 @@
         probCell = probBarNa();
         scoreCell = probBarNa();
       }
+      // Sound: the pair's by-ear closeness (0-100) from the sound table; empty when the pair is not among the bird's eight nearest by ear
+      var sndCell = w.snd >= 0 ? probBarCell(Math.round(w.snd * 100), Math.max(4, w.snd * 100), "", "conf-sound") : probBarNa("conf-sound");
       tr.innerHTML = '<td class="conf-name" data-name="' + escapeHtml(nm) + '" data-sci="' + escapeHtml(m.sci) + '">' + escapeHtml(nm) + '</td>' +
         probBarCell(mv, mv, "", "conf-match") +
-        midCell +
+        midCell + sndCell +
         probCell + scoreCell;
       (function (w2) { tr.addEventListener("click", function (ev) { confPick(key, lbl, w2, out, ev.clientX, ev.clientY); }); })(w);
       tbl.appendChild(tr);
@@ -13248,8 +13278,15 @@
     // Column legend at the bottom — the header tooltips need a hover, which a phone hasn't got.
     var legend = document.createElement("div"); legend.className = "conf-legend";
     legend.textContent = t("confusion.legend", { match: t("confusion.colScore"), misid: t("confusion.colMisid"), here: t("confusion.colHere"), score: t("confusion.colCombined") });
-    el.appendChild(legend);
+    el.appendChild(legend); el.appendChild(soundNote());
     positionAnchoredMenu(el, x, y);
+  }
+  // Under both look-alike views: what the Sound number is (a model's ear, not people's) and the report on how good it is.
+  function soundNote() {
+    var d = document.createElement("div"); d.className = "conf-legend conf-sound-note";
+    d.textContent = t("confusion.legendSound", { sound: t("confusion.colSound") }) + " ";
+    var a = document.createElement("a"); a.href = "about/audio-similarity.html"; a.target = "_blank"; a.rel = "noopener"; a.textContent = t("confusion.soundReport");
+    d.appendChild(a); return d;
   }
   // The ONE species menu, used everywhere a species name (or dot/pin) is clicked
   // — a single tap on PC and mobile alike. Sectioned: Information (learn) · This

@@ -22,7 +22,7 @@ layered on top are the real sightings.
 > Model outputs are estimates, not ground truth; BirdWeather detections are AI acoustic
 > identifications, not human-verified.
 
-*Documentation last updated 2026-10-26 (app version ~v2199).*
+*Documentation last updated 2026-10-27 (app version ~v2200).*
 
 ---
 
@@ -1139,6 +1139,15 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
     renormalised over the listed partners (sum ≈ 100 %).
   - The app ships only each species' **9 best partners** by the location-free score; the full
     ranked lists stay on the data disk (`confusion_full.csv`).
+  - **Sound** (v2200) is how alike the two birds are **by ear to a sound-recognition model** (0–100):
+    BirdNET+ V3.0 embeddings of 5-second windows from Xeno-canto recordings (A grade, B grade where
+    A ran out; a window counts when the model gives the labelled species ≥ 20 %), the pair's centroid
+    closeness and soft confusion rank-averaged (`tools/sound/`, `app/sound.csv`, 7,462 species × up to
+    8 partners). Shown beside Match · misID · Here in the table and on the cards, **not fused into
+    Score**; only a bird's eight nearest by ear carry a number, the rest stay blank. The note under
+    the list links **[How well does the "sounds like" table work?](app/about/audio-similarity.md)**
+    (`about/audio-similarity.html` in the app): coverage by region / class / family, the window
+    filter's recall and false-positive proxy, leave-one-recording-out accuracy and a hard-pair check.
   Each input must be **significant** before it counts: a **Match below 10 %** or a **misID below
   5 %** contributes nothing, so a species cannot earn a place in the ranking on a 3 % resemblance
   or a single stray misidentification. A look-alike under both floors scores **0 and is not listed

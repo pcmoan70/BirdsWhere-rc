@@ -89,6 +89,17 @@ redistributed here under those terms.
   holds no name for, and stores those names on the device. The About panel carries the
   attribution and the licence link in all 15 UI languages.
 
+### "Sounds like" table (`app/sound.csv`) — derived numbers
+
+The per-bird Sound scores were computed offline with **BirdNET+ V3.0 developer preview 3.1**
+(K. Lisa Yang Center for Conservation Bioacoustics, Cornell University; Chemnitz University of
+Technology; Museum für Naturkunde Berlin — models CC BY-SA 4.0, https://zenodo.org/records/20703646,
+"Powered by BirdNET"; the model's terms forbid use for poaching or military purposes, and this
+table is neither) and cross-checked with **Perch 2.0** (Google DeepMind, Apache-2.0). The audio
+came from **Xeno-canto** (https://xeno-canto.org, recordings under the recordists' Creative Commons
+licences, mostly CC BY-NC-SA). No recording, no embedding and no recordist name is redistributed:
+the app ships only the derived closeness numbers and the report `about/audio-similarity.html`.
+
 ### Simplified country borders
 File: `app/countries-lite.json` — heavily simplified national outlines used only to gate
 country-scoped observation sources. Derived from open/public-domain geographic boundary data
