@@ -1139,27 +1139,27 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
     renormalised over the listed partners (sum ≈ 100 %).
   - The app ships only each species' **9 best partners** by the location-free score; the full
     ranked lists stay on the data disk (`confusion_full.csv`).
-  - **Sound** (v2200; *Experimental* — enable in Settings, v2202) is how alike the two birds are **by ear to a sound-recognition model** (0–100):
-    BirdNET+ V3.0 embeddings of 5-second windows from Xeno-canto recordings (A grade, B grade where
-    A ran out; a window counts when the model gives the labelled species ≥ 20 %), the pair's centroid
-    closeness and soft confusion rank-averaged (`tools/sound/`, `app/sound.csv`, 7,462 species × up to
-    8 partners). Shown beside Match · misID · Here in the table and on the cards, **not fused into
+  - **Sound** (v2200; rebuilt v2208; *Experimental* — enable in Settings, v2202) is how alike the two birds are **by ear to a sound-recognition model** (0–100):
+    the shared-vocalisation metric of `tools/sound/` — BirdNET+ V3.0 marks where in each Xeno-canto recording
+    (85,327 recordings, 9,796 species, grades A and B, up to four per kind of voice) the labelled bird sings, those
+    stretches become 3-second pieces (1-second overlap; a piece with another species loud in its window is dropped),
+    every piece is embedded by BirdNET+ and by Bird-MAE, and two species are close when one's best pieces have a near
+    twin among the other's, in both models and both directions (`shared_metric.py`, `sound_table.py`;
+    `app/sound.csv`, 7,478 species × up to 8 partners — 5,639 on the vocalisation metric, 1,839 kept from the
+    v2200 whole-recording table). Shown beside Match · misID · Here in the table and on the cards, **not fused into
     Score**; only a bird's eight nearest by ear carry a number, the rest stay blank. The note under
     the list links **[How well does the "sounds like" table work?](app/about/audio-similarity.md)**
-    (`about/audio-similarity.html` in the app): coverage by region / class / family, the window
-    filter's recall and false-positive proxy, leave-one-recording-out accuracy and a hard-pair check.
+    (`about/audio-similarity.html` in the app): coverage by region / class, the label-versus-model check and the pair checks.
   - **Order** (v2201): the header line of both views has buttons — **Score · Match · misID ·
     Sound · Soundscape** (the last two with Experimental on) — that order the list by that column; the
     choice is remembered. Score needs an open point (it is greyed without one). **Sound** lists the
     bird's **eight nearest by ear** from the sound table whether or not they are visual look-alikes; a
     sound-only bird shows no Match / misID.
-  - **Soundscape** (v2205; *Experimental*) is the **heard-alongside** measure: the share of the bird's
-    Xeno-canto recordings in which the other bird is detected in the background (BirdNET+ V3.0, p ≥ 0.1 in
-    any window; `app/soundscape.csv`, 7,449 species × up to 12 partners with share ≥ 5 %) **× Here** — the
+  - **Soundscape** (v2205; window shares v2208; *Experimental*) is the **heard-alongside** measure: the share of the bird's
+    5-second Xeno-canto recording windows in which the other bird is detected (BirdNET+ V3.0, p ≥ 0.1;
+    `tools/sound/scape_freq.py` → `app/soundscape.csv`, 9,426 species × up to 12 partners with share ≥ 5 %) **× Here** — the
     birds you will hear next to it this week, whether or not they sound alike (share alone without a
-    point). **Cutoff:** with a point open only birds with **Here ≥ 15 %** get a value and enter the Soundscape order. The Soundscape order adds those birds to the list. Teal bar; not part of Score. Built from the
-    S8 pass (`tools/sound/measures_v2.py` → `heard.csv`); the time-resolved pass (`embed_bn3_frames.py`)
-    will replace it with per-frame shares.
+    point). **Cutoff:** with a point open only birds with **Here ≥ 15 %** get a value and enter the Soundscape order. The Soundscape order adds those birds to the list. Teal bar; not part of Score.
   Each input must be **significant** before it counts: a **Match below 10 %** or a **misID below
   5 %** contributes nothing, so a species cannot earn a place in the ranking on a 3 % resemblance
   or a single stray misidentification. A look-alike under both floors scores **0 and is not listed

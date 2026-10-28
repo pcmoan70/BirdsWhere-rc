@@ -95,7 +95,13 @@ The per-bird Sound scores were computed offline with **BirdNET+ V3.0 developer p
 (K. Lisa Yang Center for Conservation Bioacoustics, Cornell University; Chemnitz University of
 Technology; Museum für Naturkunde Berlin — models CC BY-SA 4.0, https://zenodo.org/records/20703646,
 "Powered by BirdNET"; the model's terms forbid use for poaching or military purposes, and this
-table is neither) and cross-checked with **Perch 2.0** (Google DeepMind, Apache-2.0). The audio
+table is neither) together with **Bird-MAE-Base** (L. Rauch, I. Moummad, R. Heinrich, A. Joly, B. Sick,
+C. Scholz, "Can Masked Autoencoders Also Listen to Birds?", arXiv:2504.12880, 2025; weights from
+Hugging Face DBD-research-group/Bird-MAE-Base — no licence is stated by the authors; the weights were
+used offline only and nothing of them is redistributed), earlier cross-checked with **Perch 2.0**
+(Google DeepMind, Apache-2.0). Since v2208 the Sound score is the shared-vocalisation metric: each
+recording's vocalisations (3-second pieces, 1-second overlap) are embedded by both models and a pair
+is close when a species' best pieces have a near twin among the other's. The audio
 came from **Xeno-canto** (https://xeno-canto.org, recordings under the recordists' Creative Commons
 licences, mostly CC BY-NC-SA). No recording, no embedding and no recordist name is redistributed:
 the app ships only the derived closeness numbers and the report `about/audio-similarity.html`.

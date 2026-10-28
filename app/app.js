@@ -82,9 +82,9 @@
   var CONFUSION_URL = "confusion.csv";      // per-bird look-alike (confusion) partner codes; fetched on first use
   var CONFUSION_REV = 18;                     // bump when confusion.csv changes — busts the runtime (cache-first) copy
   var SOUND_URL = "sound.csv";                // per-bird "sounds like" partners (tools/sound, BirdNET+ V3.0 over Xeno-canto): code -> "code:SCORE …"
-  var SOUND_REV = 1;                          // bump when sound.csv changes
+  var SOUND_REV = 2;                          // bump when sound.csv changes (2 = S17 shared-vocalisation table, 2026-10-29)
   var SCAPE_URL = "soundscape.csv";           // per-bird "heard alongside" partners (tools/sound measures_v2.py heard.csv): code -> "code:SHARE …" (share of recordings, 0-100)
-  var SCAPE_REV = 1;                          // bump when soundscape.csv changes
+  var SCAPE_REV = 2;                          // bump when soundscape.csv changes (2 = window shares of the full archive, 2026-10-29)
   var TRAITS_URL = "species-traits.json";   // per-species characteristics (AVONET morphology/ecology + HBW colour)
   var TRAITS_REV = 2;                        // bump when species-traits.json changes
 
@@ -12732,7 +12732,7 @@
   // "Sounds like" partners: how close two birds are to a sound-recognition model's ear (0-1), from the
   // world sound table (tasks/sound-table_20261025.md; the report is about/audio-similarity.html).
   // Same shape as the confusion file; the map is code -> { partnerCode: score }.
-  // soundscape.csv has the same shape: the share (0-1) of the bird's recordings in which the partner is heard in the background.
+  // soundscape.csv has the same shape: the share (0-100) of the bird's 5 s recording windows in which the partner is detected (p ≥ 0.1).
   function pairsLoader(url, rev) {
     var map = null, p = null;
     return function () {
