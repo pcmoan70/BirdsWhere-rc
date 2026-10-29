@@ -965,6 +965,7 @@
   "clear.harvest": "Heruntergeladene Namen",
   "clear.offline": "Offline-Gebiete",
   "clear.images": "Artenfotos",
+  "clear.clips": "Aufnahmen (Xeno-canto)",
   "clear.obs": "Abgerufene Beobachtungen",
   "clear.all": "Alle zwischengespeicherten Daten löschen",
   "clear.allConfirm": "Alles Zwischengespeicherte löschen: abgerufene Beobachtungen (auch die Punkte auf der Karte), Kartenkacheln, Verbreitungskarten, Overlays, Namen, Fotos und die heruntergeladenen Offline-Gebiete? Gespeicherte Listen, Checklisten und Einstellungen bleiben erhalten.",

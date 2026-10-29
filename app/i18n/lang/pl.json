@@ -965,6 +965,7 @@
   "clear.harvest": "Pobrane nazwy",
   "clear.offline": "Obszary offline",
   "clear.images": "Zdjęcia gatunków",
+  "clear.clips": "Nagrania (Xeno-canto)",
   "clear.obs": "Pobrane obserwacje",
   "clear.all": "Wyczyść wszystkie dane z pamięci podręcznej",
   "clear.allConfirm": "Wyczyścić wszystko z pamięci podręcznej: pobrane obserwacje (także punkty na mapie), kafelki mapy, mapy zasięgu, warstwy, nazwy, zdjęcia i pobrane obszary offline? Zapisane listy, listy kontrolne i ustawienia zostaną zachowane.",

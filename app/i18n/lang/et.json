@@ -965,6 +965,7 @@
   "clear.harvest": "Allalaaditud nimed",
   "clear.offline": "Võrguühenduseta alad",
   "clear.images": "Liigifotod",
+  "clear.clips": "Salvestised (Xeno-canto)",
   "clear.obs": "Laaditud vaatlused",
   "clear.all": "Kustuta kõik vahemälu andmed",
   "clear.allConfirm": "Kas kustutada kogu vahemälu: laaditud vaatlused (ka punktid kaardil), kaardipaanid, levikukaardid, kihid, nimed, fotod ja allalaaditud võrguta alad? Salvestatud loendid, kontroll-loendid ja seaded jäävad alles.",

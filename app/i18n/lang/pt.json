@@ -965,6 +965,7 @@
   "clear.harvest": "Nomes transferidos",
   "clear.offline": "Áreas offline",
   "clear.images": "Fotos de espécies",
+  "clear.clips": "Gravações (Xeno-canto)",
   "clear.obs": "Observações obtidas",
   "clear.all": "Limpar todos os dados em cache",
   "clear.allConfirm": "Limpar tudo o que está em cache: observações obtidas (também os pontos no mapa), mosaicos do mapa, mapas de distribuição, camadas, nomes, fotos e as áreas offline transferidas? As listas, checklists e definições guardadas mantêm-se.",

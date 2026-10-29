@@ -965,6 +965,7 @@
   "clear.harvest": "Nomi scaricati",
   "clear.offline": "Aree offline",
   "clear.images": "Foto delle specie",
+  "clear.clips": "Registrazioni (Xeno-canto)",
   "clear.obs": "Osservazioni scaricate",
   "clear.all": "Cancella tutti i dati in cache",
   "clear.allConfirm": "Cancellare tutto ciò che è in cache: osservazioni scaricate (anche i punti sulla mappa), tasselli della mappa, mappe di distribuzione, livelli, nomi, foto e le aree offline scaricate? Liste, checklist e impostazioni salvate restano.",

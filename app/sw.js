@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2214";
+var VERSION = "v2215";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Compare card: the two birds\u2019 names stay pinned at the top while you scroll, so each column is always labelled."
+  "\u2022 Compare card: the recordings now sit in columns under the two names, the names band reaches the card\u2019s top edge, and the clips you have played (and their sonograms) are kept on the device so they play offline \u2014 Settings \u2192 Storage lists them under Recordings (Xeno-canto)."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
@@ -60,6 +60,8 @@ function tileShard(url) { var h = 0; for (var i = 0; i < url.length; i++) h = (h
 // Cleared from Settings → Storage → "Species photos".
 var IMG_CACHE = "species-images";
 var IMG_CAP = 1500;
+var XC_CACHE = "xc-clips";   // Xeno-canto clips (CORS, sized) and their sonograms (opaque), kept across versions so the compare card plays offline (owner, 2026-10-29)
+var XC_CAP = 160;
 var API_CACHE = RC_TAG + "api-" + VERSION;       // geocode / overpass / species lookups
 var META_CACHE = "meta-config";         // version-independent: holds the user's cache-cap setting
 // Files handed to us by the Android share sheet. The share target is a POST, which cannot be
@@ -383,7 +385,7 @@ function reload(url) {
 }
 
 self.addEventListener("activate", function (event) {
-  var keep = [SHELL_CACHE, DATA_CACHE, TILE_CACHE, API_CACHE, META_CACHE, IMG_CACHE, SHARE_CACHE];
+  var keep = [SHELL_CACHE, DATA_CACHE, TILE_CACHE, API_CACHE, META_CACHE, IMG_CACHE, XC_CACHE, SHARE_CACHE];
   event.waitUntil(
     caches
       .keys()
@@ -450,6 +452,10 @@ self.addEventListener("fetch", function (event) {
   if (url.hostname === "upload.wikimedia.org" ||
       (/(^|\.)(inaturalist-open-data\.s3\.amazonaws\.com|static\.inaturalist\.org|inaturalist\.org)$/.test(url.hostname) && /\/photos\//.test(url.pathname))) {
     event.respondWith(cacheFirstCapped(req, IMG_CACHE, IMG_CAP));
+    return;
+  }
+  if (url.hostname === "xeno-canto.org" && (/\/download$/.test(url.pathname) || /\/ffts\//.test(url.pathname))) {
+    event.respondWith(xcResponse(req));
     return;
   }
   if (API_HOSTS.test(url.hostname)) {
@@ -624,6 +630,27 @@ function tileResponse(req) {
 // race. Opaque (no-cors) responses have status 0 and MUST still be cached — every
 // cross-origin tile is opaque, so this is what makes the map work offline; a
 // visible (CORS/same-origin) error is skipped because res.ok is false.
+// A clip or sonogram from Xeno-canto, cache-first and capped: fetched WHOLE (the audio element asks for
+// byte ranges; a cached 206 would be a broken clip), the audio in CORS mode (it allows it: a real,
+// sized response, no opaque padding of the quota), the sonogram no-cors (it does not: opaque).
+function xcResponse(req) {
+  var url = req.url.split("#")[0], audio = /\/download$/.test(url);
+  return caches.open(XC_CACHE).then(function (cache) {
+    return cache.match(url).then(function (hit) {
+      if (hit) return hit;
+      return fetch(new Request(url, { mode: audio ? "cors" : "no-cors" })).then(function (res) {
+        if (!res) return res;
+        if (audio && res.ok) {   // stored with its size: xeno-canto does not expose Content-Length to CORS, and Settings → Storage sums it
+          res.clone().arrayBuffer().then(function (buf) {
+            var h = new Headers(res.headers); h.set("content-length", String(buf.byteLength));
+            return cache.put(url, new Response(buf, { status: 200, statusText: res.statusText, headers: h }));
+          }).then(function () { queueTrim(XC_CACHE, cache, XC_CAP); }).catch(function () {});
+        } else if (res.type === "opaque") cache.put(url, res.clone()).then(function () { queueTrim(XC_CACHE, cache, XC_CAP); });
+        return res;
+      });
+    });
+  });
+}
 function cacheFirstCapped(req, cacheName, max) {
   if (max <= 0) return fetch(req);   // caching Off — straight to the network, nothing stored
   return caches.open(cacheName).then(function (cache) {

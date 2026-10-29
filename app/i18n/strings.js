@@ -748,6 +748,7 @@ window.GeoI18N = (function () {
         "clear.harvest": "Downloaded names",
         "clear.offline": "Offline areas",
         "clear.images": "Species photos",
+        "clear.clips": "Recordings (Xeno-canto)",
         "clear.obs": "Fetched observations",
         "clear.all": "Clear all cached data",
         "clear.allConfirm": "Clear everything cached: fetched observations (the dots on the map too), map tiles, range maps, overlays, names, photos and the downloaded offline areas? Saved lists, checklists and settings are kept.",

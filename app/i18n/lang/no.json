@@ -965,6 +965,7 @@
   "clear.harvest": "Nedlastede navn",
   "clear.offline": "Frakoblede områder",
   "clear.images": "Artsbilder",
+  "clear.clips": "Opptak (Xeno-canto)",
   "clear.obs": "Hentede observasjoner",
   "clear.all": "Tøm alle mellomlagrede data",
   "clear.allConfirm": "Tømme alt som er mellomlagret: hentede observasjoner (også prikkene på kartet), kartfliser, utbredelseskart, lag, navn, bilder og de nedlastede offline-områdene? Lagrede lister, sjekklister og innstillinger beholdes.",

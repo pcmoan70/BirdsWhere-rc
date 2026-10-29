@@ -590,6 +590,7 @@
   "clear.harvest": "Nedladdade namn",
   "clear.offline": "Offline-områden",
   "clear.images": "Artbilder",
+  "clear.clips": "Inspelningar (Xeno-canto)",
   "clear.obs": "Hämtade observationer",
   "clear.all": "Rensa all cachad data",
   "clear.allConfirm": "Rensa allt cachat: hämtade observationer (även prickarna på kartan), kartrutor, utbredningskartor, lager, namn, foton och de nedladdade offlineområdena? Sparade listor, checklistor och inställningar behålls.",

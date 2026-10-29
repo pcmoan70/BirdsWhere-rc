@@ -965,6 +965,7 @@
   "clear.harvest": "Hentede navne",
   "clear.offline": "Offline-områder",
   "clear.images": "Artsfotos",
+  "clear.clips": "Optagelser (Xeno-canto)",
   "clear.obs": "Hentede observationer",
   "clear.all": "Ryd alle cachede data",
   "clear.allConfirm": "Ryd alt cachet: hentede observationer (også prikkerne på kortet), kortfliser, udbredelseskort, lag, navne, fotos og de downloadede offline-områder? Gemte lister, tjeklister og indstillinger bevares.",

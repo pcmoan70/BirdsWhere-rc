@@ -965,6 +965,7 @@
   "clear.harvest": "Nombres descargados",
   "clear.offline": "Áreas sin conexión",
   "clear.images": "Fotos de especies",
+  "clear.clips": "Grabaciones (Xeno-canto)",
   "clear.obs": "Observaciones descargadas",
   "clear.all": "Borrar todos los datos en caché",
   "clear.allConfirm": "¿Borrar todo lo almacenado en caché: observaciones descargadas (también los puntos del mapa), teselas del mapa, mapas de distribución, capas, nombres, fotos y las áreas sin conexión descargadas? Las listas, listas de control y ajustes guardados se conservan.",

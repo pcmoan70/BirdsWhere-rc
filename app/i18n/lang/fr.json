@@ -965,6 +965,7 @@
   "clear.harvest": "Noms téléchargés",
   "clear.offline": "Zones hors ligne",
   "clear.images": "Photos d'espèces",
+  "clear.clips": "Enregistrements (Xeno-canto)",
   "clear.obs": "Observations récupérées",
   "clear.all": "Effacer toutes les données en cache",
   "clear.allConfirm": "Effacer tout le cache : observations récupérées (y compris les points sur la carte), tuiles de carte, cartes de répartition, couches, noms, photos et zones hors ligne téléchargées ? Les listes, check-lists et réglages enregistrés sont conservés.",

@@ -965,6 +965,7 @@
   "clear.harvest": "Ladatut nimet",
   "clear.offline": "Offline-alueet",
   "clear.images": "Lajikuvat",
+  "clear.clips": "Äänitteet (Xeno-canto)",
   "clear.obs": "Haetut havainnot",
   "clear.all": "Tyhjennä kaikki välimuistitiedot",
   "clear.allConfirm": "Tyhjennetäänkö kaikki välimuistissa oleva: haetut havainnot (myös kartan pisteet), karttaruudut, levinneisyyskartat, tasot, nimet, kuvat ja ladatut offline-alueet? Tallennetut listat, tarkistuslistat ja asetukset säilyvät.",

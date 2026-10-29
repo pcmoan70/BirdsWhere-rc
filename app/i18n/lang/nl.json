@@ -965,6 +965,7 @@
   "clear.harvest": "Gedownloade namen",
   "clear.offline": "Offline gebieden",
   "clear.images": "Soortfoto's",
+  "clear.clips": "Opnamen (Xeno-canto)",
   "clear.obs": "Opgehaalde waarnemingen",
   "clear.all": "Alle gecachte gegevens wissen",
   "clear.allConfirm": "Alles in de cache wissen: opgehaalde waarnemingen (ook de stippen op de kaart), kaarttegels, verspreidingskaarten, lagen, namen, foto's en de gedownloade offline-gebieden? Opgeslagen lijsten, checklists en instellingen blijven bewaard.",

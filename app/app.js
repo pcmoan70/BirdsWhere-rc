@@ -7911,6 +7911,7 @@
                   '<button type="button" class="clear-cache-btn" data-clear="harvest"><span class="clear-lbl" data-i18n="clear.harvest">Downloaded names</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="offline"><span class="clear-lbl" data-i18n="clear.offline">Offline areas</span><span class="clear-cnt"></span></button>' +
                   '<button type="button" class="clear-cache-btn" data-clear="images"><span class="clear-lbl" data-i18n="clear.images">Species photos</span><span class="clear-cnt"></span></button>' +
+                  '<button type="button" class="clear-cache-btn" data-clear="clips"><span class="clear-lbl" data-i18n="clear.clips">Recordings (Xeno-canto)</span><span class="clear-cnt"></span></button>' +
                 '</div>' +
                 '<button type="button" id="clear-all-btn" class="btn btn-light" data-i18n="clear.all">Clear all cached data</button>' +
                 // Not a cache clear — it rewrites the lists in place, so it sits under its own
@@ -12784,7 +12785,7 @@
     if (xcPlayingEl === clipEl) { xcStop(); return; }
     xcStop();
     if (!xcAudio) {
-      xcAudio = new Audio(); xcAudio.preload = "none";
+      xcAudio = new Audio(); xcAudio.preload = "none"; xcAudio.crossOrigin = "anonymous";   // a CORS request: the service worker stores the clip as a real (sized) response for offline play
       xcAudio.addEventListener("ended", xcStop);
       xcAudio.addEventListener("timeupdate", function () { if (xcPlayingEl && !document.body.contains(xcPlayingEl)) xcStop(); });   // the card closed under it
     }
@@ -12835,14 +12836,15 @@
     return Promise.all([ensureClips(focalKey), ensureClips(partnerKey)]).then(function (ab) {
       var A = ab[0], B = ab[1], h = '<div class="xc-sec"><div class="xc-sec-lbl">' + escapeHtml(t("clips.sec")) + "</div>";
       if (!A.length && !B.length) return h + '<div class="cmp-nocol">' + escapeHtml(t("clips.none")) + "</div></div>";
+      // One table row spanning the three columns (so the pinned names row stays over the clips too), the clips in a grid whose columns are set to the table's
       XC_CATS.forEach(function (k) {
         var a = A.filter(function (c) { return c.cat === k; }), b = B.filter(function (c) { return c.cat === k; });
         if (!a.length && !b.length) return;
-        h += '<div class="xc-voice"><div class="xc-vlbl">' + escapeHtml(t("clips." + k)) + '</div><div class="xc-grid">' +
+        h += '<div class="xc-grid"><div class="xc-vlbl">' + escapeHtml(t("clips." + k)) + "</div>" +   // the voice in the table's label column, the clips under the two names (owner, 2026-10-29)
           '<div class="xc-col xc-col-a">' + (a.map(function (c) { return xcClipHtml(c, "a"); }).join("") || '<span class="cmp-nocol">\u2014</span>') + "</div>" +
-          '<div class="xc-col xc-col-b">' + (b.map(function (c) { return xcClipHtml(c, "b"); }).join("") || '<span class="cmp-nocol">\u2014</span>') + "</div></div></div>";
+          '<div class="xc-col xc-col-b">' + (b.map(function (c) { return xcClipHtml(c, "b"); }).join("") || '<span class="cmp-nocol">\u2014</span>') + "</div></div>";
       });
-      return h + "</div>";
+      return '<tr class="xc-tr"><td class="xc-td" colspan="3">' + h + "</div></td></tr>";
     });
   }
   // Per-species characteristics (AVONET morphology/ecology + HBW plumage colour),
@@ -13059,7 +13061,16 @@
     // Recordings side by side (owner, 2026-10-29; Experimental / Sound on): appended once the clip index shard is here.
     if (soundOn()) xcSection(focalKey, partnerKey).then(function (xr) {
       if (!document.body.contains(tbl)) return;
-      tbl.insertAdjacentHTML("afterend", xr);
+      // The clip columns line up under the two names: the grid's columns are the table's own, as shares of its width,
+      // measured BEFORE the row goes in (the row then adds nothing to the column widths, and shares follow a resize)
+      var ths = tbl.querySelectorAll(".cmp-head th"), shares = null;
+      if (ths.length === 3) {   // column pitches, not cell widths (collapsed borders make a cell's rect wider than its column)
+        var r0 = ths[0].getBoundingClientRect(), r1 = ths[1].getBoundingClientRect(), r2 = ths[2].getBoundingClientRect(), tl = tbl.getBoundingClientRect(), W = tl.right - r0.left;
+        if (W > 0) shares = [(r1.left - r0.left) / W, (r2.left - r1.left) / W, (tl.right - r2.left) / W];
+      }
+      (tbl.tBodies[0] || tbl).insertAdjacentHTML("beforeend", xr);
+      var sec = tbl.querySelector(".xc-sec");
+      if (sec && shares) { sec.style.setProperty("--xc-lbl", (shares[0] * 100).toFixed(3) + "%"); sec.style.setProperty("--xc-a", (shares[1] * 100).toFixed(3) + "%"); sec.style.setProperty("--xc-b", (shares[2] * 100).toFixed(3) + "%"); }
       el.querySelectorAll(".xc-clip").forEach(function (cl) {
         cl.addEventListener("click", function (e) { e.stopPropagation(); if (e.target.closest(".xc-cap")) return; xcToggle(cl); });
         cl.querySelector("img").addEventListener("error", function () { cl.classList.add("xc-noimg"); });   // no sonogram on XC yet (new uploads): caption only, still playable
@@ -21725,6 +21736,7 @@
         spImgCache = null; window.GeoState.save({ spImages: null });
         p = window.caches ? caches.delete("species-images") : Promise.resolve();   // an open gallery keeps its loaded pictures; the next render re-resolves
       }
+      else if (what === "clips") p = window.caches ? caches.delete("xc-clips") : Promise.resolve();   // the Xeno-canto clips and sonograms kept for offline play
       else p = Promise.resolve();
       var restore = btn ? btn.innerHTML : "";   // keep the label + count markup to restore after the ✓
       if (btn) btn.disabled = true;
@@ -21827,6 +21839,10 @@
         caches.open("species-images").then(function (c) { return c.matchAll(); }).then(function (rs) {   // photos are CORS responses → real sizes
           var by = 0; rs.forEach(function (r) { by += (+r.headers.get("content-length") || 0); });
           setCnt("images", rs.length, by);
+        }).catch(function () {});
+        caches.open("xc-clips").then(function (c) { return c.matchAll(); }).then(function (rs) {   // the audio is CORS (sized); the sonograms are opaque (counted, unsized)
+          var by = 0, opaque = false; rs.forEach(function (r) { var n = +r.headers.get("content-length") || 0; by += n; if (!n) opaque = true; });
+          setCnt("clips", rs.length, by, opaque);
         }).catch(function () {});
         caches.keys().then(function (names) {
           return Promise.all(names.filter(function (n) { return n.indexOf("api-") === 0 || n.indexOf("rc-api-") === 0; })
