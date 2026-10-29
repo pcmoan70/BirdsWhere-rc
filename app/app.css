@@ -5116,3 +5116,4 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .xc-more:hover { text-decoration: underline; }
 .xc-menu .xc-vlbl { font-size: 13.5px; font-weight: 700; color: var(--ink); padding: 8px 0 3px; }   /* the single-species Audio panel: voice headings read as headings (owner, 2026-10-29) */
 .xc-menu .xc-col-a { border-top: 3px solid var(--warn); }   /* ...and a thicker amber rule under each heading */
+.xc-menu .detrow-menu-hdr { position: sticky; top: -4px; z-index: 2; background: var(--surface); padding: 7px 30px 5px 12px; }   /* the species name and its × stay pinned while the clip list scrolls (owner, 2026-10-29) */

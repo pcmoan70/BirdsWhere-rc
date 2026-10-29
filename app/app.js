@@ -12808,8 +12808,8 @@
     var closeBtn = document.createElement("button");
     closeBtn.type = "button"; closeBtn.className = "conf-close"; closeBtn.textContent = "\u00d7"; closeBtn.setAttribute("aria-label", "Close");
     closeBtn.addEventListener("click", function (e) { e.stopPropagation(); closeAnchoredMenu(); });
-    el.appendChild(closeBtn);
-    var hdr = document.createElement("div"); hdr.className = "detrow-menu-hdr"; hdr.textContent = name; el.appendChild(hdr);
+    var hdr = document.createElement("div"); hdr.className = "detrow-menu-hdr"; hdr.textContent = name;
+    hdr.appendChild(closeBtn); el.appendChild(hdr);   // the × rides inside the sticky name line, so both stay put while the clips scroll (owner, 2026-10-29)
     var box = document.createElement("div"); box.className = "xc-sec"; box.innerHTML = '<span class="cmp-nocol">\u2026</span>'; el.appendChild(box);
     var more = document.createElement("a"); more.className = "xc-more"; more.href = xenoCantoUrl(sci || ""); more.target = "_blank"; more.rel = "noopener";
     more.textContent = t("clips.more"); more.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); openExternal(xenoCantoUrl(sci || "")); });
