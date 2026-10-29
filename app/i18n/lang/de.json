@@ -75,7 +75,7 @@
   "confusion.tipScape": "Klangkulisse: wie oft dieser Vogel in denselben Aufnahmen wie die Grundart zu hören ist (Anteil der 5-Sekunden-Fenster ihrer Xeno-canto-Aufnahmen, in denen der andere erkannt wird), mal der Chance, dass er diese Woche hier ist – Vögel, die du neben ihm hörst, ob sie nun ähnlich klingen oder nicht. Nur für Vögel mit mindestens 15 % Chance, hier zu sein.",
   "confusion.legendScape": "{scape}: Anteil der 5-Sekunden-Fenster in den Aufnahmen des Vogels, in denen der andere im Hintergrund zu hören ist × {here} – zusammen zu hören, nicht ähnlich klingend. Nur für Vögel mit mindestens 15 % Chance, hier zu sein.",
   "confusion.noneScape": "Keine zusammen mit diesem gehörten Vögel verzeichnet",
-  "clips.sec": "Aufnahmen (Xeno-canto, Qualität A) — Sonagramm antippen zum Abspielen, erneut zum Stoppen, gedrückt halten für Wiederholung",
+  "clips.sec": "Aufnahmen (Xeno-canto, Qualität A) — Sonagramm antippen zum Abspielen, erneut zum Stoppen, gedrückt halten oder Umschalt-Klick für Wiederholung",
   "clips.s": "Gesang",
   "clips.c": "Rufe",
   "clips.a": "Alarmrufe",

@@ -75,7 +75,7 @@
   "confusion.tipScape": "Geluidslandschap: hoe vaak deze vogel in dezelfde opnamen te horen is als de basissoort (aandeel van de 5-secondenvensters van zijn Xeno-canto-opnamen waarin de ander wordt herkend), maal de kans dat hij hier deze week is – vogels die je naast hem hoort, of ze nu hetzelfde klinken of niet. Alleen voor vogels met minstens 15 % kans om hier te zijn.",
   "confusion.legendScape": "{scape}: aandeel van de 5-secondenvensters in de opnamen van de vogel waarin de ander op de achtergrond te horen is × {here} – samen te horen, niet gelijkklinkend. Alleen voor vogels met minstens 15 % kans om hier te zijn.",
   "confusion.noneScape": "Geen samen met deze gehoorde vogels bekend",
-  "clips.sec": "Opnamen (Xeno-canto, kwaliteit A) — tik op een sonogram om af te spelen, nogmaals om te stoppen, houd vast om te herhalen",
+  "clips.sec": "Opnamen (Xeno-canto, kwaliteit A) — tik op een sonogram om af te spelen, nogmaals om te stoppen, houd vast of shift-klik om te herhalen",
   "clips.s": "Zang",
   "clips.c": "Roep",
   "clips.a": "Alarmroep",

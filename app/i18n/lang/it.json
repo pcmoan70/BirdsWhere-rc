@@ -75,7 +75,7 @@
   "confusion.tipScape": "Paesaggio sonoro: quanto spesso questo uccello si sente nelle stesse registrazioni della specie base (quota delle finestre di 5 secondi delle sue registrazioni Xeno-canto in cui l'altro è rilevato), per la probabilità che sia qui questa settimana – uccelli che sentirai accanto a lui, che si somiglino o no. Solo per uccelli con almeno il 15 % di probabilità di essere qui.",
   "confusion.legendScape": "{scape}: quota delle finestre di 5 secondi delle registrazioni dell'uccello in cui l'altro si sente in sottofondo × {here} – sentiti insieme, non simili. Solo per uccelli con almeno il 15 % di probabilità di essere qui.",
   "confusion.noneScape": "Nessun uccello sentito insieme a questo in archivio",
-  "clips.sec": "Registrazioni (Xeno-canto, qualità A) — tocca un sonogramma per ascoltare, di nuovo per fermare, tieni premuto per ripetere",
+  "clips.sec": "Registrazioni (Xeno-canto, qualità A) — tocca un sonogramma per ascoltare, di nuovo per fermare, tieni premuto o fai clic con Maiusc per ripetere",
   "clips.s": "Canto",
   "clips.c": "Richiami",
   "clips.a": "Richiami d'allarme",

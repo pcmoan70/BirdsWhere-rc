@@ -75,7 +75,7 @@
   "confusion.tipScape": "Garsovaizdis: kaip dažnai šis paukštis girdimas tuose pačiuose įrašuose kaip ir pagrindinė rūšis (jo Xeno-canto įrašų 5 sekundžių langų dalis, kuriuose kitas aptiktas), padauginta iš tikimybės, kad jis čia šią savaitę – paukščiai, kuriuos girdėsite šalia jo, nesvarbu, ar jie skamba panašiai. Tik paukščiams, kurių tikimybė čia būti yra bent 15 %.",
   "confusion.legendScape": "{scape}: paukščio įrašų 5 sekundžių langų, kuriuose kitas girdimas fone, dalis × {here} – girdimi kartu, ne panašiai skambantys. Tik paukščiams, kurių tikimybė čia būti yra bent 15 %.",
   "confusion.noneScape": "Nėra įrašytų paukščių, girdimų kartu su šiuo",
-  "clips.sec": "Įrašai (Xeno-canto, A kokybė) — palieskite sonogramą, kad grotų, dar kartą – kad sustotų, palaikykite, kad kartotų",
+  "clips.sec": "Įrašai (Xeno-canto, A kokybė) — palieskite sonogramą, kad grotų, dar kartą – kad sustotų, palaikykite arba spustelėkite su Shift, kad kartotų",
   "clips.s": "Giesmė",
   "clips.c": "Šauksmai",
   "clips.a": "Pavojaus šauksmai",

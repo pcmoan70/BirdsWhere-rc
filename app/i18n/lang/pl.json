@@ -75,7 +75,7 @@
   "confusion.tipScape": "Krajobraz dźwiękowy: jak często ten ptak jest słyszany w tych samych nagraniach co gatunek bazowy (udział 5-sekundowych okien jego nagrań z Xeno-canto, w których wykryto drugiego), razy szansa, że jest tu w tym tygodniu – ptaki, które usłyszysz obok niego, niezależnie od tego, czy brzmią podobnie. Tylko dla ptaków z co najmniej 15 % szansą na obecność tutaj.",
   "confusion.legendScape": "{scape}: udział 5-sekundowych okien nagrań ptaka, w których drugi słychać w tle × {here} – słyszane razem, nie brzmiące podobnie. Tylko dla ptaków z co najmniej 15 % szansą na obecność tutaj.",
   "confusion.noneScape": "Brak zarejestrowanych ptaków słyszanych razem z tym",
-  "clips.sec": "Nagrania (Xeno-canto, jakość A) — dotknij sonogramu, aby odtworzyć, ponownie, aby zatrzymać, przytrzymaj, aby powtarzać",
+  "clips.sec": "Nagrania (Xeno-canto, jakość A) — dotknij sonogramu, aby odtworzyć, ponownie, aby zatrzymać, przytrzymaj lub kliknij z Shift, aby powtarzać",
   "clips.s": "Śpiew",
   "clips.c": "Głosy",
   "clips.a": "Głosy alarmowe",

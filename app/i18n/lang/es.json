@@ -75,7 +75,7 @@
   "confusion.tipScape": "Paisaje sonoro: con qué frecuencia esta ave se oye en las mismas grabaciones que la especie base (proporción de las ventanas de 5 segundos de sus grabaciones de Xeno-canto en las que se detecta la otra), multiplicada por la probabilidad de que esté aquí esta semana – aves que oirás junto a ella, suenen parecido o no. Solo para aves con al menos un 15 % de probabilidad de estar aquí.",
   "confusion.legendScape": "{scape}: proporción de las ventanas de 5 segundos de las grabaciones del ave en las que la otra se oye de fondo × {here} – se oyen juntas, no suenan parecido. Solo para aves con al menos un 15 % de probabilidad de estar aquí.",
   "confusion.noneScape": "No hay aves oídas junto a esta registradas",
-  "clips.sec": "Grabaciones (Xeno-canto, calidad A) — toca un sonograma para reproducir, otra vez para parar, mantén pulsado para repetir",
+  "clips.sec": "Grabaciones (Xeno-canto, calidad A) — toca un sonograma para reproducir, otra vez para parar, mantén pulsado o haz clic con Mayús para repetir",
   "clips.s": "Canto",
   "clips.c": "Reclamos",
   "clips.a": "Reclamos de alarma",

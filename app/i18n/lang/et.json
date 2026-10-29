@@ -75,7 +75,7 @@
   "confusion.tipScape": "Helimaastik: kui tihti on see lind kuulda samadel salvestistel kui põhiliik (osa tema Xeno-canto salvestiste 5-sekundilistest akendest, kus teine on tuvastatud), korrutatuna tõenäosusega, et ta on sel nädalal siin – linnud, keda kuuled tema kõrval, kõlagu nad sarnaselt või mitte. Ainult lindudele, kelle siinoleku tõenäosus on vähemalt 15 %.",
   "confusion.legendScape": "{scape}: osa linnu salvestiste 5-sekundilistest akendest, kus teine on taustal kuulda × {here} – kuuldud koos, mitte sarnaselt kõlavad. Ainult lindudele, kelle siinoleku tõenäosus on vähemalt 15 %.",
   "confusion.noneScape": "Selle linnuga koos kuuldud linde pole kirjas",
-  "clips.sec": "Salvestised (Xeno-canto, A-kvaliteet) — puuduta sonogrammi, et mängida, uuesti, et peatada, hoia all, et korrata",
+  "clips.sec": "Salvestised (Xeno-canto, A-kvaliteet) — puuduta sonogrammi, et mängida, uuesti, et peatada, hoia all või klõpsa Shiftiga, et korrata",
   "clips.s": "Laul",
   "clips.c": "Hüüud",
   "clips.a": "Häirehüüud",

@@ -75,7 +75,7 @@
   "confusion.tipScape": "Äänimaisema: kuinka usein tämä lintu kuuluu samoissa äänitteissä kuin peruslaji (osuus sen Xeno-canto-äänitteiden 5 sekunnin ikkunoista, joissa toinen tunnistetaan), kerrottuna todennäköisyydellä, että se on täällä tällä viikolla – lintuja, joita kuulet sen rinnalla, kuulostivatpa ne samalta tai eivät. Vain linnuille, joiden todennäköisyys olla täällä on vähintään 15 %.",
   "confusion.legendScape": "{scape}: osuus linnun äänitteiden 5 sekunnin ikkunoista, joissa toinen kuuluu taustalla × {here} – kuullaan yhdessä, eivät kuulosta samalta. Vain linnuille, joiden todennäköisyys olla täällä on vähintään 15 %.",
   "confusion.noneScape": "Tämän linnun kanssa kuultuja lintuja ei ole tiedossa",
-  "clips.sec": "Äänitteet (Xeno-canto, A-laatu) — napauta sonogrammia toistaaksesi, uudelleen pysäyttääksesi, pidä painettuna toistaaksesi jatkuvasti",
+  "clips.sec": "Äänitteet (Xeno-canto, A-laatu) — napauta sonogrammia toistaaksesi, uudelleen pysäyttääksesi, pidä painettuna tai vaihto-napsauta toistaaksesi jatkuvasti",
   "clips.s": "Laulu",
   "clips.c": "Kutsuäänet",
   "clips.a": "Varoitusäänet",

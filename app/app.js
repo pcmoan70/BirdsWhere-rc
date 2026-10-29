@@ -12825,7 +12825,7 @@
       });
       box.innerHTML = h;
       box.querySelectorAll(".xc-clip").forEach(function (cl) {
-        cl.addEventListener("click", function (e) { e.stopPropagation(); if (e.target.closest(".xc-cap")) return; xcToggle(cl); });
+        cl.addEventListener("click", function (e) { e.stopPropagation(); if (e.target.closest(".xc-cap")) return; xcToggle(cl, e.shiftKey); });   // shift-click = repeat on a desktop; a right / two-finger click reaches the hold helper as contextmenu
         wireHoldButton(cl, function () { xcToggle(cl, true); }, function (e) { return !e.target.closest(".xc-cap"); });
         cl.querySelector("img").addEventListener("error", function () { cl.classList.add("xc-noimg"); });
       });
@@ -13074,7 +13074,7 @@
       var sec = tbl.querySelector(".xc-sec");
       if (sec && shares) { sec.style.setProperty("--xc-lbl", (shares[0] * 100).toFixed(3) + "%"); sec.style.setProperty("--xc-a", (shares[1] * 100).toFixed(3) + "%"); sec.style.setProperty("--xc-b", (shares[2] * 100).toFixed(3) + "%"); }
       el.querySelectorAll(".xc-clip").forEach(function (cl) {
-        cl.addEventListener("click", function (e) { e.stopPropagation(); if (e.target.closest(".xc-cap")) return; xcToggle(cl); });
+        cl.addEventListener("click", function (e) { e.stopPropagation(); if (e.target.closest(".xc-cap")) return; xcToggle(cl, e.shiftKey); });   // shift-click = repeat on a desktop; a right / two-finger click reaches the hold helper as contextmenu
         wireHoldButton(cl, function () { xcToggle(cl, true); }, function (e) { return !e.target.closest(".xc-cap"); });
         cl.querySelector("img").addEventListener("error", function () { cl.classList.add("xc-noimg"); });   // no sonogram on XC yet (new uploads): caption only, still playable
       });
