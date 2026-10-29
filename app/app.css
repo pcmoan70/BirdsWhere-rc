@@ -5112,3 +5112,5 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .xc-cap:hover { text-decoration: underline; }
 .xc-more { display: block; margin: 4px 7px 8px; font-size: 12.5px; color: var(--brand-deep, var(--brand)); text-decoration: none; }
 .xc-more:hover { text-decoration: underline; }
+.xc-menu .xc-vlbl { font-size: 13.5px; font-weight: 700; color: var(--ink); padding: 8px 0 3px; }   /* the single-species Audio panel: voice headings read as headings (owner, 2026-10-29) */
+.xc-menu .xc-col-a { border-top: 3px solid var(--warn); }   /* ...and a thicker amber rule under each heading */

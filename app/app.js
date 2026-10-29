@@ -12802,7 +12802,7 @@
   // confusion (audio) pane. At the bottom there should be a link to xeno-canto for that species"): the same clips as the compare card,
   // one column, grouped by voice, then the Xeno-canto search link that the entry used to open directly.
   function openAudioMenu(key, name, sci, x, y) {
-    var el = openAnchoredMenu("detrow-menu conf-menu cmp-menu");
+    var el = openAnchoredMenu("detrow-menu conf-menu cmp-menu xc-menu");
     el.style.maxHeight = "min(82vh,640px)"; el.style.overflowY = "auto"; el.style.width = "min(94vw,360px)";
     var closeBtn = document.createElement("button");
     closeBtn.type = "button"; closeBtn.className = "conf-close"; closeBtn.textContent = "\u00d7"; closeBtn.setAttribute("aria-label", "Close");
