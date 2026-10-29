@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2213";
+var VERSION = "v2214";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Look-alikes: a pair that iNaturalist data shows is really confused from both sides now stays on the list even when the models see no resemblance \u2014 Red-breasted Flycatcher lists European Robin again (19 % of its misidentifications). 2,538 species\u2019 lists gained such partners.",
-  "\u2022 The look-alike pictures keep one popup shape whichever order is chosen (Points, Match, misID, Audio)."
+  "\u2022 Compare card: the two birds\u2019 names stay pinned at the top while you scroll, so each column is always labelled."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
