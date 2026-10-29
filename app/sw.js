@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2215";
+var VERSION = "v2216";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Compare card: the recordings now sit in columns under the two names, the names band reaches the card\u2019s top edge, and the clips you have played (and their sonograms) are kept on the device so they play offline \u2014 Settings \u2192 Storage lists them under Recordings (Xeno-canto)."
+  "\u2022 Recordings: the recordist / licence line under each clip is half its old size; Norwegian \u201cFluktkall\u201d corrected."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
