@@ -13129,6 +13129,8 @@
     var entries = (map && map[key]) || [], sm = (snd && snd[key]) || {}, hm = (scp && scp[key]) || {};
     function mem(l, c, w, mid) { return { m: l, w: w, mid: mid, snd: (c in sm) ? sm[c] : -1, hs: (c in hm) ? hm[c] : -1 }; }
     var members = entries.map(function (e) { var l = labelsByKey[e.c]; return l ? mem(l, e.c, e.w, e.mid || 0) : null; }).filter(Boolean);
+    var union = {}; members.forEach(function (mm) { union[mm.m.key] = 1; }); Object.keys(sm).concat(Object.keys(hm)).forEach(function (c) { if (labelsByKey[c]) union[c] = 1; });
+    var nAll = Object.keys(union).length;   // every bird any order could list: the images view sizes its grid by this, so the popup keeps one shape across the orders (owner, 2026-10-29)
     if (by === "sound" || by === "scape") {                 // the by-ear / heard-alongside partners join the list, look-alikes or not
       var have = {}; entries.forEach(function (e) { have[e.c] = 1; });
       Object.keys(by === "sound" ? sm : hm).forEach(function (c) { var l = labelsByKey[c]; if (l && !have[c]) members.push(mem(l, c, 0, 0)); });
@@ -13138,7 +13140,7 @@
     var out = null;
     if (pt) { try { out = await predictWeek(+pt.lat, +pt.lon, +document.getElementById("week-select").value); } catch (e) {} }
     by = (by === "score" && !out) ? "match" : (CONF_SORTS.indexOf(by) >= 0 ? by : "match");
-    if (!members.length) return { none: true, arr: [], out: out, by: by };
+    if (!members.length) return { none: true, arr: [], out: out, by: by, nAll: nAll };
     var arr = members.map(function (mm) { return { m: mm.m, w: mm.w, mid: mm.mid, snd: mm.snd, hs: mm.hs, p: out ? (out[mm.m.index] || 0) : -1 }; });
     if (by === "score") {
       // Occurs-here only, and only where the Score survives its floors: a look-alike that
@@ -13157,7 +13159,7 @@
     } else {
       arr.sort(function (a, b) { return b.w - a.w; });                      // by Match (confusion score)
     }
-    return { arr: arr, out: out, by: by };
+    return { arr: arr, out: out, by: by, nAll: nAll };
   }
   // The header line of both look-alike views: the title, then the sort buttons Score · Match · misID · Sound
   // (owner, 2026-10-27: "toggleable with button on top … Let toggle be on top line. Of confusion panes (both
@@ -13327,7 +13329,7 @@
     }
     var strip = document.createElement("div"); strip.className = "cfi-strip";
     strip.innerHTML = card(lbl, null, true) + arr.map(function (w) { return card(w.m, w, false); }).join("");
-    el.appendChild(strip); fitCardGrid(el, strip.children.length);   // shrink-wrap to the squarest grid (6 cards → 3 × 2)
+    el.appendChild(strip); fitCardGrid(el, Math.max(strip.children.length, rk.nAll + 1));   // the squarest grid for ALL the look-alikes (+ the base card), whatever this order lists: one width across Points / Match / misID / Audio
     var legend = document.createElement("div"); legend.className = "conf-legend";
     legend.textContent = t("confusion.legend", { match: L.match, misid: L.misid, here: L.here, score: L.score });
     el.appendChild(legend);
