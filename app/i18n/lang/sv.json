@@ -75,7 +75,7 @@
   "confusion.tipScape": "Ljudbild: hur ofta den här fågeln hörs i samma inspelningar som grundarten (andel av 5-sekundersfönstren i dess Xeno-canto-inspelningar där den andra upptäcks), gånger chansen att den finns här den här veckan – fåglar du hör tillsammans med den, vare sig de låter lika eller inte. Visas bara för fåglar med minst 15 % chans att finnas här.",
   "confusion.legendScape": "{scape}: andel av 5-sekundersfönstren i fågelns inspelningar där den andra hörs i bakgrunden × {here} – hörs tillsammans, låter inte lika. Visas bara för fåglar med minst 15 % chans att finnas här.",
   "confusion.noneScape": "Inga fåglar som hörs tillsammans med denna finns registrerade",
-  "clips.sec": "Inspelningar (Xeno-canto, A-kvalitet) — tryck på ett sonogram för att spela, igen för att stoppa",
+  "clips.sec": "Inspelningar (Xeno-canto, A-kvalitet) — tryck på ett sonogram för att spela, igen för att stoppa, håll ned för att upprepa",
   "clips.s": "Sång",
   "clips.c": "Läten",
   "clips.a": "Varningsläten",

@@ -75,7 +75,7 @@
   "confusion.tipScape": "Lydbilde: hvor ofte denne fuglen høres i de samme opptakene som grunnarten (andel av 5-sekundersvinduene i dens Xeno-canto-opptak der den andre er oppdaget), ganget med sjansen for at den er her denne uken – fugler du vil høre sammen med den, enten de låter likt eller ikke. Vises bare for fugler med minst 15 % sjanse for å være her.",
   "confusion.legendScape": "{scape}: andel av 5-sekundersvinduene i fuglens opptak der den andre høres i bakgrunnen × {here} – høres sammen med, låter ikke likt. Vises bare for fugler med minst 15 % sjanse for å være her.",
   "confusion.noneScape": "Ingen fugler som høres sammen med denne er registrert",
-  "clips.sec": "Opptak (Xeno-canto, A-kvalitet) — trykk på et sonogram for å spille, trykk igjen for å stoppe",
+  "clips.sec": "Opptak (Xeno-canto, A-kvalitet) — trykk på et sonogram for å spille, trykk igjen for å stoppe, hold inne for å gjenta",
   "clips.s": "Sang",
   "clips.c": "Kall",
   "clips.a": "Varselkall",

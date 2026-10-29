@@ -656,7 +656,7 @@ window.GeoI18N = (function () {
         "confusion.tipScape": "Soundscape: how often this bird is heard in the same recordings as the base bird (share of the 5-second windows of its Xeno-canto recordings in which the other is detected), times the chance it is here this week — the birds you will hear alongside it, whether or not they sound alike. Shown only for birds with at least a 15 % chance of being here.",
         "confusion.legendScape": "{scape}: share of the bird's 5-second recording windows in which the other is heard in the background × {here} — heard alongside, not sounding alike. Shown only for birds with at least a 15 % chance of being here.",
         "confusion.noneScape": "No birds heard alongside this one on file",
-        "clips.sec": "Recordings (Xeno-canto, A grade) — tap a sonogram to play, tap again to stop",
+        "clips.sec": "Recordings (Xeno-canto, A grade) — tap a sonogram to play, tap again to stop, hold to repeat",
         "clips.s": "Song",
         "clips.c": "Calls",
         "clips.a": "Alarm calls",

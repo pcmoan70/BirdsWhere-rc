@@ -5103,9 +5103,10 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 .xc-col { min-width: 0; padding: 3px 7px 0; border-top: 2px solid var(--border); }
 .xc-col-a { border-top-color: var(--brand); }
 .xc-col-b { border-top-color: var(--warn); }
-.xc-clip { display: block; width: 100%; margin: 2px 0 4px; border: 1px solid var(--border); border-radius: var(--radius-xs, 4px); overflow: hidden; cursor: pointer; background: #fff; }   /* data colour */
+.xc-clip { display: block; position: relative; width: 100%; margin: 2px 0 4px; border: 1px solid var(--border); border-radius: var(--radius-xs, 4px); overflow: hidden; cursor: pointer; background: #fff; }   /* data colour */
 .xc-clip img { display: block; width: 100%; height: auto; min-height: 24px; }
 .xc-clip.playing { outline: 2px solid var(--brand-strong); outline-offset: -2px; }
+.xc-clip.xc-loop::after { content: "\21bb"; position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%; background: var(--brand-strong); color: var(--on-brand); font-size: 15px; line-height: 20px; text-align: center; pointer-events: none; }   /* on repeat (a press-and-hold): a circular arrow on the clip */
 .xc-a.playing { outline-color: var(--brand); }
 .xc-b.playing { outline-color: var(--warn); }
 .xc-clip.xc-noimg img { display: none; }

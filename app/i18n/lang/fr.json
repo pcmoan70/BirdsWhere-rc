@@ -75,7 +75,7 @@
   "confusion.tipScape": "Paysage sonore : à quelle fréquence cet oiseau s'entend dans les mêmes enregistrements que l'espèce de base (part des fenêtres de 5 secondes de ses enregistrements Xeno-canto où l'autre est détecté), multipliée par la chance qu'il soit ici cette semaine – les oiseaux que vous entendrez à côté de lui, qu'ils se ressemblent ou non. Affiché seulement pour les oiseaux ayant au moins 15 % de chances d'être ici.",
   "confusion.legendScape": "{scape} : part des fenêtres de 5 secondes des enregistrements de l'oiseau où l'autre s'entend en arrière-plan × {here} – entendus ensemble, pas semblables. Affiché seulement pour les oiseaux ayant au moins 15 % de chances d'être ici.",
   "confusion.noneScape": "Aucun oiseau entendu avec celui-ci enregistré",
-  "clips.sec": "Enregistrements (Xeno-canto, qualité A) — touchez un sonagramme pour écouter, à nouveau pour arrêter",
+  "clips.sec": "Enregistrements (Xeno-canto, qualité A) — touchez un sonagramme pour écouter, à nouveau pour arrêter, maintenez pour répéter",
   "clips.s": "Chant",
   "clips.c": "Cris",
   "clips.a": "Cris d'alarme",

@@ -75,7 +75,7 @@
   "confusion.tipScape": "Zvuková kulisa: jak často je tento pták slyšet ve stejných nahrávkách jako základní druh (podíl pětisekundových oken jeho nahrávek z Xeno-canto, v nichž je druhý rozpoznán), krát šance, že je tu tento týden – ptáci, které uslyšíte vedle něj, ať už znějí podobně, nebo ne. Jen pro ptáky s aspoň 15% šancí, že tu jsou.",
   "confusion.legendScape": "{scape}: podíl pětisekundových oken nahrávek ptáka, v nichž je druhý slyšet v pozadí × {here} – slyšet spolu, ne podobně znějící. Jen pro ptáky s aspoň 15% šancí, že tu jsou.",
   "confusion.noneScape": "Žádní ptáci slyšení spolu s tímto v evidenci",
-  "clips.sec": "Nahrávky (Xeno-canto, třída A) — klepnutím na sonogram přehrát, dalším klepnutím zastavit",
+  "clips.sec": "Nahrávky (Xeno-canto, třída A) — klepnutím na sonogram přehrát, dalším klepnutím zastavit, podržením přehrát opakovaně",
   "clips.s": "Zpěv",
   "clips.c": "Volání",
   "clips.a": "Varovné hlasy",

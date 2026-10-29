@@ -12777,11 +12777,11 @@
   }
   var xcAudio = null, xcPlayingEl = null;
   function xcStop() {
-    if (xcAudio) { try { xcAudio.pause(); } catch (e) {} }
-    if (xcPlayingEl) xcPlayingEl.classList.remove("playing");
+    if (xcAudio) { try { xcAudio.pause(); } catch (e) {} xcAudio.loop = false; }
+    if (xcPlayingEl) xcPlayingEl.classList.remove("playing", "xc-loop");
     xcPlayingEl = null;
   }
-  function xcToggle(clipEl) {
+  function xcToggle(clipEl, loop) {
     if (xcPlayingEl === clipEl) { xcStop(); return; }
     xcStop();
     if (!xcAudio) {
@@ -12790,7 +12790,8 @@
       xcAudio.addEventListener("timeupdate", function () { if (xcPlayingEl && !document.body.contains(xcPlayingEl)) xcStop(); });   // the card closed under it
     }
     xcAudio.src = "https://xeno-canto.org/" + clipEl.dataset.xc + "/download";
-    xcPlayingEl = clipEl; clipEl.classList.add("playing");
+    xcAudio.loop = !!loop;   // a press-and-hold plays the clip on repeat (owner, 2026-10-29); any tap or hold on it stops it
+    xcPlayingEl = clipEl; clipEl.classList.add("playing"); if (loop) clipEl.classList.add("xc-loop");
     xcAudio.play().catch(function () { xcStop(); });
   }
   function xcClipHtml(c, side) {
@@ -12825,6 +12826,7 @@
       box.innerHTML = h;
       box.querySelectorAll(".xc-clip").forEach(function (cl) {
         cl.addEventListener("click", function (e) { e.stopPropagation(); if (e.target.closest(".xc-cap")) return; xcToggle(cl); });
+        wireHoldButton(cl, function () { xcToggle(cl, true); }, function (e) { return !e.target.closest(".xc-cap"); });
         cl.querySelector("img").addEventListener("error", function () { cl.classList.add("xc-noimg"); });
       });
       positionAnchoredMenu(el, x, y);
@@ -13073,6 +13075,7 @@
       if (sec && shares) { sec.style.setProperty("--xc-lbl", (shares[0] * 100).toFixed(3) + "%"); sec.style.setProperty("--xc-a", (shares[1] * 100).toFixed(3) + "%"); sec.style.setProperty("--xc-b", (shares[2] * 100).toFixed(3) + "%"); }
       el.querySelectorAll(".xc-clip").forEach(function (cl) {
         cl.addEventListener("click", function (e) { e.stopPropagation(); if (e.target.closest(".xc-cap")) return; xcToggle(cl); });
+        wireHoldButton(cl, function () { xcToggle(cl, true); }, function (e) { return !e.target.closest(".xc-cap"); });
         cl.querySelector("img").addEventListener("error", function () { cl.classList.add("xc-noimg"); });   // no sonogram on XC yet (new uploads): caption only, still playable
       });
       positionAnchoredMenu(el, x, y);
