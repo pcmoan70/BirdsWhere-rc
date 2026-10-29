@@ -12798,6 +12798,37 @@
       '<img src="https://xeno-canto.org/sounds/uploaded/' + escapeHtml(c.h) + '/ffts/XC' + escapeHtml(c.xc) + '-small.png" alt="">' +
       '<a class="xc-cap" href="https://xeno-canto.org/' + escapeHtml(c.xc) + '" target="_blank" rel="noopener">' + escapeHtml(cap) + "</a></div>";
   }
+  // The species menu's Audio panel (owner, 2026-10-29: "The species popup Audio should give the preselected audio clips used in the
+  // confusion (audio) pane. At the bottom there should be a link to xeno-canto for that species"): the same clips as the compare card,
+  // one column, grouped by voice, then the Xeno-canto search link that the entry used to open directly.
+  function openAudioMenu(key, name, sci, x, y) {
+    var el = openAnchoredMenu("detrow-menu conf-menu cmp-menu");
+    el.style.maxHeight = "min(82vh,640px)"; el.style.overflowY = "auto"; el.style.width = "min(94vw,360px)";
+    var closeBtn = document.createElement("button");
+    closeBtn.type = "button"; closeBtn.className = "conf-close"; closeBtn.textContent = "\u00d7"; closeBtn.setAttribute("aria-label", "Close");
+    closeBtn.addEventListener("click", function (e) { e.stopPropagation(); closeAnchoredMenu(); });
+    el.appendChild(closeBtn);
+    var hdr = document.createElement("div"); hdr.className = "detrow-menu-hdr"; hdr.textContent = name; el.appendChild(hdr);
+    var box = document.createElement("div"); box.className = "xc-sec"; box.innerHTML = '<span class="cmp-nocol">\u2026</span>'; el.appendChild(box);
+    var more = document.createElement("a"); more.className = "xc-more"; more.href = xenoCantoUrl(sci || ""); more.target = "_blank"; more.rel = "noopener";
+    more.textContent = t("clips.more"); more.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); openExternal(xenoCantoUrl(sci || "")); });
+    el.appendChild(more); positionAnchoredMenu(el, x, y);
+    ensureClips(key).then(function (A) {
+      if (!document.body.contains(box)) return;
+      var h = '<div class="xc-sec-lbl">' + escapeHtml(t("clips.sec")) + "</div>";
+      if (!A.length) h += '<div class="cmp-nocol">' + escapeHtml(t("clips.none")) + "</div>";
+      XC_CATS.forEach(function (k) {
+        var a = A.filter(function (c) { return c.cat === k; }); if (!a.length) return;
+        h += '<div class="xc-voice"><div class="xc-vlbl">' + escapeHtml(t("clips." + k)) + '</div><div class="xc-col xc-col-a">' + a.map(function (c) { return xcClipHtml(c, "a"); }).join("") + "</div></div>";
+      });
+      box.innerHTML = h;
+      box.querySelectorAll(".xc-clip").forEach(function (cl) {
+        cl.addEventListener("click", function (e) { e.stopPropagation(); if (e.target.closest(".xc-cap")) return; xcToggle(cl); });
+        cl.querySelector("img").addEventListener("error", function () { cl.classList.add("xc-noimg"); });
+      });
+      positionAnchoredMenu(el, x, y);
+    });
+  }
   // The compare card's Recordings section (a grid under the trait table, not table rows: a table cannot shrink the sonograms
   // on a phone): one block per voice either bird has, the two birds' clips in two columns coloured like their names.
   function xcSection(focalKey, partnerKey) {
@@ -13509,7 +13540,10 @@
         el.appendChild(drmBtn(t("menu.appmig"), function () { closeDetRowMenu(); showSpeciesMigration(key, d && d.date); }));
       }
       if (isBird) el.appendChild(drmBtn(t("menu.macaulay"), function () { closeDetRowMenu(); openExternal(macaulayUrl(key, sci, d && d.date)); }));   // Images (Macaulay Library) — birds only
-      if (!isPlant && !isFungi) el.appendChild(drmBtn(t("menu.xeno"), function () { closeDetRowMenu(); openExternal(xenoCantoUrl(sci)); }));   // Audio (Xeno-canto) — animals only
+      if (!isPlant && !isFungi) {   // Audio — the preselected Xeno-canto clips, then the Xeno-canto link (owner, 2026-10-29); animals only
+        var audBtn = drmBtn(t("menu.xeno"), function () { var r = audBtn.getBoundingClientRect(); closeDetRowMenu(); openAudioMenu(key, lbl ? speciesName(lbl) : (sci || ""), sci, Math.round(r.left), Math.round(r.top)); });
+        el.appendChild(audBtn);
+      }
       var moreBtn = drmBtn(t("menu.recent"), function () {
         closeDetRowMenu();
         var la = hasLoc ? +d.lat : (marker ? marker.getLatLng().lat : map.getCenter().lat);

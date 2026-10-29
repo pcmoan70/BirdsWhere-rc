@@ -1040,7 +1040,7 @@ Right-click / long-press / tap any species name for a menu **led by the species 
   **Settings → Distribution**
   picks which opens first, model by default, each falling back to the other when it has nothing for the
   species, Wikipedia also when offline; the Wikipedia dialog links to the model map), **Migration**,
-  **Images** (Macaulay Library, birds), **Audio** (Xeno-canto, animals), **More of these**, **Wikipedia**,
+  **Images** (Macaulay Library, birds), **Audio** (v2210: the bird's preselected Xeno-canto clips in the app — up to two A-grade recordings per kind of voice, tap a sonogram to play — with the link to all its recordings on Xeno-canto at the bottom; animals), **More of these**, **Wikipedia**,
   then **Family** and the group-specific references: **Macaulay Library** photos/audio (narrowed to the
   observation's season — a ±1-month `beginMonth`/`endMonth` window — so images match the time of
   year) and **eBird photos** for birds, **Kew POWO** for plants, **Animal Diversity Web** for

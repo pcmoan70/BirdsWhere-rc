@@ -665,6 +665,7 @@ window.GeoI18N = (function () {
         "clips.j": "Young birds",
         "clips.o": "Other sounds",
         "clips.none": "No A-grade recordings on file",
+        "clips.more": "All recordings of this species on Xeno-canto ↗",
         "traits.none": "No characteristics on file",
         "traits.colour": "Plumage colour",
         "traits.male": "Male",

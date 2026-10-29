@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2209";
+var VERSION = "v2210";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Hear the two birds: with Experimental features on, the compare card (\u21c6 Compare \u2026 side by side) ends with Xeno-canto recordings of both, side by side by kind of voice \u2014 song, calls, alarm, flight, drumming, young birds. Tap a sonogram to play it, tap again to stop; the recordist and licence are on each clip."
+  "\u2022 Audio in a bird's menu now opens its Xeno-canto clips right here \u2014 the same A-grade recordings by kind of voice as on the compare card, tap a sonogram to play \u2014 with the link to all its recordings on Xeno-canto at the bottom.",
+  "\u2022 Hear the two birds: with Experimental features on, the compare card (\u21c6 Compare \u2026 side by side) ends with Xeno-canto recordings of both, side by side by kind of voice. Tap a sonogram to play it, tap again to stop; the recordist and licence are on each clip."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
