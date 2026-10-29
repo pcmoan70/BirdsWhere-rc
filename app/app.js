@@ -80,7 +80,7 @@
   var TAX_URL = "taxonomy-base.csv";        // species_code + English name + class (split from taxonomy.csv)
   var TAX_NAMES_BASE = "i18n/names/";       // per-language name packs, line-aligned to taxonomy-base.csv rows
   var CONFUSION_URL = "confusion.csv";      // per-bird look-alike (confusion) partner codes; fetched on first use
-  var CONFUSION_REV = 18;                     // bump when confusion.csv changes — busts the runtime (cache-first) copy
+  var CONFUSION_REV = 19;                     // bump when confusion.csv changes — busts the runtime (cache-first) copy
   var SOUND_URL = "sound.csv";                // per-bird "sounds like" partners (tools/sound, BirdNET+ V3.0 over Xeno-canto): code -> "code:SCORE …"
   var SOUND_REV = 2;                          // bump when sound.csv changes (2 = S17 shared-vocalisation table, 2026-10-29)
   var SCAPE_URL = "soundscape.csv";           // per-bird "heard alongside" partners (tools/sound measures_v2.py heard.csv): code -> "code:SHARE …" (share of recordings, 0-100)
