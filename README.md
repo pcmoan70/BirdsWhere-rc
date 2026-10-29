@@ -1180,7 +1180,7 @@ habitat model puts above 0 % at your point/week and ranks them by local likeliho
   cards**: the species itself first (marked by a thicker green frame), then left to right by Score, wrapping
   onto further rows (two per row on narrow phones). Each card carries the Wikipedia/Commons lead photo
   with its credit, the name, the scientific name and **Match · misID · Here · Score** as small bars;
-  tapping a look-alike (card or table row) offers **⇆ Compare … side by side** (the compare card) or that bird's own
+  tapping a look-alike (card or table row) offers **⇆ Compare … side by side** (the compare card) or that bird's own With Experimental on, the compare card ends with **Recordings** (v2209): up to two Xeno-canto A-grade clips per voice for each bird, side by side by kind of voice (song, calls, alarm, flight, drumming, young birds, other) from the index `app/xc/<first char>.csv` (`tools/sound/xc_clips.py`, built from the archive's Darwin Core metadata since the Xeno-canto API now needs a key); the sonogram is the button (tap to play, tap again to stop, one clip at a time, streamed from xeno-canto.org), and each clip shows its XC number, recordist and licence and links its page.
   **☰ Species menu**. The footer explains the columns, including how Match compares the names (the cosine of their
   BioCLIP 2 embedding vectors). **Settings → Confusion species** switches between
   *Photo cards* (default) and the *Table*; offline the table is used automatically, and each popup has a

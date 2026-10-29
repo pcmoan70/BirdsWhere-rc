@@ -106,6 +106,12 @@ came from **Xeno-canto** (https://xeno-canto.org, recordings under the recordist
 licences, mostly CC BY-NC-SA). No recording, no embedding and no recordist name is redistributed:
 the app ships only the derived closeness numbers and the report `about/audio-similarity.html`.
 
+Since v2209 the compare card also plays **Xeno-canto recordings** (grade A) of the two birds being compared:
+the sonogram image and the audio are loaded from xeno-canto.org at the time of use, nothing is copied into the
+app; the app carries only an index (`app/xc/`: XC number, voice category, the upload path, recordist and licence
+of up to two recordings per voice and species) so that every clip is shown with its recordist, its Creative
+Commons licence and a link to its Xeno-canto page, as the licences require.
+
 ### Simplified country borders
 File: `app/countries-lite.json` — heavily simplified national outlines used only to gate
 country-scoped observation sources. Derived from open/public-domain geographic boundary data

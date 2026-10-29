@@ -12756,6 +12756,64 @@
     };
   }
   var ensureSound = pairsLoader(SOUND_URL, SOUND_REV), ensureScape = pairsLoader(SCAPE_URL, SCAPE_REV);
+  // Xeno-canto clips for the compare card (owner, 2026-10-29): app/xc/<first char>.csv (tools/sound/xc_clips.py) — per species up
+  // to two A-grade recordings per voice as "xc|cat|hash|recordist|licence;…". The sonogram and the audio come from xeno-canto.org
+  // itself; the recordist and licence are shown with each clip (the CC attribution). One shared Audio element plays one clip at a time.
+  var XC_REV = 1, xcShards = Object.create(null), XC_CATS = ["s", "c", "a", "f", "d", "j", "o"];
+  function ensureClips(code) {
+    var k = String(code || "").charAt(0).toLowerCase(); if (!k) return Promise.resolve([]);
+    if (!xcShards[k]) xcShards[k] = fetch(new URL("xc/" + k + ".csv", SCRIPT_BASE).href + "?r=" + XC_REV)
+      .then(function (r) { return r.ok ? r.text() : ""; })
+      .then(function (text) {
+        var m = Object.create(null);
+        text.split(/\r?\n/).slice(1).forEach(function (line) {
+          var c = line.indexOf(","); if (c < 0) return;
+          m[line.slice(0, c)] = line.slice(c + 1).split(";").map(function (cl) { var f = cl.split("|"); return { xc: f[0], cat: f[1], h: f[2], by: f[3] || "", lic: f[4] || "" }; });
+        });
+        return m;
+      }, function () { return Object.create(null); });
+    return xcShards[k].then(function (m) { return m[code] || []; });
+  }
+  var xcAudio = null, xcPlayingEl = null;
+  function xcStop() {
+    if (xcAudio) { try { xcAudio.pause(); } catch (e) {} }
+    if (xcPlayingEl) xcPlayingEl.classList.remove("playing");
+    xcPlayingEl = null;
+  }
+  function xcToggle(clipEl) {
+    if (xcPlayingEl === clipEl) { xcStop(); return; }
+    xcStop();
+    if (!xcAudio) {
+      xcAudio = new Audio(); xcAudio.preload = "none";
+      xcAudio.addEventListener("ended", xcStop);
+      xcAudio.addEventListener("timeupdate", function () { if (xcPlayingEl && !document.body.contains(xcPlayingEl)) xcStop(); });   // the card closed under it
+    }
+    xcAudio.src = "https://xeno-canto.org/" + clipEl.dataset.xc + "/download";
+    xcPlayingEl = clipEl; clipEl.classList.add("playing");
+    xcAudio.play().catch(function () { xcStop(); });
+  }
+  function xcClipHtml(c, side) {
+    var cap = "XC" + c.xc + " \u00b7 " + c.by + " \u00b7 CC " + c.lic;
+    return '<div class="xc-clip xc-' + side + '" data-xc="' + escapeHtml(c.xc) + '" title="' + escapeHtml(cap) + '">' +
+      '<img src="https://xeno-canto.org/sounds/uploaded/' + escapeHtml(c.h) + '/ffts/XC' + escapeHtml(c.xc) + '-small.png" alt="">' +
+      '<a class="xc-cap" href="https://xeno-canto.org/' + escapeHtml(c.xc) + '" target="_blank" rel="noopener">' + escapeHtml(cap) + "</a></div>";
+  }
+  // The compare card's Recordings section (a grid under the trait table, not table rows: a table cannot shrink the sonograms
+  // on a phone): one block per voice either bird has, the two birds' clips in two columns coloured like their names.
+  function xcSection(focalKey, partnerKey) {
+    return Promise.all([ensureClips(focalKey), ensureClips(partnerKey)]).then(function (ab) {
+      var A = ab[0], B = ab[1], h = '<div class="xc-sec"><div class="xc-sec-lbl">' + escapeHtml(t("clips.sec")) + "</div>";
+      if (!A.length && !B.length) return h + '<div class="cmp-nocol">' + escapeHtml(t("clips.none")) + "</div></div>";
+      XC_CATS.forEach(function (k) {
+        var a = A.filter(function (c) { return c.cat === k; }), b = B.filter(function (c) { return c.cat === k; });
+        if (!a.length && !b.length) return;
+        h += '<div class="xc-voice"><div class="xc-vlbl">' + escapeHtml(t("clips." + k)) + '</div><div class="xc-grid">' +
+          '<div class="xc-col xc-col-a">' + (a.map(function (c) { return xcClipHtml(c, "a"); }).join("") || '<span class="cmp-nocol">\u2014</span>') + "</div>" +
+          '<div class="xc-col xc-col-b">' + (b.map(function (c) { return xcClipHtml(c, "b"); }).join("") || '<span class="cmp-nocol">\u2014</span>') + "</div></div></div>";
+      });
+      return h + "</div>";
+    });
+  }
   // Per-species characteristics (AVONET morphology/ecology + HBW plumage colour),
   // for the confusion "compare" card. Fetched on first use, cache-first like confusion.
   var traitsData = null, _traitsP = null;
@@ -12967,6 +13025,16 @@
     tbl.innerHTML = rows;
     // Either species name → open that bird's own confusion-species list (pick a new look-alike).
     el.appendChild(tbl);
+    // Recordings side by side (owner, 2026-10-29; Experimental / Sound on): appended once the clip index shard is here.
+    if (soundOn()) xcSection(focalKey, partnerKey).then(function (xr) {
+      if (!document.body.contains(tbl)) return;
+      tbl.insertAdjacentHTML("afterend", xr);
+      el.querySelectorAll(".xc-clip").forEach(function (cl) {
+        cl.addEventListener("click", function (e) { e.stopPropagation(); if (e.target.closest(".xc-cap")) return; xcToggle(cl); });
+        cl.querySelector("img").addEventListener("error", function () { cl.classList.add("xc-noimg"); });   // no sonogram on XC yet (new uploads): caption only, still playable
+      });
+      positionAnchoredMenu(el, x, y);
+    });
     tbl.querySelectorAll(".cmp-clk").forEach(function (th) {
       th.addEventListener("click", function (e) {
         e.stopPropagation();

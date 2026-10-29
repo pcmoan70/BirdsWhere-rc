@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2208";
+var VERSION = "v2209";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Look-alikes by ear rebuilt (Experimental): two sound models (BirdNET+ and Bird-MAE) now compare the actual vocalisations, cut into 3-second pieces, of 85,000 Xeno-canto recordings \u2014 7,478 species, 5,639 of them on the new method.",
-  "\u2022 Soundscape now counts how often another bird is detected in a bird's recording windows (9,426 species), which drops the one-off false detections of the old recording shares."
+  "\u2022 Hear the two birds: with Experimental features on, the compare card (\u21c6 Compare \u2026 side by side) ends with Xeno-canto recordings of both, side by side by kind of voice \u2014 song, calls, alarm, flight, drumming, young birds. Tap a sonogram to play it, tap again to stop; the recordist and licence are on each clip."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
