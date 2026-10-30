@@ -1001,6 +1001,9 @@ Right-click / long-press / tap any species name for a menu **led by the species 
   or interact with something outside it — never on its own because the pointer moved away. A popup
   opened from inside another (a picture from a record list, a ⓘ note) sits *on* it rather than
   replacing it, so closing the picture puts you back in the list. The ⓘ note opens at your pointer.
+  A popup *window* — one taller than about half the screen (the Audio panel, a record card, a compare
+  table) and every picture popup — opens at the **top of the map area**, whatever row opened it, so it
+  never hangs below the fold; a short menu stays beside the row or button it came from.
 
 - A species' **record list** shows Probability, Season and Yr peak on every row, as the observation
   list does (blank for species the model does not cover).

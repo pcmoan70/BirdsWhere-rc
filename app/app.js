@@ -12421,8 +12421,20 @@
     el.setAttribute("tabindex", "-1");
     try { el.focus({ preventScroll: true }); } catch (e) { try { el.focus(); } catch (e2) {} }
   }
+  // Where a popup WINDOW goes: the top of the map area (just under the bar above the map; 6 px
+  // when the map is not on screen). A tall popup anchored to a row low on the screen hung below
+  // the fold, and one whose pictures arrive later grew past it (owner, 2026-10-30: "All popup
+  // windows should be placed towards the top of the map area").
+  function mapAreaTop() {
+    var w = document.getElementById("map-wrap"), r = w && w.getBoundingClientRect();
+    return (r && r.height > 0) ? Math.max(6, Math.round(r.top) + 6) : 6;
+  }
+  // A popup taller than 45% of the screen is a window (the Audio panel, a record card, a compare
+  // table) and opens at the top of the map area; a shorter one is a menu and stays by its anchor.
+  // `.anch-top` asks for the top from the first placement, before the content that makes it tall.
   function positionAnchoredMenu(el, left, top) {
     ensureAnchClose(el);
+    if (el.classList.contains("anch-top") || el.offsetHeight > window.innerHeight * 0.45) top = mapAreaTop();
     el.style.left = Math.max(6, Math.min(left, window.innerWidth - el.offsetWidth - 8)) + "px";
     el.style.top = Math.max(6, Math.min(top, window.innerHeight - el.offsetHeight - 8)) + "px";
     placeAnchClose(el);
@@ -12431,12 +12443,13 @@
   // A popup whose height only settles once its PICTURES have loaded cannot be anchored to
   // the row that opened it: anchor a row near the bottom of the screen and the clamp in
   // positionAnchoredMenu measures a height the popup no longer has a moment later, so it
-  // ends up hanging below the fold. Centre those instead — the pictures are the subject,
-  // there is nothing they need to stay attached to — and re-centre as each one lands.
+  // ends up hanging below the fold. Those are centred ACROSS and sit at the top of the map
+  // area — the pictures are the subject, there is nothing they need to stay attached to —
+  // and are re-placed as each one lands.
   function centerAnchoredMenu(el) {
     ensureAnchClose(el);
     el.style.left = Math.max(6, Math.round((window.innerWidth - el.offsetWidth) / 2)) + "px";
-    el.style.top = Math.max(6, Math.round((window.innerHeight - el.offsetHeight) / 2)) + "px";
+    el.style.top = Math.min(mapAreaTop(), Math.max(6, window.innerHeight - el.offsetHeight - 8)) + "px";
     placeAnchClose(el);
     enableMenuKeys(el, closeAnchoredMenu);
   }
@@ -12804,7 +12817,7 @@
   // confusion (audio) pane. At the bottom there should be a link to xeno-canto for that species"): the same clips as the compare card,
   // one column, grouped by voice, then the Xeno-canto search link that the entry used to open directly.
   function openAudioMenu(key, name, sci, x, y) {
-    var el = openAnchoredMenu("detrow-menu conf-menu cmp-menu xc-menu");
+    var el = openAnchoredMenu("detrow-menu conf-menu cmp-menu xc-menu anch-top");   // a window: at the top of the map area from the start
     el.style.maxHeight = "min(82vh,640px)"; el.style.overflowY = "auto"; el.style.width = "min(94vw,360px)";
     var closeBtn = document.createElement("button");
     closeBtn.type = "button"; closeBtn.className = "conf-close"; closeBtn.textContent = "\u00d7"; closeBtn.setAttribute("aria-label", "Close");

@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2227";
+var VERSION = "v2228";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Saved point lists come back exactly as they were after a restart: the ticked lists and the legend's points-view selection are kept."
+  "\u2022 Popup windows (Audio, record cards, compare tables, pictures) open at the top of the map area, so one opened from a species low on the screen no longer hangs below the fold. Short menus stay beside what opened them."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
