@@ -247,7 +247,7 @@ small popover and clicking it jumps to the Species list table (expanded on that 
 view); on a phone, a short tap opens the popover (tapping the button again closes it) and a long press
 jumps to the table. Tapping a bird's **photo** opens its **Wikimedia Commons** pictures as a labelled grid
 (v2222): one section per Commons sub-category of the species — male, female, juvenile first, then eggs, flocks,
-in flight, illustrations, museum specimens … — up to four free-licence pictures each, credit under every one,
+in flight, nests … (wild birds only: illustrations, museum specimens, ringing, captive, dead and historical categories are left out, v2223) — the four best free-licence pictures each (Commons' Featured / Quality / Valued assessments first, then resolution), credit under every one,
 tap a picture for it full size; the **Macaulay Library** link for the current month (±1) sits at the popup's
 bottom (before v2222 the photo opened that catalogue directly); tapping the
 **Probability** opens the **Migration** view (Location analysis → Timeline) for that species, and on

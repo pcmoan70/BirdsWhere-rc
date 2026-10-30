@@ -27383,31 +27383,40 @@
   function cmApi(params) {
     return fetch("https://commons.wikimedia.org/w/api.php?format=json&origin=*&" + params).then(function (r) { return r.ok ? r.json() : null; });
   }
+  // Categories that are not wild birds in natural situations (owner, 2026-10-30: "illustration, museum specimens, being ringed …
+  // are not interesting") are left out.
+  var CM_SKIP = /illustrat|museum|specimen|ring(ed|ing)|captiv|dead|historical|\bmaps?\b|anatom|skull|skeleton|taxiderm|drawing|painting|stamp|audio|video|incidental|recording|low quality|\bzoo\b|aviar|cage/i;
   function cmSections(sci) {
-    var first = ["male", "female", "juvenile"];
+    var first = ["male", "female", "pairs", "pair", "juvenile", "juveniles", "in flight", "flying"];   // the owner's picks lead; the other natural situations follow in Commons order
     return cmApi("action=query&list=allcategories&aclimit=60&acprefix=" + encodeURIComponent(sci + " (")).then(function (m) {
       var out = [];
       (((m || {}).query || {}).allcategories || []).forEach(function (c) {
-        var mm = /^(.+) \(([^()]+)\)$/.exec(String(c["*"] || "")); if (!mm || mm[1] !== sci || /audio|video/i.test(mm[2])) return;
+        var mm = /^(.+) \(([^()]+)\)$/.exec(String(c["*"] || "")); if (!mm || mm[1] !== sci || CM_SKIP.test(mm[2])) return;
         out.push({ cat: c["*"], label: mm[2].charAt(0).toUpperCase() + mm[2].slice(1) });
       });
-      out.sort(function (a, b) { var ia = first.indexOf(a.label.toLowerCase()), ib = first.indexOf(b.label.toLowerCase()); return (ia < 0 ? 9 : ia) - (ib < 0 ? 9 : ib); });
+      out.sort(function (a, b) { var ia = first.indexOf(a.label.toLowerCase()), ib = first.indexOf(b.label.toLowerCase()); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib); });
       return out.length ? out : [{ cat: sci, label: "" }];
     }, function () { return [{ cat: sci, label: "" }]; });
   }
-  function cmFiles(cat) {   // up to CM_PER_CAT free image files of one category, with their credits
-    return cmApi("action=query&generator=categorymembers&gcmtype=file&gcmlimit=" + (CM_PER_CAT * 2) + "&gcmtitle=" + encodeURIComponent("Category:" + cat) +
-      "&prop=imageinfo&iiprop=url%7Cextmetadata%7Cmime&iiurlwidth=320&iiextmetadatafilter=Artist%7CLicenseShortName%7CLicenseUrl").then(function (m) {
+  // The best CM_PER_CAT free image files of one category, with their credits (owner, 2026-10-30: "preferably images of good
+  // quality"): from a pool of up to 50, Commons' own assessments first — Featured, Quality, Valued images — then the pixel count.
+  var CM_ASSESS = { "Category:Featured pictures on Wikimedia Commons": 3, "Category:Quality images": 2, "Category:Valued images": 1 };
+  function cmFiles(cat) {
+    return cmApi("action=query&generator=categorymembers&gcmtype=file&gcmlimit=50&gcmtitle=" + encodeURIComponent("Category:" + cat) +
+      "&prop=imageinfo%7Ccategories&iiprop=url%7Cextmetadata%7Cmime%7Csize&iiurlwidth=320&iiextmetadatafilter=Artist%7CLicenseShortName%7CLicenseUrl" +
+      "&cllimit=max&clcategories=" + encodeURIComponent(Object.keys(CM_ASSESS).join("|"))).then(function (m) {
       var pages = (((m || {}).query || {}).pages) || {}, out = [];
       Object.keys(pages).forEach(function (id) {
         var pg = pages[id], ii = pg.imageinfo && pg.imageinfo[0], em = (ii && ii.extmetadata) || {};
         if (!ii || !/^image\//.test(ii.mime || "") || !ii.thumburl) return;
         var l = String((em.LicenseShortName && em.LicenseShortName.value) || "").trim();
         if (!spImgLicenceOk(l)) return;
+        var q = 0; (pg.categories || []).forEach(function (c) { q = Math.max(q, CM_ASSESS[c.title] || 0); });
         out.push({ t: String(ii.thumburl).replace(/^https:\/\/thumb\.wikimedia\.org\//, "https://upload.wikimedia.org/"), f: String(pg.title || "").replace(/^File:/, ""), h: "commons.wikimedia.org",
           a: String((em.Artist && em.Artist.value) || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 240), l: l,
-          lu: String((em.LicenseUrl && em.LicenseUrl.value) || "").trim() });
+          lu: String((em.LicenseUrl && em.LicenseUrl.value) || "").trim(), q: q, px: (ii.width || 0) * (ii.height || 0) });
       });
+      out.sort(function (a, b) { return (b.q - a.q) || (b.px - a.px); });
       return out.slice(0, CM_PER_CAT);
     }, function () { return []; });
   }
