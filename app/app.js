@@ -12810,7 +12810,7 @@
   function xcClipHtml(c, side) {
     var cap = "XC" + c.xc + " \u00b7 " + c.by + " \u00b7 CC " + c.lic;
     return '<div class="xc-clip xc-' + side + '" data-xc="' + escapeHtml(c.xc) + '" title="' + escapeHtml(cap) + '">' +
-      '<img src="https://xeno-canto.org/sounds/uploaded/' + escapeHtml(c.h) + '/ffts/XC' + escapeHtml(c.xc) + '-small.png" alt="">' +
+      '<img src="https://xeno-canto.org/sounds/spectrograms/' + escapeHtml(c.h) + '/' + escapeHtml(c.xc) + '/grey-small.png" alt="">' +   // the site's current spectrogram path: the old /ffts/XC<nr>-small.png exists only for recordings before about XC1100000 (2025), newer ones showed no sonogram (owner, 2026-10-30)
       '<a class="xc-cap" href="https://xeno-canto.org/' + escapeHtml(c.xc) + '" target="_blank" rel="noopener">' + escapeHtml(cap) + "</a></div>";
   }
   // The species menu's Audio panel (owner, 2026-10-29: "The species popup Audio should give the preselected audio clips used in the
