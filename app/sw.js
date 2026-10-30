@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2223";
+var VERSION = "v2224";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Images layout: tap a bird's photo for its Wikimedia Commons pictures by category \u2014 male, female, juvenile, eggs, flocks, in flight \u2026 \u2014 wild birds only (no illustrations, museum specimens, ringing or captive birds), the four best each, with the Macaulay Library link for this time of year at the bottom."
+  "\u2022 Full-size pictures zoom: scroll, pinch or double-tap to zoom in, drag to pan, a sharper rendition loads as you zoom. The Commons grid leaves distribution maps out, and iNaturalist tops up its male, female and juvenile groups."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

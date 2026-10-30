@@ -26806,8 +26806,53 @@
     var big = document.createElement("img"); big.alt = img.alt || ""; big.decoding = "async";
     var src = img.currentSrc || img.src, bigSrc = spImgAtWidth(src, PHOTO_BIG_W);
     big.addEventListener("error", function () { if (big.src !== src) big.src = src; });   // no 1600 px rendition → the card's own picture
-    big.src = bigSrc;
+    big.src = bigSrc; big.draggable = false;
     box.appendChild(big);
+    // Zoom (owner, 2026-10-30: "it should be shown full size with possibility to zoom"): scroll wheel, pinch and double-tap /
+    // double-click zoom about the pointer, a drag pans; a plain tap on the picture at 1:1 still closes. Past 1.5× a 3000 px
+    // rendition replaces the 1600 px one once it has loaded.
+    var sc = 1, tx = 0, ty = 0, ptrs = {}, pinchD = 0, moved = false, hiRes = false, lastTap = 0, tapT = null;
+    big.title = t("photo.zoomTip");
+    function apply() {
+      big.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + sc + ")";
+      big.style.cursor = sc > 1 ? "grab" : "zoom-in";
+      if (sc > 1.5 && !hiRes) { hiRes = true; var hi = spImgAtWidth(src, 3000); if (hi !== big.src) { var pre = new Image(); pre.onload = function () { if (big.isConnected) big.src = hi; }; pre.src = hi; } }
+    }
+    function zoomAt(f, cx, cy) {   // the point under (cx, cy) stays put
+      var r = big.getBoundingClientRect(), ox = cx - (r.left + r.width / 2), oy = cy - (r.top + r.height / 2);
+      var ns = Math.min(8, Math.max(1, sc * f)); f = ns / sc;
+      tx += ox * (1 - f); ty += oy * (1 - f); sc = ns;
+      if (sc === 1) { tx = 0; ty = 0; }
+      apply();
+    }
+    function pinch() { var k = Object.keys(ptrs); if (k.length < 2) return 0; var a = ptrs[k[0]], b = ptrs[k[1]]; return Math.hypot(a.x - b.x, a.y - b.y); }
+    box.addEventListener("wheel", function (e) { e.preventDefault(); zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY); }, { passive: false });
+    big.addEventListener("dblclick", function (e) { e.preventDefault(); e.stopPropagation(); });   // handled on pointerup (one path for mouse and touch)
+    big.addEventListener("pointerdown", function (e) {
+      if (e.button > 0) return;
+      e.preventDefault(); try { big.setPointerCapture(e.pointerId); } catch (e2) {}
+      ptrs[e.pointerId] = { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY }; pinchD = pinch(); moved = false;
+    });
+    big.addEventListener("pointermove", function (e) {
+      var p = ptrs[e.pointerId]; if (!p) return;
+      var dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
+      if (Math.abs(e.clientX - p.x0) > 6 || Math.abs(e.clientY - p.y0) > 6) moved = true;
+      var d = pinch();
+      if (d && pinchD) { var k = Object.keys(ptrs), a = ptrs[k[0]], b = ptrs[k[1]]; zoomAt(d / pinchD, (a.x + b.x) / 2, (a.y + b.y) / 2); pinchD = d; }
+      else if (sc > 1) { tx += dx; ty += dy; apply(); }
+    });
+    function lift(e) {
+      if (!ptrs[e.pointerId]) return;
+      delete ptrs[e.pointerId]; pinchD = pinch();
+      if (Object.keys(ptrs).length || moved || e.type !== "pointerup") return;
+      var now = Date.now();
+      if (now - lastTap < 320) { clearTimeout(tapT); lastTap = 0; zoomAt(sc > 1 ? 1 / sc : 2.5, e.clientX, e.clientY); return; }   // double-tap / double-click
+      lastTap = now;
+      if (sc === 1 && now - box._openedAt >= 900) tapT = setTimeout(closePhotoLightbox, 320);   // a lone tap at 1:1 closes, as before
+    }
+    // On the box in the capture phase, ahead of the box's own pointerup stop below (the hold's release): the picture's taps must still arrive.
+    box.addEventListener("pointerup", function (e) { if (e.target === big) lift(e); }, true);
+    box.addEventListener("pointercancel", function (e) { if (e.target === big) lift(e); }, true);
     var cr = img.parentNode && img.parentNode.parentNode && img.parentNode.parentNode.querySelector(".spg-credit");
     var cap = document.createElement("div"); cap.className = "lb-credit";
     cap.innerHTML = (img.alt ? "<b>" + escapeHtml(img.alt) + "</b> " : "") + (cr ? cr.innerHTML : "");
@@ -26817,7 +26862,7 @@
     // The click a touch hold emits on release lands on the OVERLAY (it is on top by then) and
     // closed the picture before it was seen (owner's report, 2026-10-01): ignore clicks for a
     // moment after the hold fired.
-    box.addEventListener("click", function (e) { if (e.target.closest("a")) return; e.stopPropagation(); if (Date.now() - box._openedAt < 900) return; closePhotoLightbox(); });
+    box.addEventListener("click", function (e) { if (e.target.closest("a")) return; e.stopPropagation(); if (e.target === big || Date.now() - box._openedAt < 900) return; closePhotoLightbox(); });   // the picture's own taps: see lift()
     box.addEventListener("pointerup", function (e) { e.stopPropagation(); }, true);   // the hold's release lands here on touch: not a tap
     document.body.appendChild(box);
     document.addEventListener("keydown", lbKey, true);   // capture: the picture's Esc must not also reach the document's Esc = Back
@@ -27385,17 +27430,16 @@
   }
   // Categories that are not wild birds in natural situations (owner, 2026-10-30: "illustration, museum specimens, being ringed …
   // are not interesting") are left out.
-  var CM_SKIP = /illustrat|museum|specimen|ring(ed|ing)|captiv|dead|historical|\bmaps?\b|anatom|skull|skeleton|taxiderm|drawing|painting|stamp|audio|video|incidental|recording|low quality|\bzoo\b|aviar|cage/i;
+  var CM_SKIP = /illustrat|museum|specimen|ring(ed|ing)|captiv|dead|historical|\bmaps?\b|anatom|skull|skeleton|taxiderm|drawing|painting|stamp|audio|video|incidental|recording|low quality|distribution|\brange\b|\bzoo\b|aviar|cage/i;
+  var CM_SKIP_FILE = /\bmaps?\b|distribution|\brange\b|verbreitung|karte|\bareal|chart|diagram/i;   // a map filed under a kept category (owner, 2026-10-30: "The distribution images should not be included")
   function cmSections(sci) {
-    var first = ["male", "female", "pairs", "pair", "juvenile", "juveniles", "in flight", "flying"];   // the owner's picks lead; the other natural situations follow in Commons order
     return cmApi("action=query&list=allcategories&aclimit=60&acprefix=" + encodeURIComponent(sci + " (")).then(function (m) {
       var out = [];
       (((m || {}).query || {}).allcategories || []).forEach(function (c) {
         var mm = /^(.+) \(([^()]+)\)$/.exec(String(c["*"] || "")); if (!mm || mm[1] !== sci || CM_SKIP.test(mm[2])) return;
         out.push({ cat: c["*"], label: mm[2].charAt(0).toUpperCase() + mm[2].slice(1) });
       });
-      out.sort(function (a, b) { var ia = first.indexOf(a.label.toLowerCase()), ib = first.indexOf(b.label.toLowerCase()); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib); });
-      return out.length ? out : [{ cat: sci, label: "" }];
+      return out.length ? cmOrder(out) : [{ cat: sci, label: "" }];
     }, function () { return [{ cat: sci, label: "" }]; });
   }
   // The best CM_PER_CAT free image files of one category, with their credits (owner, 2026-10-30: "preferably images of good
@@ -27408,7 +27452,7 @@
       var pages = (((m || {}).query || {}).pages) || {}, out = [];
       Object.keys(pages).forEach(function (id) {
         var pg = pages[id], ii = pg.imageinfo && pg.imageinfo[0], em = (ii && ii.extmetadata) || {};
-        if (!ii || !/^image\//.test(ii.mime || "") || !ii.thumburl) return;
+        if (!ii || !/^image\/(jpe?g|png|webp|tiff?)$/i.test(ii.mime || "") || !ii.thumburl || CM_SKIP_FILE.test(String(pg.title || ""))) return;   // photographs only: no SVG / GIF maps and diagrams
         var l = String((em.LicenseShortName && em.LicenseShortName.value) || "").trim();
         if (!spImgLicenceOk(l)) return;
         var q = 0; (pg.categories || []).forEach(function (c) { q = Math.max(q, CM_ASSESS[c.title] || 0); });
@@ -27419,6 +27463,33 @@
       out.sort(function (a, b) { return (b.q - a.q) || (b.px - a.px); });
       return out.slice(0, CM_PER_CAT);
     }, function () { return []; });
+  }
+  // iNaturalist tops up the groups it can name (owner, 2026-10-30: "fill up with iNaturalist API images to attempt to fill
+  // categories with at least two images"): research-grade observations annotated male / female (sex) or juvenile (life stage),
+  // the licences we may show (CC0 / CC BY / CC BY-SA), most-faved first, one per photographer. Male, female and juvenile groups
+  // are always present, so a species Commons has not sorted still gets them.
+  var INAT_TERMS = { male: "term_id=9&term_value_id=11", female: "term_id=9&term_value_id=10", juvenile: "term_id=1&term_value_id=7" }, CM_MIN = 2;
+  function inatFill(sci, label, n) {
+    return fetch("https://api.inaturalist.org/v1/observations?photos=true&quality_grade=research&photo_license=cc0,cc-by,cc-by-sa&order_by=votes&order=desc&per_page=" + (n * 4) +
+      "&taxon_name=" + encodeURIComponent(sci) + "&" + INAT_TERMS[label])
+      .then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+        var out = [], seen = {};
+        ((j && j.results) || []).forEach(function (o) {
+          if (out.length >= n || !o.taxon || String(o.taxon.name || "").indexOf(sci) !== 0) return;   // the species (or a subspecies of it), not a fuzzy name match
+          var uid = o.user && o.user.id; if (seen[uid]) return;
+          var ph = (o.photos || []).filter(function (p) { return p && p.url && INAT_LIC[p.license_code]; })[0]; if (!ph) return;
+          seen[uid] = 1;
+          var lic = INAT_LIC[ph.license_code];
+          out.push({ t: String(ph.url).replace(/\/square\./, "/large."), f: "", h: "", pg: "https://www.inaturalist.org/observations/" + o.id,
+            a: String(ph.attribution || "").replace(/^\(c\)\s*/i, "").replace(/,\s*(some|all) rights reserved.*$/i, "").replace(/,\s*no rights reserved.*$/i, "").trim().slice(0, 240), l: lic.n, lu: lic.u });
+        });
+        return out;
+      }, function () { return []; });
+  }
+  function cmOrder(secs) {
+    var first = ["male", "female", "pairs", "pair", "juvenile", "juveniles", "in flight", "flying"];   // the owner's picks lead; the other natural situations follow in Commons order
+    secs.sort(function (a, b) { var ia = first.indexOf(a.label.toLowerCase()), ib = first.indexOf(b.label.toLowerCase()); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib); });
+    return secs;
   }
   function openCommonsGrid(key, sci, name) {
     var m = createModal({ boxClass: "cm-box", escClose: true }), box = m.box;
@@ -27437,7 +27508,15 @@
         '<div class="spg-credit">' + spCreditHtml(r) + "</div></div>";
     }
     (cmCache[sci] || (cmCache[sci] = cmSections(sci).then(function (secs) {
-      return Promise.all(secs.map(function (sc) { return cmFiles(sc.cat).then(function (files) { sc.files = files; return sc; }); }));
+      return Promise.all(secs.map(function (sc) { return sc.cat ? cmFiles(sc.cat).then(function (files) { sc.files = files; return sc; }) : sc; }));
+    }).then(function (secs) {
+      Object.keys(INAT_TERMS).forEach(function (w) {   // the iNaturalist-capable groups always exist …
+        if (!secs.some(function (sc) { return sc.label.toLowerCase() === w; })) secs.push({ cat: "", label: w.charAt(0).toUpperCase() + w.slice(1), files: [] });
+      });
+      return Promise.all(secs.map(function (sc) {   // … and are topped up to CM_MIN pictures
+        var w = sc.label.toLowerCase(); if (!INAT_TERMS[w] || sc.files.length >= CM_MIN) return sc;
+        return inatFill(sci, w, CM_MIN - sc.files.length).then(function (more) { sc.files = sc.files.concat(more); return sc; });
+      })).then(cmOrder);
     }))).then(function (secs) {
       if (!box.isConnected) return;
       secs = secs.filter(function (sc) { return sc.files.length; });
