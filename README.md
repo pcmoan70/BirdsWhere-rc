@@ -245,8 +245,11 @@ opens the usual species menu and the scientific name the Family menu, as in the 
 button on a card shows the species' record sub-list: on a computer, hovering it opens the list in a
 small popover and clicking it jumps to the Species list table (expanded on that species, scrolled into
 view); on a phone, a short tap opens the popover (tapping the button again closes it) and a long press
-jumps to the table. Tapping a bird's **photo** opens its **Macaulay Library** catalogue narrowed to the month
-it was last seen (±1 month — the same link as the species menu's *Photos*); tapping the
+jumps to the table. Tapping a bird's **photo** opens its **Wikimedia Commons** pictures as a labelled grid
+(v2222): one section per Commons sub-category of the species — male, female, juvenile first, then eggs, flocks,
+in flight, illustrations, museum specimens … — up to four free-licence pictures each, credit under every one,
+tap a picture for it full size; the **Macaulay Library** link for the current month (±1) sits at the popup's
+bottom (before v2222 the photo opened that catalogue directly); tapping the
 **Probability** opens the **Migration** view (Location analysis → Timeline) for that species, and on
 a mouse device hovering it previews the same 48-week probability bars at the fetch point (current
 week outlined, the last-seen week in blue). That chart is reachable two ways on **every**

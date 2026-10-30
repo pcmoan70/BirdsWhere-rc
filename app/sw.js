@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2221";
+var VERSION = "v2222";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Play a recording on repeat (\u21bb badge): press and hold a sonogram on a phone; shift-click, right-click or two-finger click it on a desktop. Any click on it stops it."
+  "\u2022 Images layout: tap a bird's photo for its Wikimedia Commons pictures by category \u2014 male, female, juvenile, eggs, flocks \u2026 \u2014 up to four each, with the Macaulay Library link for this time of year at the bottom."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -709,7 +709,7 @@
     // Esc closes only the topmost modal (an overlay's help dialog stacks on the Overlays
     // popup), and only that: the document's Esc = Back handler must not also pop the
     // popup underneath.
-    if (opts.escClose) { onKey = function (e) { if (e.key !== "Escape") return; var all = document.querySelectorAll(".ui-modal-overlay"); if (all[all.length - 1] !== ov) return; e.preventDefault(); e.stopPropagation(); close(); }; document.addEventListener("keydown", onKey, true); }
+    if (opts.escClose) { onKey = function (e) { if (e.key !== "Escape") return; var all = document.querySelectorAll(".ui-modal-overlay"); if (all[all.length - 1] !== ov || document.getElementById("photo-lightbox")) return; /* a full-size picture over the modal (the Commons grid) takes the Esc first */ e.preventDefault(); e.stopPropagation(); close(); }; document.addEventListener("keydown", onKey, true); }
     // Every popup carries a × (the app-wide rule). Callers fill `box` synchronously right
     // after this returns, so it goes in on the next tick — after their own markup, and
     // skipped where they already built a close control.
@@ -26820,13 +26820,13 @@
     box.addEventListener("click", function (e) { if (e.target.closest("a")) return; e.stopPropagation(); if (Date.now() - box._openedAt < 900) return; closePhotoLightbox(); });
     box.addEventListener("pointerup", function (e) { e.stopPropagation(); }, true);   // the hold's release lands here on touch: not a tap
     document.body.appendChild(box);
-    document.addEventListener("keydown", lbKey);
+    document.addEventListener("keydown", lbKey, true);   // capture: the picture's Esc must not also reach the document's Esc = Back
   }
   function lbKey(e) { if (e.key === "Escape") { closePhotoLightbox(); e.stopPropagation(); } }
   function closePhotoLightbox() {
     var b = document.getElementById("photo-lightbox");
     if (b && b.parentNode) b.parentNode.removeChild(b);
-    document.removeEventListener("keydown", lbKey);
+    document.removeEventListener("keydown", lbKey, true);
   }
   (function wirePhotoHold() {
     function cancel() { clearTimeout(lbHoldT); lbHoldT = null; lbStart = null; }
@@ -27360,6 +27360,83 @@
         .then(function (ok) { if (card.classList.contains("spg-card") && ok !== null) card._spgDone = true; });
     });
   });
+  // The credit line under a photo: photographer (or the service it came from) → the file page, then the licence → its deed.
+  function spCreditHtml(r) {
+    var page = r.pg || ("https://" + (r.h || "commons.wikimedia.org") + "/wiki/File:" + encodeURIComponent((r.f || "").replace(/ /g, "_")));
+    // With no photographer to name, credit the service the picture actually came from —
+    // saying "Wikimedia Commons" under a GBIF field photograph would be simply untrue.
+    var hm = String(page || "").match(/^https?:\/\/([^\/]+)/), host = hm ? hm[1].replace(/^www\./i, "") : "";
+    var site = /gbif\.org$/i.test(host) ? "GBIF"
+      : (/inaturalist\.org$/i.test(host) ? "iNaturalist"
+      : (!host || /wiki(m|p)edia\.org$/i.test(host) ? "Wikimedia Commons" : host));
+    return '<a href="' + escapeHtml(page) + '" target="_blank" rel="noopener">' + escapeHtml(r.a ? "© " + r.a : site) + "</a>" +
+      (r.l ? " · " + (r.lu
+        ? '<a href="' + escapeHtml(r.lu) + '" target="_blank" rel="noopener">' + escapeHtml(r.l) + "</a>"   // the licence deed itself
+        : escapeHtml(r.l)) : "");
+  }
+  // ---- Wikimedia Commons category grid (owner, 2026-10-30: a tap on an Images-layout photo opens "the Wikimedia Commons
+  // in a nice labeled grid, showing all the available sub categories, but only max of each category", the Macaulay link for
+  // the current time of year at the bottom). Commons files a species' photos under "<Scientific name> (male)", "(female)",
+  // "(juvenile)", "(eggs)", "(flocks)", "(in flight)" …; one request lists those names, one per category fetches its first
+  // free image files with their credits. No sub-category → the species category itself as the one section.
+  var CM_PER_CAT = 4, cmCache = Object.create(null);
+  function cmApi(params) {
+    return fetch("https://commons.wikimedia.org/w/api.php?format=json&origin=*&" + params).then(function (r) { return r.ok ? r.json() : null; });
+  }
+  function cmSections(sci) {
+    var first = ["male", "female", "juvenile"];
+    return cmApi("action=query&list=allcategories&aclimit=60&acprefix=" + encodeURIComponent(sci + " (")).then(function (m) {
+      var out = [];
+      (((m || {}).query || {}).allcategories || []).forEach(function (c) {
+        var mm = /^(.+) \(([^()]+)\)$/.exec(String(c["*"] || "")); if (!mm || mm[1] !== sci || /audio|video/i.test(mm[2])) return;
+        out.push({ cat: c["*"], label: mm[2].charAt(0).toUpperCase() + mm[2].slice(1) });
+      });
+      out.sort(function (a, b) { var ia = first.indexOf(a.label.toLowerCase()), ib = first.indexOf(b.label.toLowerCase()); return (ia < 0 ? 9 : ia) - (ib < 0 ? 9 : ib); });
+      return out.length ? out : [{ cat: sci, label: "" }];
+    }, function () { return [{ cat: sci, label: "" }]; });
+  }
+  function cmFiles(cat) {   // up to CM_PER_CAT free image files of one category, with their credits
+    return cmApi("action=query&generator=categorymembers&gcmtype=file&gcmlimit=" + (CM_PER_CAT * 2) + "&gcmtitle=" + encodeURIComponent("Category:" + cat) +
+      "&prop=imageinfo&iiprop=url%7Cextmetadata%7Cmime&iiurlwidth=320&iiextmetadatafilter=Artist%7CLicenseShortName%7CLicenseUrl").then(function (m) {
+      var pages = (((m || {}).query || {}).pages) || {}, out = [];
+      Object.keys(pages).forEach(function (id) {
+        var pg = pages[id], ii = pg.imageinfo && pg.imageinfo[0], em = (ii && ii.extmetadata) || {};
+        if (!ii || !/^image\//.test(ii.mime || "") || !ii.thumburl) return;
+        var l = String((em.LicenseShortName && em.LicenseShortName.value) || "").trim();
+        if (!spImgLicenceOk(l)) return;
+        out.push({ t: String(ii.thumburl).replace(/^https:\/\/thumb\.wikimedia\.org\//, "https://upload.wikimedia.org/"), f: String(pg.title || "").replace(/^File:/, ""), h: "commons.wikimedia.org",
+          a: String((em.Artist && em.Artist.value) || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 240), l: l,
+          lu: String((em.LicenseUrl && em.LicenseUrl.value) || "").trim() });
+      });
+      return out.slice(0, CM_PER_CAT);
+    }, function () { return []; });
+  }
+  function openCommonsGrid(key, sci, name) {
+    var m = createModal({ boxClass: "cm-box", escClose: true }), box = m.box;
+    var none = '<div class="cmp-nocol">' + escapeHtml(t("cm.none")) + "</div>";
+    box.innerHTML = '<div class="cm-hdr"><b>' + escapeHtml(name || sci) + "</b><span>" + escapeHtml(t("cm.sub", { n: CM_PER_CAT })) + "</span></div>" +
+      '<div class="cm-body"><div class="dl-empty spg-wait"><div class="spinner"></div></div></div>' +
+      '<a class="cm-more" href="' + escapeHtml(macaulayUrl(key, sci, "")) + '" target="_blank" rel="noopener">' + escapeHtml(t("cm.ml")) + "</a>";
+    box.querySelector(".cm-more").addEventListener("click", function (e) { e.preventDefault(); openExternal(this.href); });
+    var body = box.querySelector(".cm-body");
+    body.addEventListener("click", function (e) {   // a tap on a tile = the full-size picture (a press-and-hold does the same via wirePhotoHold)
+      var img = e.target.closest && e.target.closest(".spg-img img"); if (!img || Date.now() - lbHoldAt < 900) return;
+      e.preventDefault(); e.stopPropagation(); openPhotoLightbox(img);
+    });
+    function tile(r) {
+      return '<div class="cm-tile"><div class="spg-img"><img crossorigin="anonymous" decoding="async" src="' + escapeHtml(r.t) + '" alt="' + escapeHtml(sci) + '" title="' + escapeHtml(t("photo.holdBig")) + '"></div>' +
+        '<div class="spg-credit">' + spCreditHtml(r) + "</div></div>";
+    }
+    (cmCache[sci] || (cmCache[sci] = cmSections(sci).then(function (secs) {
+      return Promise.all(secs.map(function (sc) { return cmFiles(sc.cat).then(function (files) { sc.files = files; return sc; }); }));
+    }))).then(function (secs) {
+      if (!box.isConnected) return;
+      secs = secs.filter(function (sc) { return sc.files.length; });
+      body.innerHTML = secs.length ? secs.map(function (sc) {
+        return '<div class="cm-sec">' + (sc.label ? '<div class="cm-lbl">' + escapeHtml(sc.label) + "</div>" : "") + '<div class="cm-grid">' + sc.files.map(tile).join("") + "</div></div>";
+      }).join("") : none;
+    });
+  }
   function loadSpPhoto(box, none, cr, sci) {
     if (!sci) { markNoImage(box, none); return Promise.resolve(false); }
     if (photoNetDown() && !spImgStore()[sci]) { markOffline(box, none); return Promise.resolve(null); }   // no connection: don't queue a doomed lookup
@@ -27384,19 +27461,7 @@
         else markNoImage(box, none, sci);
       });
       box.insertBefore(img, box.firstChild);
-      if (cr) {
-        var page = r.pg || ("https://" + (r.h || "commons.wikimedia.org") + "/wiki/File:" + encodeURIComponent((r.f || "").replace(/ /g, "_")));
-        // With no photographer to name, credit the service the picture actually came from —
-        // saying "Wikimedia Commons" under a GBIF field photograph would be simply untrue.
-        var hm = String(page || "").match(/^https?:\/\/([^\/]+)/), host = hm ? hm[1].replace(/^www\./i, "") : "";
-        var site = /gbif\.org$/i.test(host) ? "GBIF"
-          : (/inaturalist\.org$/i.test(host) ? "iNaturalist"
-          : (!host || /wiki(m|p)edia\.org$/i.test(host) ? "Wikimedia Commons" : host));
-        cr.innerHTML = '<a href="' + escapeHtml(page) + '" target="_blank" rel="noopener">' + escapeHtml(r.a ? "© " + r.a : site) + "</a>" +
-          (r.l ? " · " + (r.lu
-            ? '<a href="' + escapeHtml(r.lu) + '" target="_blank" rel="noopener">' + escapeHtml(r.l) + "</a>"   // the licence deed itself
-            : escapeHtml(r.l)) : "");
-      }
+      if (cr) cr.innerHTML = spCreditHtml(r);
       return true;
     });
   }
@@ -27591,8 +27656,9 @@
         if (dc) { e.preventDefault(); e.stopPropagation(); openSpHeadPanel("last", dc.getAttribute("data-date")); return; }
         var card = e.target.closest && e.target.closest(".spg-card"); if (!card) return;
         var key = card.getAttribute("data-key"), date = card.getAttribute("data-date") || "";
-        if (e.target.closest(".spg-img-link")) {   // the photo → Macaulay Library, ±1 month around the last sighting
-          e.preventDefault(); openExternal(macaulayUrl(key, card.getAttribute("data-sci"), date)); return;
+        if (e.target.closest(".spg-img-link")) {   // the photo → the Wikimedia Commons category grid (Macaulay, the current month, at its bottom)
+          e.preventDefault(); var nmEl = card.querySelector(".sp-link");
+          openCommonsGrid(key, card.getAttribute("data-sci"), nmEl ? nmEl.textContent.trim() : ""); return;
         }
         if (e.target.closest(".spg-prob, .spg-bar")) {
           e.preventDefault();
