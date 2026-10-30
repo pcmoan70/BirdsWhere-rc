@@ -19012,6 +19012,9 @@
       '<input type="text" id="mp-tags" aria-label="' + esc(t("points.tags")) + '" placeholder="' + esc(t("points.tagsPh")) + '" value="' + esc((p.tags || []).join(", ")) + '" />' +
       '<div class="mp-row">' + mpColorRow(p) + coordsPill + "</div>" +
       '<textarea id="mp-note" aria-label="' + esc(t("points.note")) + '" placeholder="' + esc(t("points.note")) + '" rows="2">' + esc(p.note || "") + "</textarea>" +
+      // The position's uncertainty (owner, 2026-10-30: "allow for a radius for uncertainty"): the same `radius` field the
+      // files and Edit values carry — drawn as the transparent circle under the pin, exported as uncertainty_m.
+      '<input type="number" id="mp-radius" min="0" step="1" inputmode="numeric" aria-label="' + esc(t("ptedit.radius")) + '" placeholder="' + esc(t("ptedit.radius")) + '" value="' + (+p.radius > 0 ? +p.radius : "") + '" />' +
       listSel +
       '<div class="mp-actions">' +
         '<button type="button" id="mp-save" class="btn">' + esc(t("points.save")) + '</button>' +
@@ -19074,13 +19077,14 @@
       var name = (document.getElementById("mp-name").value || "").trim();
       var tags = mpParseTags(document.getElementById("mp-tags").value);
       var note = (document.getElementById("mp-note").value || "").trim();
+      var radius = parseFloat((document.getElementById("mp-radius") || {}).value); if (!(radius > 0)) radius = undefined;   // undefined = no circle (dropped by the JSON store)
       var color = mpReadColor();
       if (color) { mpState.setMpLastColor(color); try { window.GeoState.save({ mpLastColor: color }); } catch (e) {} }   // remember for the next new point
       var sel = document.getElementById("mp-listsel");
       var target = sel ? sel.value : "";
       if (target && target !== "__new__") rememberSaveList(target);
       if (isEdit) {
-        var patch = { name: name, tags: tags, note: note, color: color };
+        var patch = { name: name, tags: tags, note: note, color: color, radius: radius };
         var ownerName = ownerListOf(p);
         if (ownerName) {
           // A point inside a saved list: patch it in place and persist the list, the same way
@@ -19088,7 +19092,7 @@
           // silently done nothing here.
           if (!p.id) p.id = mpState.mpUid();
           Object.assign(p, patch);
-          if (!patch.note) delete p.note;
+          if (!patch.note) delete p.note; if (!patch.radius) delete p.radius;
           delete p.noteHtml;                     // edited by hand → plain text from now on
           saveMapPoints(); renderMapPoints(); refreshMpPanel();
           setStatus(t("points.edited", { name: name || p.name || "" }));
@@ -19106,6 +19110,7 @@
         map.closePopup(); return;
       }
       var pt = { id: mpUid(), lat: p.lat, lon: p.lon, name: name, tags: tags, note: note, color: color, source: "manual", createdAt: new Date().toISOString() };
+      if (radius) pt.radius = radius;
       if (!target) { addMapPoint(pt); map.closePopup(); return; }   // loose working pin
       var addToList = function (n) { addPointToCollection(n, pt); mpState.shownColls()[n] = true; saveShownState(); renderMapPoints(); map.closePopup(); };
       if (target === "__new__") {
