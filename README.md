@@ -1058,7 +1058,8 @@ Right-click / long-press / tap any species name for a menu **led by the species 
   **Navigate here** and **Add to route**.
 - **Uncertainty circles** — a point whose file carries `uncertainty_m` (also `radius_m`, `radius`,
   `coordinateUncertaintyInMeters`, `accuracy`), or whose **Uncertainty (m)** field was typed into the point
-  editor (*Add point* / the pin's own popup, v2225), is drawn with a see-through circle of that
+  editor (*Add point* / the pin's own popup, v2225; its ▲▼ and the arrow keys step 1, 5, 25, 50, 100, 150, 200, 300, 400,
+  500, 750, 1000, 1500, 2000 … rather than 1 m at a time, v2226), is drawn with a see-through circle of that
   radius in metres around it: a thin black edge and a faint fill in the list's colour. A point with
   `unc_edge` (px) draws its edge that much thicker — the map-dot lists use it for their best-estimate sites.
 - **Hide / Show lists** — the toggle at the end of the Points panel's top row: **Hide lists** takes every

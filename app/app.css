@@ -2239,6 +2239,10 @@ button.offline-name:hover { text-decoration: underline; }
   background: var(--surface); color: var(--ink);
 }
 .mp-form textarea { resize: vertical; min-height: 32px; }
+.mp-radius-row { gap: 3px; flex-wrap: nowrap; }
+.mp-radius-row input { flex: 1 1 0; width: 0; min-width: 0; }   /* no intrinsic width: the ▼ ▲ sit beside the field on one row */
+.mp-step { flex: 0 0 auto; width: 26px; height: 26px; padding: 0; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--surface-2); color: var(--ink-muted); font-size: 9px; line-height: 1; cursor: pointer; }   /* the uncertainty ladder: ▼ ▲ */
+.mp-step:hover { background: var(--brand-soft); color: var(--ink); }
 /* Per-point colour row (live + saved-point editors): checkbox · label · swatch. */
 .mp-color-row { display: flex; flex-direction: row; align-items: center; gap: 6px; font-size: var(--fs-xs); font-weight: 600; color: var(--ink-muted); }
 .mp-color-row .mp-color-lbl { text-transform: uppercase; letter-spacing: .02em; }

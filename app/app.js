@@ -19014,7 +19014,10 @@
       '<textarea id="mp-note" aria-label="' + esc(t("points.note")) + '" placeholder="' + esc(t("points.note")) + '" rows="2">' + esc(p.note || "") + "</textarea>" +
       // The position's uncertainty (owner, 2026-10-30: "allow for a radius for uncertainty"): the same `radius` field the
       // files and Edit values carry — drawn as the transparent circle under the pin, exported as uncertainty_m.
-      '<input type="number" id="mp-radius" min="0" step="1" inputmode="numeric" aria-label="' + esc(t("ptedit.radius")) + '" placeholder="' + esc(t("ptedit.radius")) + '" value="' + (+p.radius > 0 ? +p.radius : "") + '" />' +
+      // Its ▲▼ (and the arrow keys) walk a ladder — 1, 5, 25, 50, 100, 150, 200, 300, 400, 500, 750, 1000, 1500, 2000, 3000 … — not 1 m
+      // steps (owner, 2026-10-30: "the up & down arrows for the uncertainty should be exponential"); typed values stay as typed.
+      '<div class="mp-row mp-radius-row"><input type="text" id="mp-radius" inputmode="numeric" aria-label="' + esc(t("ptedit.radius")) + '" placeholder="' + esc(t("ptedit.radius")) + '" value="' + (+p.radius > 0 ? +p.radius : "") + '" />' +
+        '<button type="button" class="mp-step" data-dir="-1" aria-label="\u2212">\u25bc</button><button type="button" class="mp-step" data-dir="1" aria-label="+">\u25b2</button></div>' +
       listSel +
       '<div class="mp-actions">' +
         '<button type="button" id="mp-save" class="btn">' + esc(t("points.save")) + '</button>' +
@@ -19050,8 +19053,21 @@
       return n ? activateTargetList(n) : false;
     });
   }
+  var MP_RADIUS_LADDER = [1, 5, 25, 50, 100, 150, 200, 300, 400, 500, 750, 1000, 1500, 2000, 3000, 5000, 7500, 10000, 15000, 20000, 30000, 50000];
+  function mpRadiusStep(inp, dir) {   // the next ladder value above (dir 1) or below (dir -1) the field's value; below 1 = empty
+    var v = parseFloat(inp.value), L = MP_RADIUS_LADDER, next;
+    if (!(v > 0)) next = dir > 0 ? L[0] : "";
+    else if (dir > 0) { next = L.filter(function (x) { return x > v; })[0]; if (next === undefined) next = Math.round(v * 1.5); }
+    else { var lower = L.filter(function (x) { return x < v; }); next = lower.length ? lower[lower.length - 1] : ""; }
+    inp.value = next;
+  }
   function wireEditorPopup(p, isEdit) {
     wireMpColorRow();
+    var rIn = document.getElementById("mp-radius");
+    if (rIn) {
+      Array.prototype.forEach.call(document.querySelectorAll(".mp-step"), function (b) { b.addEventListener("click", function () { mpRadiusStep(rIn, +b.getAttribute("data-dir")); rIn.focus(); }); });
+      rIn.addEventListener("keydown", function (e) { if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); mpRadiusStep(rIn, e.key === "ArrowUp" ? 1 : -1); } });
+    }
     // Keyboard (PC): a NEW point focuses the name field so you can type/Tab straight
     // away; an EXISTING point stays unfocused so [Delete] deletes it right away (Tab
     // into a field to edit). Enter in a text field triggers Save (the green button);
