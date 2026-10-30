@@ -24,7 +24,7 @@ window.AppSites = (function () {
   // ---- injected by app.js (init) -----------------------------------------
   // Functions and constants (stable references) …
   var BIRD_SPOTS_ATTR, EBIRD_HS_ATTR, SCRIPT_BASE;
-  var addToRoute, detailedPlaceName, ebirdKey, escapeHtml, fitNearbyNames, haversineKm,
+  var addToRoute, detailedPlaceName, ebirdKey, escapeHtml, experimentalOn, fitNearbyNames, haversineKm,
       ico, makePopupBtn, navigatePoints, openExternal, openPointEditor, overlayLoadStatus, overlayBusy,
       runInference, setStatus, showLocPointMenu, t, tLabel, weekOfToday, getWeek;
   // … and accessors for app state that is replaced at runtime (the map is built
@@ -33,6 +33,7 @@ window.AppSites = (function () {
   var getMap, getHotspotsLayer, setMapClickGuard;
 
   function init(ctx) {
+    experimentalOn = ctx.experimentalOn;
     BIRD_SPOTS_ATTR = ctx.BIRD_SPOTS_ATTR; EBIRD_HS_ATTR = ctx.EBIRD_HS_ATTR;
     SCRIPT_BASE = ctx.SCRIPT_BASE;
     addToRoute = ctx.addToRoute; detailedPlaceName = ctx.detailedPlaceName;
@@ -727,7 +728,7 @@ window.AppSites = (function () {
   //       richness total rates the same. ISO week 53 deliberately carries no flux.
   var bestChartView = 0;
   // Views on offer: the AI-model profile (2) is gated behind Settings → Experimental features.
-  function experimentalOn() { return !!window.GeoState.get("experimental", false); }
+  // experimentalOn is injected (app.js holds the one copy since round 4).
   function chartViews() { return experimentalOn() ? [0, 1, 2, 3] : [0, 1, 3]; }
   // Whittaker beta turnover: total species over the mean active week. The tiles
   // ship it per single site (s.tb); a screen-merged site has none, so fall back to

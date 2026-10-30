@@ -4,7 +4,7 @@
 
 > Release-candidate test channel. Production: <https://thebirding.site/>
 
-**Licence:** the application code is **public domain, CC0 1.0 Universal** (`LICENSE`; basis: the code is AI-generated — the idea, concept and UI design are Per Christian Moan's, credit appreciated; suggestions and improvements sent through the app's **Feedback** form will be implemented, so that effort is not spent twice and we build one useful tool together); the BirdsWhere name and icons, the thebirding.site domain and service, and the datasets based on modelling by Per Christian Moan (**Best sites** with its weekly rankings; the **confusion-species** lists and traits) are **reserved** — the defining text, with the exact file list and the terms of use, is [`NOTICE.md`](NOTICE.md); third-party licences are in `THIRD-PARTY-NOTICES.md`.
+**Licence:** the application code is **public domain, CC0 1.0 Universal** (`LICENSE`; basis: the software has been made using AI tools, based on ideas by Per Christian Moan — the idea, concept and UI design are his, credit appreciated; suggestions and improvements sent through the app's **Feedback** form will be implemented, so that effort is not spent twice and we build one useful tool together); the BirdsWhere name and icons, the thebirding.site domain and service, and the datasets based on modelling by Per Christian Moan (**Best sites** with its weekly rankings; the **confusion-species** lists and traits) are **reserved** — the defining text, with the exact file list and the terms of use, is [`NOTICE.md`](NOTICE.md); third-party licences are in `THIRD-PARTY-NOTICES.md`.
 
 An interactive, **100% in-browser** explorer of species **distribution, migration and live
 observations**. Everything runs on your device — there is **no server and no backend of our own**;
@@ -1579,6 +1579,13 @@ app/
   site-overlays.js      Viewpoints / best sites / eBird hotspots layers (AppSites)
   share-links.js        Shareable links: encode, share, import (AppShare)
   field-checklist.js    Field checklist: live entry, review, eBird/CSV/PDF (AppField)
+  app-shell.js          The root HTML template init() pours into the page (AppShell)
+  species-images.js     Species photos, fallbacks, lightbox, Commons category grid (AppSpImages)
+  species-compare.js    Look-alike views, compare card, Audio panel + their data loaders (AppSpCompare)
+  ref-links.js          Wikipedia / Macaulay / Xeno-canto / portal and blog links (AppRefLinks)
+  sync-data.js          Export / Import, Drive payload + merge, window.AppData (AppSyncData)
+  inference.js          Model worker, prediction cache, Season cells, range/richness overlays (AppInference)
+  place-search.js       Place / coordinate / species search box (AppPlaceSearch)
   sources.js            Data-source registry + enabled/keys config (AppSources)
   fetch.js              Per-source HTTP adapters + shared retry/backoff (AppFetch)
   normalize.js          Each source's JSON → one uniform record shape (AppNormalize)

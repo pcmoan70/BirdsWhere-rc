@@ -1,6 +1,6 @@
 # NOTICE — definitions, dedication, reservations, terms of use
 
-_Version 2026-10-24 (v2189). This file is the defining text. The LICENSE header, the README and the
+_Version 2026-10-30 (v2230). This file is the defining text. The LICENSE header, the README and the
 in-app "Credits & licence" text are summaries of it; where they differ, this file governs. It does not
 and cannot restrict the Code (section 2): it states what the dedication does **not** cover (section 3)
 and the terms of the hosted service (section 5)._
@@ -46,8 +46,8 @@ The Code is dedicated to the public domain under CC0 1.0 Universal (`LICENSE`), 
 conditions. Where a dedication is not effective, CC0 grants an unconditional, irrevocable,
 royalty-free licence instead.
 
-**Basis.** The Code is AI-generated. That is the basis for dedicating it to the public domain
-instead of licensing it.
+**Basis.** The software has been made using AI tools, based on ideas by Per Christian Moan. That
+is the basis for dedicating the Code to the public domain instead of licensing it.
 
 **Request, not a condition.** The idea, the concept and the user-interface design are Per Christian
 Moan's own work. Nothing obliges you to credit him, but if you build on BirdsWhere, this line would be

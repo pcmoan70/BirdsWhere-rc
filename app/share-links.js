@@ -17,7 +17,7 @@ window.AppShare = (function () {
 
   // ---- injected by app.js (init) -----------------------------------------
   // Plain function aliases (stable references) …
-  var clearAllFilters, clearDetections, closeModals, detName, detSets, modalConfirm,
+  var clearAllFilters, clearDetections, closeModals, detName, detRowCount, detSets, modalConfirm,
       navClose, onListView, plotSightingsResult, recordFamily, refreshGroupModeOptions,
       saveFamIndex, selectMapPoint, serializeVisibleDetPlot, setPointMarker, setStatus,
       showListView, t, uiDialog, updateSettingsIcon, updateViewToggle, wrapLon,
@@ -27,7 +27,7 @@ window.AppShare = (function () {
   var getCurrentSpView, getWeek, setWeek, seedSightingsCache, renderSpeciesList, getFam, hasBundledFam;
 
   function init(ctx) {
-    clearAllFilters = ctx.clearAllFilters; clearDetections = ctx.clearDetections;
+    clearAllFilters = ctx.clearAllFilters; clearDetections = ctx.clearDetections; detRowCount = ctx.detRowCount;
     closeModals = ctx.closeModals; detName = ctx.detName; detSets = ctx.detSets;
     modalConfirm = ctx.modalConfirm; navClose = ctx.navClose; onListView = ctx.onListView;
     plotSightingsResult = ctx.plotSightingsResult; recordFamily = ctx.recordFamily;
@@ -516,9 +516,7 @@ window.AppShare = (function () {
     });
     return pts;
   }
-  function detRowCount(detections) {
-    var n = 0; Object.keys(detections || {}).forEach(function (k) { n += ((detections[k] || {}).rows || []).length; }); return n;
-  }
+  // detRowCount is injected (sync-data.js holds the one copy since round 4).
   // Plot shared detections EXACTLY like a self-fetch: rebuild the same `result`
   // shape that a live fetch produces ({agg, extras, …}) and run it through the very
   // same plotSightingsResult pipeline — so the legend and the co-located list build
@@ -776,7 +774,6 @@ window.AppShare = (function () {
     detSetToPoints: detSetToPoints,
     maybeImportShared: maybeImportShared,
     maybeOpenSharedPoint: maybeOpenSharedPoint,
-    detRowCount: detRowCount,
     fmtDateFile: fmtDateFile,
     encodeShare: encodeShare,   // also used by the domain-move handoff (app.js moveToNewHome)
     decodeShare: decodeShare,

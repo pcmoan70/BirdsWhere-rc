@@ -244,5 +244,7 @@ window.AppGeo = (function () {
     nearbyFeature: nearbyFeature,
     countryMatch: countryMatch,
     countryAt: countryAt,          // synchronous, from the bundled borders (the map-menu's 3-D terrain gate)
+    capObj: capObj,                // the one copy of the small-cache cap (app.js used to carry a byte-identical one)
+    distM: _distM,                 // great-circle metres (app.js's haversineKm is this ÷ 1000)
   };
 })();

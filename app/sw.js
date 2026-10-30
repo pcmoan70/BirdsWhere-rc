@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2229";
+var VERSION = "v2230";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Audio: every clip shows its sonogram again. Recordings uploaded since 2025 had none, because Xeno-canto moved its spectrogram pictures; the app now uses the current address for all of them."
+  "\u2022 Under the hood: seven more parts of the app moved into their own files (photos, look-alikes and audio, outside links, sync, the model, search). Nothing changes in use.",
+  "\u2022 Credits & licence now says the software has been made using AI tools, based on ideas by Per Christian Moan."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
@@ -158,6 +159,13 @@ var SHELL = [
   "site-overlays.js",
   "share-links.js",
   "field-checklist.js",
+  "app-shell.js",
+  "species-images.js",
+  "species-compare.js",
+  "ref-links.js",
+  "sync-data.js",
+  "inference.js",
+  "place-search.js",
   "app.css",
   "analysis.js",
   "state.js",
