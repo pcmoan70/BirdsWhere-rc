@@ -15595,7 +15595,10 @@
     // preferences (minimised legend, sort order) and deleted species are kept.
     // A reload after a sync (reloadPlottedFromStore) still restores the live state as it was.
     if (atStart) {
-      ls = { mini: ls.mini, sort: ls.sort, deleted: ls.deleted, countMetric: ls.countMetric, view: ls.view, ptDim: ls.ptDim };   // row set, age window, every filter (the points selection too) → defaults
+      // The points view's selection (which lists / values of the saved point lists are isolated) is kept:
+      // the lists are the user's own data, not a fetch — the map shows the same dots as when it was
+      // closed (owner, 2026-10-30: "the state of point lists should be persisted").
+      ls = { mini: ls.mini, sort: ls.sort, deleted: ls.deleted, countMetric: ls.countMetric, view: ls.view, ptDim: ls.ptDim, ptSel: ls.ptSel };   // row set, age window, every observation filter → defaults
       // The filters kept outside the legend state too — the same ones the black × resets (without
       // its map fit or species-list re-render: opening the app must not move or fetch anything).
       window.GeoState.save({ detRecencyDays: 0, detDateRange: null, detMonths: [], probMin: 0, probMax: 100 });
@@ -15606,7 +15609,7 @@
     }
     detLegendMini = !!ls.mini;
     detLegendView = ls.view === "points" ? "points" : "species";   // the legend view last used
-    if (mpState) { mpState.setPtDim(ls.ptDim); mpState.setPtSel(ls.ptSel); }   // the points view's grouping and (not at start) its selection
+    if (mpState) { mpState.setPtDim(ls.ptDim); mpState.setPtSel(ls.ptSel); }   // the points view's grouping and its selection
     detBflyFilter = !!ls.bflyFilter;   // butterflies-only
     if (detBflyFilter) ensureButterflyGenera().then(function () { try { rebuildDetLayers(); updateDetLegend(); applyAgeFilter(); } catch (e) {} });
     detLegendRows = DET_ROWS_STATES.indexOf(ls.rows) >= 0 ? ls.rows : "all";   // legend "Total" row-set (default: All)

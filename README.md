@@ -656,7 +656,9 @@ filter funnel and the red × are **not** in the legend — they sit on the map a
 the minimised legend, sort order — and deleted species are kept), and the observations fetched last
 time are **not** put back unless Settings → Fetching & detections → **Show the last session's
 observations on open** is on (off by default); their fetched-area squares (and the ✓ update button)
-stay away with them. Shown point lists still appear; "Fetch on open" is the only start-up fetch.
+stay away with them. The saved point lists come back exactly as they were: the ticked lists, their tag
+chips and per-list funnels, and the legend's points-view selection (an isolated list or value) are all
+kept, so the map shows the same dots as when it was closed; "Fetch on open" is the only start-up fetch.
 
 The red **×** sits at the **lower right of the map** (above the 🔍 search and locate buttons; the filter
 **funnel** sits under it in the same bar), shown while fetched observations or fetched-area squares are on the
