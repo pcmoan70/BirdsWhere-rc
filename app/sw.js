@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2231";
+var VERSION = "v2232";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Settings ends with a Force reload button: it downloads every file of the app afresh from the website, whatever the caches say, and restarts (map tiles, offline areas, photos, lists and settings are kept)."
+  "\u2022 The name on top of the Audio panel and of the photo grid is now a search box: tap it, type a few letters of a name in your language, your second language or Latin (a letter or two off is fine) and pick another species."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
@@ -543,7 +543,7 @@ function shellCacheFirst(req) {
       });
     }
     return cache.match(req).then(function (hit) {
-      if (hit) return hit;   // served from cache — not re-downloaded
+      if (hit) return noStore(hit);   // served from cache — not re-downloaded
       // A shell asset that wasn't precached (e.g. added after install): fetch
       // once and store it so the next load is cache-served too. Bypass the browser's
       // HTTP cache: a lazy file (a language pack) changed by this version would otherwise
@@ -551,12 +551,25 @@ function shellCacheFirst(req) {
       // strings would read in English until the next update (seen 2026-10-01, v1950).
       return fetch(reload(req.url)).then(function (res) {
         if (res && res.ok) cache.put(req, res.clone());
-        return res;
+        return noStore(res);
       }).catch(function () {
-        return caches.match(req).then(function (hit2) { return hit2 || offlineResponse(); });
+        return caches.match(req).then(function (hit2) { return hit2 ? noStore(hit2) : offlineResponse(); });
       });
     });
   });
+}
+// A shell file goes to the page marked no-store. Chrome keeps every script and stylesheet a
+// renderer process loaded in a per-process memory cache and, on the next navigation in that
+// process, serves it from there without asking this worker while the server's max-age (10 min
+// on Pages) still holds — so a reload right after an update, or Settings → Force reload, could
+// run the OLD app.js over the new shell. no-store on what we hand out makes the next load ask
+// again, and we answer from the cache anyway, so nothing is downloaded twice (owner, 2026-10-31).
+function noStore(res) {
+  if (!res || res.type === "opaque" || res.type === "opaqueredirect") return res;
+  try {
+    var h = new Headers(res.headers); h.set("Cache-Control", "no-store");
+    return new Response(res.body, { status: res.status, statusText: res.statusText, headers: h });
+  } catch (e) { return res; }
 }
 
 // timeoutMs (optional): if a cached copy exists and the network hasn't answered

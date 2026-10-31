@@ -544,6 +544,7 @@
   "cm.sub": "Wikimedia Commons · højst {n} pr. kategori, iNaturalist supplerer",
   "cm.ml": "Flere fotos fra denne tid af året på Macaulay Library ↗",
   "cm.none": "Ingen kategoriserede fotos på Wikimedia Commons",
+  "pick.tip": "Tryk på navnet for at slå en anden art op",
   "spg.probTip": "Sandsynlighed gennem året på dette sted – klik for Migration-visningen",
   "splay.species": "Per art",
   "splay.count": "Efter antal",

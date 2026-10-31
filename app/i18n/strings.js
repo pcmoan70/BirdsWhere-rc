@@ -1024,6 +1024,7 @@ window.GeoI18N = (function () {
         "cm.sub": "Wikimedia Commons · up to {n} per category, iNaturalist fills in",
         "cm.ml": "More photos around now on Macaulay Library ↗",
         "cm.none": "No categorised photos on Wikimedia Commons",
+        "pick.tip": "Tap the name to look up another species",
         "spg.probTip": "Probability through the year at this point \u2014 click for the Migration view",
         "splay.species": "By species",
         "splay.count": "By count",

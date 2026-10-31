@@ -544,6 +544,7 @@
   "cm.sub": "Wikimedia Commons · enintään {n} luokkaa kohti, iNaturalist täydentää",
   "cm.ml": "Lisää tämän ajankohdan kuvia Macaulay Libraryssa ↗",
   "cm.none": "Wikimedia Commonsissa ei ole luokiteltuja kuvia",
+  "pick.tip": "Napauta nimeä hakeaksesi toisen lajin",
   "spg.probTip": "Todennäköisyys vuoden mittaan tässä pisteessä – napsauta Muutto-näkymään",
   "splay.species": "Lajeittain",
   "splay.count": "Määrän mukaan",

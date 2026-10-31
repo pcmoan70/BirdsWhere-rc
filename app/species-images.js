@@ -16,14 +16,14 @@ window.AppSpImages = (function () {
 
   // ---- injected by app.js (init) -----------------------------------------
   // Plain function aliases (stable references) …
-  var createModal, escapeHtml, holdDelay, holdFeedback, isBirdKey, macaulayUrl, openExternal, powoUrl, spMissingOn, t, ytopLabel;
+  var createModal, escapeHtml, holdDelay, holdFeedback, isBirdKey, macaulayUrl, openExternal, powoUrl, spMissingOn, t, wireSpeciesPicker, ytopLabel;
   // … and getters for app state that changes at runtime.
   var getDetPlot, getLabelsByKey, getSecondLang, getShowSci;
 
   function init(ctx) {
     createModal = ctx.createModal; escapeHtml = ctx.escapeHtml; holdDelay = ctx.holdDelay; holdFeedback = ctx.holdFeedback;
     isBirdKey = ctx.isBirdKey; macaulayUrl = ctx.macaulayUrl; openExternal = ctx.openExternal; powoUrl = ctx.powoUrl;
-    spMissingOn = ctx.spMissingOn; t = ctx.t; ytopLabel = ctx.ytopLabel;
+    spMissingOn = ctx.spMissingOn; t = ctx.t; wireSpeciesPicker = ctx.wireSpeciesPicker; ytopLabel = ctx.ytopLabel;
     getDetPlot = ctx.getDetPlot; getLabelsByKey = ctx.getLabelsByKey; getSecondLang = ctx.getSecondLang; getShowSci = ctx.getShowSci;
   }
 
@@ -764,10 +764,12 @@ window.AppSpImages = (function () {
   function openCommonsGrid(key, sci, name) {
     var m = createModal({ boxClass: "cm-box", escClose: true }), box = m.box;
     var none = '<div class="cmp-nocol">' + escapeHtml(t("cm.none")) + "</div>";
-    box.innerHTML = '<div class="cm-hdr"><b>' + escapeHtml(name || sci) + "</b><span>" + escapeHtml(t("cm.sub", { n: CM_PER_CAT })) + "</span></div>" +
+    box.innerHTML = '<div class="cm-hdr"><b class="cm-name">' + escapeHtml(name || sci) + "</b><span>" + escapeHtml(t("cm.sub", { n: CM_PER_CAT })) + "</span></div>" +
       '<div class="cm-body"><div class="dl-empty spg-wait"><div class="spinner"></div></div></div>' +
       '<a class="cm-more" href="' + escapeHtml(macaulayUrl(key, sci, "")) + '" target="_blank" rel="noopener">' + escapeHtml(t("cm.ml")) + "</a>";
     box.querySelector(".cm-more").addEventListener("click", function (e) { e.preventDefault(); openExternal(this.href); });
+    // The name is a search box: pick another species and the grid reopens for it (owner, 2026-10-31).
+    wireSpeciesPicker(box.querySelector(".cm-name"), function (l, nm) { m.close(); openCommonsGrid(l.key, l.sci, nm); });
     var body = box.querySelector(".cm-body");
     body.addEventListener("click", function (e) {   // a tap on a tile = the full-size picture (a press-and-hold does the same via wirePhotoHold)
       var img = e.target.closest && e.target.closest(".spg-img img"); if (!img || Date.now() - lbHoldAt < 900) return;

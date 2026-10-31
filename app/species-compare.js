@@ -18,7 +18,7 @@ window.AppSpCompare = (function () {
   // Plain function aliases (stable references) …
   var anchMenuOpen, centerPhotoPopup, closeAnchoredMenu, cssVar, escapeHtml, experimentalOn, fitCardGrid, openAnchoredMenu,
       openExternal, positionAnchoredMenu, probBarCell, probBarNa, probHueColor, showDetRowMenu, speciesName, t, wireHoldButton,
-      wireYearProbTips, xenoCantoUrl, loadSpPhoto, spImagesPrefetch, spImgStore;
+      wireYearProbTips, xenoCantoUrl, loadSpPhoto, spImagesPrefetch, spImgStore, wireSpeciesPicker;
   // … and getters for app state that changes at runtime.
   var getCurrentSpView, getLabelsByKey, getSpgHoldAt, getScriptBase;
 
@@ -29,6 +29,7 @@ window.AppSpCompare = (function () {
     probBarCell = ctx.probBarCell; probBarNa = ctx.probBarNa; probHueColor = ctx.probHueColor; showDetRowMenu = ctx.showDetRowMenu;
     speciesName = ctx.speciesName; t = ctx.t; wireHoldButton = ctx.wireHoldButton; wireYearProbTips = ctx.wireYearProbTips;
     xenoCantoUrl = ctx.xenoCantoUrl; loadSpPhoto = ctx.loadSpPhoto; spImagesPrefetch = ctx.spImagesPrefetch; spImgStore = ctx.spImgStore;
+    wireSpeciesPicker = ctx.wireSpeciesPicker;
     getCurrentSpView = ctx.getCurrentSpView; getLabelsByKey = ctx.getLabelsByKey; getSpgHoldAt = ctx.getSpgHoldAt; getScriptBase = ctx.getScriptBase;
     CMP_FOCAL_COL = cssVar("--brand", "#3f6f3a"); CMP_PARTNER_COL = cssVar("--warn", "#c7791c");
   }
@@ -147,8 +148,11 @@ window.AppSpCompare = (function () {
     var closeBtn = document.createElement("button");
     closeBtn.type = "button"; closeBtn.className = "conf-close"; closeBtn.textContent = "\u00d7"; closeBtn.setAttribute("aria-label", "Close");
     closeBtn.addEventListener("click", function (e) { e.stopPropagation(); closeAnchoredMenu(); });
-    var hdr = document.createElement("div"); hdr.className = "detrow-menu-hdr"; hdr.textContent = name;
+    var hdr = document.createElement("div"); hdr.className = "detrow-menu-hdr";
+    var nm = document.createElement("span"); nm.textContent = name; hdr.appendChild(nm);
     hdr.appendChild(closeBtn); el.appendChild(hdr);   // the × rides inside the sticky name line, so both stay put while the clips scroll (owner, 2026-10-29)
+    // The name is a search box: pick another species and the panel reopens for it (owner, 2026-10-31).
+    wireSpeciesPicker(nm, function (l, nm) { closeAnchoredMenu(); openAudioMenu(l.key, nm, l.sci, x, y); });
     var box = document.createElement("div"); box.className = "xc-sec"; box.innerHTML = '<span class="cmp-nocol">\u2026</span>'; el.appendChild(box);
     var more = document.createElement("a"); more.className = "xc-more"; more.href = xenoCantoUrl(sci || ""); more.target = "_blank"; more.rel = "noopener";
     more.textContent = t("clips.more"); more.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); openExternal(xenoCantoUrl(sci || "")); });

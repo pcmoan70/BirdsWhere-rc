@@ -544,6 +544,7 @@
   "cm.sub": "Wikimedia Commons · hasta {n} por categoría, iNaturalist completa",
   "cm.ml": "Más fotos de esta época del año en Macaulay Library ↗",
   "cm.none": "No hay fotos categorizadas en Wikimedia Commons",
+  "pick.tip": "Toca el nombre para buscar otra especie",
   "spg.probTip": "Probabilidad a lo largo del año en este punto: clic para la vista Migración",
   "splay.species": "Por especie",
   "splay.count": "Por cantidad",

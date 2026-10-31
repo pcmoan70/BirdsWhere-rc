@@ -171,7 +171,7 @@
   window.AppSpImages.init({
     createModal: createModal, escapeHtml: escapeHtml, holdDelay: holdDelay, holdFeedback: holdFeedback,
     isBirdKey: isBirdKey, macaulayUrl: macaulayUrl, openExternal: openExternal, powoUrl: powoUrl,
-    spMissingOn: spMissingOn, t: t, ytopLabel: ytopLabel,
+    spMissingOn: spMissingOn, t: t, wireSpeciesPicker: wireSpeciesPicker, ytopLabel: ytopLabel,
     getDetPlot: function () { return detPlot; }, getLabelsByKey: function () { return labelsByKey; },
     getSecondLang: function () { return secondLang; }, getShowSci: function () { return showSci; },
   });
@@ -188,7 +188,7 @@
     escapeHtml: escapeHtml, experimentalOn: experimentalOn, fitCardGrid: fitCardGrid, openAnchoredMenu: openAnchoredMenu,
     openExternal: openExternal, positionAnchoredMenu: positionAnchoredMenu, probBarCell: probBarCell, probBarNa: probBarNa,
     probHueColor: probHueColor, showDetRowMenu: showDetRowMenu, speciesName: speciesName, t: t, wireHoldButton: wireHoldButton,
-    wireYearProbTips: wireYearProbTips, xenoCantoUrl: xenoCantoUrl,
+    wireSpeciesPicker: wireSpeciesPicker, wireYearProbTips: wireYearProbTips, xenoCantoUrl: xenoCantoUrl,
     loadSpPhoto: window.AppSpImages.loadSpPhoto, spImagesPrefetch: window.AppSpImages.spImagesPrefetch, spImgStore: window.AppSpImages.spImgStore,
     getCurrentSpView: function () { return currentSpView; }, getLabelsByKey: function () { return labelsByKey; },
     getSpgHoldAt: function () { return spgHoldAt; }, getScriptBase: function () { return SCRIPT_BASE; },
@@ -879,7 +879,7 @@
     // Esc closes only the topmost modal (an overlay's help dialog stacks on the Overlays
     // popup), and only that: the document's Esc = Back handler must not also pop the
     // popup underneath.
-    if (opts.escClose) { onKey = function (e) { if (e.key !== "Escape") return; var all = document.querySelectorAll(".ui-modal-overlay"); if (all[all.length - 1] !== ov || document.getElementById("photo-lightbox")) return; /* a full-size picture over the modal (the Commons grid) takes the Esc first */ e.preventDefault(); e.stopPropagation(); close(); }; document.addEventListener("keydown", onKey, true); }
+    if (opts.escClose) { onKey = function (e) { if (e.key !== "Escape") return; var all = document.querySelectorAll(".ui-modal-overlay"); if (all[all.length - 1] !== ov || document.getElementById("photo-lightbox") || (e.target.closest && e.target.closest(".sp-pick"))) return; /* a full-size picture over the modal (the Commons grid), or the species picker in its name line, takes the Esc first */ e.preventDefault(); e.stopPropagation(); close(); }; document.addEventListener("keydown", onKey, true); }
     // Every popup carries a × (the app-wide rule). Callers fill `box` synchronously right
     // after this returns, so it goes in on the next tick — after their own markup, and
     // skipped where they already built a close control.
@@ -4282,6 +4282,89 @@
     var probs = searchProbsCurrent();   // rank by likelihood at the open point, as the map search does
     if (probs) out.sort(function (a, b) { return (probs[b.index] || 0) - (probs[a.index] || 0); });
     return out.slice(0, 20);
+  }
+  // ---- species picker: the name at the top of the Audio panel / Commons grid is a search box ----
+  // (owner, 2026-10-31). Every query word must hit — the points search's fuzzy matcher (a letter or two
+  // off, anywhere in a word) — the UI-language name, the 2nd-name language name or the scientific name;
+  // the hay is folded once per species and rebuilt when either language changes.
+  var _pickHay = { sig: "", map: null };
+  function speciesPickerMatches(q) {
+    var words = textFold(q).split(/[\s,;]+/).map(function (w) { return w.replace(/[^a-z0-9]+/g, ""); }).filter(Boolean);
+    if (!words.length || !labels || !labels.length) return [];
+    var sig = lang + "|" + (secondLang || "");
+    if (_pickHay.sig !== sig || !_pickHay.map) {
+      _pickHay = { sig: sig, map: (typeof WeakMap === "function") ? new WeakMap() : null };
+      if (!_pickHay.map) return [];
+    }
+    var out = [];
+    for (var i = 0; i < labels.length; i++) {
+      var l = labels[i], h = _pickHay.map.get(l);
+      if (!h) {
+        var hay = textFold([speciesName(l), secondLang ? secondName(l) : "", l.sci].join(" \u0001 "));
+        h = { hay: hay, toks: hay.split(/[^0-9a-z]+/).filter(Boolean) };
+        _pickHay.map.set(l, h);
+      }
+      var ok = true;
+      for (var w = 0; w < words.length; w++) if (!textWordHits(words[w], h.hay, h.toks)) { ok = false; break; }
+      if (ok) { out.push(l); if (out.length >= 200) break; }
+    }
+    // A name that IS the query, then one that starts with it, then the rest — each by likelihood at
+    // the map centre ("crested tit" is Crested Tit before the Black-crested Tit-Tyrant).
+    var q0 = words.join(" "), probs = searchProbsCurrent();
+    function rank(l) {
+      var names = _pickHay.map.get(l).hay.split(" \u0001 ");
+      for (var i = 0, r = 0; i < names.length; i++) {
+        var n = names[i].replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+        if (n === q0) return 2;
+        if (n.indexOf(q0) === 0) r = 1;
+      }
+      return r;
+    }
+    out.forEach(function (l) { l._pickRank = rank(l); });
+    out.sort(function (a, b) { return (b._pickRank - a._pickRank) || (probs ? (probs[b.index] || 0) - (probs[a.index] || 0) : 0); });
+    return out.slice(0, 20);
+  }
+  // Make a window's name line a picker: a tap swaps the name for a search box with its rows
+  // underneath; Esc, or leaving it empty, brings the name back; a row calls onPick(label, its name).
+  function wireSpeciesPicker(nameEl, onPick) {
+    if (!nameEl) return;
+    nameEl.classList.add("sp-pick-name"); nameEl.setAttribute("role", "button"); nameEl.tabIndex = 0;
+    nameEl.title = t("pick.tip");
+    function open(e) {
+      e.preventDefault(); e.stopPropagation();
+      var wrap = document.createElement("div"); wrap.className = "sp-pick";
+      var inp = document.createElement("input"); inp.type = "text"; inp.className = "sp-pick-inp"; inp.autocomplete = "off";
+      inp.placeholder = t("ph.species"); inp.setAttribute("aria-label", t("ph.species"));
+      var res = document.createElement("div"); res.className = "sp-pick-res";
+      wrap.appendChild(inp); wrap.appendChild(res);
+      nameEl.style.display = "none"; nameEl.parentNode.insertBefore(wrap, nameEl);
+      function restore() { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); nameEl.style.display = ""; }
+      function render() {
+        var q = inp.value.trim();
+        if (q.length < 2) { res.innerHTML = ""; return; }
+        var hits = speciesPickerMatches(q);
+        res.innerHTML = hits.length ? hits.map(function (l) {
+          var n2 = secondLang ? secondName(l) : "";
+          return '<div class="sp-pick-item" data-key="' + escapeHtml(l.key) + '">' + escapeHtml(speciesName(l)) +
+            (n2 ? ' <span class="sp-pick-n2">[' + escapeHtml(n2) + "]</span>" : "") +
+            ' <span class="sp-pick-sci">(' + escapeHtml(l.sci) + ")</span></div>";
+        }).join("") : '<div class="sp-pick-none">' + escapeHtml(t("lists.noMatch")) + "</div>";
+      }
+      inp.addEventListener("input", render);
+      inp.addEventListener("keydown", function (ev) {
+        if (ev.key === "Escape") { ev.preventDefault(); ev.stopPropagation(); restore(); return; }
+        if (ev.key === "Enter") { var first = res.querySelector(".sp-pick-item"); if (first) first.click(); }
+      });
+      inp.addEventListener("blur", function () { setTimeout(function () { if (wrap.parentNode && !inp.value.trim()) restore(); }, 200); });
+      wrap.addEventListener("click", function (ev) { ev.stopPropagation(); });   // the window's own handlers must not see these taps
+      res.addEventListener("click", function (ev) {
+        var it = ev.target.closest && ev.target.closest(".sp-pick-item"); if (!it) return;
+        var l = labelsByKey[it.getAttribute("data-key")]; if (l) onPick(l, speciesName(l));
+      });
+      inp.focus();
+    }
+    nameEl.addEventListener("click", open);
+    nameEl.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") open(e); });
   }
   // Every list a species can be put on, newest year first, the user's own lists last.
   function listsAllIds() {
