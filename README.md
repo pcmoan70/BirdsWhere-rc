@@ -250,7 +250,8 @@ jumps to the table. Tapping a bird's **photo** opens its **Wikimedia Commons** p
 in flight, nests … (wild birds only: illustrations, museum specimens, ringing, captive, dead and historical categories are left out, v2223) — the four best free-licence pictures each (Commons' Featured / Quality / Valued assessments first, then resolution); male, female and juvenile are always there and iNaturalist tops them up to at least two (research-grade observations annotated by sex / life stage, open licences only) — credit under every one,
 tap a picture for it full size (scroll, pinch or double-tap to zoom, drag to pan, v2224); distribution maps and other non-photo files are left out; the **Macaulay Library** link for the current month (±1) sits at the popup's
 bottom (before v2222 the photo opened that catalogue directly); the name on top of the grid is a search box
-(v2232: tap it, type a few letters in your language, your second language or Latin, fuzzy, and pick another species); tapping the
+(v2232: tap it, type a few letters in your language, your second language or Latin, fuzzy, and pick another species — the matches
+in order of likelihood at the map centre, v2233); tapping the
 **Probability** opens the **Migration** view (Location analysis → Timeline) for that species, and on
 a mouse device hovering it previews the same 48-week probability bars at the fetch point (current
 week outlined, the last-seen week in blue). That chart is reachable two ways on **every**

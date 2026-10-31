@@ -4308,20 +4308,10 @@
       for (var w = 0; w < words.length; w++) if (!textWordHits(words[w], h.hay, h.toks)) { ok = false; break; }
       if (ok) { out.push(l); if (out.length >= 200) break; }
     }
-    // A name that IS the query, then one that starts with it, then the rest — each by likelihood at
-    // the map centre ("crested tit" is Crested Tit before the Black-crested Tit-Tyrant).
-    var q0 = words.join(" "), probs = searchProbsCurrent();
-    function rank(l) {
-      var names = _pickHay.map.get(l).hay.split(" \u0001 ");
-      for (var i = 0, r = 0; i < names.length; i++) {
-        var n = names[i].replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
-        if (n === q0) return 2;
-        if (n.indexOf(q0) === 0) r = 1;
-      }
-      return r;
-    }
-    out.forEach(function (l) { l._pickRank = rank(l); });
-    out.sort(function (a, b) { return (b._pickRank - a._pickRank) || (probs ? (probs[b.index] || 0) - (probs[a.index] || 0) : 0); });
+    // By likelihood at the map centre alone (owner, 2026-10-31: "sort matches by probability at current location");
+    // null while the model still runs for this centre — the caller re-renders when it has answered.
+    var probs = searchProbsCurrent();
+    if (probs) out.sort(function (a, b) { return (probs[b.index] || 0) - (probs[a.index] || 0); });
     return out.slice(0, 20);
   }
   // Make a window's name line a picker: a tap swaps the name for a search box with its rows
@@ -4339,10 +4329,13 @@
       wrap.appendChild(inp); wrap.appendChild(res);
       nameEl.style.display = "none"; nameEl.parentNode.insertBefore(wrap, nameEl);
       function restore() { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); nameEl.style.display = ""; }
+      var probsWait = null;
       function render() {
         var q = inp.value.trim();
+        clearTimeout(probsWait); probsWait = null;
         if (q.length < 2) { res.innerHTML = ""; return; }
         var hits = speciesPickerMatches(q);
+        if (!searchProbsCurrent()) probsWait = setTimeout(function () { if (wrap.parentNode && inp.value.trim() === q) render(); }, 300);   // the likelihoods are still being computed
         res.innerHTML = hits.length ? hits.map(function (l) {
           var n2 = secondLang ? secondName(l) : "";
           return '<div class="sp-pick-item" data-key="' + escapeHtml(l.key) + '">' + escapeHtml(speciesName(l)) +
@@ -4361,6 +4354,7 @@
         var it = ev.target.closest && ev.target.closest(".sp-pick-item"); if (!it) return;
         var l = labelsByKey[it.getAttribute("data-key")]; if (l) onPick(l, speciesName(l));
       });
+      searchProbsCurrent();   // start the model for the map centre now, before the first letters
       inp.focus();
     }
     nameEl.addEventListener("click", open);

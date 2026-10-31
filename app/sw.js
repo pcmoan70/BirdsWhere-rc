@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2232";
+var VERSION = "v2233";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The name on top of the Audio panel and of the photo grid is now a search box: tap it, type a few letters of a name in your language, your second language or Latin (a letter or two off is fine) and pick another species."
+  "\u2022 The species search on top of the Audio panel and the photo grid lists its matches by how likely each bird is at the map centre this week."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
