@@ -17,7 +17,7 @@ window.AppRefLinks = (function () {
   // ---- injected by app.js (init) -----------------------------------------
   // Plain function aliases (stable references) …
   var bringToFront, closeAnchoredMenu, createModal, escapeHtml, fatbirderUrl, inatLocale, linkUrl, modalPrompt, navOpen,
-      openAnchoredMenu, openExternal, positionAnchoredMenu, safeHref, setLang, t, saveChecked;
+      openAnchoredMenu, openExternal, positionAnchoredMenu, safeHref, setLang, t, saveChecked, wireSpeciesPicker, showDetRowMenu;
   // … and getters for app state that changes at runtime.
   var getLang, getLoadedTaxCols, getTaxByCode;
 
@@ -27,6 +27,7 @@ window.AppRefLinks = (function () {
     openAnchoredMenu = ctx.openAnchoredMenu; openExternal = ctx.openExternal; positionAnchoredMenu = ctx.positionAnchoredMenu;
     safeHref = ctx.safeHref; setLang = ctx.setLang; t = ctx.t; saveChecked = ctx.saveChecked;
     getLang = ctx.getLang; getLoadedTaxCols = ctx.getLoadedTaxCols; getTaxByCode = ctx.getTaxByCode;
+    wireSpeciesPicker = ctx.wireSpeciesPicker; showDetRowMenu = ctx.showDetRowMenu;
   }
 
   // Wikipedia article (chosen language) for a species; scientific name is the
@@ -130,11 +131,16 @@ window.AppRefLinks = (function () {
   function showInatNames(name, sci, x, y, key) {
     var el = openAnchoredMenu("detrow-menu");
     function render(inner, table) {
+      var typed = el.querySelector(".sp-pick-inp"); typed = typed ? typed.value : "";   // kept across the re-render when the table arrives
       el.innerHTML = "";
       var h = document.createElement("div"); h.className = "detrow-menu-hdr detrow-menu-name";
       h.textContent = name || sciBinomial(sci); el.appendChild(h);
       var sub = document.createElement("div"); sub.className = "detrow-menu-sub";
       sub.textContent = (table ? table.sciLine : sciBinomial(sci)) + " · " + t("inat.namesTitle"); el.appendChild(sub);
+      // A species search box under the names (owner, 2026-10-31: "When clicking on name in species popup, add a
+      // searchbox for name in addition to the names"): a pick opens that species' menu in this popup's place.
+      wireSpeciesPicker(sub, function (l, nm) { closeAnchoredMenu(el); showDetRowMenu({ key: l.key, name: nm, sci: l.sci }, x, y); }, { inline: true });
+      if (typed) { var inp = el.querySelector(".sp-pick-inp"); inp.value = typed; inp.dispatchEvent(new Event("input")); }
       el.classList.toggle("drm-names-menu", !!table);
       if (table) {
         var hint = document.createElement("div"); hint.className = "drm-names-hint";

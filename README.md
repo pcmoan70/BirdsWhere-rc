@@ -963,7 +963,12 @@ shared payload is all that is shown.
 ## The species menu
 
 Right-click / long-press / tap any species name for a menu **led by the species name in bold**
-(wrapping when long), followed by the record's *Open source* link when opened from an observation, then:
+(wrapping when long; a × top right closes any popup), followed by the record's *Open source* link when opened from an observation, then:
+
+- **The name itself** opens the **Names popup**: what iNaturalist calls the species in every UI
+  language beside the app's own name (a row switches the app to that language), and under the name a
+  **species search box** (v2234) — type a few letters in your language, your second language or Latin
+  and pick a bird: its menu opens in the popup's place.
 
 - The **Yr column** (beside Season, in the species list, the observation list, the picture-card bars
   and the family/look-alike cards) shows whatever **Settings → Compare to** names: the annual peak

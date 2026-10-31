@@ -131,6 +131,7 @@
     openAnchoredMenu: openAnchoredMenu, openExternal: openExternal, positionAnchoredMenu: positionAnchoredMenu,
     safeHref: safeHref, setLang: setLang, t: t, saveChecked: window.AppPoints.saveChecked,
     getLang: function () { return lang; }, getLoadedTaxCols: function () { return loadedTaxCols; }, getTaxByCode: function () { return taxByCode; },
+    wireSpeciesPicker: wireSpeciesPicker, showDetRowMenu: showDetRowMenu,
   });
   // Sync data (sync-data.js): Export / Import, the Drive payload and merge, window.AppData.
   var DET_CAP = window.AppSyncData.DET_CAP,
@@ -4316,19 +4317,25 @@
   }
   // Make a window's name line a picker: a tap swaps the name for a search box with its rows
   // underneath; Esc, or leaving it empty, brings the name back; a row calls onPick(label, its name).
-  function wireSpeciesPicker(nameEl, onPick) {
+  // opts.inline: the box is there from the start, under `nameEl` (which stays as it is, no tap
+  // needed, no keyboard popping up); Esc only empties it.
+  function wireSpeciesPicker(nameEl, onPick, opts) {
     if (!nameEl) return;
-    nameEl.classList.add("sp-pick-name"); nameEl.setAttribute("role", "button"); nameEl.tabIndex = 0;
-    nameEl.title = t("pick.tip");
+    var inline = !!(opts && opts.inline);
+    if (!inline) { nameEl.classList.add("sp-pick-name"); nameEl.setAttribute("role", "button"); nameEl.tabIndex = 0; nameEl.title = t("pick.tip"); }
     function open(e) {
-      e.preventDefault(); e.stopPropagation();
+      if (e) { e.preventDefault(); e.stopPropagation(); }
       var wrap = document.createElement("div"); wrap.className = "sp-pick";
       var inp = document.createElement("input"); inp.type = "text"; inp.className = "sp-pick-inp"; inp.autocomplete = "off";
       inp.placeholder = t("ph.species"); inp.setAttribute("aria-label", t("ph.species"));
       var res = document.createElement("div"); res.className = "sp-pick-res";
       wrap.appendChild(inp); wrap.appendChild(res);
-      nameEl.style.display = "none"; nameEl.parentNode.insertBefore(wrap, nameEl);
-      function restore() { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); nameEl.style.display = ""; }
+      if (inline) nameEl.parentNode.insertBefore(wrap, nameEl.nextSibling);
+      else { nameEl.style.display = "none"; nameEl.parentNode.insertBefore(wrap, nameEl); }
+      function restore() {
+        if (inline) { inp.value = ""; res.innerHTML = ""; return; }
+        if (wrap.parentNode) wrap.parentNode.removeChild(wrap); nameEl.style.display = "";
+      }
       var probsWait = null;
       function render() {
         var q = inp.value.trim();
@@ -4348,15 +4355,16 @@
         if (ev.key === "Escape") { ev.preventDefault(); ev.stopPropagation(); restore(); return; }
         if (ev.key === "Enter") { var first = res.querySelector(".sp-pick-item"); if (first) first.click(); }
       });
-      inp.addEventListener("blur", function () { setTimeout(function () { if (wrap.parentNode && !inp.value.trim()) restore(); }, 200); });
+      if (!inline) inp.addEventListener("blur", function () { setTimeout(function () { if (wrap.parentNode && !inp.value.trim()) restore(); }, 200); });
       wrap.addEventListener("click", function (ev) { ev.stopPropagation(); });   // the window's own handlers must not see these taps
       res.addEventListener("click", function (ev) {
         var it = ev.target.closest && ev.target.closest(".sp-pick-item"); if (!it) return;
         var l = labelsByKey[it.getAttribute("data-key")]; if (l) onPick(l, speciesName(l));
       });
       searchProbsCurrent();   // start the model for the map centre now, before the first letters
-      inp.focus();
+      if (!inline) inp.focus();
     }
+    if (inline) { open(null); return; }
     nameEl.addEventListener("click", open);
     nameEl.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") open(e); });
   }
@@ -10562,7 +10570,9 @@
   // click its × or interact with the UI outside it — never on its own because the pointer
   // wandered off. Popups that build their own × (the picture views' .conf-close) keep it.
   function ensureAnchClose(el) {
-    if (!el || el._anchX || el.querySelector(".conf-close")) return;
+    // By the DOM, not a flag: a popup that re-renders with innerHTML = "" (the names popup when its
+    // table arrives, the species menu after a list toggle) wipes the × and must get it back.
+    if (!el || el.querySelector(".conf-close") || el.querySelector(":scope > .anch-x")) return;
     el._anchX = 1;
     var b = document.createElement("button");
     b.type = "button"; b.className = "anch-x";
