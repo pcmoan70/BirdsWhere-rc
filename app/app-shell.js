@@ -410,6 +410,11 @@ window.AppShell = (function () {
                 '<img src="qr-app.svg" alt="" width="140" height="140" /><span class="app-qr-cap" data-i18n="settings.qrShare">Scan to open / share this app</span></div>' +
               '<div class="settings-section" data-i18n="settings.secWhatsNew">What’s new</div>' +
               '<div id="whatsnew-list" class="whatsnew-list"></div>' +
+              // Last in Settings: a clean reinstall that trusts no cache (owner, 2026-10-31).
+              '<div class="ctrl-group" id="force-reload-wrap">' +
+                '<button type="button" id="force-reload-btn" class="btn btn-light" data-i18n="settings.forceReload">Force reload</button>' +
+                '<p class="cu-hint" data-i18n="settings.forceReloadHint"></p>' +
+              '</div>' +
             '</div>' +
           '</div>' +
         '</div>' +

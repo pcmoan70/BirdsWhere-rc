@@ -19263,6 +19263,41 @@
       });
     });
 
+    // Force reload (the last button in Settings): a reinstall that trusts nothing on the device —
+    // the worker is unregistered, this channel's shell / api / data caches are dropped, every file in
+    // files.json is fetched again with the browser's HTTP cache bypassed (so the uncontrolled first
+    // load after the reload, and the worker's install, both read fresh copies), then the page restarts.
+    // Map tiles, offline areas, photos, clips and all user data stay (owner, 2026-10-31).
+    var forceBtn = document.getElementById("force-reload-btn");
+    if (forceBtn) forceBtn.addEventListener("click", function () {
+      modalConfirm(t("settings.forceReloadConfirm")).then(function (ok) {
+        if (!ok) return;
+        forceBtn.disabled = true; forceBtn.textContent = t("settings.forceReloading", { n: 0, m: "…" });
+        var rc = /-rc\//i.test(location.pathname);
+        Promise.resolve()
+          .then(function () { return ("serviceWorker" in navigator && navigator.serviceWorker.getRegistrations) ? navigator.serviceWorker.getRegistrations() : []; })
+          .then(function (regs) { return Promise.all(regs.map(function (r) { return r.unregister(); })); })
+          .then(function () { return window.caches ? caches.keys() : []; })
+          .then(function (names) {
+            return Promise.all(names.filter(function (n) { return (n.indexOf("rc-") === 0) === rc && /^(rc-)?(shell|api|data)-/.test(n); })
+              .map(function (n) { return caches.delete(n); }));
+          })
+          .then(function () { return fetch("files.json", { cache: "reload" }).then(function (r) { return r.json(); }); })
+          .then(function (man) {
+            var files = Object.keys(man).filter(function (k) { return k.charAt(0) !== "_" && k !== "./"; }), i = 0, done = 0;
+            function next() {
+              if (i >= files.length) return Promise.resolve();
+              return fetch(files[i++], { cache: "reload" }).catch(function () {}).then(function () {
+                forceBtn.textContent = t("settings.forceReloading", { n: ++done, m: files.length }); return next();
+              });
+            }
+            return Promise.all([next(), next(), next(), next()]);
+          })
+          .catch(function () {})
+          .then(function () { if (window.SWUpdate) window.SWUpdate._reloaded = true; location.reload(); });
+      });
+    });
+
     // National-database list: edit / block / delete per row, plus add / reset. Each
     // row carries its cc+url+label in data-*, so actions persist immediately
     // (tombstone for delete, natBlocked for block); edit + add share one popup.

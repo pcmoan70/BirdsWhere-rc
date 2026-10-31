@@ -1470,6 +1470,11 @@ the one thing left out by default — they are much the largest thing the app ho
   a large privacy padding and can read tens of GB for a few hundred MB of real data; the per-row
   sizes are the measured ones. *Reuse downloads* (Settings) defaults to 0 = a stored location is
   reused until cleared; set minutes there to have a reopen refetch after that long.
+  **Force reload** (the last button in Settings) is for when an update seems not to have arrived:
+  it unregisters the service worker, drops this channel's app-shell, API and model caches,
+  downloads every file in `files.json` afresh with the browser's HTTP cache bypassed (about 30 MB,
+  the model included, with a running count on the button) and restarts — whatever the cache hashes
+  say. Map tiles, offline areas, photos, recordings, lists and settings stay.
 - **Languages** — the **UI is fully translated into 15 languages** (en, sv, de, es, fr, nl, it, pt,
   pl, cs, no, da, fi, et, lt); other languages fall back to English UI text while still showing
   localised species names. **Species common names are available in ~45 languages**, loaded as
