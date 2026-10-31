@@ -469,6 +469,7 @@ window.AppShell = (function () {
             '<div id="sp-filters-bar"></div>' +
           '</div>' +
           '<div id="sp-filters-wrap"></div>' +
+          '<div id="sp-pick-anchor"></div>' +   // the species search box is inserted after this (wireSpeciesPicker, inline)
           '<div id="sp-recency-note" class="sp-recency-note" style="display:none"></div>' +
           '<div class="sp-loading" id="sp-loading" style="display:none"></div>' +
           '<div id="sp-launch-note" style="display:none"></div>' +

@@ -229,6 +229,11 @@ lists only what has been observed, **[?]** weaves in the species the model predi
 and where nothing has been observed the predictions are shown on their own. Every other column
 still sorts from its own header in the table.
 
+**Looking a species up.** Under the filters, just above the table, sits the **species search box**
+(v2236): type a few letters in your language, your second language or Latin (a letter or two off is
+fine), the matches within the selected group come in order of likelihood here, and a pick opens
+that species' menu.
+
 The fetch can be shown three ways (layout dropdown above the list — the choice is remembered on the
 device; a `layout=` link parameter applies to that visit only; changing the UI or second-name language
 relabels the open list in place): the ranked **Species list** table,

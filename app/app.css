@@ -296,6 +296,7 @@ select:focus, textarea:focus { outline: none; border-color: var(--brand); box-sh
 .sp-pick-inp { width: 100%; box-sizing: border-box; font: inherit; padding: 4px 8px; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--surface); color: var(--ink); }
 .sp-pick-res { max-height: 40vh; overflow-y: auto; }
 .detrow-menu .sp-pick { padding: 0 8px 4px; }   /* the inline box in the names popup */
+#species-panel > .sp-pick { margin: 0 0 8px; }   /* the box on top of the species list */
 .sp-pick-item, .sp-pick-none { padding: 6px 8px; border-bottom: 1px solid var(--border); color: var(--ink); }
 .sp-pick-item { cursor: pointer; }
 .sp-pick-item:hover { background: var(--brand); color: var(--on-brand); }

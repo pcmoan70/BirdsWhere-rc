@@ -20525,6 +20525,17 @@
     // ‹ on the full-screen pages: back to the view the page was opened from (see
     // viewBackStack), else to the map.
     document.getElementById("sp-back").addEventListener("click", function () { navClose("page"); popViewBack(); });
+    // The species search box on top of the species list, just above the table (owner, 2026-10-31): the v2232
+    // picker in its inline form; a pick opens that species' menu under the box and empties it.
+    var spPickAnchor = document.getElementById("sp-pick-anchor");
+    if (spPickAnchor) {
+      wireSpeciesPicker(spPickAnchor, function (l, nm) {
+        var box = spPickAnchor.nextSibling, r = box.getBoundingClientRect();
+        box.querySelector(".sp-pick-inp").value = ""; box.querySelector(".sp-pick-res").innerHTML = "";
+        showDetRowMenu({ key: l.key, name: nm, sci: l.sci }, Math.round(r.left), Math.round(r.bottom));
+      }, { inline: true });
+      spPickAnchor.nextSibling.querySelector(".sp-pick-inp").setAttribute("data-i18n-ph", "ph.species");   // follows a language switch
+    }
     document.getElementById("bc-back").addEventListener("click", function () { navClose("page"); if (!popViewBack()) exitToRecentMode(); });
     var rb = document.getElementById("range-back");
     if (rb) rb.addEventListener("click", function () { if (!popViewBack()) exitToRecentMode(); });
