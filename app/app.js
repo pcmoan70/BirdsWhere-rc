@@ -4300,6 +4300,7 @@
     var out = [];
     for (var i = 0; i < labels.length; i++) {
       var l = labels[i], h = _pickHay.map.get(l);
+      if (!inGroup(l.index)) continue;   // the selected species group only, as the map search (owner, 2026-10-31)
       if (!h) {
         var hay = textFold([speciesName(l), secondLang ? secondName(l) : "", l.sci].join(" \u0001 "));
         h = { hay: hay, toks: hay.split(/[^0-9a-z]+/).filter(Boolean) };
