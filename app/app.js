@@ -1686,14 +1686,26 @@
   function crossHold() {
     setCrosshairState(crossState === 1 ? 0 : 1);   // toggle automatic updating (continuous GPS)
   }
+  // While GPS-follow pans the map on every fix, the map is never "still" for the legend's
+  // 2-s idle redraw, so its counts stayed grey and old. Owner (2026-11-01): "When gps tracking
+  // is on the legend must update every 60 seconds showing the observations that are in view on
+  // the map." The idle rule is off while tracking (see the movestart/moveend handlers) and this
+  // timer re-renders the legend for the current view once a minute instead.
+  var followLegendTimer = null, FOLLOW_LEGEND_MS = 60000;
+  function followLegendTick() {
+    if (!detLegend || !(hasPlottedDetections() || Object.keys(alertPlot).length || (mpState && mpState.ptAvail()))) return;
+    try { updateDetLegendKeepObsScroll(); } catch (e) {}
+  }
   function stopFollow() {
     posWatching = false;
+    clearInterval(followLegendTimer); followLegendTimer = null;
     try { map.stopLocate(); } catch (e) {}
     if (posMarker) { map.removeLayer(posMarker); posMarker = null; }
     if (posFixedMarker) { map.removeLayer(posFixedMarker); posFixedMarker = null; }
   }
   function startFollow() {
     posWatching = true; posCentered = false;
+    followLegendTimer = setInterval(followLegendTick, FOLLOW_LEGEND_MS);
     if (trackRecordOn() && trackLoad().length) drawTrackLine();   // a track left from before continues
     map.locate({ watch: true, enableHighAccuracy: true, maximumAge: 3000, timeout: 20000 });
   }
@@ -7542,16 +7554,18 @@
     // Recomputing every count is costly with a big detection set, so DON'T re-render on
     // every pan: grey the counts as "stale" the moment the map moves, then re-render only
     // once the map has been still for LEGEND_REDRAW_IDLE ms (no further pan/zoom).
+    // While GPS-follow is on (posWatching) the map never stays still, so neither handler runs:
+    // followLegendTick re-renders the legend once a minute instead.
     var legendRedrawTimer = null, LEGEND_REDRAW_IDLE = 2000;   // ms of map stillness before the legend re-renders
     function legendHasData() { return detLegend && typeof detPlot !== "undefined" && (Object.keys(detPlot).length || Object.keys(alertPlot).length || (mpState && mpState.ptAvail())); }
     map.on("movestart zoomstart", function () {
-      if (!legendHasData()) return;
+      if (!legendHasData() || posWatching) return;
       clearTimeout(legendRedrawTimer);
       var el = document.getElementById("det-legend"); if (el) el.classList.add("det-counts-stale");   // grey counts while moving
       setListStaleInd(true);   // ⏳ by the list title while the recalculation is pending
     });
     map.on("moveend zoomend", function () {
-      if (!legendHasData()) return;
+      if (!legendHasData() || posWatching) return;
       var el = document.getElementById("det-legend"); if (el) el.classList.add("det-counts-stale");
       setListStaleInd(true);
       clearTimeout(legendRedrawTimer);

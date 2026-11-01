@@ -1311,7 +1311,7 @@ an **eBird Record Format CSV** ready for [ebird.org/import](https://ebird.org/im
   then the map jumps to your position and opens the **map-point popup** there for a quick fetch —
   even when a saved point or plotted dot sits at that spot); **hold** (or right-click) = continuous **GPS-follow /
   tracking** — the button **pulses blue**, the blue cross at your position **blinks once a second**, and the map re-centres (keeping your zoom) as you move,
-  live-updating distance sorts; hold again for the **red read cursor** (a fixed centre cursor: pan
+  live-updating distance sorts; the legend re-renders **once a minute** for the observations in view (the usual "2 s after the map stands still" rule is off while the map follows you, v2240); hold again for the **red read cursor** (a fixed centre cursor: pan
   a plotted dot, map point or eBird hotspot under it to open it); a tap in either state turns it off.
 - **GPS track** — Settings → Lists & sharing → **Record a track while GPS tracking**: while GPS-follow is
   on, your route is drawn on the map (a fix counts when it is within 50 m accuracy and 5 m from the
