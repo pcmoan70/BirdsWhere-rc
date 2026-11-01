@@ -680,7 +680,7 @@
   "ctrl.overlays": "Mapas e sobreposições",
   "ovl.hideAll": "Ocultar todas as sobreposições marcadas",
   "ovl.showAll": "Mostrar novamente as sobreposições ocultas",
-  "ctrl.about": "Como funciona",
+  "ctrl.about": "Como?",
   "blocked.title": "Espécies bloqueadas",
   "blocked.manage": "🚫 Gerir espécies bloqueadas…",
   "blocked.hint": "As espécies bloqueadas ficam ocultas das listas, da checklist e do mapa. Toque em × para desbloquear.",

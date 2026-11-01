@@ -680,7 +680,7 @@
   "ctrl.overlays": "Kaardid ja kihid",
   "ovl.hideAll": "Peida kõik valitud kihid",
   "ovl.showAll": "Näita peidetud kihte uuesti",
-  "ctrl.about": "Kuidas see töötab",
+  "ctrl.about": "Kuidas?",
   "blocked.title": "Blokeeritud liigid",
   "blocked.manage": "🚫 Halda blokeeritud liike…",
   "blocked.hint": "Blokeeritud liigid on peidetud loenditest, kontroll-loendist ja kaardilt. Vabastamiseks vajuta ×.",

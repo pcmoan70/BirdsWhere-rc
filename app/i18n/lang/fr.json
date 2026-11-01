@@ -681,7 +681,7 @@
   "ctrl.overlays": "Cartes et calques",
   "ovl.hideAll": "Masquer tous les calques cochés",
   "ovl.showAll": "Réafficher les calques masqués",
-  "ctrl.about": "Comment ça marche",
+  "ctrl.about": "Comment ?",
   "blocked.title": "Espèces bloquées",
   "blocked.manage": "🚫 Gérer les espèces bloquées…",
   "blocked.hint": "Les espèces bloquées sont masquées des listes, de la check-list et de la carte. Touchez × pour débloquer.",

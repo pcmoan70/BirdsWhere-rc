@@ -121,7 +121,7 @@ window.GeoI18N = (function () {
         "ctrl.overlays": "Maps & overlays",
         "ovl.hideAll": "Hide all ticked overlays",
         "ovl.showAll": "Show the hidden overlays again",
-        "ctrl.about": "How it works",
+        "ctrl.about": "How?",
         "blocked.title": "Blocked species",
         "blocked.manage": "🚫 Manage blocked species…",
         "blocked.hint": "Blocked species are hidden from the lists, checklist and map. Tap × to unblock.",

@@ -680,7 +680,7 @@
   "ctrl.overlays": "Mapas y capas",
   "ovl.hideAll": "Ocultar todas las capas marcadas",
   "ovl.showAll": "Volver a mostrar las capas ocultas",
-  "ctrl.about": "Cómo funciona",
+  "ctrl.about": "¿Cómo?",
   "blocked.title": "Especies bloqueadas",
   "blocked.manage": "🚫 Gestionar especies bloqueadas…",
   "blocked.hint": "Las especies bloqueadas se ocultan de las listas, la lista de control y el mapa. Toca × para desbloquear.",

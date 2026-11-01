@@ -680,7 +680,7 @@
   "ctrl.overlays": "Karten & Overlays",
   "ovl.hideAll": "Alle gewählten Overlays ausblenden",
   "ovl.showAll": "Ausgeblendete Overlays wieder einblenden",
-  "ctrl.about": "So funktioniert es",
+  "ctrl.about": "Wie?",
   "blocked.title": "Blockierte Arten",
   "blocked.manage": "🚫 Blockierte Arten verwalten…",
   "blocked.hint": "Blockierte Arten werden aus den Listen, der Checkliste und der Karte ausgeblendet. Tippe × zum Entsperren.",

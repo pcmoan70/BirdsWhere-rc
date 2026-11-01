@@ -91,7 +91,7 @@ window.AppShell = (function () {
               // "About ↗" (the short web summary, in the UI language) beside "How it works" (the in-app panel).
               '<div class="settings-aboutrow">' +
                 '<a class="settings-about about-page-link" href="about/" target="_blank" rel="noopener" data-i18n="settings.aboutPage">About ↗</a>' +
-                '<button type="button" id="about-open" class="settings-about" data-i18n="ctrl.about">How it works</button>' +
+                '<button type="button" id="about-open" class="settings-about" data-i18n="ctrl.about">How?</button>' +
                 '<a class="settings-about" id="model-compare-link" href="model-compare/" target="_blank" rel="noopener" data-i18n="settings.modelCompare"' + (experimentalOn() ? "" : ' style="display:none"') + '>Model compare ↗</a>' +   // Experimental only (owner, 2026-10-27)
               '</div>' +
               '<div id="settings-version" class="settings-version" style="display:none"></div>' +

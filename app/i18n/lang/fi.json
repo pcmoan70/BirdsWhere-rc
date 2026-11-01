@@ -680,7 +680,7 @@
   "ctrl.overlays": "Kartat ja peittokuvat",
   "ovl.hideAll": "Piilota kaikki valitut peittokuvat",
   "ovl.showAll": "Näytä piilotetut peittokuvat uudelleen",
-  "ctrl.about": "Näin se toimii",
+  "ctrl.about": "Miten?",
   "blocked.title": "Estetyt lajit",
   "blocked.manage": "🚫 Hallitse estettyjä lajeja…",
   "blocked.hint": "Estetyt lajit piilotetaan luetteloista, tarkistuslistalta ja kartalta. Poista esto napauttamalla ×.",

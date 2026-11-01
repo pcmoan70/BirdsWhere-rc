@@ -680,7 +680,7 @@
   "ctrl.overlays": "Kort og overlays",
   "ovl.hideAll": "Skjul alle valgte overlays",
   "ovl.showAll": "Vis de skjulte overlays igen",
-  "ctrl.about": "Sådan virker det",
+  "ctrl.about": "Hvordan?",
   "blocked.title": "Blokerede arter",
   "blocked.manage": "🚫 Administrer blokerede arter…",
   "blocked.hint": "Blokerede arter skjules fra listerne, tjeklisten og kortet. Tryk × for at ophæve blokeringen.",
