@@ -1589,6 +1589,7 @@
   "sync.phRead": "Čtení Google Disku …",
   "sync.phMerge": "Slučování …",
   "sync.phStore": "Ukládání seznamů…",
+  "points.storeUnavailable": "Uložené seznamy nelze přečíst: úložiště seznamů prohlížeče (IndexedDB) se nepodařilo otevřít ({msg}). Restartujte prohlížeč; pokud to nepomůže, vymažte data tohoto webu v prohlížeči a obnovte seznamy z Drive.",
   "sync.phWrite": "Nahrávání …",
   "sync.phFiles": "Zápis souborů …",
   "sync.phWriteFile": "Zápis {name}",

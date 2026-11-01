@@ -1589,6 +1589,7 @@
   "sync.phRead": "Drive lezen …",
   "sync.phMerge": "Samenvoegen …",
   "sync.phStore": "Lijsten opslaan…",
+  "points.storeUnavailable": "Opgeslagen lijsten kunnen niet worden gelezen: de lijstopslag van de browser (IndexedDB) kon niet worden geopend ({msg}). Herstart de browser; blijft het, wis dan de gegevens van deze site in de browser en herstel de lijsten vanuit Drive.",
   "sync.phWrite": "Uploaden …",
   "sync.phFiles": "Bestanden schrijven …",
   "sync.phWriteFile": "{name} schrijven",

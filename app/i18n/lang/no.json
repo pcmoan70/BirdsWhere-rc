@@ -1589,6 +1589,7 @@
   "sync.phRead": "Leser Google Drive …",
   "sync.phMerge": "Slår sammen …",
   "sync.phStore": "Lagrer lister …",
+  "points.storeUnavailable": "Lagrede lister kan ikke leses: nettleserens listelager (IndexedDB) kunne ikke åpnes ({msg}). Start nettleseren på nytt; hjelper det ikke, slett nettstedets data i nettleseren og hent listene fra Drive.",
   "sync.phWrite": "Laster opp …",
   "sync.phFiles": "Skriver filer …",
   "sync.phWriteFile": "Skriver {name}",

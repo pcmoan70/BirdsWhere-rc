@@ -1589,6 +1589,7 @@
   "sync.phRead": "Drive’i lugemine …",
   "sync.phMerge": "Ühendamine …",
   "sync.phStore": "Loendite salvestamine…",
+  "points.storeUnavailable": "Salvestatud loendeid ei saa lugeda: brauseri loendihoidla (IndexedDB) ei avanenud ({msg}). Taaskäivita brauser; kui see ei aita, kustuta selle saidi andmed brauseris ja taasta loendid Drive'ist.",
   "sync.phWrite": "Üleslaadimine …",
   "sync.phFiles": "Failide kirjutamine …",
   "sync.phWriteFile": "Kirjutan {name}",

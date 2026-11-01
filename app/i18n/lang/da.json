@@ -1589,6 +1589,7 @@
   "sync.phRead": "Læser Drev …",
   "sync.phMerge": "Fletter …",
   "sync.phStore": "Gemmer lister…",
+  "points.storeUnavailable": "Gemte lister kan ikke læses: browserens listelager (IndexedDB) kunne ikke åbnes ({msg}). Genstart browseren; hjælper det ikke, så slet webstedets data i browseren og hent listerne fra Drive.",
   "sync.phWrite": "Uploader …",
   "sync.phFiles": "Skriver filer …",
   "sync.phWriteFile": "Skriver {name}",

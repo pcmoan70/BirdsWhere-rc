@@ -1589,6 +1589,7 @@
   "sync.phRead": "Drive wird gelesen …",
   "sync.phMerge": "Zusammenführen …",
   "sync.phStore": "Listen werden gespeichert…",
+  "points.storeUnavailable": "Gespeicherte Listen können nicht gelesen werden: der Listenspeicher des Browsers (IndexedDB) ließ sich nicht öffnen ({msg}). Browser neu starten; hilft das nicht, die Daten dieser Website im Browser löschen und die Listen aus Drive wiederherstellen.",
   "sync.phWrite": "Hochladen …",
   "sync.phFiles": "Dateien werden geschrieben …",
   "sync.phWriteFile": "{name} wird geschrieben",

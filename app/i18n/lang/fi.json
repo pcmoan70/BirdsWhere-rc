@@ -1589,6 +1589,7 @@
   "sync.phRead": "Luetaan Drivea …",
   "sync.phMerge": "Yhdistetään …",
   "sync.phStore": "Tallennetaan listoja…",
+  "points.storeUnavailable": "Tallennettuja listoja ei voi lukea: selaimen listavarasto (IndexedDB) ei auennut ({msg}). Käynnistä selain uudelleen; jos ongelma jatkuu, poista sivuston tiedot selaimesta ja palauta listat Drivesta.",
   "sync.phWrite": "Lähetetään …",
   "sync.phFiles": "Kirjoitetaan tiedostoja …",
   "sync.phWriteFile": "Kirjoitetaan {name}",

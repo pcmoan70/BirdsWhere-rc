@@ -1589,6 +1589,7 @@
   "sync.phRead": "Lettura di Drive …",
   "sync.phMerge": "Unione …",
   "sync.phStore": "Salvataggio elenchi…",
+  "points.storeUnavailable": "Impossibile leggere gli elenchi salvati: l'archivio elenchi del browser (IndexedDB) non si è aperto ({msg}). Riavvia il browser; se persiste, cancella i dati di questo sito nel browser e ripristina gli elenchi da Drive.",
   "sync.phWrite": "Caricamento …",
   "sync.phFiles": "Scrittura dei file …",
   "sync.phWriteFile": "Scrittura di {name}",

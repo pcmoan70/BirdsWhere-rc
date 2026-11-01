@@ -1589,6 +1589,7 @@
   "sync.phRead": "Skaitomas „Drive“ …",
   "sync.phMerge": "Sujungiama …",
   "sync.phStore": "Įrašomi sąrašai…",
+  "points.storeUnavailable": "Įrašytų sąrašų nepavyksta perskaityti: naršyklės sąrašų saugykla (IndexedDB) neatsidarė ({msg}). Paleiskite naršyklę iš naujo; jei nepadeda, išvalykite šios svetainės duomenis naršyklėje ir atkurkite sąrašus iš „Drive“.",
   "sync.phWrite": "Įkeliama …",
   "sync.phFiles": "Rašomi failai …",
   "sync.phWriteFile": "Rašoma {name}",

@@ -1589,6 +1589,7 @@
   "sync.phRead": "Odczyt Dysku Google …",
   "sync.phMerge": "Scalanie …",
   "sync.phStore": "Zapisywanie list…",
+  "points.storeUnavailable": "Nie można odczytać zapisanych list: magazyn list przeglądarki (IndexedDB) nie otworzył się ({msg}). Uruchom przeglądarkę ponownie; jeśli to nie pomoże, wyczyść dane tej witryny w przeglądarce i przywróć listy z Drive.",
   "sync.phWrite": "Wysyłanie …",
   "sync.phFiles": "Zapis plików …",
   "sync.phWriteFile": "Zapis {name}",

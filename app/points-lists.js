@@ -682,7 +682,7 @@ window.AppPoints = (function () {
       if (ptsKeys.length) askPersist();
       orphans.forEach(function (c) { writeIfChanged(c, false); });   // the kept in-memory lists, now stored
     } catch (e) {
-      mpIdbReady = false;
+      mpIdbReady = false; mpStoreErr = (e && e.message) || String(e);
       // IndexedDB can refuse to open for reasons that pass: another tab holding the
       // database during a version upgrade makes open() fire `onblocked`. Giving up for
       // the session then showed NO lists at all — the blob no longer carries them, it was
@@ -691,9 +691,13 @@ window.AppPoints = (function () {
       scheduleMpStoreRetry();
     }
   }
-  var mpRetryLeft = 4, mpRetryT = null;
+  var mpRetryLeft = 4, mpRetryT = null, mpStoreErr = "";
   function scheduleMpStoreRetry() {
-    if (mpIdbReady || mpRetryLeft <= 0 || mpRetryT) return;
+    if (mpIdbReady || mpRetryT) return;
+    if (mpRetryLeft <= 0) {   // out of retries: SAY so — the lists look lost when they are only unreadable (owner's phone, 2026-11-01)
+      try { setStatus(t("points.storeUnavailable", { msg: mpStoreErr || "?" }), true); } catch (e) {}
+      return;
+    }
     mpRetryT = setTimeout(function () {
       mpRetryT = null; mpRetryLeft--;
       initMpSetStore().then(function () {

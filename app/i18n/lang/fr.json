@@ -1589,6 +1589,7 @@
   "sync.phRead": "Lecture de Drive …",
   "sync.phMerge": "Fusion …",
   "sync.phStore": "Enregistrement des listes…",
+  "points.storeUnavailable": "Les listes enregistrées ne peuvent pas être lues : le stockage des listes du navigateur (IndexedDB) n'a pas pu s'ouvrir ({msg}). Redémarrez le navigateur ; si cela persiste, effacez les données de ce site dans le navigateur et restaurez les listes depuis Drive.",
   "sync.phWrite": "Envoi …",
   "sync.phFiles": "Écriture des fichiers …",
   "sync.phWriteFile": "Écriture de {name}",

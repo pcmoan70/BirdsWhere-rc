@@ -595,15 +595,20 @@ window.GDriveSync = (function () {
   // checklists, fetched } truthy = include. Omitted → full two-way (default).
   async function sync(options) {
     if (!connected || syncing || !clientId() || !navigator.onLine) return;
-    await window.AppPoints.whenAllLoaded();   // lists load lazily: a sync must see them whole
-    if (window.AppPoints.anyLazy()) return;   // one could not be read → never merge / upload a partial set
-    if (window.AppData.cachesReady) await window.AppData.cachesReady();   // the name caches too (read on first use)
     var dir = (options && options.direction) || "two";
     // Fetched observation dots are excluded unless asked for: re-fetchable, bulky, and
     // not something the user made. Anything already on Drive is left as it is.
     var inc = (options && options.cats) || { settings: 1, lists: 1, trips: 1, checklists: 1, fetched: 0 };
     syncing = true; lastPhase = "signin"; lastPhaseName = ""; lastDone = lastTotal = 0; emit("syncing");
     try {
+      // The list store must be whole and writable before anything is merged. These used to be silent
+      // returns before the try — the sync looked finished with nothing done; and with the store
+      // unavailable the merge fell back to the localStorage blob, where 150 MB of lists can never fit:
+      // nine full serialisations and a quota error each, which looked like a hang (owner's phone, 2026-11-01).
+      await window.AppPoints.whenAllLoaded();   // lists load lazily: a sync must see them whole
+      if (window.AppPoints.anyLazy()) throw new Error("a stored list could not be read \u2014 not syncing a partial set");
+      if (window.AppPoints.mpIdbReady && !window.AppPoints.mpIdbReady()) throw new Error("the list store (IndexedDB) is unavailable on this device \u2014 restart the browser; if it persists, clear this site's data in the browser and restore the lists from Drive");
+      if (window.AppData.cachesReady) await window.AppData.cachesReady();   // the name caches too (read on first use)
       // Each step now says WHAT it is doing, not just which step it is: the folder it found,
       // the size it is pulling, what arrived, how big the upload is. "Reading Drive…" for
       // twenty seconds with no detail is indistinguishable from a hang.

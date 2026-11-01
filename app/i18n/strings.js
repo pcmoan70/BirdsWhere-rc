@@ -154,6 +154,7 @@ window.GeoI18N = (function () {
         "sync.phMerged": "{lists} lists, {trips} trips",
         "sync.phMerge": "Merging…",
         "sync.phStore": "Storing lists…",
+        "points.storeUnavailable": "Saved lists cannot be read: the browser's list store (IndexedDB) failed to open ({msg}). Restart the browser; if it persists, clear this site's data in the browser and restore the lists from Drive.",
         "sync.phWrite": "Uploading…",
         "sync.phFiles": "Writing files…",
         "sync.phWriteFile": "Writing {name}",

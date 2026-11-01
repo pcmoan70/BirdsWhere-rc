@@ -1589,6 +1589,7 @@
   "sync.phRead": "Läser Drive …",
   "sync.phMerge": "Slår ihop …",
   "sync.phStore": "Sparar listor…",
+  "points.storeUnavailable": "Sparade listor kan inte läsas: webbläsarens listlager (IndexedDB) kunde inte öppnas ({msg}). Starta om webbläsaren; hjälper det inte, rensa webbplatsens data i webbläsaren och hämta listorna från Drive.",
   "sync.phWrite": "Laddar upp …",
   "sync.phFiles": "Skriver filer …",
   "sync.phWriteFile": "Skriver {name}",

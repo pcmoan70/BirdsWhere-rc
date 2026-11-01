@@ -1589,6 +1589,7 @@
   "sync.phRead": "Leyendo Drive …",
   "sync.phMerge": "Combinando …",
   "sync.phStore": "Guardando listas…",
+  "points.storeUnavailable": "No se pueden leer las listas guardadas: el almacén de listas del navegador (IndexedDB) no pudo abrirse ({msg}). Reinicie el navegador; si persiste, borre los datos de este sitio en el navegador y restaure las listas desde Drive.",
   "sync.phWrite": "Subiendo …",
   "sync.phFiles": "Escribiendo archivos …",
   "sync.phWriteFile": "Escribiendo {name}",
