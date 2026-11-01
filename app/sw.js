@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2244";
+var VERSION = "v2245";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Drive sync: the last step now shows its progress \u2014 \u201cStoring lists 3/8 \u00b7 name\u201d with a bar \u2014 instead of a bare \u201cSynchronizing\u201d while the lists go into the store.",
-  "\u2022 v2242\u20132243: a very large list file no longer fails with \u201ctoo big\u201d, and a Download no longer builds the upload payload it never sends."
+  "\u2022 Drive sync: a second, orange bar shows the lists being set up on this device after the files have arrived \u2014 a sweep while they merge, then the records stored n/m; the green bar is the transfer. The status line names the step as well."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

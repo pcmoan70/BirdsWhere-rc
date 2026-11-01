@@ -1372,7 +1372,7 @@ app can draw.
 dialog to pick **which categories** travel (Settings · Point lists · Trips · Checklists · Fetched
 points) and **one direction** (two-way merge — the default — upload-only, or download-only), then
 signs in (`drive.file` + `drive.appdata` — per-file access to what the app itself creates, and
-nothing else in your Drive), does one pull → merge → push, and disconnects (token kept in memory; the button names each step — reading, downloading file 3/8, merging, storing lists 3/8, uploading — over a progress bar, v2244
+nothing else in your Drive), does one pull → merge → push, and disconnects (token kept in memory; the button names each step — reading, downloading file 3/8, merging, storing lists 3/8, uploading — over a green transfer bar, and an **orange second bar** runs while the lists are merged and stored on the device after the files are in, v2244–v2245
 only; no background sync). Collections always merge, so no direction can delete data on the other
 device. API keys, the TinyURL token and the alert e-mail address only ever **fill a gap** — a synced or
 imported copy never replaces the one this device holds — and a source's endpoint from another copy is

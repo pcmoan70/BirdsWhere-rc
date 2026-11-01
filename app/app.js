@@ -20017,19 +20017,35 @@
         gdSync.title = phTxt;
         // …and a bar under the status line: a determinate fill while files are counted,
         // an indeterminate sweep for the steps that have no count (sign-in, read, merge).
+        // Two bars (owner, 2026-11-01: "a second orange progress bar while completing the
+        // initialization of lists"): the green one is the Drive transfer (sign-in, read, the files
+        // coming down, the upload) and stays full once the files are in; the orange one is the
+        // lists being set up on this device afterwards — a sweep while they merge, then the
+        // records stored n/m.
+        var listPhase = st.busy && (st.phase === "merge" || st.phase === "store");
         var bar = document.getElementById("gd-progress");
         if (bar) {
           bar.style.display = st.busy ? "" : "none";
           var fill = bar.firstChild;
           if (fill) {
-            var pct = st.total > 0 ? Math.round((st.done / st.total) * 100) : 0;
-            bar.classList.toggle("gd-indet", !st.total);
-            fill.style.width = st.total > 0 ? pct + "%" : "";
+            var pct = listPhase ? 100 : (st.total > 0 ? Math.round((st.done / st.total) * 100) : 0);
+            bar.classList.toggle("gd-indet", !listPhase && !st.total);
+            fill.style.width = (listPhase || st.total > 0) ? pct + "%" : "";
+          }
+        }
+        var bar2 = document.getElementById("gd-progress-lists");
+        if (bar2) {
+          bar2.style.display = listPhase ? "" : "none";
+          var fill2 = bar2.firstChild;
+          if (fill2) {
+            var det2 = st.phase === "store" && st.total > 0;
+            bar2.classList.toggle("gd-indet", !det2);
+            fill2.style.width = det2 ? Math.round((st.done / st.total) * 100) + "%" : "";
           }
         }
         var msg = "";
         var failed = st.status === "reconnect" || st.status === "error" || st.status === "storagefull";
-        if (st.status === "syncing") msg = "⟳ " + t("gdrive.syncing");
+        if (st.status === "syncing") msg = "⟳ " + t("gdrive.syncing") + (phTxt ? " \u00b7 " + phTxt : "");   // the step too, not only "Synchronizing…"
         else if (st.status === "storagefull") msg = "⚠ " + t("gdrive.storageFull");
         else if (st.status === "reconnect") msg = "⚠ " + t("gdrive.reconnect");
         else if (st.status === "error") msg = "⚠ " + t("gdrive.error");
@@ -20055,6 +20071,10 @@
         pb.id = "gd-progress"; pb.className = "gd-progress"; pb.style.display = "none";
         pb.appendChild(document.createElement("span"));
         gdStatus.parentNode.insertBefore(pb, gdStatus.nextSibling);
+        var pb2 = document.createElement("div");   // the orange "lists being set up" bar, under the first
+        pb2.id = "gd-progress-lists"; pb2.className = "gd-progress gd-lists"; pb2.style.display = "none";
+        pb2.appendChild(document.createElement("span"));
+        pb.parentNode.insertBefore(pb2, pb.nextSibling);
       }
       window.GDriveSync.onStatus(function (st) { renderGd(st); try { updateBackupNudge(); } catch (e) {} });
 
