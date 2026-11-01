@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2240";
+var VERSION = "v2241";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 GPS-follow: while the map tracks you, the legend re-renders once a minute for what is in view on the map; it no longer waits for the map to stand still."
+  "\u2022 Safety: imported files, share links and synced copies can no longer change where your API keys are sent, replace your keys, token or alert e-mail, or crash the app with an oversized payload; a few more links and colours from outside are checked before use.",
+  "\u2022 Downloaded offline map areas are this device's own: a sync or an import never removes them. Only you delete them."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

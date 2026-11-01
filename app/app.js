@@ -171,7 +171,7 @@
       spImgClear = window.AppSpImages.spImgClear;
   window.AppSpImages.init({
     createModal: createModal, escapeHtml: escapeHtml, holdDelay: holdDelay, holdFeedback: holdFeedback,
-    isBirdKey: isBirdKey, macaulayUrl: macaulayUrl, openExternal: openExternal, powoUrl: powoUrl,
+    isBirdKey: isBirdKey, macaulayUrl: macaulayUrl, openExternal: openExternal, powoUrl: powoUrl, safeHref: safeHref,
     spMissingOn: spMissingOn, t: t, wireSpeciesPicker: wireSpeciesPicker, ytopLabel: ytopLabel,
     getDetPlot: function () { return detPlot; }, getLabelsByKey: function () { return labelsByKey; },
     getSecondLang: function () { return secondLang; }, getShowSci: function () { return showSci; },
@@ -2164,7 +2164,10 @@
   }
   // A plain species-colour dot — used in the record tables (By observation) where
   // status isn't shown.
-  function spColorDot(key, color) { return '<span class="det-sw sp-cdot" style="background:' + (color || speciesColor(key)) + '"></span>'; }
+  // A colour that may come from a share link or an imported file goes into a style attribute:
+  // only colour characters pass, so it cannot break out of the attribute (security review, 2026-11-01).
+  function safeColor(c) { return /^[#a-zA-Z0-9(),.%\s]+$/.test(String(c || "")) ? c : "#888"; }
+  function spColorDot(key, color) { return '<span class="det-sw sp-cdot" style="background:' + safeColor(color || speciesColor(key)) + '"></span>'; }
   // The Species-list dot: it now carries the species' STATE the way the map marker does
   // — interesting (★), rare-here (centre dot), missing-from-this-year/life (need ring),
   // and blocked (a red slash). `rare` comes from the fetched observations, so the dot is
@@ -2729,7 +2732,7 @@
       '<div class="ui-modal-msg">' + escapeHtml(btn.getAttribute("data-name") || "") + "</div>" +
       '<div class="obs-photo-wrap"><img alt="" src="' + escapeHtml(url) + '" /></div>' +
       '<div class="obs-photo-cred">' + (by ? escapeHtml(by) : "") +
-        (src ? (by ? " · " : "") + '<a href="' + escapeHtml(src) + '" target="_blank" rel="noopener">' + escapeHtml(t("det.openSource")) + "</a>" : "") + "</div>";
+        (src ? (by ? " · " : "") + '<a href="' + safeHref(src) + '" target="_blank" rel="noopener">' + escapeHtml(t("det.openSource")) + "</a>" : "") + "</div>";
     m.box.querySelector(".obs-photo-x").addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); m.close(); });
     var img = m.box.querySelector("img");
     // Zooming in swaps in the full-resolution original — preloaded, so the picture on
@@ -2790,7 +2793,7 @@
       '<div class="obs-mosaic-grid' + (list.length === 1 ? " one" : "") + '">' +
         list.map(function (u, i) { return '<span class="obs-mos-tile" role="button" tabindex="0" data-i="' + i + '" title="' + escapeHtml(t("obs.photo")) + '"><img alt="" src="' + escapeHtml(u) + '"></span>'; }).join("") + "</div>" +
       '<div class="obs-photo-cred">' + (by ? escapeHtml(by) : "") +
-        (src ? (by ? " · " : "") + '<a href="' + escapeHtml(src) + '" target="_blank" rel="noopener">' + escapeHtml(t("det.openSource")) + "</a>" : "") + "</div>";
+        (src ? (by ? " · " : "") + '<a href="' + safeHref(src) + '" target="_blank" rel="noopener">' + escapeHtml(t("det.openSource")) + "</a>" : "") + "</div>";
     el.querySelector(".obs-mosaic-x").addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); closeObsMosaic(); });
     Array.prototype.forEach.call(el.querySelectorAll(".obs-mos-tile"), function (tile) {
       tile.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showObsPhoto(btn, list[+this.getAttribute("data-i")]); });
@@ -6170,7 +6173,7 @@
     function refLinks(fullUrl) {
       var h = "";
       if (lbl) h += '<a class="dm-model" href="#" role="button">' + escapeHtml(t("menu.apprange")) + '</a> · ';   // the app's own (model) range map
-      if (fullUrl) h += '<a href="' + escapeHtml(fullUrl) + '" target="_blank" rel="noopener">' + escapeHtml(t("distmap.download")) + '</a> · ';
+      if (fullUrl) h += '<a href="' + safeHref(fullUrl) + '" target="_blank" rel="noopener">' + escapeHtml(t("distmap.download")) + '</a> · ';
       h += '<a class="dm-wiki" data-sci="' + escapeHtml(sci) + '" href="' + escapeHtml(wikipediaUrl(sci)) + '" target="_blank" rel="noopener">Wikipedia</a>';
       if (bird) h += ' · <a class="dm-birdlife" data-en="' + escapeHtml(en) + '" data-sci="' + escapeHtml(sci) + '" href="' + escapeHtml(birdlifeUrl(en, sci)) + '" target="_blank" rel="noopener">BirdLife</a>';
       return h;
@@ -6901,6 +6904,11 @@
   function maybeImportMigrated() {
     var m = /^#migrate=(.+)$/.exec(location.hash || ""); if (!m) return;
     try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}   // never re-import on reload
+    // Only the hand-over FROM the old github.io address may carry data in. A #migrate= link
+    // from anywhere else would, after one generic confirm, replace this device's settings
+    // and keys with a stranger's — dropped (security review, 2026-11-01).
+    if (location.origin + "/" !== NEW_HOME || String(document.referrer || "").indexOf("https://pcmoan70.github.io/") !== 0) return;
+    if (m[1].length > MIGRATE_MAX) return;
     window.AppShare.decodeShare(m[1]).then(function (obj) {
       return modalConfirm(t("moved.confirm")).then(function (ok) {
         if (!ok) return;
@@ -8405,7 +8413,7 @@
             var add = function (pts, closed) {
               if (pts.length < 2) return;
               var lyr = closed ? L.polygon(pts, style) : L.polyline(pts, style);
-              lyr.bindTooltip(nm, { sticky: true, className: "area-tip" }); grp.addLayer(lyr);
+              lyr.bindTooltip(escapeHtml(nm), { sticky: true, className: "area-tip" }); grp.addLayer(lyr);   // an OSM name tag is anyone's text
             };
             if (el.type === "way" && el.geometry) {
               var p = el.geometry.map(function (g) { return [g.lat, g.lon]; });
@@ -9742,7 +9750,7 @@
     return tier === "life" ? " det-need-life" : tier === "year" ? " det-need-year" : "";
   }
   function detSwatch(color, starred, rare, key) {
-    var need = detNeedClass(key);
+    var need = detNeedClass(key); color = safeColor(color);
     if (starred) return '<span class="det-sw det-sw-star' + need + '" style="color:' + color + '">★' + (rare ? '<i class="det-ctr-dot"></i>' : "") + "</span>";
     if (rare) return '<span class="det-sw det-sw-rare' + need + '" style="background:' + color + '"><i class="det-ctr-dot"></i></span>';
     return '<span class="det-sw' + need + '" style="background:' + color + '"></span>';
@@ -12176,7 +12184,7 @@
         if (isInteresting(s2.key)) hasStar = true;
         if (detIsRare(s2.key)) hasRare = true;
       });
-      var color = (rarest || dominant).color;
+      var color = safeColor((rarest || dominant).color);
       // A locally-rare species inside the cluster shows as BLACK numerals (no
       // corner dot on merged markers — single dots keep their black rare-dot).
       // A starred species among the merged dots turns the marker ITSELF into a star (the
@@ -15766,7 +15774,7 @@
       setMpDistOrigin = mpState.setMpDistOrigin;
   window.AppPoints.init({
     clearSpider: clearSpider,
-    downloadCsv: downloadCsv, escapeHtml: escapeHtml, haversineKm: haversineKm, ico: ico,
+    downloadCsv: downloadCsv, escapeHtml: escapeHtml, haversineKm: haversineKm, ico: ico, linkUrl: linkUrl,
     looksLikeHtml: looksLikeHtml, makePopupBtn: makePopupBtn, modalPrompt: modalPrompt,
     mpTipHtml: mpTipHtml, openExternal: openExternal, openPointEditor: openPointEditor,
     copyPointToList: copyPointToList, deleteListPoint: deleteListPoint,

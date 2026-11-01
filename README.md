@@ -1360,7 +1360,9 @@ failed, try again in a minute* and the next check tries again.
 Areas are colour-coded frames you can delete individually; the panel lists the areas that
 overlap the current view first (tinted, marked *in view*) and follows the map as you pan — tap
 an area's name to show it on the map (switching to its basemap if needed). If the browser evicts
-tiles, the app detects it and offers to re-download. Pinned areas are never auto-purged. A download
+tiles, the app detects it and offers to re-download. Pinned areas are never auto-purged, and the list of
+areas is **this device's own**: it never travels in a sync, export or import, so another device's copy
+can never remove it (v2241) — an area goes only when you delete it. A download
 covers the zoom levels from the current view down to the chosen max, **plus a few zoomed-out levels**
 so the area still draws when you zoom out, and it is stored against the basemap actually on screen (a
 key-less Voyager/MapTiler choice draws Streets). Offline the map keeps working for every basemap the
@@ -1372,7 +1374,9 @@ points) and **one direction** (two-way merge — the default — upload-only, or
 signs in (`drive.file` + `drive.appdata` — per-file access to what the app itself creates, and
 nothing else in your Drive), does one pull → merge → push, and disconnects (token kept in memory
 only; no background sync). Collections always merge, so no direction can delete data on the other
-device.
+device. API keys, the TinyURL token and the alert e-mail address only ever **fill a gap** — a synced or
+imported copy never replaces the one this device holds — and a source's endpoint from another copy is
+accepted only on that source's own host (v2241).
 
 Everything lands in a folder called **BirdsWhere** in your Drive, which you can open like any
 other; each sync that changes something writes a dated subfolder (the ten newest are kept).
@@ -1522,6 +1526,11 @@ Your data leaves the device only when **you** act:
 - a **🔗 share link** or **Share map** — packs the points / detections you pick into a URL you hand out;
 - an **export** — CSV, KML/KMZ, GeoJSON or PDF, or the full backup file;
 - the optional one-tap **Google Drive backup**, into a **BirdsWhere** folder in your *own* Drive.
+
+What comes **in** is checked too: a share link, migration link, imported file or Drive copy is decoded with a
+size cap, its keys cannot alter the app's own objects, its links must be http(s), and its colours are
+plain colour values (v2241). The migration hand-over from the old github.io address is accepted only
+when you actually arrive from there.
 
 Separately, simply using the app sends the **map coordinates you are viewing** to the third-party
 observation databases (GBIF, eBird, iNaturalist…) and the map / place-name provider, so they can

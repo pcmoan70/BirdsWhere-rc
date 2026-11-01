@@ -21,7 +21,7 @@ window.AppPoints = (function () {
 
   // ---- injected by app.js (init) -----------------------------------------
   // Plain function aliases (stable references) …
-  var clearSpider, downloadCsv, escapeHtml, haversineKm, ico,
+  var clearSpider, downloadCsv, escapeHtml, haversineKm, ico, linkUrl,
       copyPointToList, deleteListPoint, looksLikeHtml, makePopupBtn, modalPrompt, mpTipHtml, openExternal, openPointEditor,
       refreshMpPanel, renderMpAdmin, setStatus, showDetRowMenu, syncListDetections,
       pulseFunnels, tagDisplay, labelForSci, updateDetSetOverlays, updateMpBadge, updateSpDistances, t,
@@ -34,7 +34,7 @@ window.AppPoints = (function () {
   function init(ctx) {
     clearSpider = ctx.clearSpider;
     if (ctx.onListLoaded) onListLoaded = ctx.onListLoaded;
-    downloadCsv = ctx.downloadCsv; escapeHtml = ctx.escapeHtml; haversineKm = ctx.haversineKm;
+    downloadCsv = ctx.downloadCsv; escapeHtml = ctx.escapeHtml; haversineKm = ctx.haversineKm; linkUrl = ctx.linkUrl;
     ico = ctx.ico; looksLikeHtml = ctx.looksLikeHtml; makePopupBtn = ctx.makePopupBtn;
     copyPointToList = ctx.copyPointToList; deleteListPoint = ctx.deleteListPoint;
     modalPrompt = ctx.modalPrompt; mpTipHtml = ctx.mpTipHtml; openExternal = ctx.openExternal;
@@ -995,7 +995,7 @@ window.AppPoints = (function () {
     for (;;) {
       var a = text.indexOf(LIST_BLOCK_OPEN, at); if (a < 0) break;
       a += LIST_BLOCK_OPEN.length; var b = text.indexOf(LIST_BLOCK_CLOSE, a); if (b < 0) break;
-      try { var o = JSON.parse(text.slice(a, b).split("]]]]><![CDATA[>").join("]]>")); if (o && Array.isArray(o.points)) out.push(o); } catch (e) {}
+      try { var o = window.GeoState.safeParse(text.slice(a, b).split("]]]]><![CDATA[>").join("]]>")); if (o && Array.isArray(o.points)) out.push(o); } catch (e) {}
       at = b + LIST_BLOCK_CLOSE.length;
     }
     return out;
@@ -1141,7 +1141,7 @@ window.AppPoints = (function () {
   // Parse GeoJSON Point features into the SAME {marks, fields, folders} shape the KML
   // importer produces, so the import field-mapping dialog is shared.
   function parseGeoJsonText(text) {
-    var gj; try { gj = JSON.parse(text); } catch (e) { throw new Error(t("kml.parseErr")); }
+    var gj; try { gj = window.GeoState.safeParse(text); } catch (e) { throw new Error(t("kml.parseErr")); }
     var feats = (gj && gj.type === "FeatureCollection" && Array.isArray(gj.features)) ? gj.features
               : (gj && gj.type === "Feature") ? [gj] : [];
     var marks = [], fieldSet = {}, folderSet = {};
@@ -1221,7 +1221,7 @@ window.AppPoints = (function () {
     var start = target.lho + 30 + lFnLen + lExLen, comp = bytes.subarray(start, start + target.cSize);
     if (target.method === 0) return td.decode(comp);
     if (target.method !== 8 || typeof DecompressionStream === "undefined") throw new Error("kmz compression");
-    var raw = new Uint8Array(await new Response(new Blob([comp]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer());
+    var raw = await window.AppShare.inflateCapped(comp, 128 * 1048576);   // byte budget: a zip bomb must not take the tab down
     return td.decode(raw);
   }
   function downloadBlob(filename, blob) {
@@ -1485,7 +1485,7 @@ window.AppPoints = (function () {
   }
   function exactListsOfText(txt) {
     var c0 = txt.charAt(0);
-    if (c0 === "{") { try { var g = JSON.parse(txt); return Array.isArray(g["birdswhere-lists"]) && g["birdswhere-lists"].length ? g["birdswhere-lists"] : null; } catch (e) { return null; } }
+    if (c0 === "{") { try { var g = window.GeoState.safeParse(txt); return Array.isArray(g["birdswhere-lists"]) && g["birdswhere-lists"].length ? g["birdswhere-lists"] : null; } catch (e) { return null; } }
     if (txt.indexOf(LIST_BLOCK_OPEN) < 0) return null;
     var l = listsFromText(txt); return l.length ? l : null;
   }
@@ -1867,7 +1867,7 @@ window.AppPoints = (function () {
       var rid = String(data.id || "").trim();
       if (!u && /^AO\d+$/.test(rid)) u = "https://mobil.artsobservasjoner.no/sighting/" + rid.slice(2);
       else if (!u && /^\d{5,}$/.test(rid)) u = "https://www.gbif.org/occurrence/" + rid;
-      if (u) pt.url = String(u).trim();
+      if (u) pt.url = linkUrl(u);   // http(s) only — an imported file's link must not carry another scheme into an href
     }
     // Source badge + class, so the injected record reads like a fetch (Artsobs / GBIF, Aves …).
     if (!pt.src) {

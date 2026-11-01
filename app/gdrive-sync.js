@@ -413,7 +413,7 @@ window.GDriveSync = (function () {
     } else {
       try { txt = new TextDecoder().decode(new Uint8Array(buf)); } catch (e) { return null; }
     }
-    try { return JSON.parse(txt); } catch (e) { return null; }
+    try { return window.GeoState.safeParse(txt); } catch (e) { return null; }
   }
 
   // ---- Point lists as files (2026-10-05) ------------------------------------------------

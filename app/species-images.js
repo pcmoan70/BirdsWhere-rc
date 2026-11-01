@@ -16,13 +16,13 @@ window.AppSpImages = (function () {
 
   // ---- injected by app.js (init) -----------------------------------------
   // Plain function aliases (stable references) …
-  var createModal, escapeHtml, holdDelay, holdFeedback, isBirdKey, macaulayUrl, openExternal, powoUrl, spMissingOn, t, wireSpeciesPicker, ytopLabel;
+  var createModal, escapeHtml, holdDelay, holdFeedback, isBirdKey, macaulayUrl, openExternal, powoUrl, safeHref, spMissingOn, t, wireSpeciesPicker, ytopLabel;
   // … and getters for app state that changes at runtime.
   var getDetPlot, getLabelsByKey, getSecondLang, getShowSci;
 
   function init(ctx) {
     createModal = ctx.createModal; escapeHtml = ctx.escapeHtml; holdDelay = ctx.holdDelay; holdFeedback = ctx.holdFeedback;
-    isBirdKey = ctx.isBirdKey; macaulayUrl = ctx.macaulayUrl; openExternal = ctx.openExternal; powoUrl = ctx.powoUrl;
+    isBirdKey = ctx.isBirdKey; macaulayUrl = ctx.macaulayUrl; openExternal = ctx.openExternal; powoUrl = ctx.powoUrl; safeHref = ctx.safeHref;
     spMissingOn = ctx.spMissingOn; t = ctx.t; wireSpeciesPicker = ctx.wireSpeciesPicker; ytopLabel = ctx.ytopLabel;
     getDetPlot = ctx.getDetPlot; getLabelsByKey = ctx.getLabelsByKey; getSecondLang = ctx.getSecondLang; getShowSci = ctx.getShowSci;
   }
@@ -684,9 +684,9 @@ window.AppSpImages = (function () {
     var site = /gbif\.org$/i.test(host) ? "GBIF"
       : (/inaturalist\.org$/i.test(host) ? "iNaturalist"
       : (!host || /wiki(m|p)edia\.org$/i.test(host) ? "Wikimedia Commons" : host));
-    return '<a href="' + escapeHtml(page) + '" target="_blank" rel="noopener">' + escapeHtml(r.a ? "© " + r.a : site) + "</a>" +
+    return '<a href="' + safeHref(page) + '" target="_blank" rel="noopener">' + escapeHtml(r.a ? "© " + r.a : site) + "</a>" +
       (r.l ? " · " + (r.lu
-        ? '<a href="' + escapeHtml(r.lu) + '" target="_blank" rel="noopener">' + escapeHtml(r.l) + "</a>"   // the licence deed itself
+        ? '<a href="' + safeHref(r.lu) + '" target="_blank" rel="noopener">' + escapeHtml(r.l) + "</a>"   // the licence deed itself
         : escapeHtml(r.l)) : "");
   }
   // ---- Wikimedia Commons category grid (owner, 2026-10-30: a tap on an Images-layout photo opens "the Wikimedia Commons

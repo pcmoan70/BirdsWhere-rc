@@ -108,6 +108,7 @@ window.AppSyncData = (function () {
     try { if (typeof saveMapPoints === "function") saveMapPoints(); } catch (e) {}
     var state = {};
     try { state = JSON.parse(localStorage.getItem(window.GeoState.storageKey) || "{}"); } catch (e) {}
+    delete state.offlineAreas;   // the downloaded map areas are THIS device's: never in a payload (owner, 2026-11-01)
     // Belt-and-braces: take the plotted detections straight from memory too, so a
     // large on-screen set still syncs even if the localStorage write above was
     // rejected (e.g. quota) and the round-tripped copy is stale/missing.
@@ -532,6 +533,26 @@ window.AppSyncData = (function () {
         return (d && d.url) ? { key: d.key, name: d.name, url: linkUrl(d.url), country: d.country } : d;
       });
     }
+    // A source's endpoint travels with the settings, and the adapters attach the user's API
+    // key to whatever URL is stored — so an endpoint that is NOT this device's own is kept
+    // only on that source's default host; anything else falls back to the default
+    // (security review, 2026-11-01).
+    if (Array.isArray(newState.directSources)) {
+      var mineUrl = {}; (Array.isArray(local.directSources) ? local.directSources : []).forEach(function (s) { if (s && s.id) mineUrl[s.id] = s.url; });
+      var host = function (x) { var m = /^https?:\/\/([^\/?#]+)/i.exec(x || ""); return m ? m[1].toLowerCase() : ""; };
+      newState.directSources = newState.directSources.map(function (s) {
+        if (!s || !s.id || s.url === mineUrl[s.id]) return s;
+        var d = (AppSources.DIRECT_BY_ID || {})[s.id], du = (d && d.url) || "", u = linkUrl(s.url);
+        if (!u || !du || host(u) !== host(du)) u = du;
+        var o = {}; Object.keys(s).forEach(function (k) { o[k] = s[k]; }); o.url = u; return o;
+      });
+    }
+    // Secrets fill a gap, never replace: this device's TinyURL token stays whatever wins.
+    if (local.tinyApiToken) newState.tinyApiToken = local.tinyApiToken;
+    // The downloaded offline map areas are device-local — another device's list must never
+    // replace this one's (its areas would vanish from Settings while their tiles stayed
+    // on the disk); the owner wants areas deleted by hand only (2026-11-01).
+    if (local.offlineAreas != null) newState.offlineAreas = local.offlineAreas; else delete newState.offlineAreas;
     // Rarity alerts: merged FIELD-WISE, never as one blob. The preferences — the email
     // address, the interval, the threshold, which sources, the sound — travel like any
     // other setting, while the bookkeeping stays this device's own: copying a seen-set
@@ -542,7 +563,7 @@ window.AppSyncData = (function () {
       if (!lr && !ir) return;
       lr = lr || {}; ir = ir || {};
       var PREFS = ["enabled", "intervalMin", "probPct", "showDays", "showMap", "allSources",
-        "countryWide", "sound", "sysNotif", "email"];
+        "countryWide", "sound", "sysNotif"];   // the e-mail address fills a gap only (below) — an import never redirects the alerts
       var MINE = ["seen", "seeded", "lastPoll", "lastEmail", "emailState", "emailAt", "emailKind", "emailCount"];
       var win = opts.incomingWins ? ir : lr, other = opts.incomingWins ? lr : ir;
       var out = {}; Object.keys(lr).forEach(function (k) { out[k] = lr[k]; });
@@ -550,6 +571,7 @@ window.AppSyncData = (function () {
         var v = (win[k] !== undefined) ? win[k] : other[k];
         if (v !== undefined) out[k] = v;
       });
+      if (!out.email && ir.email) out.email = ir.email;
       // The address ALSO fills in when this device simply has none — the same rule the
       // eBird key follows, so a second device picks it up without forcing a download.
       if (!String(out.email || "").trim() && String(ir.email || "").trim()) out.email = ir.email;
@@ -633,8 +655,10 @@ window.AppSyncData = (function () {
     // trims only the oldest detections if the store would exceed the quota.
     try { writeStateCapped(newState); } catch (e) { throw new Error("storage write failed: " + e.message); }
     // eBird key: adopt incoming only when it should win, or when we have none.
-    if (data.ebirdKey && (opts.incomingWins || !ebirdKey())) setEbirdKey(data.ebirdKey);
-    if (data.artdbKey && (opts.incomingWins || !artKey())) setArtKey(data.artdbKey);
+    // Gap-fill only: an import or sync never replaces a key this device already holds
+    // (security review, 2026-11-01).
+    if (data.ebirdKey && !ebirdKey()) setEbirdKey(data.ebirdKey);
+    if (data.artdbKey && !artKey()) setArtKey(data.artdbKey);
     try { if (data.gdriveClientId && !localStorage.getItem("gdrive-client-id")) localStorage.setItem("gdrive-client-id", data.gdriveClientId); } catch (e) {}
     // Harvested names and extra vernaculars UNION in — a name this device already has is
     // never dropped because the other device had not met that species yet.
@@ -686,7 +710,7 @@ window.AppSyncData = (function () {
     };
   }
   function importAppData(jsonText) {
-    var data; try { data = JSON.parse(jsonText); } catch (e) { throw new Error("Invalid JSON"); }
+    var data; try { data = window.GeoState.safeParse(jsonText); } catch (e) { throw new Error("Invalid JSON"); }
     if (mpState.anyLazy && mpState.anyLazy()) throw new Error("lists still loading");   // never merge into half-loaded lists
     return applyRemote(data, { incomingWins: true, interactive: true });
   }
@@ -879,7 +903,7 @@ window.AppSyncData = (function () {
     var a = kml.indexOf(LIST_DATA_OPEN); if (a < 0) throw new Error("not a BirdsWhere list file");
     a += LIST_DATA_OPEN.length;
     var b = kml.indexOf(LIST_DATA_CLOSE, a); if (b < 0) throw new Error("list file is cut short");
-    var obj = JSON.parse(kml.slice(a, b).split("]]]]><![CDATA[>").join("]]>"));
+    var obj = window.GeoState.safeParse(kml.slice(a, b).split("]]]]><![CDATA[>").join("]]>"));
     if (!obj || !Array.isArray(obj.points)) throw new Error("list file has no points");
     if (Array.isArray(obj.polys)) obj.points.polys = obj.polys;   // the list's areas ride along (the caller moves them onto the list)
     if (Array.isArray(obj.lines)) obj.points.lines = obj.lines;   // … and its lines (a GPS track)

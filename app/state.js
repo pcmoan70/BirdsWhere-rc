@@ -89,10 +89,15 @@ window.GeoState = (function () {
     window.addEventListener("storage", function (e) { if (e.key === KEY) { cache = null; try { if (window.AppSources && window.AppSources.invalidate) window.AppSources.invalidate(); } catch (e2) {} } });
   } catch (e) { /* no window/storage events — fine */ }
 
+  // Keys that would set an object's prototype, or pollute Object.prototype, when a parsed
+  // object is merged key by key: never stored, and dropped from any JSON that comes from
+  // outside the app — imports, share links, a Drive copy (security review, 2026-11-01).
+  function badKey(k) { return k === "__proto__" || k === "constructor" || k === "prototype"; }
+  function safeParse(text) { return JSON.parse(text, function (k, v) { return badKey(k) ? undefined : v; }); }
   // Merge a partial patch into the stored state.
   function save(patch) {
     var s = read();
-    for (var k in patch) if (Object.prototype.hasOwnProperty.call(patch, k)) s[k] = patch[k];
+    for (var k in patch) if (Object.prototype.hasOwnProperty.call(patch, k) && !badKey(k)) s[k] = patch[k];
     write(s);
     return s;
   }
@@ -134,7 +139,8 @@ window.GeoState = (function () {
     get: get,
     save: save,
     snapshot: read,    // the cached state object itself — READ-ONLY for callers (save() mutates it in place)
-    storageKey: KEY,   // the (possibly RC-suffixed) localStorage key — use instead of hardcoding
+    storageKey: KEY,
+    safeParse: safeParse,   // the (possibly RC-suffixed) localStorage key — use instead of hardcoding
     invalidate: invalidate,
     lastSaveOk: lastSaveOk,
     setQuotaTrim: setQuotaTrim,
