@@ -706,6 +706,19 @@ window.AppPoints = (function () {
       }, function () {});
     }, (5 - mpRetryLeft) * 1500);
   }
+  // The Drive sync's store step: one list at a time with a yield between them, reporting
+  // onProgress(done, total, name) → "Storing lists 3/8 · name". Signing and cloning a big list is
+  // seconds of work on a phone, and doing every list in one synchronous pass left the page frozen
+  // on "Merging…" with nothing moving (owner, 2026-11-01). The ordinary pass runs at the end for
+  // the index and the retired records — cheap then, every list is signed already.
+  function persistMpSetsStepwise(list, onProgress) {
+    var items = (list || []).filter(function (c) { return c && c.name && !c._lazy; }), total = items.length, done = 0;
+    onProgress(0, total, "");
+    return items.reduce(function (p, c) {
+      return p.then(function () { return new Promise(function (r) { setTimeout(r, 0); }); })   // let the count paint
+        .then(function () { var w = writeIfChanged(c, false), tick = function () { onProgress(++done, total, c.name); }; return Promise.resolve(w).then(tick, tick); });
+    }, Promise.resolve()).then(function () { return persistMpSets(list, { fast: true, noVerify: true }); });
+  }
   // Write the current lists to IndexedDB and retire the records of any that are gone.
   // Only the lists that actually CHANGED are written: these run to megabytes, and
   // every pin edit calls through here — rewriting all of them each time would make
@@ -772,20 +785,14 @@ window.AppPoints = (function () {
   }
   function persistMpSets(list, opts) {
     if (!mpIdbReady || !window.AppIDB) return Promise.resolve();
-    var fast = !!(opts && opts.fast), keep = Object.create(null), gone = false, writes = [], names = [];
+    if (opts && typeof opts.onProgress === "function") return persistMpSetsStepwise(list, opts.onProgress);
+    var fast = !!(opts && opts.fast), keep = Object.create(null), gone = false, writes = [];
     (list || []).forEach(function (c) {
       if (!c || !c.name) return;
       keep[c.name] = 1;
       if (c._lazy) return;                                // a stub is never written: its records are still in the store only
-      var w = writeIfChanged(c, fast); if (w) { writes.push(w); names.push(c.name); }
+      var w = writeIfChanged(c, fast); if (w) writes.push(w);
     });
-    // opts.onProgress(done, total, name): the Drive sync shows "Storing lists 3/8 · name" while the
-    // big records go into the store — the step after the files arrive used to look hung (owner, 2026-11-01).
-    if (opts && typeof opts.onProgress === "function") {
-      var pdone = 0, ptotal = writes.length;
-      opts.onProgress(0, ptotal, "");
-      writes.forEach(function (w, i) { var tick = function () { opts.onProgress(++pdone, ptotal, names[i]); }; Promise.resolve(w).then(tick, tick); });
-    }
     if (fast && !(opts && opts.noVerify)) scheduleFullVerify();
     // Retire what the index holds and no list claims. A stub's data sits under its original
     // name (`_key`) until it is read — a renamed stub keeps that record (lists stay stubs for
