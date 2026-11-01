@@ -3706,7 +3706,7 @@
       setStatus(t("filters.reloading", { i: i, n: total }));
       var settled = false, adv = function () { if (!settled) { settled = true; setTimeout(next, 400); } };
       var guard = setTimeout(function () { if (myLoopGen === fetchLoopGen) adv(); }, LOC_MAX_MS);
-      var started; try { started = fetchAllSightingsAt(l.lat, l.lon, null, l.radius, null); }
+      var started; try { started = fetchAllSightingsAt(l.lat, l.lon, null, l.radius, null, true); }   // forced: from the sources, not the store
       catch (e) { started = Promise.reject(e); }
       Promise.resolve(started)
         .then(function (result) {
@@ -3759,7 +3759,7 @@
       setStatus(t("update.running", { i: i, n: total }));
       var settled2 = false, adv2 = function () { if (!settled2) { settled2 = true; setTimeout(next, 400); } };
       var guard2 = setTimeout(function () { if (myLoopGen === fetchLoopGen) adv2(); }, LOC_MAX_MS);
-      var started2; try { started2 = fetchAllSightingsAt(l.lat, l.lon, null, l.radius, l.days); }
+      var started2; try { started2 = fetchAllSightingsAt(l.lat, l.lon, null, l.radius, l.days, true); }   // forced: from the sources, not the store
       catch (e) { started2 = Promise.reject(e); }
       Promise.resolve(started2).then(function (result) {
         clearTimeout(guard2);
@@ -3881,6 +3881,9 @@
     // nothing on screen can explain or undo.
     if (detAreaExcl) { detAreaExcl.delete(id); if (!detAreaExcl.size) detAreaExcl = null; }
     var area = fetchedAreas[idx], b = area.bounds;
+    // The download goes with the area (owner, 2026-11-01): the next fetch here asks the sources.
+    var sp = String(id).split(":"), ll = sp[0].split(",");
+    dropSightsAt(+ll[0], +ll[1], parseFloat(sp[1]));
     // Geometric fallback for rows without ownership tags (older persisted data,
     // "Show in map" plots): a 5% padded box, so edge/fuzzed dots go too.
     if (b && b.pad) b = b.pad(0.05);
@@ -5002,6 +5005,22 @@
       .then(function () { return AppIDB.del(SIGHT_IDX_KEY).catch(function () {}); })
       .then(function () { return AppIDB.del("sightingsCache").catch(function () {}); });
   }
+  // Forget every stored download at one fetch spot (any species group or day window) — the
+  // per-area red × and a forced re-fetch. ck = "lat,lon:rkm:group[:dN]" with two decimals; an
+  // area id keeps three, so match within rounding distance of the spot.
+  function dropSightsAt(lat, lon, rkm) {
+    if (!isFinite(lat) || !isFinite(lon)) return;
+    var ks = Object.create(null);
+    Object.keys(sightIdx).concat(Object.keys(allSightingsCache)).forEach(function (ck) {
+      var m = /^(-?[\d.]+),(-?[\d.]+):([\d.]+):/.exec(ck);
+      if (m && Math.abs(+m[1] - lat) < 0.006 && Math.abs(+m[2] - lon) < 0.006 && (!(rkm > 0) || +m[3] === +rkm)) ks[ck] = 1;
+    });
+    ks = Object.keys(ks);
+    ks.forEach(function (ck) { delete allSightingsCache[ck]; delete persistedSightings[ck]; delete sightIdx[ck]; });
+    if (!ks.length || !window.AppIDB || !AppIDB.available()) return;
+    Promise.all(ks.map(function (ck) { return AppIDB.del(SIGHT_REC + ck).catch(function () {}); }))
+      .then(function () { return AppIDB.put(SIGHT_IDX_KEY, sightIdx); }).catch(function () {});
+  }
   // Derive a single-group result from a cached "All" aggregate by keeping only the
   // species/extras of that group's class (animals) or kingdom (plants/fungi) — the
   // no-network equivalent of aggregateRecords(records, group). "All" is fetched
@@ -5054,7 +5073,10 @@
     if (newReloadCtrlEl) newReloadCtrlEl.classList.remove("loading");
     mapFetchPending = 0; try { renderStatusDots(); updateFilterBusy(); } catch (e) {}     // clear the fetch hourglass
   }
-  function fetchAllSightingsAt(lat, lon, onPartial, radiusOverride, daysOverride) {
+  // `force` (the ✓ update and the New-mode Reload): the stored downloads at this spot are
+  // dropped and the sources are asked afresh — a cached copy is never the answer to a
+  // request to UPDATE (owner, 2026-11-01: the ✓ "seems to only fetch from cached observations").
+  function fetchAllSightingsAt(lat, lon, onPartial, radiusOverride, daysOverride, force) {
     var rkm = (radiusOverride > 0) ? radiusOverride : recentRadiusKm();
     // Day window: an explicit override (Fetch-on-open) wins; else the general
     // "Download — last N days" setting; else 0 = each source's own default.
@@ -5071,10 +5093,11 @@
     var ck = sightCK(lat, lon, rkm, fetchGroup, days);   // group- + days-keyed: a different window is a different cache entry
     var fetchOrigin = { lat: lat, lon: lon, rkm: rkm };  // rides on every (partial) result → area ownership follows the FETCH, not the current view
     if (seededSightings[ck]) { disarm(); return seededSightings[ck]; }   // shared-list import (works with NO keys/sources — never refetched)
-    if (allSightingsCache[ck]) { disarm(); return allSightingsCache[ck]; }
+    if (force) dropSightsAt(lat, lon, rkm);   // this spot's downloads go; the fetch below replaces them
+    if (!force && allSightingsCache[ck]) { disarm(); return allSightingsCache[ck]; }
     // Reuse a previously-downloaded result for this exact location (same radius,
     // group + source config) that is still fresh — no network, no refetch on reopen.
-    if (sightReusable(ck, cfgSig)) {
+    if (!force && sightReusable(ck, cfgSig)) {
       var cachedPr = loadSight(ck).then(function (out) {
         if (out) return out;
         delete allSightingsCache[ck];   // the stored record vanished → a real fetch (sightReusable is false now)
@@ -5087,7 +5110,7 @@
     // Subset reuse: for a specific group, if a still-fresh "All" fetch for the SAME
     // spot / radius / day-window is cached, derive this group by filtering All's
     // aggregate — no network. (Skipped for "all" itself and when no All cache exists.)
-    if (fetchGroup !== "all") {
+    if (!force && fetchGroup !== "all") {
       var ckAll = sightCK(lat, lon, rkm, "all", days);
       var pa = sightReusable(ckAll, cfgSig) ? persistedSightings[ckAll] : null;   // only an already-loaded All record is derived from synchronously
       if (pa && pa.out) {
@@ -12813,7 +12836,10 @@
   // are left, the shown lists and trips come off the map (un-ticked; the lists themselves are kept).
   function clearStep() {
     if (!detAreaDeleteMode && fetchedAreas.length) { enterAreaDeleteMode(); updateDetLegend(); return; }
-    if (detAreaDeleteMode || detFetchedCount()) clearDetections();
+    if (detAreaDeleteMode || detFetchedCount()) {
+      clearDetections();
+      clearPersistedSightings(); allSightingsCache = {};   // off the map AND off the device (owner, 2026-11-01)
+    }
     // Only FETCHED observations ever go (owner, 2026-10-24): the points of shown lists and
     // the points a search put on the map stay — they are cleared from the Points panel.
   }

@@ -3,6 +3,7 @@
 // Loaded before app.js; exposed on window.AppStaticData.
 window.AppStaticData = window.AppStaticData || {};
 window.AppStaticData.WHATS_NEW = [
+    { v: "v2237", date: "2026-11-01", text: "The \u2713 update button re-fetches every fetched area from the sources themselves \u2014 the copy kept on the device is replaced, not served. The red \u00d7 (one area, or all) also removes those stored downloads, so the next fetch there asks the sources afresh." },
     { v: "v2234", date: "2026-10-31", text: "The Names popup (tap the name on top of a species' menu) has a species search box under the name: type a few letters and pick a bird, and its menu opens. Every popup now keeps its \u00d7 top right. v2236: the same search box tops the species list, just above the table." },
     { v: "v2232", date: "2026-10-31", text: "Look up another species from the Audio panel or the photo grid: tap the name on top, type a few letters of a name in your language, your second language or Latin (a letter or two off is fine) and pick one." },
     { v: "v2231", date: "2026-10-31", text: "Force reload. The last button in Settings downloads every file of the app afresh from the website, whatever the caches say, and restarts \u2014 for when an update seems not to have arrived. Map tiles, offline areas, photos, lists and settings are kept." },
