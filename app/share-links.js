@@ -77,7 +77,9 @@ window.AppShare = (function () {
   // Decoding runs BEFORE any confirm, so a crafted link or file must not be able to take the
   // tab down: the encoded text is capped, and the inflate stops at a byte budget — a few
   // hundred kB of deflate can hold gigabytes (security review, 2026-11-01).
-  var DECODE_MAX_CHARS = 4000000, INFLATE_MAX = 64 * 1048576;
+  // Far above any real share or list file (a big list's own payload runs to hundreds of MB inflated —
+  // v2241's 64 MB broke the owner's Drive sync); only a bomb goes beyond.
+  var DECODE_MAX_CHARS = 32000000, INFLATE_MAX = 512 * 1048576;
   function inflateCapped(bytes, max) {
     var rd = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw")).getReader(), parts = [], n = 0;
     return (function pump() {

@@ -1221,7 +1221,9 @@ window.AppPoints = (function () {
     var start = target.lho + 30 + lFnLen + lExLen, comp = bytes.subarray(start, start + target.cSize);
     if (target.method === 0) return td.decode(comp);
     if (target.method !== 8 || typeof DecompressionStream === "undefined") throw new Error("kmz compression");
-    var raw = await window.AppShare.inflateCapped(comp, 128 * 1048576);   // byte budget: a zip bomb must not take the tab down
+    // Byte budget against a zip bomb — set far above any real list: a 74 000-point list's own Drive
+    // file inflates past 128 MB, and that cap made the whole sync fail with "too big" (owner, 2026-11-01).
+    var raw = await window.AppShare.inflateCapped(comp, 1024 * 1048576);
     return td.decode(raw);
   }
   function downloadBlob(filename, blob) {
