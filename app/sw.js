@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2238";
+var VERSION = "v2239";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Settings: the button to the explanation page is now just \u201cHow?\u201d.",
+  "\u2022 Settings: About \u2197, How? and Model compare \u2197 sit as three plain words on one line; the \u2139 is gone and the arrows stay with their words.",
   "\u2022 v2237: the \u2713 update asks the sources afresh for every fetched area; the red \u00d7 (one area or all) also removes the stored downloads."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the

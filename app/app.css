@@ -2708,10 +2708,11 @@ button.offline-name:hover { text-decoration: underline; }
 /* Bordered button look (.feedback-open is otherwise a text link). */
 .settings-toprow > .settings-feedback { background: var(--surface); border: 1px solid var(--border); color: var(--ink); text-decoration: none; font-weight: 600; padding: 6px 9px; }
 .settings-toprow > .settings-feedback:hover { background: var(--surface-2); color: var(--ink); }
-/* "About ↗" (web summary) beside "How it works" (in-app panel), under the intro text. */
-.settings-aboutrow { display: flex; gap: 4px; }
-.settings-aboutrow > .settings-about { flex: 0 1 auto; width: auto; text-decoration: none; }
-.settings-aboutrow > a.settings-about::before { content: none; }
+/* "About ↗", "How?" (in-app panel) and "Model compare ↗" as three plain words on ONE line, under the
+   intro text: no ℹ, nothing shrinks or wraps, so each ↗ stays glued to its word (owner, 2026-11-01). */
+.settings-aboutrow { display: flex; gap: 0; }
+.settings-aboutrow > .settings-about { flex: 0 0 auto; width: auto; padding: 8px 4px; white-space: nowrap; text-decoration: none; }
+.settings-aboutrow > .settings-about::before { content: none; }
 .perf-about { margin: 2px 0 6px; }
 .perf-about a, a.perf-about { color: var(--brand); font-weight: 600; text-decoration: none; }
 .perf-about a:hover, a.perf-about:hover { text-decoration: underline; }
