@@ -715,6 +715,7 @@
   "sync.import": "⬆ Importar",
   "sync.imported": "Importado · {n} listas (total {total}). A recarregar…",
   "sync.importFailed": "Falha na importação: {msg}",
+  "sync.importRefs": "{n} lista(s) neste ficheiro estão apenas nomeadas ({names}): os seus pontos estão nos ficheiros “Points - <nome>.kmz” ao lado. Use a sincronização com o Drive ou importe esses ficheiros .kmz.",
   "sync.notBackup": "não é um ficheiro de backup migration_calendar",
   "ctrl.exportPoints": "Pontos do mapa",
   "btn.exportPointsKml": "⬇ Exportar KML",

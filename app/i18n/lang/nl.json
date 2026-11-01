@@ -715,6 +715,7 @@
   "sync.import": "⬆ Importeren",
   "sync.imported": "Geïmporteerd · {n} lijsten (totaal {total}). Opnieuw laden…",
   "sync.importFailed": "Import mislukt: {msg}",
+  "sync.importRefs": "{n} lijst(en) in dit bestand zijn alleen benoemd ({names}): hun punten staan in de bestanden “Points - <naam>.kmz” ernaast. Gebruik Drive-synchronisatie of importeer die .kmz-bestanden.",
   "sync.notBackup": "geen migration_calendar-back-upbestand",
   "ctrl.exportPoints": "Kaartpunten",
   "btn.exportPointsKml": "⬇ KML exporteren",

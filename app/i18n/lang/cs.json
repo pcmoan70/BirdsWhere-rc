@@ -715,6 +715,7 @@
   "sync.import": "⬆ Importovat",
   "sync.imported": "Importováno · {n} seznamů (celkem {total}). Načítám znovu…",
   "sync.importFailed": "Import selhal: {msg}",
+  "sync.importRefs": "{n} seznam(y) v tomto souboru jsou jen pojmenované ({names}): jejich body jsou v souborech „Points - <název>.kmz“ vedle. Použijte synchronizaci s Drive nebo importujte tyto soubory .kmz.",
   "sync.notBackup": "není zálohou migration_calendar",
   "ctrl.exportPoints": "Body na mapě",
   "btn.exportPointsKml": "⬇ Exportovat KML",

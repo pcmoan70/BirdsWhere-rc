@@ -1376,7 +1376,7 @@ nothing else in your Drive), does one pull → merge → push, and disconnects (
 only; no background sync). Collections always merge, so no direction can delete data on the other
 device. API keys, the TinyURL token and the alert e-mail address only ever **fill a gap** — a synced or
 imported copy never replaces the one this device holds — and a source's endpoint from another copy is
-accepted only on that source's own host (v2241). A sync refuses with a clear ⚠ message when a stored list cannot be read or the browser's list store (IndexedDB) is unavailable — and the app itself reports an unopenable list store at start (the lists are unreadable, not lost; v2246).
+accepted only on that source's own host (v2241). A sync refuses with a clear ⚠ message when a stored list cannot be read or the browser's list store (IndexedDB) is unavailable — and the app itself reports an unopenable list store at start (the lists are unreadable, not lost; v2246). A Drive-folder JSON imported as a **file** names its lists but does not hold their points; the import says so and points to the `Points - <name>.kmz` files beside it (v2248). Every format an earlier version wrote — stored lists, list files, exports, share links — stays readable; the check that proves it lives in `tools/compat/` (private workspace).
 
 Everything lands in a folder called **BirdsWhere** in your Drive, which you can open like any
 other; each sync that changes something writes a dated subfolder (the ten newest are kept).

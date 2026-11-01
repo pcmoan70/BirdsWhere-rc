@@ -169,6 +169,7 @@ window.GeoI18N = (function () {
         "sync.import": "⬆ Import",
         "sync.imported": "Imported · {n} checklists (now {total} total). Reloading…",
         "sync.importFailed": "Import failed: {msg}",
+        "sync.importRefs": "{n} list(s) in this file are only named ({names}): their points live in the “Points - <name>.kmz” files beside it. Use Drive sync, or import those .kmz files.",
         "sync.notBackup": "not a migration_calendar backup file",
         "err.storageFull": "Storage full — not saved. Clear some plotted dots or delete old trips to free space.",
         "gdrive.connect": "☁ Connect Google Drive",

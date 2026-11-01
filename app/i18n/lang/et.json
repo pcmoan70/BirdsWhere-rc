@@ -715,6 +715,7 @@
   "sync.import": "⬆ Impordi",
   "sync.imported": "Imporditud · {n} nimekirja (kokku {total}). Laadin uuesti…",
   "sync.importFailed": "Import ebaõnnestus: {msg}",
+  "sync.importRefs": "{n} loend(it) selles failis on ainult nimetatud ({names}): nende punktid on kõrval olevates failides „Points - <nimi>.kmz“. Kasuta Drive'i sünkroonimist või impordi need .kmz-failid.",
   "sync.notBackup": "pole migration_calendari varundusfail",
   "ctrl.exportPoints": "Kaardipunktid",
   "btn.exportPointsKml": "⬇ Ekspordi KML",

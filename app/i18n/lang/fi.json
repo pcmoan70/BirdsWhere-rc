@@ -715,6 +715,7 @@
   "sync.import": "⬆ Tuo",
   "sync.imported": "Tuotu · {n} luetteloa (yht. {total}). Ladataan…",
   "sync.importFailed": "Tuonti epäonnistui: {msg}",
+  "sync.importRefs": "{n} listaa tässä tiedostossa on vain nimetty ({names}): pisteet ovat sen vieressä olevissa ”Points - <nimi>.kmz”-tiedostoissa. Käytä Drive-synkronointia tai tuo nuo .kmz-tiedostot.",
   "sync.notBackup": "ei ole migration_calendarin varmuuskopio",
   "ctrl.exportPoints": "Karttapisteet",
   "btn.exportPointsKml": "⬇ Vie KML",

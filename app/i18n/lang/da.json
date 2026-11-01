@@ -715,6 +715,7 @@
   "sync.import": "⬆ Importér",
   "sync.imported": "Importeret · {n} tjeklister (i alt {total}). Genindlæser…",
   "sync.importFailed": "Import mislykkedes: {msg}",
+  "sync.importRefs": "{n} liste(r) i denne fil er kun navngivet ({names}): punkterne ligger i filerne »Points - <navn>.kmz« ved siden af. Brug Drive-synkronisering, eller importer de .kmz-filer.",
   "sync.notBackup": "er ikke en migration_calendar-sikkerhedskopi",
   "ctrl.exportPoints": "Kortpunkter",
   "btn.exportPointsKml": "⬇ Eksportér KML",

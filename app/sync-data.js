@@ -445,7 +445,11 @@ window.AppSyncData = (function () {
     // A list that is only a file reference (a Drive payload opened without its .kmz files)
     // has no points to merge — and merging it would stamp its file fields onto a local list.
     if (data.state && Array.isArray(data.state.mapPointSets) && data.state.mapPointSets.some(isListRef)) {
+      var refNames = data.state.mapPointSets.filter(isListRef).map(function (e) { return e.name; });
       data.state.mapPointSets = data.state.mapPointSets.filter(function (e) { return !isListRef(e); });
+      // Say so: a Drive-folder JSON imported as a file carries only the lists' NAMES — silently
+      // dropping them looked like a restore that lost the lists (compat audit, 2026-11-01).
+      if (refNames.length) try { setStatus(t("sync.importRefs", { n: refNames.length, names: refNames.slice(0, 3).join(", ") + (refNames.length > 3 ? "\u2026" : "") }), true); } catch (e) {}
     }
     // Flush the live map (plotted dots/stars) to storage FIRST, so the merge
     // unions the points the user is currently looking at — not just the last
@@ -571,6 +575,9 @@ window.AppSyncData = (function () {
         var v = (win[k] !== undefined) ? win[k] : other[k];
         if (v !== undefined) out[k] = v;
       });
+      // An older device's threshold lived in probMaxPct (before it was unified onto probPct): carry it
+      // when nothing newer says otherwise, so a restore does not reset the alerts to 15 % (compat audit, 2026-11-01).
+      if (out.probPct == null) { var pm = (win.probMaxPct != null) ? win.probMaxPct : other.probMaxPct; if (pm != null) out.probPct = pm; }
       if (!out.email && ir.email) out.email = ir.email;
       // The address ALSO fills in when this device simply has none — the same rule the
       // eBird key follows, so a second device picks it up without forcing a download.

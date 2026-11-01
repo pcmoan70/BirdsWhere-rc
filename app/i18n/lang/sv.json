@@ -275,6 +275,7 @@
   "sync.import": "⬆ Importera",
   "sync.imported": "Importerat · {n} checklistor (totalt {total}). Laddar om…",
   "sync.importFailed": "Import misslyckades: {msg}",
+  "sync.importRefs": "{n} lista/listor i filen är bara namngivna ({names}): punkterna ligger i filerna ”Points - <namn>.kmz” bredvid. Använd Drive-synkronisering eller importera de .kmz-filerna.",
   "sync.notBackup": "inte en migration_calendar-säkerhetskopia",
   "err.storageFull": "Lagringen är full — inte sparat. Rensa några kartprickar eller ta bort gamla turer för att frigöra utrymme.",
   "gdrive.connect": "☁ Anslut Google Drive",

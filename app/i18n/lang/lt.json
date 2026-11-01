@@ -715,6 +715,7 @@
   "sync.import": "⬆ Importuoti",
   "sync.imported": "Importuota · {n} sąrašų (iš viso {total}). Įkeliama iš naujo…",
   "sync.importFailed": "Importas nepavyko: {msg}",
+  "sync.importRefs": "{n} sąrašas(-ai) šiame faile tik pavadinti ({names}): jų taškai yra šalia esančiuose failuose „Points - <pavadinimas>.kmz“. Naudokite „Drive“ sinchronizavimą arba importuokite tuos .kmz failus.",
   "sync.notBackup": "ne migration_calendar atsarginė kopija",
   "ctrl.exportPoints": "Žemėlapio taškai",
   "btn.exportPointsKml": "⬇ Eksportuoti KML",

@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2247";
+var VERSION = "v2248";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Drive sync: the lists are now stored one at a time, so \u201cStoring lists 3/8 \u00b7 name\u201d actually advances on the screen instead of the page standing on \u201cMerging\u2026\u201d until all of them are done.",
-  "\u2022 v2246: an unopenable list store is reported, and a sync refuses with a clear message instead of hanging."
+  "\u2022 Import: a Drive-folder JSON that only names its lists now says so (the points are in the Points - <name>.kmz files beside it) instead of silently importing without them; an older device's rarity threshold is carried over in a restore.",
+  "\u2022 v2247: the sync stores lists one at a time with a visible count."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -715,6 +715,7 @@
   "sync.import": "⬆ Importer",
   "sync.imported": "Importert · {n} sjekklister (totalt {total}). Laster på nytt…",
   "sync.importFailed": "Import mislyktes: {msg}",
+  "sync.importRefs": "{n} liste(r) i denne filen er bare navngitt ({names}): punktene ligger i «Points - <navn>.kmz»-filene ved siden av. Bruk Drive-synkronisering, eller importer de .kmz-filene.",
   "sync.notBackup": "ikke en migration_calendar-sikkerhetskopi",
   "ctrl.exportPoints": "Kartpunkter",
   "btn.exportPointsKml": "⬇ Eksporter KML",
