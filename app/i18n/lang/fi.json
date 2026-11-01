@@ -1588,6 +1588,7 @@
   "sync.phSignin": "Kirjaudutaan …",
   "sync.phRead": "Luetaan Drivea …",
   "sync.phMerge": "Yhdistetään …",
+  "sync.phStore": "Tallennetaan listoja…",
   "sync.phWrite": "Lähetetään …",
   "sync.phFiles": "Kirjoitetaan tiedostoja …",
   "sync.phWriteFile": "Kirjoitetaan {name}",

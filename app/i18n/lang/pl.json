@@ -1588,6 +1588,7 @@
   "sync.phSignin": "Logowanie …",
   "sync.phRead": "Odczyt Dysku Google …",
   "sync.phMerge": "Scalanie …",
+  "sync.phStore": "Zapisywanie list…",
   "sync.phWrite": "Wysyłanie …",
   "sync.phFiles": "Zapis plików …",
   "sync.phWriteFile": "Zapis {name}",

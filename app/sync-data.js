@@ -592,7 +592,7 @@ window.AppSyncData = (function () {
       // Collected, not fired and forgotten: a caller about to reload (or a user about to
       // close the app) waits on these through AppData.flushWrites(), or the synced lists
       // are lost with the transaction.
-      try { pendingIdbWrites.push(window.AppPoints.persistMpSets(mergedSets)); } catch (e) {}
+      try { pendingIdbWrites.push(window.AppPoints.persistMpSets(mergedSets, { onProgress: opts.onProgress })); } catch (e) {}   // onProgress: the sync's "Storing lists n/m" bar
       delete newState.mapPointSets;
     } else newState.mapPointSets = mergedSets;
     newState.mapDetections = mergedDet;

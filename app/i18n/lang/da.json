@@ -1588,6 +1588,7 @@
   "sync.phSignin": "Logger ind …",
   "sync.phRead": "Læser Drev …",
   "sync.phMerge": "Fletter …",
+  "sync.phStore": "Gemmer lister…",
   "sync.phWrite": "Uploader …",
   "sync.phFiles": "Skriver filer …",
   "sync.phWriteFile": "Skriver {name}",

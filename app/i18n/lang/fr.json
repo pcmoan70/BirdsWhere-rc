@@ -1588,6 +1588,7 @@
   "sync.phSignin": "Connexion …",
   "sync.phRead": "Lecture de Drive …",
   "sync.phMerge": "Fusion …",
+  "sync.phStore": "Enregistrement des listes…",
   "sync.phWrite": "Envoi …",
   "sync.phFiles": "Écriture des fichiers …",
   "sync.phWriteFile": "Écriture de {name}",

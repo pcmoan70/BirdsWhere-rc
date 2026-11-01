@@ -19993,7 +19993,7 @@
         // The button says what it is doing, not just that it is disabled: its label
         // becomes the current step and the ⟳ spins while a sync is running.
         var PH = { signin: "sync.phSignin", read: "sync.phRead", download: "sync.phDownload",
-                   merge: "sync.phMerge", write: "sync.phWrite", files: "sync.phFiles" };
+                   merge: "sync.phMerge", store: "sync.phStore", write: "sync.phWrite", files: "sync.phFiles" };
         // While files go up the button names the one being written, rather than a
         // generic "writing files" — a sync writes a .kmz per list and two CSVs, and
         // seeing which is in flight is the difference between "stuck" and "working".

@@ -1588,6 +1588,7 @@
   "sync.phSignin": "Inloggen …",
   "sync.phRead": "Drive lezen …",
   "sync.phMerge": "Samenvoegen …",
+  "sync.phStore": "Lijsten opslaan…",
   "sync.phWrite": "Uploaden …",
   "sync.phFiles": "Bestanden schrijven …",
   "sync.phWriteFile": "{name} schrijven",

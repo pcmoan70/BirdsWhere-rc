@@ -1588,6 +1588,7 @@
   "sync.phSignin": "Loggar in …",
   "sync.phRead": "Läser Drive …",
   "sync.phMerge": "Slår ihop …",
+  "sync.phStore": "Sparar listor…",
   "sync.phWrite": "Laddar upp …",
   "sync.phFiles": "Skriver filer …",
   "sync.phWriteFile": "Skriver {name}",

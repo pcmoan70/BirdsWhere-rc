@@ -1588,6 +1588,7 @@
   "sync.phSignin": "Přihlašování …",
   "sync.phRead": "Čtení Google Disku …",
   "sync.phMerge": "Slučování …",
+  "sync.phStore": "Ukládání seznamů…",
   "sync.phWrite": "Nahrávání …",
   "sync.phFiles": "Zápis souborů …",
   "sync.phWriteFile": "Zápis {name}",

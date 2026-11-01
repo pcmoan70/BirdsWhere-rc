@@ -1588,6 +1588,7 @@
   "sync.phSignin": "Prisijungiama …",
   "sync.phRead": "Skaitomas „Drive“ …",
   "sync.phMerge": "Sujungiama …",
+  "sync.phStore": "Įrašomi sąrašai…",
   "sync.phWrite": "Įkeliama …",
   "sync.phFiles": "Rašomi failai …",
   "sync.phWriteFile": "Rašoma {name}",

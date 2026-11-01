@@ -768,13 +768,20 @@ window.AppPoints = (function () {
   }
   function persistMpSets(list, opts) {
     if (!mpIdbReady || !window.AppIDB) return Promise.resolve();
-    var fast = !!(opts && opts.fast), keep = Object.create(null), gone = false, writes = [];
+    var fast = !!(opts && opts.fast), keep = Object.create(null), gone = false, writes = [], names = [];
     (list || []).forEach(function (c) {
       if (!c || !c.name) return;
       keep[c.name] = 1;
       if (c._lazy) return;                                // a stub is never written: its records are still in the store only
-      var w = writeIfChanged(c, fast); if (w) writes.push(w);
+      var w = writeIfChanged(c, fast); if (w) { writes.push(w); names.push(c.name); }
     });
+    // opts.onProgress(done, total, name): the Drive sync shows "Storing lists 3/8 · name" while the
+    // big records go into the store — the step after the files arrive used to look hung (owner, 2026-11-01).
+    if (opts && typeof opts.onProgress === "function") {
+      var pdone = 0, ptotal = writes.length;
+      opts.onProgress(0, ptotal, "");
+      writes.forEach(function (w, i) { var tick = function () { opts.onProgress(++pdone, ptotal, names[i]); }; Promise.resolve(w).then(tick, tick); });
+    }
     if (fast && !(opts && opts.noVerify)) scheduleFullVerify();
     // Retire what the index holds and no list claims. A stub's data sits under its original
     // name (`_key`) until it is read — a renamed stub keeps that record (lists stay stubs for

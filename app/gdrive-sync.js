@@ -683,7 +683,13 @@ window.GDriveSync = (function () {
       // device's copy of it. Lists not in the folder are always kept — the user deletes them by
       // hand if wanted (owner, 2026-10-06). Two-way: union.
       var replaceL = dir === "download" && options && options.merge === false;
-      if (toApply) window.AppData.applyRemote(toApply, { incomingWins: incomingWins, interactive: false, replaceLists: replaceL });
+      // The merge itself is synchronous and blocks the page; let "Merging…" paint first, then
+      // report the list records as they reach the store ("Storing lists 3/8 · name").
+      if (toApply) {
+        await new Promise(function (r) { setTimeout(r, 30); });
+        window.AppData.applyRemote(toApply, { incomingWins: incomingWins, interactive: false, replaceLists: replaceL,
+          onProgress: function (done, total, name) { phase("store", name || "", done, total); } });
+      }
       // Changed = a real difference, judged key by key with the self-stamps excluded — a raw
       // string compare saw `updatedAt` move on every write and called every sync "changed" (S6).
       var changed = stateDiffers(localState, window.GeoState.snapshot());

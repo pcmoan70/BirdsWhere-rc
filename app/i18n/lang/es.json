@@ -1588,6 +1588,7 @@
   "sync.phSignin": "Iniciando sesión …",
   "sync.phRead": "Leyendo Drive …",
   "sync.phMerge": "Combinando …",
+  "sync.phStore": "Guardando listas…",
   "sync.phWrite": "Subiendo …",
   "sync.phFiles": "Escribiendo archivos …",
   "sync.phWriteFile": "Escribiendo {name}",

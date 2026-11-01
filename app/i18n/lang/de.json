@@ -1588,6 +1588,7 @@
   "sync.phSignin": "Anmeldung …",
   "sync.phRead": "Drive wird gelesen …",
   "sync.phMerge": "Zusammenführen …",
+  "sync.phStore": "Listen werden gespeichert…",
   "sync.phWrite": "Hochladen …",
   "sync.phFiles": "Dateien werden geschrieben …",
   "sync.phWriteFile": "{name} wird geschrieben",

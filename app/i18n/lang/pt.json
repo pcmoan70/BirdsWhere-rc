@@ -1588,6 +1588,7 @@
   "sync.phSignin": "A iniciar sessão …",
   "sync.phRead": "A ler o Drive …",
   "sync.phMerge": "A juntar …",
+  "sync.phStore": "A guardar listas…",
   "sync.phWrite": "A enviar …",
   "sync.phFiles": "A escrever ficheiros …",
   "sync.phWriteFile": "A escrever {name}",

@@ -153,6 +153,7 @@ window.GeoI18N = (function () {
         "sync.phDownload": "Downloading…",
         "sync.phMerged": "{lists} lists, {trips} trips",
         "sync.phMerge": "Merging…",
+        "sync.phStore": "Storing lists…",
         "sync.phWrite": "Uploading…",
         "sync.phFiles": "Writing files…",
         "sync.phWriteFile": "Writing {name}",

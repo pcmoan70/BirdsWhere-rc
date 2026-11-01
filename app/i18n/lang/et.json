@@ -1588,6 +1588,7 @@
   "sync.phSignin": "Sisselogimine …",
   "sync.phRead": "Drive’i lugemine …",
   "sync.phMerge": "Ühendamine …",
+  "sync.phStore": "Loendite salvestamine…",
   "sync.phWrite": "Üleslaadimine …",
   "sync.phFiles": "Failide kirjutamine …",
   "sync.phWriteFile": "Kirjutan {name}",

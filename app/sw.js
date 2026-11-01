@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2243";
+var VERSION = "v2244";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Drive sync: a Download no longer builds and hashes the whole upload payload it will never send \u2014 on a phone with big lists that kept \u201cSynchronizing\u201d going for minutes after the files had arrived. Big list files also parse faster.",
-  "\u2022 v2242: the v2241 size guard no longer rejects a very large list file (\u201ctoo big\u201d)."
+  "\u2022 Drive sync: the last step now shows its progress \u2014 \u201cStoring lists 3/8 \u00b7 name\u201d with a bar \u2014 instead of a bare \u201cSynchronizing\u201d while the lists go into the store.",
+  "\u2022 v2242\u20132243: a very large list file no longer fails with \u201ctoo big\u201d, and a Download no longer builds the upload payload it never sends."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate
