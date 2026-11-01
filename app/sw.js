@@ -21,15 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2242";
+var VERSION = "v2243";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Fix: a Drive sync or import of a very large point list failed with \u201ctoo big\u201d since v2241 \u2014 the size guard now sits far above any real list file.",
-  "\u2022 v2241: imported files, share links and synced copies can no longer redirect or replace your API keys, token or alert e-mail; downloaded offline map areas are this device's own and never removed by a sync."
+  "\u2022 Drive sync: a Download no longer builds and hashes the whole upload payload it will never send \u2014 on a phone with big lists that kept \u201cSynchronizing\u201d going for minutes after the files had arrived. Big list files also parse faster.",
+  "\u2022 v2242: the v2241 size guard no longer rejects a very large list file (\u201ctoo big\u201d)."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

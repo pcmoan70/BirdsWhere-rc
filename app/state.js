@@ -93,7 +93,11 @@ window.GeoState = (function () {
   // object is merged key by key: never stored, and dropped from any JSON that comes from
   // outside the app — imports, share links, a Drive copy (security review, 2026-11-01).
   function badKey(k) { return k === "__proto__" || k === "constructor" || k === "prototype"; }
-  function safeParse(text) { return JSON.parse(text, function (k, v) { return badKey(k) ? undefined : v; }); }
+  function safeParse(text) {
+    text = String(text);
+    if (!/"(__proto__|constructor|prototype)"\s*:/.test(text)) return JSON.parse(text);   // the usual case: a plain parse — no per-value reviver over a 100-MB list file
+    return JSON.parse(text, function (k, v) { return badKey(k) ? undefined : v; });
+  }
   // Merge a partial patch into the stored state.
   function save(patch) {
     var s = read();

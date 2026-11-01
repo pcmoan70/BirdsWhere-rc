@@ -693,14 +693,20 @@ window.GDriveSync = (function () {
       // `updatedAt` excluded: every local write bumps that timestamp, so a
       // bare stringify would treat an otherwise-unchanged sync as dirty and
       // trigger a full resumable upload on every sync. Download is pull-only.
-      if (window.AppData.loadFetchedForSync) { try { await window.AppData.loadFetchedForSync(); } catch (e) {} }   // fetched records live one per location now
-      var merged = window.AppData.buildPayload();
-      if (dir !== "upload") window.AppData.overlayExcludedForPush(merged, remote, inc, localState);
-      // From here the payload names each list's file instead of holding its points.
-      var listFiles = window.AppData.splitListsForDrive(merged, prevLists && prevLists.refs);
-      var needPush = dir === "upload" || (dir !== "download" && (!remote ||
-        stateDiffers(merged.state, remoteCmp) ||
-        (merged.ebirdKey && merged.ebirdKey !== (remote.ebirdKey || ""))));
+      // A download pushes nothing, so it builds no payload: serialising and hashing every list
+      // (hundreds of MB of points on a phone) for a comparison whose answer was already "no
+      // push" kept the phone on "Synchronizing" for minutes after the files had arrived
+      // (owner, 2026-11-01).
+      var merged = null, listFiles = null, needPush = false;
+      if (dir !== "download") {
+        if (window.AppData.loadFetchedForSync) { try { await window.AppData.loadFetchedForSync(); } catch (e) {} }   // fetched records live one per location now
+        merged = window.AppData.buildPayload();
+        if (dir !== "upload") window.AppData.overlayExcludedForPush(merged, remote, inc, localState);
+        // From here the payload names each list's file instead of holding its points.
+        listFiles = window.AppData.splitListsForDrive(merged, prevLists && prevLists.refs);
+        needPush = dir === "upload" || !remote || stateDiffers(merged.state, remoteCmp) ||
+          !!(merged.ebirdKey && merged.ebirdKey !== (remote.ebirdKey || ""));
+      }
       if (needPush) {
         var str = JSON.stringify(merged);
         // Each sync gets its own dated folder holding that run's payload AND its readable
