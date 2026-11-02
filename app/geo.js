@@ -225,6 +225,19 @@ window.AppGeo = (function () {
     }
     nearCountryCache[k] = set; capObj(nearCountryCache, 500); return set;
   }
+  // The country at a point, or — on the sea, a skerry or an island the simplified borders leave out —
+  // the nearest country whose territory lies within a widening box (3, 10, 30, 60, 100 km). The map menu's
+  // 3-D terrain and Radar gates (owner, 2026-11-02: both missing on an island in the ocean — "make sure to
+  // include islands"). "" only when no country is within 100 km (or the borders are not loaded yet).
+  function countryNear(lat, lon) {
+    var cc = countryAt(lat, lon); if (cc || !BORDERS) return cc;
+    var steps = [3, 10, 30, 60, 100];
+    for (var i = 0; i < steps.length; i++) {
+      var ks = Object.keys(nearbyCountries(lat, lon, steps[i], ""));
+      if (ks.length) return ks[0];
+    }
+    return "";
+  }
   function countryMatch(lat, lon, sourceCC, rkm, cc) {
     if (!sourceCC) return true;
     if (cc && cc === sourceCC) return true;
@@ -243,7 +256,8 @@ window.AppGeo = (function () {
     placeName: placeName,
     nearbyFeature: nearbyFeature,
     countryMatch: countryMatch,
-    countryAt: countryAt,          // synchronous, from the bundled borders (the map-menu's 3-D terrain gate)
+    countryAt: countryAt,          // synchronous, from the bundled borders
+    countryNear: countryNear,      // the same, or the nearest country within 100 km (the map-menu's Radar / 3-D terrain gates)
     capObj: capObj,                // the one copy of the small-cache cap (app.js used to carry a byte-identical one)
     distM: _distM,                 // great-circle metres (app.js's haversineKm is this ÷ 1000)
   };

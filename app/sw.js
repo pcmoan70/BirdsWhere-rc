@@ -21,15 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2248";
+var VERSION = "v2249";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Import: a Drive-folder JSON that only names its lists now says so (the points are in the Points - <name>.kmz files beside it) instead of silently importing without them; an older device's rarity threshold is carried over in a restore.",
-  "\u2022 v2247: the sync stores lists one at a time with a visible count."
+  "\u2022 Map menu: Radar and 3-D terrain (Experimental features) now also appear on islands, skerries and the sea near the coast \u2014 the point counts as the nearest country within 100 km."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -1282,7 +1282,8 @@ an **eBird Record Format CSV** ready for [ebird.org/import](https://ebird.org/im
 - **Map right-click / long-press menu** — *Add point*, *Share point*, *Save location*, *Navigate
   here*, *Add to route*, **Radar** (Europe, with *Experimental features* on — opens
   [Migration Aloft](https://pcmoan70.github.io/BirdsWhere-aloft/), the weather-radar migration map),
-  **3-D terrain** (Norway, with *Experimental features* on — see below) and
+  **3-D terrain** (Norway, with *Experimental features* on — see below; for both, a point on an
+  island, a skerry or the sea near the coast counts as the nearest country within 100 km) and
   *Offline maps* (the coordinates line copies them); the click popup adds
   a **Birdingplaces** link (birdingplaces.eu at the point),
   and, for Sweden & Norway, a **Fågelkartan** link to that point's county / fylke page. In Norway,

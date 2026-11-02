@@ -16864,7 +16864,10 @@
     wrap.appendChild(makePopupBtn(tLabel("route.add"), "btn-light", function () { map.closePopup(); addToRoute(lat, lon, nameHdr.textContent || ""); }, "navplus"));
     // Radar → Migration Aloft (owner, 2026-10-27: "Move the Radar button to the long-click/right-click popup menu"):
     // Europe only, Experimental features on — as before in the click popup. Its own repo / Pages site.
-    if (continentFor(AppGeo.countryAt(lat, lon)) === "EU" && experimentalOn()) {
+    // countryNear: islands, skerries and the sea near the coast count as the nearest country (the simplified
+    // borders leave small islands out — owner, 2026-11-02: neither button on an island in the ocean).
+    var ccNear = AppGeo.countryNear(lat, lon);
+    if (continentFor(ccNear) === "EU" && experimentalOn()) {
       wrap.appendChild(makePopupBtn(t("link.aloft") + " ↗", "btn-light", function () {
         map.closePopup(); openExternal("https://pcmoan70.github.io/BirdsWhere-aloft/");
       }, "radar"));
@@ -16872,7 +16875,7 @@
     // 3-D terrain (owner, 2026-10-26: "move 3d-terrain to the double click/long click map point menu above Offline maps"):
     // Norway only (Kartverket's 1 m model) with Experimental features on, as before in the click popup; opens
     // pcmoan70.github.io/3d_terrain 2 km around the point, the map's dots inside that square along in the hash.
-    if (AppGeo.countryAt(lat, lon) === "NO" && experimentalOn()) {
+    if (ccNear === "NO" && experimentalOn()) {
       wrap.appendChild(makePopupBtn(t("link.terrain3d") + " ↗", "btn-light", function () {
         map.closePopup();
         var pts = terrain3dPoints(lat, lon, 2000);
