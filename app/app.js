@@ -92,7 +92,7 @@
     t: t, weekOfDate: weekOfDate,
     fcState: window.AppField, renderRangeMap: window.AppInference.renderRangeMap, runInference: window.AppInference.runInference,
     getAnalysisTab: function () { return analysisTab; }, getCurrentMode: function () { return currentMode; }, getLabels: function () { return labels; },
-    getLabelsByKey: function () { return labelsByKey; }, getLang: function () { return lang; }, getMap: function () { return map; },
+    getLabelsByKey: function () { return labelsByKey; }, getMap: function () { return map; },
     getMarker: function () { return marker; }, getPlaceMarker: function () { return placeMarker; }, getFEATURED_SPECIES: function () { return FEATURED_SPECIES; },
     setAnalysisTab: function (v) { analysisTab = v; },
   });

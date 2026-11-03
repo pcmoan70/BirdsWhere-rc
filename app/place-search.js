@@ -20,7 +20,7 @@ window.AppPlaceSearch = (function () {
   // … the other modules' entry points under their app.js names …
   var fcState, renderRangeMap, runInference;
   // … and getters/setters for app state that changes at runtime.
-  var getAnalysisTab, getCurrentMode, getLabels, getLabelsByKey, getLang, getMap,
+  var getAnalysisTab, getCurrentMode, getLabels, getLabelsByKey, getMap,
       getMarker, getPlaceMarker, getFEATURED_SPECIES, setAnalysisTab;
 
   function init(ctx) {
@@ -43,7 +43,6 @@ window.AppPlaceSearch = (function () {
     getCurrentMode = ctx.getCurrentMode;
     getLabels = ctx.getLabels;
     getLabelsByKey = ctx.getLabelsByKey;
-    getLang = ctx.getLang;
     getMap = ctx.getMap;
     getMarker = ctx.getMarker;
     getPlaceMarker = ctx.getPlaceMarker;
@@ -51,15 +50,40 @@ window.AppPlaceSearch = (function () {
     setAnalysisTab = ctx.setAnalysisTab;
   }
 
-  // ---- Place (location) search — geocode within the current map view --------
-  // Uses Nominatim with a viewbox of the current bounds + bounded=1 so results
-  // stay within what's on screen, matching the user's intent.
-  // Keep only genuine placenames (settlements, regions, natural features) — drop
-  // businesses/POIs (shops, offices, amenities…) and personal/house addresses.
-  var PLACE_CATEGORIES = { place: 1, boundary: 1, natural: 1, waterway: 1, water: 1 };
-  function isPlaceName(r) {
-    if (!r || !PLACE_CATEGORIES[r.category]) return false;
-    return r.type !== "house" && r.type !== "houses" && r.type !== "address";
+  // ---- Place (location) search — the same two services as the 3-D viewer's map
+  // search (owner, 2026-11-03: "as precise as the search in the 3d viewer"):
+  // Kartverket's place-name register for Norway (fuzzy, each hit with the kind of
+  // place and its municipality) and Photon (OpenStreetMap, typo-tolerant, ranked
+  // from the map centre) for the rest of the world. Roads and house addresses are
+  // left out: the places themselves carry the names.
+  function placeSearch(q) {
+    var c = getMap().getCenter(), ql = q.toLowerCase();
+    var ph = fetch("https://photon.komoot.io/api/?q=" + encodeURIComponent(q) + "&limit=8&lang=default&lat=" + c.lat.toFixed(3) + "&lon=" + c.lng.toFixed(3))
+      .then(function (r) { return r.ok ? r.json() : {}; })
+      .then(function (d) {
+        return (d.features || []).filter(function (f) { var p = f.properties; return p.name && p.osm_key !== "highway" && !p.housenumber; })
+          .map(function (f) {
+            var p = f.properties;
+            return { name: p.name, what: [(p.osm_value || "").replace(/_/g, " "), p.city || p.county || p.state, p.country].filter(Boolean).join(", "),
+                     lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], no: p.countrycode === "NO" };
+          });
+      }).catch(function () { return []; });
+    var kv = fetch("https://api.kartverket.no/stedsnavn/v1/navn?sok=" + encodeURIComponent(q + "*") + "&fuzzy=true&utkoordsys=4258&treffPerSide=10")
+      .then(function (r) { return r.ok ? r.json() : {}; })
+      .then(function (d) {
+        return (d.navn || []).filter(function (n) { return n.representasjonspunkt; }).map(function (n) {
+          return { name: n["skrivem\u00e5te"], what: [n.navneobjekttype, n.kommuner && n.kommuner.map(function (k) { return k.kommunenavn; }).join(" / ")].filter(Boolean).join(", "),
+                   lat: n.representasjonspunkt.nord, lon: n.representasjonspunkt["\u00f8st"], no: true };
+        });
+      }).catch(function () { return []; });
+    return Promise.all([ph, kv]).then(function (r) {
+      var out = [], inNO = window.AppGeo && window.AppGeo.countryNear(c.lat, c.lng) === "NO";
+      function same(a, b) { return a.name.toLowerCase() === b.name.toLowerCase() && Math.abs(a.lat - b.lat) < 0.1 && Math.abs(a.lon - b.lon) < 0.2; }   // one name within about ten kilometres
+      r[0].concat(r[1]).forEach(function (p) { if (!out.some(function (o) { return same(o, p); })) out.push(p); });
+      // The exact name first; with the map in Norway its places before those abroad; else as the services ranked them.
+      function rank(p) { return (p.name.toLowerCase() === ql ? 0 : 2) + (inNO && !p.no ? 1 : 0); }
+      return out.sort(function (a, b) { return rank(a) - rank(b); }).slice(0, 10);
+    });
   }
   // Last 5 place-search texts (most-recent first), shown when the box is empty.
   function getRecentPlaces() { return (window.GeoState.get("placeRecent", []) || []).filter(Boolean); }
@@ -212,32 +236,20 @@ window.AppPlaceSearch = (function () {
       var ps = OLC_SHORT_RX.exec(q);
       if (ps && ps[3]) {   // "2JX8+QF Elverum": the locality fixes the area, the short code the spot inside it
         var myS = ++reqTok;
-        fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=" + encodeURIComponent(getLang()) + "&q=" + encodeURIComponent(ps[3]), { headers: { Accept: "application/json" } })
-          .then(function (r) { return r.ok ? r.json() : []; })
-          .then(function (list) {
-            if (myS !== reqTok) return;
-            var ref = Array.isArray(list) && list[0]; if (!ref) { res.style.display = "none"; return; }
-            var rxy = olcRecover(ps[1] + "+" + ps[2], +ref.lat, +ref.lon);
-            selIdx = -1; renderPlaceResults(res, [{ lat: rxy.lat, lon: rxy.lon, display_name: "📍 " + ps[1].toUpperCase() + "+" + ps[2].toUpperCase() + " · " + String(ref.display_name || ps[3]).split(",")[0] }]);
-          }).catch(function () { if (myS === reqTok) res.style.display = "none"; });
+        placeSearch(ps[3]).then(function (list) {
+          if (myS !== reqTok) return;
+          var ref = list[0]; if (!ref) { res.style.display = "none"; return; }
+          var rxy = olcRecover(ps[1] + "+" + ps[2], ref.lat, ref.lon);
+          selIdx = -1; renderPlaceResults(res, [{ lat: rxy.lat, lon: rxy.lon, display_name: "\ud83d\udccd " + ps[1].toUpperCase() + "+" + ps[2].toUpperCase() + " \u00b7 " + ref.name }]);
+        });
         return;
       }
-      var b = getMap().getBounds();
-      var vb = [b.getWest(), b.getNorth(), b.getEast(), b.getSouth()].map(function (n) { return n.toFixed(6); }).join(",");
-      // bounded=0: the viewbox only BIASES ranking toward the current area — matches
-      // anywhere are still returned (a place outside the view isn't dropped), so the
-      // search is forgiving of loose / partial names and off-screen places.
-      var url = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=25&addressdetails=0&bounded=0&viewbox=" +
-        vb + "&accept-language=" + encodeURIComponent(getLang()) + "&q=" + encodeURIComponent(q);
       var my = ++reqTok;
-      fetch(url, { headers: { Accept: "application/json" } })
-        .then(function (r) { return r.ok ? r.json() : []; })
-        .then(function (list) {
-          if (my !== reqTok) return;   // a newer query superseded this one
-          selIdx = -1;
-          renderPlaceResults(res, (Array.isArray(list) ? list : []).filter(isPlaceName).slice(0, 8));
-        })
-        .catch(function () { if (my === reqTok) { res.style.display = "none"; } });
+      placeSearch(q).then(function (list) {
+        if (my !== reqTok) return;   // a newer query superseded this one
+        selIdx = -1;
+        renderPlaceResults(res, list);
+      });
     };
     inp.addEventListener("input", function () { clearTimeout(timer); timer = setTimeout(run, 350); });
     inp.addEventListener("focus", function () { if (inp.value.trim().length < 2) showRecent(); else if (res.innerHTML) res.style.display = "block"; });
@@ -262,14 +274,15 @@ window.AppPlaceSearch = (function () {
   function renderPlaceResults(res, list) {
     if (!list.length) { res.innerHTML = '<div class="sr-empty">' + escapeHtml(t("place.none")) + "</div>"; res.style.display = "block"; return; }
     res.innerHTML = list.map(function (r) {
-      return '<div class="sr-item" data-lat="' + (+r.lat) + '" data-lon="' + (+r.lon) + '">' + escapeHtml(r.display_name || "") + "</div>";
+      return '<div class="sr-item" data-lat="' + (+r.lat) + '" data-lon="' + (+r.lon) + '">' +
+        (r.name ? "<b>" + escapeHtml(r.name) + "</b>" + (r.what ? ' <span class="sr-what">' + escapeHtml(r.what) + "</span>" : "") : escapeHtml(r.display_name || "")) + "</div>";
     }).join("");
     res.style.display = "block";
     res.querySelectorAll(".sr-item").forEach(function (el) {
       el.addEventListener("click", function () {
         var inp = document.getElementById("place-search");
         if (inp) pushRecentPlace(inp.value);   // remember the text that led to a chosen place
-        gotoPlace(+el.dataset.lat, +el.dataset.lon, el.textContent);
+        gotoPlace(+el.dataset.lat, +el.dataset.lon, (el.querySelector("b") || el).textContent);
         res.style.display = "none";
       });
     });
