@@ -163,7 +163,7 @@
   });
   // Species images (species-images.js): the Images-layout photos, the lightbox,
   // the photo fallbacks and the Wikimedia Commons category grid.
-  var buildSpGalleryHtml = window.AppSpImages.buildSpGalleryHtml,
+  var buildSpGalleryHtml = window.AppSpImages.buildSpGalleryHtml, spGalleryBuild = window.AppSpImages.spGalleryBuild,
       loadSpPhoto = window.AppSpImages.loadSpPhoto,
       openCommonsGrid = window.AppSpImages.openCommonsGrid,
       spImagesPrefetch = window.AppSpImages.spImagesPrefetch,
@@ -23139,17 +23139,23 @@
     if (!currentSpView || !isFinite(+currentSpView.lat) || !isFinite(+currentSpView.lon)) return;
     var lat = +currentSpView.lat, lon = +currentSpView.lon;
     var weekEl = document.getElementById("week-select"), week = weekEl ? +weekEl.value : weekOfToday();
+    rec._spgSeason = null;   // a new list: cards built before the prediction is in wait for it
     predictAllWeeks(lat, lon).then(function (cell) {
       if (!document.body.contains(rec)) return;   // re-rendered meanwhile
-      var idxMap = ensureSeasonKeyIdx();
-      Array.prototype.forEach.call(rec.querySelectorAll(".spg-bar.sp-season[data-key]"), function (el) {
-        var key = el.getAttribute("data-key"), idx = idxMap[key]; if (idx == null) return;
-        var s = classifySeason(cell, idx, week), k = el.querySelector(".spg-k");
-        el.innerHTML = (k ? k.outerHTML : "") + seasonCellHtml(s);
-        var yt = el.parentNode && el.parentNode.querySelector(".spg-bar.sp-ytop"), yk = yt && yt.querySelector(".spg-k");
-        if (yt) yt.innerHTML = (yk ? yk.outerHTML : "") + ytopCellHtml(s);
-      });
+      rec._spgSeason = { cell: cell, week: week, idxMap: ensureSeasonKeyIdx() };
+      paintSpGalleryBars(rec, rec._spgSeason);
     }).catch(function () {});
+  }
+  // The Season + Yr-peak bars of every card under `root` (the whole gallery once the
+  // prediction lands; one card as it is built after that).
+  function paintSpGalleryBars(root, sn) {
+    Array.prototype.forEach.call(root.querySelectorAll(".spg-bar.sp-season[data-key]"), function (el) {
+      var key = el.getAttribute("data-key"), idx = sn.idxMap[key]; if (idx == null) return;
+      var s = classifySeason(sn.cell, idx, sn.week), k = el.querySelector(".spg-k");
+      el.innerHTML = (k ? k.outerHTML : "") + seasonCellHtml(s);
+      var yt = el.parentNode && el.parentNode.querySelector(".spg-bar.sp-ytop"), yk = yt && yt.querySelector(".spg-k");
+      if (yt) yt.innerHTML = (yk ? yk.outerHTML : "") + ytopCellHtml(s);
+    });
   }
   var spGalleryObs = null;
   // The card's ☰ button: switch to the Table layout with that species' record sub-list
@@ -23400,19 +23406,45 @@
       loadSpPhoto(card.querySelector(".spg-img"), card.querySelector(".spg-none"), card.querySelector(".spg-credit"), card.getAttribute("data-sci"))
         .then(function (ok) { if (ok === null) card._spgDone = false; });   // network trouble: retried when it scrolls in again
     }
-    var cards = rec.querySelectorAll(".spg-card");
-    // Need-to-fetch: the first cards load at once (a first screen), the rest only as they
-    // come into view while scrolling (a small look-ahead so the next row is ready when it
-    // appears). Every photo is served from the on-device cache when it is already there.
-    var SPG_PRELOAD = 8;
-    Array.prototype.forEach.call(cards, function (c, i) { if (i < SPG_PRELOAD) fill(c); });
+    // Photos need-to-fetch: a card's picture loads as the card comes within 300 px of the
+    // view (observed the moment the card is built, so a card built in view loads at once).
+    // Every photo is served from the on-device cache when it is already there.
     if (window.IntersectionObserver) {
       spGalleryObs = new IntersectionObserver(function (entries) {
         entries.forEach(function (en) { if (en.isIntersecting) { fill(en.target); spGalleryObs.unobserve(en.target); } });
       }, { root: null, rootMargin: "300px 0px" });
-      Array.prototype.forEach.call(cards, function (c, i) { if (i >= SPG_PRELOAD) spGalleryObs.observe(c); });
-    } else Array.prototype.forEach.call(cards, fill);
+    }
+    // The cards themselves (owner, 2026-11-04): the gallery arrives as empty shells; the
+    // shells near the view become cards first — those in or within 800 px of it the moment
+    // they get there (an observer), the rest in idle slices working outward from the last
+    // one seen, so the far ends of a long list are built last and nothing blocks the page.
+    if (spgBuildObs) { spgBuildObs.disconnect(); spgBuildObs = null; }
+    clearTimeout(spgBuildTimer);
+    var shells = rec.querySelectorAll(".spg-shell"), n = shells.length, done = [], gen = rec._spgGen = (rec._spgGen || 0) + 1;
+    var anchor = 0, lo = -1, hi = 0;
+    function build(i) {
+      if (done[i]) return; done[i] = true;
+      var card = spGalleryBuild(shells[i]); if (!card) return;
+      if (rec._spgSeason) paintSpGalleryBars(card, rec._spgSeason);
+      if (spGalleryObs) spGalleryObs.observe(card); else fill(card);
+    }
+    function slice() {
+      spgBuildTimer = null;
+      if (rec._spgGen !== gen || !rec.isConnected) return;
+      for (var k = 0; k < 12 && (lo >= 0 || hi < n); k++) build((hi < n && (lo < 0 || hi - anchor <= anchor - lo)) ? hi++ : lo--);
+      if (lo >= 0 || hi < n) spgBuildTimer = setTimeout(slice, 16);
+    }
+    if (window.IntersectionObserver) {
+      spgBuildObs = new IntersectionObserver(function (entries) {
+        var near = -1;
+        entries.forEach(function (en) { if (!en.isIntersecting) return; var i = +en.target.getAttribute("data-i"); spgBuildObs.unobserve(en.target); build(i); if (near < 0 || i < near) near = i; });
+        if (near >= 0) { anchor = near; lo = near - 1; hi = near + 1; }   // the idle work resumes around what is on screen now
+      }, { root: null, rootMargin: "800px 0px" });
+      Array.prototype.forEach.call(shells, function (sh) { spgBuildObs.observe(sh); });
+    }
+    slice();
   }
+  var spgBuildObs = null, spgBuildTimer = null;
   // The funnel's own state: orange + kept/removed bar. Run AFTER the rows have been
   // re-filtered — on a model-only list the stats are counted from the listed rows, so
   // reading them first would show the previous render's answer.

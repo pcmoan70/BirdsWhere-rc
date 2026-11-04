@@ -247,8 +247,11 @@ table — by name, total, last seen, probability, distance, season or scientific
 own list, where nothing has been fetched, only the orders that have values are offered): photo, name
 with the scientific name in parentheses, a compact
 "#total(n) · last seen · distance" line, then **Probability · Season · Yr peak** as three bar cells on one line (the same cells as the
-lists; any of them opens the Migration view, and hovering shows the year curve). Photos are the lead image of the species' Wikipedia article, loaded from
-Wikimedia Commons as cards scroll into view (nothing bundled or stored beyond the browser cache) and
+lists; any of them opens the Migration view, and hovering shows the year curve). The cards are
+built outward from what is on screen (v2252): the gallery arrives as empty shells, the shells in
+or near the view become cards at once, the rest in idle slices working away from the view, so a
+long list never blocks the page and its far ends are built last. Photos are the lead image of the species' Wikipedia article, loaded from
+Wikimedia Commons as cards come within reach of the view (nothing bundled or stored beyond the browser cache) and
 credited under each picture to their author and licence, linked to the Commons file page. The name
 opens the usual species menu and the scientific name the Family menu, as in the table. The small **☰**
 button on a card shows the species' record sub-list: on a computer, hovering it opens the list in a

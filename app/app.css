@@ -4784,6 +4784,7 @@ tr.sp-flash > td { animation: spFlash 1.6s ease-in-out 1; }
 /* ---- Species gallery ("Images" layout): one picture card per species row ---- */
 .sp-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; padding: 8px 6px 14px; }
 .spg-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.spg-card.spg-shell { min-height: 236px; }   /* an unbuilt card keeps the grid's shape */
 .spg-img { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: var(--surface-2); display: flex; align-items: center; justify-content: center; }
 .spg-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }   /* whole photo, true aspect ratio, letterboxed in a uniform 4:3 tile — never cropped */
 .spg-none { font-size: var(--fs-xs); color: var(--ink-muted); }

@@ -504,8 +504,25 @@ window.AppSpImages = (function () {
       return tr.style.display !== "none" && !tr.classList.contains("sp-hide-search") && !tr.classList.contains("sp-detail-row");
     });
     if (!rows.length) return '<div class="dl-empty">' + escapeHtml(t("detlist.empty")) + "</div>";
-    var lbl = { total: t("th.total"), last: t("th.last"), dist: t("th.dist"), prob: t("th.prob") };
-    return '<div class="sp-gallery">' + rows.map(function (tr) {
+    // Shells first, cards on demand (owner, 2026-11-04: "cards close to being in view should be
+    // fetched first … the building should not be blocking"): the gallery is one empty shell per
+    // row — cheap to parse however long the list — and wireSpGallery turns the shells into cards
+    // outward from the viewport in idle slices (spGalleryBuild below).
+    spgRows = rows; spgLbl = { total: t("th.total"), last: t("th.last"), dist: t("th.dist"), prob: t("th.prob") };
+    return '<div class="sp-gallery">' + rows.map(function (tr, i) { return '<div class="spg-card spg-shell" data-i="' + i + '"></div>'; }).join("") + "</div>";
+  }
+  var spgRows = [], spgLbl = {};
+  // Replace a shell by its card; null when the shell is gone or the list has been rebuilt since.
+  function spGalleryBuild(shell) {
+    var tr = spgRows[+shell.getAttribute("data-i")];
+    if (!tr || !shell.parentNode) return null;
+    var tpl = document.createElement("template"); tpl.innerHTML = spGalleryCardHtml(tr, spgLbl);
+    var card = tpl.content.firstElementChild;
+    shell.parentNode.replaceChild(card, shell);
+    return card;
+  }
+  function spGalleryCardHtml(tr, lbl) {
+    {
       // .sp-link is the MODEL species' name (clickable → species menu). An extra row —
       // every plant, fungus and most insects — carries its name in .sp-extra-name instead,
       // and without this the card showed a scientific name and nothing else.
@@ -579,7 +596,7 @@ window.AppSpImages = (function () {
         barsRow +
         '<div class="spg-credit"></div>' +
       "</div>";
-    }).join("") + "</div>";
+    }
   }
   // Load a species' photo into a card: the picture into `box`, the author/licence line
   // into `cr` (linked to the Commons file page), or reveal `none`. Resolves true when
@@ -832,7 +849,7 @@ window.AppSpImages = (function () {
 
   return {
     init: init,
-    buildSpGalleryHtml: buildSpGalleryHtml,
+    buildSpGalleryHtml: buildSpGalleryHtml, spGalleryBuild: spGalleryBuild,
     loadSpPhoto: loadSpPhoto,
     openCommonsGrid: openCommonsGrid,
     spImagesPrefetch: spImagesPrefetch,
