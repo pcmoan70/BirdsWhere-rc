@@ -461,7 +461,7 @@ window.AppShell = (function () {
           '<div id="sp-controls" style="display:none">' +
             '<select id="sp-layout" class="detlist-sort-sel" aria-label="Layout"></select>' +
             '<button id="sp-filter-btn" class="sp-filter-btn ico-btn" type="button" aria-label="Filters" title="Filters">' + ico("funnel") + '</button>' +
-            '<button id="sp-missing-btn" class="sp-filter-btn ico-btn sp-missing-btn" type="button" data-i18n-title="sp.missingBtn" title="Also list the species the model predicts here that have no observations yet">?</button>' +
+            '<button id="sp-missing-btn" class="sp-filter-btn ico-btn sp-missing-btn" type="button" data-i18n-title="sp.missingBtn" title="Also list the species the model predicts here that have no observations yet">P</button>' +
             // One button, two states: probability descending (commonest first) or ascending
             // (rarest first). The column headers still offer every other sort; this is the
             // one people reach for, and the Images layout has no headers to click.

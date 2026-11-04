@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2250";
+var VERSION = "v2251";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Place search: the \ud83d\udd0d box now finds places the way the 3-D viewer does \u2014 Kartverket\u2019s place-name register for Norway (fuzzy; each hit shows the kind of place and its municipality) plus OpenStreetMap for the world (a letter or two off still hits, nearest first)."
+  "\u2022 Species list: the [?] / [!] button is now one P toggle \u2014 lit, the model\u2019s predictions are woven in with the observed species (lit by itself where nothing was observed); grey, observed only.",
+  "\u2022 Images layout: the cards wait for the observations to land instead of showing the prediction list alone while a fetch is running."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

@@ -16,14 +16,14 @@ window.AppSpImages = (function () {
 
   // ---- injected by app.js (init) -----------------------------------------
   // Plain function aliases (stable references) …
-  var createModal, escapeHtml, holdDelay, holdFeedback, isBirdKey, macaulayUrl, openExternal, powoUrl, safeHref, spMissingOn, t, wireSpeciesPicker, ytopLabel;
+  var createModal, escapeHtml, holdDelay, holdFeedback, isBirdKey, macaulayUrl, openExternal, powoUrl, safeHref, spFetchLanding, spMissingOn, t, wireSpeciesPicker, ytopLabel;
   // … and getters for app state that changes at runtime.
   var getDetPlot, getLabelsByKey, getSecondLang, getShowSci;
 
   function init(ctx) {
     createModal = ctx.createModal; escapeHtml = ctx.escapeHtml; holdDelay = ctx.holdDelay; holdFeedback = ctx.holdFeedback;
     isBirdKey = ctx.isBirdKey; macaulayUrl = ctx.macaulayUrl; openExternal = ctx.openExternal; powoUrl = ctx.powoUrl; safeHref = ctx.safeHref;
-    spMissingOn = ctx.spMissingOn; t = ctx.t; wireSpeciesPicker = ctx.wireSpeciesPicker; ytopLabel = ctx.ytopLabel;
+    spFetchLanding = ctx.spFetchLanding; spMissingOn = ctx.spMissingOn; t = ctx.t; wireSpeciesPicker = ctx.wireSpeciesPicker; ytopLabel = ctx.ytopLabel;
     getDetPlot = ctx.getDetPlot; getLabelsByKey = ctx.getLabelsByKey; getSecondLang = ctx.getSecondLang; getShowSci = ctx.getShowSci;
   }
 
@@ -487,14 +487,17 @@ window.AppSpImages = (function () {
     var tbody = document.getElementById("sp-tbody"); if (!tbody) return "";
     // Before the observations have landed the table holds the model's whole prediction list
     // (default sort: rarest first) — as cards that would be a wall of exotic species whose
-    // photos start downloading. Wait for the fetch instead; [?] (predictions wanted) still shows.
+    // photos start downloading. Wait for the fetch instead — with P on as well: the cards built
+    // mid-fetch were that prediction wall and nothing else, and on a slow fetch that is all the
+    // user saw (owner, 2026-11-04: "the app shows only predictions"); the first data that lands
+    // rebuilds them with the observations woven in.
     // …but rows that came FROM observations (a fetched species, or an extra — which is
     // every plant, fungus and most insects, none of which the model predicts) are not
     // that wall: they are the result. Waiting on `_sightingsAgg`, which only a per-point
     // fetch attaches, left those layouts on a permanent spinner — plants and fungi never
     // appeared in the Images view at all.
     var anyObserved = tbody.querySelector("tr.sp-has-det, tr.sp-extra");
-    if (!tbody._sightingsAgg && !spMissingOn() && !anyObserved) return '<div class="dl-empty spg-wait"><div class="spinner"></div>' + escapeHtml(t("status.loadingDet")) + "</div>";
+    if (!tbody._sightingsAgg && (spFetchLanding() || (!spMissingOn() && !anyObserved))) return '<div class="dl-empty spg-wait"><div class="spinner"></div>' + escapeHtml(t("status.loadingDet")) + "</div>";
     // The name search hides table rows with a CLASS (it composes with the inline
     // show/hide) — the cards are built from the rows, so they must honour it too.
     var rows = Array.prototype.filter.call(tbody.children, function (tr) {

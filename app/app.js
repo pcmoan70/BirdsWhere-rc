@@ -172,7 +172,7 @@
   window.AppSpImages.init({
     createModal: createModal, escapeHtml: escapeHtml, holdDelay: holdDelay, holdFeedback: holdFeedback,
     isBirdKey: isBirdKey, macaulayUrl: macaulayUrl, openExternal: openExternal, powoUrl: powoUrl, safeHref: safeHref,
-    spMissingOn: spMissingOn, t: t, wireSpeciesPicker: wireSpeciesPicker, ytopLabel: ytopLabel,
+    spFetchLanding: spFetchLanding, spMissingOn: spMissingOn, t: t, wireSpeciesPicker: wireSpeciesPicker, ytopLabel: ytopLabel,
     getDetPlot: function () { return detPlot; }, getLabelsByKey: function () { return labelsByKey; },
     getSecondLang: function () { return secondLang; }, getShowSci: function () { return showSci; },
   });
@@ -1909,6 +1909,9 @@
   // that fetch only and leaves the user's own [?] setting (spShowMissing) alone.
   var spMissingAuto = false;
   function spMissingOn() { return spShowMissing || spMissingAuto; }
+  // A per-point / historic list whose observation fetch has not settled yet (a model-only
+  // list — Predicted, a restored view — never fetches, so it is never "landing").
+  function spFetchLanding() { return !!(currentSpView && (currentSpView.mode === "point" || currentSpView.mode === "historic") && !currentSpView._noFetch && !currentSpView._final); }
   var spCountMin = 1, spCountMax = null;   // Total-column lower/upper bounds (inclusive; null = open). Default: Total ≥ 1 — list only species actually observed.
   var spCountMetric = "total";                // which count the bounds restrict: "total" (specimens) or "pairs" (observations)
   var spNameQuery = "";                       // species-list name filter (raw text; lowercased at compare time)
@@ -20992,7 +20995,7 @@
         spSortBeforeMissing = null;
       }
       updateSortIndicators();
-      renderSpControls();   // relabels the button ("?" ↔ "!") and rebuilds the body (table rows / Images cards)
+      renderSpControls();   // lights / dims the P toggle and rebuilds the body (table rows / Images cards)
     });
     var psBtn = document.getElementById("sp-probsort-btn");
     if (psBtn) psBtn.addEventListener("click", function (e) {
@@ -23455,12 +23458,12 @@
     renderSpLayoutSelect();
     // The observation filter bar (day/date · mode · observer) applies to the detailed
     // record layouts; the prediction table keeps its own flag columns + age cycle.
-    // [?] (table + Images layouts; the observation list has no predictions): also show the
-    // species the model predicts here. While on it reads [!] — tap to go back to observed only.
+    // The P toggle (table + Images layouts; the observation list has no predictions): lit = the
+    // species the model predicts here are woven in with the observed ones, grey = observed only.
+    // (Owner, 2026-11-04: one constant label instead of the old "?" / "!" relabelling.)
     var mb = document.getElementById("sp-missing-btn");
     if (mb) {
       mb.classList.toggle("on", spMissingOn());
-      mb.textContent = spMissingOn() ? "!" : "?";
       mb.title = t(spMissingOn() ? "sp.missingOff" : "sp.missingBtn"); mb.setAttribute("aria-label", mb.title);
       mb.style.display = (spLayout === "table" || spLayout === "gallery") ? "" : "none";
     }
