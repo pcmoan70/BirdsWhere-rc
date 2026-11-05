@@ -616,7 +616,7 @@ far and that one (a range). **Picks on different fields combine**: years 2019–
 points matching both. A **strip under the heading** lists the picks on the fields you are not looking at
 (`Years: 2019–2021 ×`) — tap a name to go to that field, × to clear its picks; a row's own count ignores the
 picks on its own field, so an unpicked row stays listed, greyed, for a tap to bring it back.
-The Tags grouping *is* the Points panel's tag chips — a tap here ticks the chip there. The funnel
+The Tags grouping *is* the Points panel's tag chips — a tap here ticks the chip there (v2253: the chips run ordinary tags first, then the years in order, then the months January to December, so a list tagged by year and month filters chronologically). The funnel
 clears every points pick like any other filter. The fetched-species filters (date, observer, mode) never
 touch list points; a list's own observer / date funnel sits in the Points panel. **Text (v2194):** the Points
 panel's **filter box** narrows the shown points by text — fuzzy, as the observer filter is: every word must

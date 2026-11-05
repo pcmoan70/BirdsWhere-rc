@@ -2362,7 +2362,23 @@ window.AppPoints = (function () {
     // …and every ticked saved list: an imported list's tags are the ones worth filtering on,
     // and before this they never reached the chip row at all.
     mpCollections.forEach(function (c) { if (shownColls[c.name]) (c.points || []).forEach(add); });
-    return Object.keys(s).sort();
+    return Object.keys(s).sort(tagOrder);
+  }
+  // Tag order (owner, 2026-11-05: "months sorted chronologically, and years as well"): the
+  // ordinary tags alphabetically, then the years ascending, then the months January → December
+  // (the point-list builders write English month names; the other names cover imported lists).
+  var MONTH_TAGS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december",
+                    "januar", "februar", "mars", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "desember",
+                    "januari", "februari", "mars", "april", "maj", "juni", "juli", "augusti", "september", "oktober", "november", "december"];
+  function tagRank(t) {
+    var l = String(t).toLowerCase(), m = MONTH_TAGS.indexOf(l);
+    if (m >= 0) return [2, m % 12, l];
+    if (/^(19|20)\d\d$/.test(l)) return [1, +l, l];
+    return [0, 0, l];
+  }
+  function tagOrder(a, b) {
+    var x = tagRank(a), y = tagRank(b);
+    return x[0] - y[0] || x[1] - y[1] || (x[2] < y[2] ? -1 : x[2] > y[2] ? 1 : 0);
   }
   // OR-filter: when no tags active, show everything; otherwise show points
   // whose tag list intersects mpFilter. "(no tag)" is represented by "".
