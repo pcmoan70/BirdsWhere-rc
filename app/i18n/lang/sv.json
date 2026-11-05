@@ -1604,6 +1604,7 @@
   "kml.unpacking": "Packar upp {name} …",
   "kml.parsing": "Läser filen …",
   "kml.reading2": "Läser poster … {n} av {total}",
+  "kml.adding2": "Lägger till punkter … {n} av {total}",
   "kml.busy": "Läser fortfarande förra filen – ett ögonblick",
   "points.savedInto": "Sparade {n} punkter i ”{name}”.",
   "points.saveWhat": "Vad vill du spara?",

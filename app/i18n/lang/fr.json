@@ -1604,6 +1604,7 @@
   "kml.unpacking": "Décompression de {name} …",
   "kml.parsing": "Lecture du fichier …",
   "kml.reading2": "Lecture des enregistrements … {n} sur {total}",
+  "kml.adding2": "Ajout des points … {n} sur {total}",
   "kml.busy": "Le fichier précédent est encore en lecture — un instant",
   "points.savedInto": "{n} points enregistrés dans « {name} ».",
   "points.saveWhat": "Que souhaitez-vous conserver ?",

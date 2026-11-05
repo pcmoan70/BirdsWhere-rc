@@ -1604,6 +1604,7 @@
   "kml.unpacking": "Puretaan {name} …",
   "kml.parsing": "Luetaan tiedostoa …",
   "kml.reading2": "Luetaan tietueita … {n}/{total}",
+  "kml.adding2": "Lisätään pisteitä … {n} / {total}",
   "kml.busy": "Luetaan vielä edellistä tiedostoa – hetki",
   "points.savedInto": "Tallennettiin {n} pistettä listaan ”{name}”.",
   "points.saveWhat": "Mitä haluat säilyttää?",

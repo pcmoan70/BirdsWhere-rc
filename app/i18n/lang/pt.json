@@ -1604,6 +1604,7 @@
   "kml.unpacking": "A descompactar {name} …",
   "kml.parsing": "A ler o ficheiro …",
   "kml.reading2": "A ler registos… {n} de {total}",
+  "kml.adding2": "A adicionar pontos … {n} de {total}",
   "kml.busy": "Ainda a ler o ficheiro anterior — um momento",
   "points.savedInto": "Guardados {n} pontos em “{name}”.",
   "points.saveWhat": "O que quer guardar?",

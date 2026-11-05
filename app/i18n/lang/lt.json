@@ -1604,6 +1604,7 @@
   "kml.unpacking": "Išpakuojama {name} …",
   "kml.parsing": "Skaitomas failas …",
   "kml.reading2": "Skaitomi įrašai… {n} iš {total}",
+  "kml.adding2": "Pridedami taškai … {n} iš {total}",
   "kml.busy": "Vis dar skaitomas ankstesnis failas – akimirką",
   "points.savedInto": "Išsaugota {n} taškų sąraše „{name}“.",
   "points.saveWhat": "Ką norite išsaugoti?",

@@ -1604,6 +1604,7 @@
   "kml.unpacking": "{name} lahtipakkimine …",
   "kml.parsing": "Faili lugemine …",
   "kml.reading2": "Kirjete lugemine … {n}/{total}",
+  "kml.adding2": "Punktide lisamine … {n} / {total}",
   "kml.busy": "Eelmist faili loetakse veel – hetk",
   "points.savedInto": "Salvestati {n} punkti loendisse „{name}“.",
   "points.saveWhat": "Mida soovid alles hoida?",

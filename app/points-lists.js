@@ -1336,6 +1336,115 @@ window.AppPoints = (function () {
   async function parseKmlText(text) {
     loadStatus(t("kml.parsing"));
     await yieldToUi();                       // let that message paint before the long call
+    var fast = null;
+    try { fast = await parseKmlFast(text); } catch (e) { fast = null; }
+    return fast || parseKmlDom(text);
+  }
+  // ---- The scanner (owner, 2026-11-05: "importing pointlists by dropping them on map seems
+  // excessively slow"): a string scan, no DOM. DOMParser on the 250 000-point raptor list took
+  // 33 s in ONE blocking call, then 7 s of DOM walking; this reads the same placemarks in a few
+  // seconds, in chunks that let the page paint. Point placemarks are read here; Polygon /
+  // LineString placemarks and the document's styles go through a small DOM of their own, so the
+  // shape code below is unchanged. Anything it cannot read (a namespace prefix, no placemarks,
+  // nothing recognised, an exception) → parseKmlDom, exactly as before.
+  var KML_ENT = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" };
+  function kmlText(s) {   // element text as the DOM would give it: CDATA unwrapped, else entities decoded, CR LF → LF
+    if (!s) return "";
+    if (s.indexOf("\r") >= 0) s = s.replace(/\r\n?/g, "\n");
+    if (s.indexOf("<![CDATA[") >= 0) s = s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1");
+    else if (s.indexOf("&") >= 0) s = s.replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z]+);/g, function (m, e) {
+      if (e.charAt(0) === "#") { var cp = (e.charAt(1) === "x" || e.charAt(1) === "X") ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10); return isFinite(cp) ? String.fromCodePoint(cp) : m; }
+      return KML_ENT[e] !== undefined ? KML_ENT[e] : m;
+    });
+    return s.trim();
+  }
+  var kmlTagRx = {};
+  function kmlTag(block, tag) {   // the first <tag>…</tag> in a block, "" when absent
+    var rx = kmlTagRx[tag] || (kmlTagRx[tag] = new RegExp("<" + tag + "(?:\\s[^>]*)?>([\\s\\S]*?)</" + tag + ">"));
+    var m = rx.exec(block); return m ? kmlText(m[1]) : "";
+  }
+  var RX_KDATA = /<Data\s+name=(?:"([^"]*)"|'([^']*)')[^>]*>([\s\S]*?)<\/Data>/g;
+  var RX_KSIMPLE = /<SimpleData\s+name=(?:"([^"]*)"|'([^']*)')[^>]*>([\s\S]*?)<\/SimpleData>/g;
+  var RX_KSTYLES = /<Style\s+id=[^>]*>[\s\S]*?<\/Style>|<StyleMap\s+id=[^>]*>[\s\S]*?<\/StyleMap>/g;
+  var RX_KTOK = /<Folder[\s>]|<\/Folder>|<Placemark[\s>]/g;
+  async function parseKmlFast(text) {
+    if (text.indexOf("<Placemark") < 0 || /<[A-Za-z0-9_]+:Placemark/.test(text)) return null;
+    function mini(inner) {
+      var d = new DOMParser().parseFromString('<kml xmlns="http://www.opengis.net/kml/2.2"><Document>' + inner + "</Document></kml>", "application/xml");
+      return d.getElementsByTagName("parsererror").length ? null : d;
+    }
+    var styleBlocks = text.match(RX_KSTYLES) || [];
+    var sdoc = mini(styleBlocks.join("")); if (!sdoc) return null;
+    var styleCol = kmlStyleColors(sdoc);
+    // The file's own description, as the DOM path takes it: the <Document>'s own, else a lone <Folder>'s.
+    var docDesc = "", head = text.slice(0, text.indexOf("<Placemark")).replace(RX_KSTYLES, "");
+    var dm = /<description(?:\s[^>]*)?>([\s\S]*?)<\/description>/.exec(head);
+    if (dm) {
+      var before = head.slice(0, dm.index), inFolder = before.lastIndexOf("<Folder") > before.lastIndexOf("</Folder>");
+      if (!inFolder || (text.match(/<Folder[\s>]/g) || []).length === 1) docDesc = kmlText(dm[1]);
+    }
+    var total = 0, ci = -1;
+    while ((ci = text.indexOf("<Placemark", ci + 1)) >= 0) total++;
+    var marks = [], shapes = [], fieldSet = {}, folderSet = {}, stack = [], n = 0, m;
+    RX_KTOK.lastIndex = 0;
+    while ((m = RX_KTOK.exec(text))) {
+      var tok = m[0];
+      if (tok.charAt(1) === "/") { stack.pop(); continue; }
+      if (tok.charAt(1) === "F") {
+        // The folder's own name: its first <name> before any child folder / placemark. A nameless
+        // folder passes the nearest named ancestor's down (the DOM walk climbs to it).
+        var at = m.index + 7, ni = text.indexOf("<name", at), f1 = text.indexOf("<Folder", at), p1 = text.indexOf("<Placemark", at);
+        var lim = Math.min(f1 < 0 ? Infinity : f1, p1 < 0 ? Infinity : p1), fname = "";
+        if (ni >= 0 && ni < lim) { var ne = text.indexOf("</name>", ni); if (ne >= 0) fname = kmlText(text.slice(text.indexOf(">", ni) + 1, ne)); }
+        stack.push(fname || (stack.length ? stack[stack.length - 1] : ""));
+        continue;
+      }
+      var end = text.indexOf("</Placemark>", m.index); if (end < 0) break;
+      var block = text.slice(m.index, end);
+      RX_KTOK.lastIndex = end + 12;
+      n++;
+      if (n % PARSE_CHUNK === 0) { loadStatus(t("kml.reading2", { n: n, total: total })); await yieldToUi(); }
+      if (block.indexOf("<Polygon") >= 0 || block.indexOf("<LineString") >= 0) { shapes.push(block + "</Placemark>"); continue; }
+      var co = kmlTag(block, "coordinates"); if (!co) continue;
+      var ll = co.split(/\s+/)[0].split(",");
+      var lon = parseFloat(ll[0]), lat = parseFloat(ll[1]);
+      if (!isFinite(lat) || !isFinite(lon)) continue;
+      var data = {}, dm2;
+      RX_KDATA.lastIndex = 0;
+      while ((dm2 = RX_KDATA.exec(block))) {
+        var nm = kmlText(dm2[1] != null ? dm2[1] : dm2[2]); if (!nm) continue;
+        var inner = dm2[3], vi = inner.indexOf("<value"), v = "";
+        if (vi >= 0) { var ve = inner.indexOf("</value>", vi); v = kmlText(inner.slice(inner.indexOf(">", vi) + 1, ve < 0 ? undefined : ve)); }
+        data[nm] = v; fieldSet[nm] = 1;
+      }
+      RX_KSIMPLE.lastIndex = 0;
+      while ((dm2 = RX_KSIMPLE.exec(block))) { var sn = kmlText(dm2[1] != null ? dm2[1] : dm2[2]); if (sn) { data[sn] = kmlText(dm2[3]); fieldSet[sn] = 1; } }
+      var folder = stack.length ? stack[stack.length - 1] : "";
+      if (folder) folderSet[folder] = 1;
+      // The placemark's own colour: an inline <Style>'s icon colour first, else the <styleUrl> it names.
+      var pcol = "", sIdx = block.search(/<Style[\s>]/);
+      if (sIdx >= 0) {
+        var sEnd = block.indexOf("</Style>", sIdx), sb = block.slice(sIdx, sEnd < 0 ? undefined : sEnd), ii = sb.indexOf("<IconStyle");
+        if (ii >= 0) { var ie = sb.indexOf("</IconStyle>", ii), cm = /<color>([\s\S]*?)<\/color>/.exec(sb.slice(ii, ie < 0 ? undefined : ie)); if (cm) pcol = kmlColorToHex(kmlText(cm[1])); }
+      }
+      if (!pcol) { var su = kmlTag(block, "styleUrl").replace(/^#/, ""); if (su && styleCol[su]) pcol = styleCol[su]; }
+      marks.push({ name: kmlTag(block, "name"), lat: lat, lon: lon, desc: kmlTag(block, "description"), data: data, folder: folder, color: pcol });
+    }
+    var polys = [], lines = [];
+    if (shapes.length) {
+      var sd = mini(styleBlocks.join("") + shapes.join("")); if (!sd) return null;
+      var spm = sd.getElementsByTagName("Placemark");
+      for (var i = 0; i < spm.length; i++) {
+        var pg = spm[i].getElementsByTagName("Polygon")[0];
+        if (pg) { var pr0 = kmlPolygon(spm[i], pg, styleCol); if (pr0) polys.push(pr0); continue; }
+        var lsEl = spm[i].getElementsByTagName("LineString")[0];
+        if (lsEl) { var ln0 = kmlLine(spm[i], lsEl); if (ln0) lines.push(ln0); }
+      }
+    }
+    if (!marks.length && !polys.length && !lines.length && n) return null;   // read nothing from a file that has placemarks → the DOM parser decides
+    return { marks: marks, polys: polys, lines: lines, fields: Object.keys(fieldSet), folders: Object.keys(folderSet), desc: docDesc };
+  }
+  async function parseKmlDom(text) {
     var doc = new DOMParser().parseFromString(text, "application/xml");
     if (doc.getElementsByTagName("parsererror").length) throw new Error(t("kml.parseErr"));
     var marks = [], polys = [], lines = [], fieldSet = {}, folderSet = {};
@@ -1923,7 +2032,7 @@ window.AppPoints = (function () {
     var targetEl0 = document.getElementById("kml-target"), tsel = targetEl0 ? targetEl0.value : "";
     var into = (p.files && p.files.length) ? p.files.map(function (b) { return b.name; }).join(", ") : (tsel === "__new__" ? (p.fileName || "") : tsel);
     mpLoading(t("kml.importing", { name: into || "…" }));
-    setTimeout(function () { try { doKmlImportNow(); } finally { mpLoading(null); } }, 30);   // let the overlay paint before the page blocks
+    setTimeout(function () { Promise.resolve().then(doKmlImportNow).then(function () { mpLoading(null); }, function (e) { mpLoading(null); throw e; }); }, 30);   // let the overlay paint first
   }
   // A list just dropped or loaded starts with ALL tag chips on (owner, 2026-10-16: "when dropping, or loading a point
   // list into birdswhere make sure to enable all tags on list initially"): no tag left picked, excluded or switched off
@@ -1932,8 +2041,9 @@ window.AppPoints = (function () {
     mpFilter = []; mpExclude = []; mpNone = false;
     try { window.GeoState.save({ mapPointsFilter: [], mapPointsExclude: [], mapPointsNone: false }); } catch (e) {}
   }
-  function doKmlImportNow() {
-    var p = kmlImport; if (!p) return;
+  var kmlAdding = false;   // the chunked add yields to the page: a second press of Import meanwhile must not start another
+  async function doKmlImportNow() {
+    var p = kmlImport; if (!p || kmlAdding) return;
     var targetEl = document.getElementById("kml-target");
     var target = targetEl ? targetEl.value : "";
     var nameTok = document.getElementById("kml-name").value;
@@ -1943,8 +2053,13 @@ window.AppPoints = (function () {
     var noteIsHtml = !!(noteHtmlBox && noteHtmlBox.checked);
     var used = {};   // the fields the dialog mapped — not repeated as attrs
     [nameTok, tagTok].concat(noteToks).forEach(function (tk) { if (tk && tk.indexOf("data:") === 0) used[tk.slice(5)] = 1; });
-    function finish(listName, marks, show, polys, lines, desc) {
-      var pts = (marks || p.marks).map(function (pm) {
+    async function finish(listName, marks, show, polys, lines, desc) {
+      // Chunked (owner, 2026-11-05): 250 000 placemarks took 9 s in one blocking map() — the
+      // overlay could not even repaint. Same work, in slices with a progress line between them.
+      var src = marks || p.marks, pts = [];
+      for (var pi = 0; pi < src.length; pi++) {
+        if (pi && pi % PARSE_CHUNK === 0) { loadStatus(t("kml.adding2", { n: pi, total: src.length })); await yieldToUi(); }
+        var pm = src[pi];
         var tag = normTag(kmlFieldValue(pm, tagTok));
         // One field → exactly what it always was. Several → each line labelled, because
         // three bare values stacked in a note say nothing about what they are.
@@ -1982,8 +2097,8 @@ window.AppPoints = (function () {
         // a plain remark is not, and setting the flag from the dialog's checkbox regardless
         // marked every point as HTML.
         if (noteIsHtml && pt.note && !droppedTable) pt.noteHtml = true;
-        return pt;
-      });
+        pts.push(pt);
+      }
       var c = mpCollections.filter(function (x) { return x.name === listName && !x.viewOnly; })[0];
       if (!c) { c = { name: listName, points: [] }; mpCollections.push(c); }
       if (desc && !c.note) c.note = desc;   // the file's description → the list's note
@@ -2002,23 +2117,33 @@ window.AppPoints = (function () {
     function commit() {
       allTagsOn();
       saveShownState(); saveMapPoints(); renderMapPoints();
-      closeKmlImportDialog(); kmlImport = null;
+      closeKmlImportDialog(); kmlImport = null; kmlAdding = false;
     }
+    function begin() { kmlAdding = true; closeKmlImportDialog(); }   // the dialog goes the moment the add starts (its Import is no longer pressable)
     if (p.files && p.files.length) {
       var total = 0;
-      p.files.forEach(function (b) { total += finish(b.name, b.marks, p.files.length === 1, b.polys || [], b.lines || [], b.desc); });
+      begin();
+      try { for (var fi = 0; fi < p.files.length; fi++) { var b = p.files[fi]; total += await finish(b.name, b.marks, p.files.length === 1, b.polys || [], b.lines || [], b.desc); } }
+      catch (e) { kmlAdding = false; throw e; }
       commit();
       setStatus(p.files.length > 1 ? t("kml.importedN", { n: total, lists: p.files.length })
                                    : t("kml.imported", { n: total, name: p.files[0].name }));
       return;
     }
-    var one = function (nm) { var n = finish(nm); commit(); setStatus(t("kml.imported", { n: n, name: nm })); };
+    // The overlay is up for the add itself (the name prompt in between had cleared it).
+    var one = async function (nm) {
+      mpLoading(t("kml.importing", { name: nm }));
+      begin();
+      try { var n = await finish(nm); commit(); setStatus(t("kml.imported", { n: n, name: nm })); }
+      catch (e) { kmlAdding = false; throw e; }
+      finally { mpLoading(null); }
+    };
     if (target === "__new__") {
       var suggest = p.fileName
         ? uniqueListName(listNameFromFile(p.fileName) || p.fileName, mpCollections.map(function (c) { return c.name; }))
         : "";
       modalPrompt(t("detmenu.newListPrompt"), suggest).then(function (n) { n = (n || "").trim(); if (n) one(n); });
-    } else one(target);
+    } else return one(target);
   }
   // Open Google Maps with a navigable route through the given points (the start
   // is the user's own location). A single point → directions straight to it;
@@ -3394,7 +3519,7 @@ window.AppPoints = (function () {
     // ---- import / export / share ----
     exportPointsKml: exportPointsKml, exportPointsKmz: exportPointsKmz, exportPointsAs: exportPointsAs,
     buildPointsKml: buildPointsKml, buildPointsGeoJson: buildPointsGeoJson, buildKmz: buildKmz,
-    exportPointsGeoJson: exportPointsGeoJson, extractKmlFromKmz: extractKmlFromKmz,
+    exportPointsGeoJson: exportPointsGeoJson, extractKmlFromKmz: extractKmlFromKmz, _parseKmlDom: parseKmlDom, _parseKmlFast: parseKmlFast,
     startKmlImport: startKmlImport, startGeoJsonImport: startGeoJsonImport, startMultiImport: startMultiImport,
     compactStoredPoints: compactStoredPoints,
     sendPointsToGoogle: sendPointsToGoogle,

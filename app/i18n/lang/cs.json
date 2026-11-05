@@ -1604,6 +1604,7 @@
   "kml.unpacking": "Rozbalování {name} …",
   "kml.parsing": "Čtení souboru …",
   "kml.reading2": "Čtení záznamů… {n} z {total}",
+  "kml.adding2": "Přidávání bodů … {n} z {total}",
   "kml.busy": "Předchozí soubor se ještě čte – okamžik",
   "points.savedInto": "Uloženo {n} bodů do „{name}“.",
   "points.saveWhat": "Co chcete zachovat?",

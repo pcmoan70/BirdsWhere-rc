@@ -280,6 +280,7 @@ window.GeoI18N = (function () {
         "kml.unpacking": "Unpacking {name}\u2026",
         "kml.parsing": "Reading the file\u2026",
         "kml.reading2": "Reading records\u2026 {n} of {total}",
+        "kml.adding2": "Adding points\u2026 {n} of {total}",
         "kml.busy": "Still reading the last file \u2014 one moment",
         "kml.readingN": "Reading {name} — file {i} of {n}…",
         "kml.perFile": "{n} files — one list per file, named after the file",

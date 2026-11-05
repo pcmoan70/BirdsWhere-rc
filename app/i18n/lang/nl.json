@@ -1604,6 +1604,7 @@
   "kml.unpacking": "{name} uitpakken …",
   "kml.parsing": "Bestand lezen …",
   "kml.reading2": "Records lezen … {n} van {total}",
+  "kml.adding2": "Punten toevoegen … {n} van {total}",
   "kml.busy": "Nog bezig met het vorige bestand – een moment",
   "points.savedInto": "{n} punten opgeslagen in ‘{name}’.",
   "points.saveWhat": "Wat wil je bewaren?",

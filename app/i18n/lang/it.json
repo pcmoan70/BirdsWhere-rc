@@ -1604,6 +1604,7 @@
   "kml.unpacking": "Estrazione di {name} …",
   "kml.parsing": "Lettura del file …",
   "kml.reading2": "Lettura dei record … {n} di {total}",
+  "kml.adding2": "Aggiunta dei punti … {n} di {total}",
   "kml.busy": "Sto ancora leggendo il file precedente — un attimo",
   "points.savedInto": "Salvati {n} punti in «{name}».",
   "points.saveWhat": "Cosa vuoi conservare?",
