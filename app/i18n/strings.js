@@ -294,6 +294,7 @@ window.GeoI18N = (function () {
         "points.areasZoom": "{n} areas in shown lists — zoom in to see them.",
         "points.hideLists": "Hide lists",
         "points.showLists": "Show lists",
+        "points.untickAll": "Untick all",
         "points.fromSearches": "On the map",
         "points.searchEarlier": "earlier search",
         "points.searchPins": "{n} points",

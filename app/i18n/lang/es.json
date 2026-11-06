@@ -1641,6 +1641,7 @@
   "points.areasZoom": "{n} áreas en las listas mostradas: acerca el mapa para verlas.",
   "points.hideLists": "Ocultar listas",
   "points.showLists": "Mostrar listas",
+  "points.untickAll": "Desmarcar todo",
   "points.fromSearches": "En el mapa",
   "points.searchEarlier": "búsqueda anterior",
   "points.searchPins": "{n} puntos",

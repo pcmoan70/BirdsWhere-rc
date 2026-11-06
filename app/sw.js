@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2254";
+var VERSION = "v2255";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Point lists: dropping a KML / KMZ on the map is several times faster \u2014 a 250 000-point file reads in seconds instead of blocking the page for most of a minute, with progress shown while the points are read and added."
+  "\u2022 Legend: the selected species now sit at the top of the list, so they are one tap away to toggle off again.",
+  "\u2022 Points panel: an Untick all button clears every ticked list and trip at once."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

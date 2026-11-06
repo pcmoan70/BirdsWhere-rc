@@ -1641,6 +1641,7 @@
   "points.areasZoom": "{n} Flächen in angezeigten Listen — zum Anzeigen hineinzoomen.",
   "points.hideLists": "Listen ausblenden",
   "points.showLists": "Listen einblenden",
+  "points.untickAll": "Alle abwählen",
   "points.fromSearches": "Auf der Karte",
   "points.searchEarlier": "frühere Suche",
   "points.searchPins": "{n} Punkte",

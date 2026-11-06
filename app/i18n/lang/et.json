@@ -1641,6 +1641,7 @@
   "points.areasZoom": "{n} ala kuvatud loendites — suumi lähemale, et neid näha.",
   "points.hideLists": "Peida loendid",
   "points.showLists": "Näita loendeid",
+  "points.untickAll": "Tühista kõik valikud",
   "points.fromSearches": "Kaardil",
   "points.searchEarlier": "varasem otsing",
   "points.searchPins": "{n} punkti",

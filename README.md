@@ -374,7 +374,9 @@ together, and lists the **matching species** under the box, each with a three-st
 **include** (green +), again for **exclude** (red −), again for neither — on the same selection the
 legend and the species lists use. Below it the section lists **every species currently included or
 excluded** — however it was chosen (legend tap, a species list, the search) — with the same box, so a
-legend selection can be changed or cleared from the pane. **Words in notes** searches the records'
+legend selection can be changed or cleared from the pane. In the legend the **selected species sit at
+the top** of the list, in the chosen sort order among themselves, so they are one tap away to toggle
+off again. **Words in notes** searches the records'
 own text — note, place, activity, observer (and a plain pin's name, tags and note) — for fetched data
 and imported lists alike: type a word and press **Include** (or Enter) or **Exclude**; each becomes a
 chip (+ green, − red, × removes it). A record shows when it holds **any** include word and **none** of
@@ -1090,6 +1092,8 @@ Right-click / long-press / tap any species name for a menu **led by the species 
 - **Hide / Show lists** — the toggle at the end of the Points panel's top row: **Hide lists** takes every
   ticked list and trip off the map but remembers them — their checkboxes stay ticked, greyed out and
   locked — and **Show lists** puts exactly those back. The hidden state survives a reopen.
+- **Untick all** — next to it while anything is ticked: every ticked list and trip comes off the map
+  and its box is cleared (nothing remembered — tick them again one by one).
 - **Search all lists** — the box at the top of the Points panel searches every saved list and trip by
   **notes** and **species via the model's labels** — exact words (no typo-guessing), but case- and
   accent-insensitive and blind to spaces / hyphens, so "Slagugle-kasse" finds "slaguglekasse" and

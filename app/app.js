@@ -14887,6 +14887,10 @@
       });
     }
     keys.sort(function (a, b) {
+      // Selected species first (owner, 2026-11-06: "move selected species to the top of the list for
+      // easy toggling"), then the chosen order within each group.
+      var sa = !!detSelected[a], sb = !!detSelected[b];
+      if (sa !== sb) return sa ? -1 : 1;
       if (detLegendSort === "az") return detNameByKey[a].localeCompare(detNameByKey[b]);
       if (detLegendSort === "count") { var dc = (visCount[b] || 0) - (visCount[a] || 0); return dc || detNameByKey[a].localeCompare(detNameByKey[b]); }
       if (detLegendSort === "date") { if (latestByKey[a] !== latestByKey[b]) return latestByKey[a] < latestByKey[b] ? 1 : -1; return detNameByKey[a].localeCompare(detNameByKey[b]); }
@@ -17425,6 +17429,9 @@
         // off the map but remembers them (their boxes stay ticked, greyed out); Show puts them back.
         ((hidStash || Object.keys(mpState.shownColls()).length || Object.keys(mpState.shownDetSets()).length)
           ? '<button type="button" id="mp-hide-toggle" class="btn btn-light mp-hide-toggle' + (hidStash ? " on" : "") + '">' + escapeHtml(t(hidStash ? "points.showLists" : "points.hideLists")) + "</button>" : "") +
+        // Untick all (owner, 2026-11-06): every ticked list and trip off, nothing remembered.
+        ((!hidStash && (Object.keys(mpState.shownColls()).length || Object.keys(mpState.shownDetSets()).length))
+          ? '<button type="button" id="mp-untick-all" class="btn btn-light">' + escapeHtml(t("points.untickAll")) + "</button>" : "") +
       "</div>" +
       '<div id="mp-backup-line" class="mp-backup-line"></div>' +
       mpFromSearchHtml() +
@@ -17468,6 +17475,12 @@
         window.GeoState.save({ mpHiddenStash: { p: Object.keys(mpState.shownColls()), d: Object.keys(mpState.shownDetSets()) } });
         mpState.setShownColls({}); mpState.setShownDetSets({});
       }
+      saveShownState(); updateDetSetOverlays(); renderMapPoints(); refreshMpPanel(); keepMpPanelOpen();
+    });
+    var untickAll = panel.querySelector("#mp-untick-all");
+    if (untickAll) untickAll.addEventListener("click", function (e) {
+      e.stopPropagation();
+      mpState.setShownColls({}); mpState.setShownDetSets({});
       saveShownState(); updateDetSetOverlays(); renderMapPoints(); refreshMpPanel(); keepMpPanelOpen();
     });
     var importShareBtn = panel.querySelector("#mp-import-share"), shareFileInput = panel.querySelector("#share-file-input");

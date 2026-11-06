@@ -1641,6 +1641,7 @@
   "points.areasZoom": "{n} zones dans les listes affichées — zoomez pour les voir.",
   "points.hideLists": "Masquer les listes",
   "points.showLists": "Afficher les listes",
+  "points.untickAll": "Tout décocher",
   "points.fromSearches": "Sur la carte",
   "points.searchEarlier": "recherche précédente",
   "points.searchPins": "{n} points",

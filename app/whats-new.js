@@ -3,6 +3,7 @@
 // Loaded before app.js; exposed on window.AppStaticData.
 window.AppStaticData = window.AppStaticData || {};
 window.AppStaticData.WHATS_NEW = [
+    { v: "v2255", date: "2026-11-06", text: "The legend keeps the selected species at the top of the list, one tap away to toggle off again; the Points panel has an Untick all button that clears every ticked list and trip at once." },
     { v: "v2254", date: "2026-11-05", text: "Dropping a point list on the map is several times faster: a 250 000-point KMZ reads in seconds instead of freezing the page for most of a minute, and the points are added in steps with a progress line." },
     { v: "v2252", date: "2026-11-04", text: "Images layout: the cards are built outward from what is on screen \u2014 the ones in view first, the far ends of a long list last \u2014 in small idle steps, so the page never freezes while a long list is drawn." },
     { v: "v2251", date: "2026-11-04", text: "The species list\u2019s [?] / [!] button is now one P toggle: lit, the model\u2019s predictions for the spot are woven in with the observed species (and it lights by itself where nothing was observed); grey, observed only. The Images cards wait for the observations before they are drawn instead of showing the prediction list alone mid-fetch." },
