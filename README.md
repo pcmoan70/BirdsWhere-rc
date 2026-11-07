@@ -668,11 +668,11 @@ Plus **−** minimise (to a corner pill) and, while a species selection is activ
 drops just that selection. A **⚠** appears when the *Max points on map* draw cap is hiding dots. The
 filter funnel and the red × are **not** in the legend — they sit on the map at the lower right (below).
 
-**Opening the app starts clean**: no species selection and no filters (only display preferences —
-the minimised legend, sort order — and deleted species are kept), and the observations fetched last
-time are **not** put back unless Settings → Fetching & detections → **Show the last session's
-observations on open** is on (off by default); their fetched-area squares (and the ✓ update button)
-stay away with them. The saved point lists come back exactly as they were: the ticked lists, their tag
+**Opening the app**: no species selection and no filters are restored (only display preferences —
+the minimised legend, sort order — and deleted species are kept), but the observations fetched last
+time **come back on the map**, with their fetched-area squares and the ✓ update button, and stay until
+the red × removes them (Settings → Fetching & detections → **Show the last session's observations on
+open**, on by default; off = the app opens with no fetched observations). The saved point lists come back exactly as they were: the ticked lists, their tag
 chips and per-list funnels, and the legend's points-view selection (an isolated list or value) are all
 kept, so the map shows the same dots as when it was closed; "Fetch on open" is the only start-up fetch.
 

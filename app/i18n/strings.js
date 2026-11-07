@@ -1243,7 +1243,7 @@ window.GeoI18N = (function () {
         "ctrl.sightTtlHint": "Reopening the app reuses a location’s already-downloaded observations for this many minutes instead of re-fetching. 0 = reuse indefinitely (only refetch on a new place or a changed radius/group/source).",
         "ctrl.fetchOnOpen": "Fetch on open",
         "ctrl.restoreDet": "Show the last session’s observations on open",
-        "ctrl.restoreDetHint": "Off: the app opens with no fetched observations, no selection and no filters — only your shown lists. On: the observations fetched last time come back on the map.",
+        "ctrl.restoreDetHint": "On (default): the observations fetched last time come back on the map and stay until the red × removes them. Off: the app opens with no fetched observations — only your shown lists.",
         "ctrl.fetchOnOpenHint": "When on, opening the app automatically fetches and plots observations for the stored locations you tick “load on open” — the ⟳ column in the Stored locations panel (press-and-hold 🔍). Reuses the cache above, so within that window it loads instantly with no network; only refetches when the cache is stale. Skipped when the app is opened via a shared or ?here link.",
         "ctrl.fetchOnOpenDays": "Last days to fetch",
         "sources.timedOut": "Timed out — partial results kept",

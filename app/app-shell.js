@@ -191,7 +191,7 @@ window.AppShell = (function () {
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label class="ctrl-check"><input type="checkbox" id="restore-det-toggle"> <span data-i18n="ctrl.restoreDet">Show the last session’s observations on open</span></label>' +
-                '<p class="cu-hint" data-i18n="ctrl.restoreDetHint">Off: the app opens with no fetched observations, no selection and no filters — only your shown lists. On: the observations fetched last time come back on the map.</p>' +
+                '<p class="cu-hint" data-i18n="ctrl.restoreDetHint">On (default): the observations fetched last time come back on the map and stay until the red × removes them. Off: the app opens with no fetched observations — only your shown lists.</p>' +
               '</div>' +
               '<div class="ctrl-group">' +
                 '<label for="max-points" data-i18n="ctrl.maxpoints">Max points on map</label>' +

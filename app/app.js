@@ -13079,8 +13079,11 @@
     // Owner, 2026-10-11: "No implicit running of load Detections unless specified in settings" — at
     // START the last session's observations come back only with Settings → "Show the last session's
     // observations on open". Skipped, they stay in storage untouched until a new fetch replaces them.
-    var saved = (atStart && window.GeoState.get("restoreDetOnOpen", false) !== true) ? {} : (window.GeoState.get("mapDetections", {}) || {});
-    if (atStart && window.GeoState.get("restoreDetOnOpen", false) !== true) detRestoreSkipped = true;
+    // Owner, 2026-11-07: "fetched dots and active lists should be remembered between restarts … fetched
+    // points should only disappear when user clicks red X" — the setting now defaults to ON.
+    var skipRestore = atStart && window.GeoState.get("restoreDetOnOpen", true) === false;
+    var saved = skipRestore ? {} : (window.GeoState.get("mapDetections", {}) || {});
+    if (skipRestore) detRestoreSkipped = true;
     Object.keys(saved).forEach(function (sk) {
       var d = saved[sk]; if (!d || !d.rows || !d.rows.length) return;
       var key = d.key || sk;   // older builds keyed by display name and had no .key
@@ -19750,7 +19753,7 @@
     wireNumSetting("sight-ttl", sightTtlMin, 0, 10080, 0, function (v) { window.GeoState.save({ sightTtlMin: v }); }, null);
     var rdEl = document.getElementById("restore-det-toggle");
     if (rdEl) {
-      rdEl.checked = window.GeoState.get("restoreDetOnOpen", false) === true;
+      rdEl.checked = window.GeoState.get("restoreDetOnOpen", true) !== false;
       rdEl.addEventListener("change", function () { window.GeoState.save({ restoreDetOnOpen: !!this.checked }); });
     }
     var fooEl = document.getElementById("fetchonopen-toggle");
