@@ -3,6 +3,7 @@
 // Loaded before app.js; exposed on window.AppStaticData.
 window.AppStaticData = window.AppStaticData || {};
 window.AppStaticData.WHATS_NEW = [
+    { v: "v2258", date: "2026-11-08", text: "GPS follow in two modes: drag the map while it follows you and it stops centring \u2014 your position and track keep moving while the map stays where you put it; tap the crosshair to centre on you again. v2257: the Audio window closes only through its \u00d7." },
     { v: "v2256", date: "2026-11-07", text: "The observations fetched last time come back on the map when the app opens, together with the ticked lists, and stay until the red \u00d7 removes them (the Settings toggle is now on by default)." },
     { v: "v2255", date: "2026-11-06", text: "The legend keeps the selected species at the top of the list, one tap away to toggle off again; the Points panel has an Untick all button that clears every ticked list and trip at once." },
     { v: "v2254", date: "2026-11-05", text: "Dropping a point list on the map is several times faster: a 250 000-point KMZ reads in seconds instead of freezing the page for most of a minute, and the points are added in steps with a progress line." },

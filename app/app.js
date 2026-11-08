@@ -1506,6 +1506,11 @@
   // Position indicators: a red plus marks where you were when you tapped the
   // crosshairs (a snapshot); a blue plus follows the live GPS position.
   var posMarker = null, posFixedMarker = null, posWatching = false, posCentered = false;
+  // GPS follow has two modes (owner, 2026-11-08: "a centered mode and a mode where the track is traced out
+  // but without centering"): posFollowFree = false → the map re-centres on every fix; true → the map
+  // stays where the user put it while the marker and the track keep moving. A hand drag switches to
+  // free; a tap on the crosshair centres again; a tap while centred turns tracking off.
+  var posFollowFree = false;
   var posLastLegLL = null;    // last position the legend distance sort + "Birds close by" re-sorted at (≥50 m gate)
   var posLastListLL = null;   // last position a distance-sorted LIST recalculated at (≥100 m gate — driving)
   function livePosIcon(kind) {
@@ -1680,8 +1685,16 @@
       });
   }
   function crossTap() {
+    if (crossState === 1 && posFollowFree) { setFollowFree(false); return; }   // tracing → centred again
     if (crossState !== 0) { setCrosshairState(0); return; }   // follow/read → off
     locateOnce();
+  }
+  function setFollowFree(free) {
+    posFollowFree = !!free;
+    var btn = crossBtn();
+    if (btn) { btn.classList.toggle("cross-trace", posFollowFree); btn.classList.toggle("cross-follow", !posFollowFree); }
+    if (posFollowFree) setStatus(t("ctrl.followFree"));
+    else { if (posMarker && map) map.panTo(posMarker.getLatLng(), { animate: true }); setStatus(t("ctrl.followOn")); }
   }
   function crossHold() {
     setCrosshairState(crossState === 1 ? 0 : 1);   // toggle automatic updating (continuous GPS)
@@ -1704,7 +1717,7 @@
     if (posFixedMarker) { map.removeLayer(posFixedMarker); posFixedMarker = null; }
   }
   function startFollow() {
-    posWatching = true; posCentered = false;
+    posWatching = true; posCentered = false; posFollowFree = false;
     followLegendTimer = setInterval(followLegendTick, FOLLOW_LEGEND_MS);
     if (trackRecordOn() && trackLoad().length) drawTrackLine();   // a track left from before continues
     map.locate({ watch: true, enableHighAccuracy: true, maximumAge: 3000, timeout: 20000 });
@@ -1726,7 +1739,7 @@
     oneShotBusy = false;
     stopFollow(); stopReticle();
     var btn = document.querySelector(".geo-locate-btn");
-    if (btn) btn.classList.remove("cross-follow", "cross-read", "cross-locating");
+    if (btn) btn.classList.remove("cross-follow", "cross-trace", "cross-read", "cross-locating");
     if (s === 1) { startFollow(); if (btn) btn.classList.add("cross-follow"); setStatus(t("ctrl.followOn")); }
     else setStatus(modeHint());   // off → refresh the guidance (don't leave the stale "automatic updating on" text)
     try { updateDistSortPulse(); } catch (e) {}   // start/stop the blue DIST-arrow pulse with tracking
@@ -7747,6 +7760,8 @@
     map.addControl(new AreaUpdateControl());
     updateAreaUpdateCtrl();   // hidden until something is fetched
     map.on("locationerror", function () { setStatus(t("status.locateError")); });
+    // A hand drag while the map follows you = trace mode: the map stays put, the track goes on.
+    map.on("dragstart", function () { if (posWatching && crossState === 1 && posCentered && !posFollowFree) setFollowFree(true); });
     // A one-off locate (tap) drops a red "you are here" crosshair; the instant the
     // user pans away it's a stale snapshot, so remove it. dragstart fires only on a
     // user drag (never on programmatic setView), and only in the off state — so
@@ -7975,7 +7990,7 @@
         map.setView(e.latlng, map.getZoom(), { animate: true });   // re-centre on you WITHOUT changing zoom
         // NB: tracking only re-centres + re-sorts the EXISTING surfaces (below); it must NOT
         // open a per-point species list at your position — that popped up an empty panel.
-      } else {
+      } else if (!posFollowFree) {
         map.panTo(e.latlng, { animate: true });   // keep the map centred on your live position (zoom unchanged)
       }
       // The legend's 📍 distance sort + "Birds close by" re-order live on a 50 m move
