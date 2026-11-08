@@ -3288,7 +3288,7 @@
     if (document.querySelector(".leaflet-popup")) return true;
     if (spiderLayer) return true;   // a fanned-out cluster is showing
     if (detDaysPanelOpen || detModePanelOpen || detObsPanelOpen) return true;
-    if (_anchMenuEl) return true;   // an anchored row menu is up
+    for (var a = 0; a < _anchStack.length; a++) if (!_anchStack[a]._anchPinned) return true;   // an anchored row menu is up (a pinned window does not count: the map stays usable under it)
     var ps = document.querySelector(".place-search-panel"); if (ps && ps.style && ps.style.display !== "none") return true;   // the Search-place box is open
     var ids = ["checklists-panel", "settings-panel", "mp-panel", "stored-loc-panel", "group-quick-panel"];
     for (var i = 0; i < ids.length; i++) { var p = document.getElementById(ids[i]); if (p && p.style && p.style.display !== "none") return true; }
@@ -10571,14 +10571,19 @@
   function anchMenuOpen(el) { return !!el && _anchStack.indexOf(el) >= 0; }
   // No argument: close every anchored popup — what choosing an action from one means.
   // With one: close that popup and anything stacked above it, leaving its parent up.
+  // A PINNED popup (el._anchPinned — the Audio window, owner 2026-11-08: "closes by itself.. user must
+  // close through X") survives outside clicks and the close-all that another popup's opening runs;
+  // only its own × (closeAnchoredMenu(thatEl)) takes it down.
   function closeAnchoredMenu(el) {
     var from = el ? _anchStack.indexOf(el) : 0;
     if (from < 0) return;   // already gone
-    for (var i = _anchStack.length - 1; i >= from; i--) {
+    var keep = _anchStack.slice(0, from);
+    for (var i = from; i < _anchStack.length; i++) {
       var m = _anchStack[i];
+      if (m && m._anchPinned && m !== el) { keep.push(m); continue; }
       if (m && m.parentNode) m.parentNode.removeChild(m);
     }
-    _anchStack.length = from;
+    _anchStack.length = 0; Array.prototype.push.apply(_anchStack, keep);
     _anchMenuEl = _anchStack.length ? _anchStack[_anchStack.length - 1] : null;
     if (!_anchStack.length && _anchMenuOutside) { document.removeEventListener("click", _anchMenuOutside, true); _anchMenuOutside = null; }
   }
@@ -10608,6 +10613,7 @@
         if (_anchOpening) return;   // this very click just opened one of them
         for (var k = _anchStack.length - 1; k >= 0; k--) {
           if (_anchStack[k].contains(e.target)) return;
+          if (_anchStack[k]._anchPinned) continue;   // a pinned window ignores outside clicks
           closeAnchoredMenu(_anchStack[k]);
         }
       };

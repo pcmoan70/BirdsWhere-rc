@@ -21,14 +21,14 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2256";
+var VERSION = "v2257";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 The observations fetched last time now come back on the map when the app opens, together with your ticked lists, and stay until the red \u00d7 removes them (Settings \u2192 Show the last session\u2019s observations on open, now on by default)."
+  "\u2022 The Audio window no longer closes by itself: it stays up through map taps and other menus until you press its \u00d7."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

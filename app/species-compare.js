@@ -144,15 +144,16 @@ window.AppSpCompare = (function () {
   // one column, grouped by voice, then the Xeno-canto search link that the entry used to open directly.
   function openAudioMenu(key, name, sci, x, y) {
     var el = openAnchoredMenu("detrow-menu conf-menu cmp-menu xc-menu anch-top");   // a window: at the top of the map area from the start
+    el._anchPinned = true;   // stays up through map taps and other menus; only its × closes it (owner, 2026-11-08)
     el.style.maxHeight = "min(82vh,640px)"; el.style.overflowY = "auto"; el.style.width = "min(94vw,360px)";
     var closeBtn = document.createElement("button");
     closeBtn.type = "button"; closeBtn.className = "conf-close"; closeBtn.textContent = "\u00d7"; closeBtn.setAttribute("aria-label", "Close");
-    closeBtn.addEventListener("click", function (e) { e.stopPropagation(); closeAnchoredMenu(); });
+    closeBtn.addEventListener("click", function (e) { e.stopPropagation(); closeAnchoredMenu(el); });
     var hdr = document.createElement("div"); hdr.className = "detrow-menu-hdr";
     var nm = document.createElement("span"); nm.textContent = name; hdr.appendChild(nm);
     hdr.appendChild(closeBtn); el.appendChild(hdr);   // the × rides inside the sticky name line, so both stay put while the clips scroll (owner, 2026-10-29)
     // The name is a search box: pick another species and the panel reopens for it (owner, 2026-10-31).
-    wireSpeciesPicker(nm, function (l, nm) { closeAnchoredMenu(); openAudioMenu(l.key, nm, l.sci, x, y); });
+    wireSpeciesPicker(nm, function (l, nm) { closeAnchoredMenu(el); openAudioMenu(l.key, nm, l.sci, x, y); });
     var box = document.createElement("div"); box.className = "xc-sec"; box.innerHTML = '<span class="cmp-nocol">\u2026</span>'; el.appendChild(box);
     var more = document.createElement("a"); more.className = "xc-more"; more.href = xenoCantoUrl(sci || ""); more.target = "_blank"; more.rel = "noopener";
     more.textContent = t("clips.more"); more.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); openExternal(xenoCantoUrl(sci || "")); });
