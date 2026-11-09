@@ -679,7 +679,7 @@ kept, so the map shows the same dots as when it was closed; "Fetch on open" is t
 The red **×** sits at the **lower right of the map** (above the 🔍 search and locate buttons; the filter
 **funnel** sits under it in the same bar), shown while fetched observations or fetched-area squares are on the
 map. It clears the **fetched observations only** — or, when fetched-area outlines exist, first arms
-**per-area delete** (a red × at the centre of each area removes just that area's detections; a second tap clears every
+**per-area delete** (a red × on each area removes just that area's detections; a second tap clears every
 fetched detection). Either way the **stored downloads go too** (v2237: the area's records, or all of them),
 so the next fetch there asks the sources afresh instead of reopening the copy on the device. The points of shown saved lists, detection sets and the pins a search put on the map are
 **never** touched by it: take those off from the Points panel (un-tick the list, or the × on its "On the map" row).

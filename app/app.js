@@ -3879,16 +3879,14 @@
     updateAreaUpdateCtrl();   // no areas → hide the ↻ button
   }
   // ---- Per-area delete (the red ×'s two-stage behaviour) --------------------
-  // A small red × at the CENTRE of each fetched rectangle (owner, 2026-11-09: "the subareas do not all
-  // get the red circled cross" — at the NE corner the ×'s of overlapping squares fell on top of each
-  // other, and a big square's corner was off screen; every square has its own centre, the fetch spot).
-  // Tap one → delete that area (its detections + outline). The legend's red × arms this mode on the
+  // A small red × pinned to each fetched rectangle's NE corner. Tap one → delete
+  // that area (its detections + outline). The legend's red × arms this mode on the
   // first click and deletes everything on the second.
   function addAreaDelMarker(area) {
     if (!map || !L.marker) return;
     if (!areaDelLayer) areaDelLayer = L.layerGroup().addTo(map);
     var icon = L.divIcon({ className: "area-del-icon", html: X_MARK_SVG, iconSize: [24, 24], iconAnchor: [12, 12] });
-    var mk = L.marker(area.bounds.getCenter(), { icon: icon, keyboard: false, zIndexOffset: 2000, title: t("det.delArea") });
+    var mk = L.marker(area.bounds.getNorthEast(), { icon: icon, keyboard: false, zIndexOffset: 2000, title: t("det.delArea") });
     mk.on("click", function (e) { if (L.DomEvent) L.DomEvent.stop(e); mapClickGuardUntil = Date.now() + 250; deleteFetchedArea(area.id); });
     area.delMarker = mk;
     areaDelLayer.addLayer(mk);
@@ -5125,9 +5123,19 @@
     var disarm = function () { launchBirdsOnce = false; };
     var ck = sightCK(lat, lon, rkm, fetchGroup, days);   // group- + days-keyed: a different window is a different cache entry
     var fetchOrigin = { lat: lat, lon: lon, rkm: rkm };  // rides on every (partial) result → area ownership follows the FETCH, not the current view
-    if (seededSightings[ck]) { disarm(); return seededSightings[ck]; }   // shared-list import (works with NO keys/sources — never refetched)
+    // The cache key rounds to 0.01° (~1 km), so a click near an earlier one is served the EARLIER
+    // click's result — with the earlier origin, so the square was registered there again and this
+    // point got none (owner, 2026-11-09: "there are points that don't get the area marker"). A cached
+    // answer is re-stamped with THIS request's point; the rows' owners union across the two squares.
+    var withOrigin = function (p) {
+      return p.then(function (out) {
+        if (!out || !out.origin || (out.origin.lat === lat && out.origin.lon === lon && out.origin.rkm === rkm)) return out;
+        var o = Object.assign({}, out); o.origin = fetchOrigin; return o;
+      });
+    };
+    if (seededSightings[ck]) { disarm(); return withOrigin(seededSightings[ck]); }   // shared-list import (works with NO keys/sources — never refetched)
     if (force) dropSightsAt(lat, lon, rkm);   // this spot's downloads go; the fetch below replaces them
-    if (!force && allSightingsCache[ck]) { disarm(); return allSightingsCache[ck]; }
+    if (!force && allSightingsCache[ck]) { disarm(); return withOrigin(allSightingsCache[ck]); }
     // Reuse a previously-downloaded result for this exact location (same radius,
     // group + source config) that is still fresh — no network, no refetch on reopen.
     if (!force && sightReusable(ck, cfgSig)) {
@@ -5138,7 +5146,7 @@
       });
       allSightingsCache[ck] = cachedPr; capObj(allSightingsCache, 60);
       disarm();
-      return cachedPr;
+      return withOrigin(cachedPr);
     }
     // Subset reuse: for a specific group, if a still-fresh "All" fetch for the SAME
     // spot / radius / day-window is cached, derive this group by filtering All's
@@ -5158,7 +5166,7 @@
           var derivedPr = Promise.resolve(derived);
           allSightingsCache[ck] = derivedPr; capObj(allSightingsCache, 60);
           disarm();
-          return derivedPr;
+          return withOrigin(derivedPr);
         }
       }
     }
