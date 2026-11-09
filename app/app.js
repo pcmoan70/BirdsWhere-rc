@@ -3879,14 +3879,16 @@
     updateAreaUpdateCtrl();   // no areas → hide the ↻ button
   }
   // ---- Per-area delete (the red ×'s two-stage behaviour) --------------------
-  // A small red × pinned to each fetched rectangle's NE corner. Tap one → delete
-  // that area (its detections + outline). The legend's red × arms this mode on the
+  // A small red × at the CENTRE of each fetched rectangle (owner, 2026-11-09: "the subareas do not all
+  // get the red circled cross" — at the NE corner the ×'s of overlapping squares fell on top of each
+  // other, and a big square's corner was off screen; every square has its own centre, the fetch spot).
+  // Tap one → delete that area (its detections + outline). The legend's red × arms this mode on the
   // first click and deletes everything on the second.
   function addAreaDelMarker(area) {
     if (!map || !L.marker) return;
     if (!areaDelLayer) areaDelLayer = L.layerGroup().addTo(map);
     var icon = L.divIcon({ className: "area-del-icon", html: X_MARK_SVG, iconSize: [24, 24], iconAnchor: [12, 12] });
-    var mk = L.marker(area.bounds.getNorthEast(), { icon: icon, keyboard: false, zIndexOffset: 2000, title: t("det.delArea") });
+    var mk = L.marker(area.bounds.getCenter(), { icon: icon, keyboard: false, zIndexOffset: 2000, title: t("det.delArea") });
     mk.on("click", function (e) { if (L.DomEvent) L.DomEvent.stop(e); mapClickGuardUntil = Date.now() + 250; deleteFetchedArea(area.id); });
     area.delMarker = mk;
     areaDelLayer.addLayer(mk);
