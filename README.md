@@ -223,6 +223,11 @@ seven families ship with the app, `app/butterfly-genera.json`), with each record
 iNaturalist's taxon ancestry — as the fallback. It marks the funnel orange whenever it is set and
 is cleared by the funnel's clear-all.
 
+**Update from the list page.** While anything has been fetched, a **✓** sits in the same row (v2261): a
+tap brings every fetched area up to today, exactly like the map's ✓ (it blinks while it runs), and the
+list is then rebuilt from the fresh observations; hold it for the update settings (overlap days,
+only the areas in view).
+
 **Sorting and what the list contains.** Beside the funnel sit two buttons, in the species table and
 the Images view alike: a **probability sort toggle** (↓ commonest first, ↑ rarest first — one tap
 each way; ⇅ while the list is ordered by something else), and the **P** toggle (v2251; before, a

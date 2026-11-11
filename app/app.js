@@ -735,7 +735,11 @@
   // The ↻ "update fetched areas" button (right side) — shown only once something has
   // been fetched (there are areas to bring up to date).
   var areaUpdateCtrlEl = null;
-  function updateAreaUpdateCtrl() { if (areaUpdateCtrlEl) areaUpdateCtrlEl.style.display = (fetchedAreas && fetchedAreas.length) ? "" : "none"; }
+  function updateAreaUpdateCtrl() {
+    var on = !!(fetchedAreas && fetchedAreas.length);
+    if (areaUpdateCtrlEl) areaUpdateCtrlEl.style.display = on ? "" : "none";
+    var lb = document.getElementById("sp-reload-btn"); if (lb) lb.style.display = on ? "" : "none";   // the list page's ✓ follows the map's
+  }
   // Step the H3 detail offset (range/richness overlay) finer/coarser, -2..+2.
   function adjustH3Detail(delta) {
     var v = Math.max(-2, Math.min(2, (hiResFactor | 0) + delta));
@@ -3759,7 +3763,7 @@
   // Re-fetch each remembered area from (its end-date − overlap) to today's latest
   // observations, merging new ones in; plotSightingsResult re-stamps the area's
   // end-date to now via rememberFetchedArea. Optionally only the areas in view.
-  function updateFetchedAreas() {
+  function updateFetchedAreas(onDone) {
     if (storedFetchBusy) return;
     if (!map || !(fetchedAreas || []).length) { setStatus(t("update.noAreas")); return; }
     var cfg = areaUpdateCfg(), view = map.getBounds();
@@ -3774,6 +3778,7 @@
     if (!locs.length) { setStatus(t("update.noAreas")); return; }
     storedFetchBusy = true; try { updateFilterBusy(); } catch (e) {}
     if (areaUpdateCtrlEl) areaUpdateCtrlEl.classList.add("loading");
+    var spRl = document.getElementById("sp-reload-btn"); if (spRl) spRl.classList.add("loading");
     var i = 0, total = locs.length, myLoopGen = fetchLoopGen, prevNoFit = plotNoFit;
     plotNoFit = true;   // stay on the current view; new dots just light up in place
     (function next() {
@@ -3781,9 +3786,11 @@
       if (i >= total) {
         plotNoFit = prevNoFit; storedFetchBusy = false; try { updateFilterBusy(); } catch (e) {} tickerFireMulti();
         if (areaUpdateCtrlEl) areaUpdateCtrlEl.classList.remove("loading");
+        var spRl2 = document.getElementById("sp-reload-btn"); if (spRl2) spRl2.classList.remove("loading");
         try { updateDetLegend(); } catch (e) {}
         updateViewToggle();
         setStatus(t("update.done", { n: total }));
+        if (onDone) { try { onDone(); } catch (e) {} }
         return;
       }
       var l = locs[i++];
@@ -7768,7 +7775,7 @@
       }
     });
     map.addControl(new AreaUpdateControl());
-    updateAreaUpdateCtrl();   // hidden until something is fetched
+    updateAreaUpdateCtrl();   // hidden until something is fetched (the list page's ✓ too)
     map.on("locationerror", function () { setStatus(t("status.locateError")); });
     // A hand drag while the map follows you = trace mode: the map stays put, the track goes on.
     map.on("dragstart", function () { if (posWatching && crossState === 1 && posCentered && !posFollowFree) setFollowFree(true); });
@@ -21025,6 +21032,22 @@
     // by clicking a column name; the pane keeps a full copy of the sort + every filter.
     var spFilterBtn = document.getElementById("sp-filter-btn");
     if (spFilterBtn) spFilterBtn.addEventListener("click", function (e) { e.stopPropagation(); openAllFiltersPane(); });
+    // ✓ on the list page: the same update as the map's ✓ (every fetched area, from its end-date −
+    // overlap to now), then the list is rebuilt from the fresh result — a point list re-reads its
+    // point's new download instead of re-using the settled one. Hold = the update settings.
+    var spReloadBtn = document.getElementById("sp-reload-btn");
+    if (spReloadBtn) {
+      spReloadBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        updateFetchedAreas(function () {
+          if (!onListView()) return;
+          keepListScroll = true;
+          if (currentSpView && currentSpView.mode === "point" && !currentSpView._noFetch && !mapFromMultiFetch) rerenderPointList({ reuse: false });
+          else refreshCurrentView();
+        });
+      });
+      wireHoldButton(spReloadBtn, function () { showAreaUpdateSettings(spReloadBtn); });
+    }
     var spMissingBtn = document.getElementById("sp-missing-btn");
     // [?] also ranks the list commonest first (probability ↓) — in the table and the Images
     // layout alike — and [!] brings the previous sort back (unless the user re-sorted meanwhile).

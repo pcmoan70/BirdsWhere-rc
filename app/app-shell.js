@@ -466,6 +466,8 @@ window.AppShell = (function () {
             // (rarest first). The column headers still offer every other sort; this is the
             // one people reach for, and the Images layout has no headers to click.
             '<button id="sp-probsort-btn" class="sp-filter-btn ico-btn sp-probsort-btn" type="button" data-i18n-title="sp.probSort" title="Sort by probability"><span class="ps-gly">⇅</span></button>' +
+            // ✓ reload (owner, 2026-11-11): the map's "update fetched areas" from the list page.
+            '<button id="sp-reload-btn" class="sp-filter-btn ico-btn sp-reload-btn" type="button" data-i18n-title="update.title" title="Update fetched areas to today. Hold for settings." style="display:none">' + ico("check") + '</button>' +
             '<div id="sp-filters-bar"></div>' +
           '</div>' +
           '<div id="sp-filters-wrap"></div>' +
