@@ -1084,7 +1084,8 @@ Right-click / long-press / tap any species name for a menu **led by the species 
 - **Lists & actions** — **Show only this species** (when it has observations plotted: isolates that
   species on the map + detections list, like a legend selection; tap again on the same species to show
   everything), **＋ Add to species list…** with **Add point to list…** directly under it (for a
-  record), then state-showing **toggles**: **Interesting** (★), **Year list** and **Life
+  record: after the list is picked, a form opens prefilled with the record's name, count, date, observer,
+  locality, note and tags — relabel any of them, then **Save**; Cancel / × files nothing), then state-showing **toggles**: **Interesting** (★), **Year list** and **Life
   list** (each coloured when the species is in that set, greyed when not).
 - **This observation** (bottom, when opened from a record with a location) — **Show on map**,
   **Navigate here** and **Add to route**.

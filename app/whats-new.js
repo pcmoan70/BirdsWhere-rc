@@ -3,6 +3,7 @@
 // Loaded before app.js; exposed on window.AppStaticData.
 window.AppStaticData = window.AppStaticData || {};
 window.AppStaticData.WHATS_NEW = [
+    { v: "v2263", date: "2026-11-15", text: "Adding an observation to a list opens its values first, prefilled: change the name, count, date, observer, locality, note or tags before you save it." },
     { v: "v2262", date: "2026-11-15", text: "Adding an observation to a list is immediate, also with big lists ticked on the map. The list page has a \u2713 update button next to the funnel, P and sort (v2261), and every fetched point now gets its square with its red \u00d7 (v2260)." },
     { v: "v2258", date: "2026-11-08", text: "GPS follow in two modes: drag the map while it follows you and it stops centring \u2014 your position and track keep moving while the map stays where you put it; tap the crosshair to centre on you again. v2257: the Audio window closes only through its \u00d7." },
     { v: "v2256", date: "2026-11-07", text: "The observations fetched last time come back on the map when the app opens, together with the ticked lists, and stay until the red \u00d7 removes them (the Settings toggle is now on by default)." },

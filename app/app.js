@@ -10587,11 +10587,38 @@
     if (+d.posFuzzM > 0) p.posFuzzM = +d.posFuzzM;
     return p;
   }
+  // The record's values open for relabelling before it is filed (owner, 2026-11-15: "when saving an observation point,
+  // user should be able to relabel values (including name)"), prefilled; Save or Enter files it, Cancel / × / Esc leaves it.
+  var DET_EDIT_F = [["name", "points.name"], ["count", "ptedit.count"], ["date", "ptedit.date"], ["observer", "th.obs"], ["place", "th.locality"], ["note", "points.note"], ["tags", "points.tags"]];
   function addDetPoint(d, listName) {
-    if (d.lat == null || isNaN(d.lat) || d.lon == null || isNaN(d.lon)) { closeDetRowMenu(); return; }
-    addPointToCollection(listName, detPointFromRow(d));
     closeDetRowMenu();
-    setStatus(t("detmenu.added", { name: listName }));
+    if (d.lat == null || isNaN(d.lat) || d.lon == null || isNaN(d.lon)) return;
+    var p = detPointFromRow(d), esc = escapeHtml, m = createModal({ escClose: true });
+    var cur = function (k) { return k === "tags" ? (p.tags || []).join(", ") : (p[k] == null ? "" : String(p[k])); }, tags0 = cur("tags");
+    m.box.innerHTML = '<div class="ui-modal-msg">' + esc(t("points.saveToList") + " \u00b7 " + listName) + '</div><div class="mp-form det-save-form">' +
+      DET_EDIT_F.map(function (f) {
+        return "<label>" + esc(t(f[1])) + (f[0] === "note" ? '<textarea rows="2" data-k="note">' + esc(cur("note")) + "</textarea>"
+          : '<input type="text" data-k="' + f[0] + '" value="' + esc(cur(f[0])) + '" />') + "</label>";
+      }).join("") + '</div><div class="ui-modal-btns"><button type="button" class="btn btn-light det-save-no">' + esc(t("btn.cancel")) +
+      '</button><button type="button" class="btn det-save-ok">' + esc(t("points.save")) + "</button></div>";
+    var val = function (k) { var el = m.box.querySelector('[data-k="' + k + '"]'); return el ? el.value.trim() : ""; };
+    function save() {
+      var old = p.name;
+      DET_EDIT_F.forEach(function (f) {
+        var k = f[0], v = val(k);
+        if (k === "tags") p.tags = mpParseTags(v);
+        else if (k === "count") p.count = v !== "" && isFinite(+v) ? +v : v;
+        else if (v || k in p) p[k] = v;
+      });
+      // a renamed record whose tags were left as they were: the old name's tag follows the name
+      if (p.name !== old && val("tags") === tags0) { var i = p.tags.indexOf(old); if (i >= 0) { if (p.name) p.tags[i] = p.name; else p.tags.splice(i, 1); } }
+      m.close(); addPointToCollection(listName, p);
+      setStatus(t("detmenu.added", { name: listName }));
+    }
+    m.box.querySelector(".det-save-ok").addEventListener("click", save);
+    m.box.querySelector(".det-save-no").addEventListener("click", m.close);
+    m.box.addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.tagName === "INPUT") { e.preventDefault(); save(); } });
+    var nm = m.box.querySelector('[data-k="name"]'); if (nm && window.matchMedia && window.matchMedia("(pointer: fine)").matches) { try { nm.focus(); nm.select(); } catch (e) {} }
   }
   // ---- the small per-record menu in the Detections list ---------------------
   // ---- Shared anchored popup menu -------------------------------------------
