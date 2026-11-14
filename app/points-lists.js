@@ -768,7 +768,10 @@ window.AppPoints = (function () {
   }
   function writeIfChanged(c, fast) {
     if (isViewOnly(c)) return null;   // never stored
-    if (fast && !shownColls[c.name] && mpCheap[c.name] === cheapSig(c)) return null;
+    // Shown lists too (owner, 2026-11-15: "storing an observation into a list takes a very long time, it should be
+    // immediate"): signing every ticked list on every save was most of an add's time with big lists ticked — an
+    // edit that keeps the count is written by the full check a few seconds later (or at once when the app is hidden).
+    if (fast && mpCheap[c.name] === cheapSig(c)) return null;
     var sig;
     try { sig = fullSig(c); } catch (e) { sig = null; }
     mpCheap[c.name] = cheapSig(c);

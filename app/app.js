@@ -10521,8 +10521,17 @@
     if (!c) { c = { name: name, points: [] }; mpState.mpCollections().push(c); }
     c.points.push(point);
     mpState.shownColls()[c.name] = true;   // tick the list so the just-added point is visible (it's hidden otherwise)
-    saveMapPoints(); saveShownState(); renderMapPoints();
+    saveMapPoints(); saveShownState(); renderMapPointsSoon();
     return true;
+  }
+  // The redraw of every ticked list's pins after the menu or popup has closed (owner, 2026-11-15: "storing an
+  // observation into a list takes a very long time, it should be immediate"): with big lists ticked it is a long
+  // frame, and run in the tap's own handler it held the menu on screen. Several adds in a row share one redraw.
+  var mpRenderSoonT = 0;
+  function renderMapPointsSoon() {
+    if (mpRenderSoonT) return;
+    mpRenderSoonT = 1;
+    requestAnimationFrame(function () { setTimeout(function () { mpRenderSoonT = 0; renderMapPoints(); }, 0); });
   }
   // Remove one saved point from a named list (by its id). Returns true if a point
   // was actually removed. The caller re-renders so the dot disappears.
@@ -16670,7 +16679,7 @@
         // point into the chosen collection and drop the loose pin.
         if (target && !mpState.mpActiveName()) {
           var moved = Object.assign({}, mpState.mapPoints().filter(function (x) { return x.id === p.id; })[0] || { id: p.id, lat: p.lat, lon: p.lon, name: name, tags: tags, note: note, color: color, source: "manual" });
-          var fileIt = function (n) { deleteMapPoint(p.id); addPointToCollection(n, moved); mpState.shownColls()[n] = true; saveShownState(); renderMapPoints(); };
+          var fileIt = function (n) { deleteMapPoint(p.id); addPointToCollection(n, moved); };
           if (target === "__new__") { modalPrompt(t("points.saveAsPrompt"), "").then(function (n) { n = (n || "").trim(); if (n) fileIt(n); map.closePopup(); }); return; }
           fileIt(target);
         }
@@ -16679,7 +16688,7 @@
       var pt = { id: mpUid(), lat: p.lat, lon: p.lon, name: name, tags: tags, note: note, color: color, source: "manual", createdAt: new Date().toISOString() };
       if (radius) pt.radius = radius;
       if (!target) { addMapPoint(pt); map.closePopup(); return; }   // loose working pin
-      var addToList = function (n) { addPointToCollection(n, pt); mpState.shownColls()[n] = true; saveShownState(); renderMapPoints(); map.closePopup(); };
+      var addToList = function (n) { addPointToCollection(n, pt); map.closePopup(); };
       if (target === "__new__") {
         modalPrompt(t("points.saveAsPrompt"), "").then(function (n) { n = (n || "").trim(); if (n) addToList(n); });
       } else addToList(target);
