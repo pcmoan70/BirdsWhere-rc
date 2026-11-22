@@ -191,6 +191,7 @@
     probHueColor: probHueColor, showDetRowMenu: showDetRowMenu, speciesName: speciesName, t: t, wireHoldButton: wireHoldButton,
     wireSpeciesPicker: wireSpeciesPicker, wireYearProbTips: wireYearProbTips, xenoCantoUrl: xenoCantoUrl,
     loadSpPhoto: window.AppSpImages.loadSpPhoto, spImagesPrefetch: window.AppSpImages.spImagesPrefetch, spImgStore: window.AppSpImages.spImgStore,
+    predictWeek: predictWeek, predictAllWeeks: predictAllWeeks,
     getCurrentSpView: function () { return currentSpView; }, getLabelsByKey: function () { return labelsByKey; },
     getSpgHoldAt: function () { return spgHoldAt; }, getScriptBase: function () { return SCRIPT_BASE; },
   });

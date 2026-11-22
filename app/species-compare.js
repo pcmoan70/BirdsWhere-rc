@@ -18,7 +18,7 @@ window.AppSpCompare = (function () {
   // Plain function aliases (stable references) …
   var anchMenuOpen, centerPhotoPopup, closeAnchoredMenu, cssVar, escapeHtml, experimentalOn, fitCardGrid, openAnchoredMenu,
       openExternal, positionAnchoredMenu, probBarCell, probBarNa, probHueColor, showDetRowMenu, speciesName, t, wireHoldButton,
-      wireYearProbTips, xenoCantoUrl, loadSpPhoto, spImagesPrefetch, spImgStore, wireSpeciesPicker;
+      wireYearProbTips, xenoCantoUrl, loadSpPhoto, spImagesPrefetch, spImgStore, wireSpeciesPicker, predictWeek, predictAllWeeks;
   // … and getters for app state that changes at runtime.
   var getCurrentSpView, getLabelsByKey, getSpgHoldAt, getScriptBase;
 
@@ -29,7 +29,7 @@ window.AppSpCompare = (function () {
     probBarCell = ctx.probBarCell; probBarNa = ctx.probBarNa; probHueColor = ctx.probHueColor; showDetRowMenu = ctx.showDetRowMenu;
     speciesName = ctx.speciesName; t = ctx.t; wireHoldButton = ctx.wireHoldButton; wireYearProbTips = ctx.wireYearProbTips;
     xenoCantoUrl = ctx.xenoCantoUrl; loadSpPhoto = ctx.loadSpPhoto; spImagesPrefetch = ctx.spImagesPrefetch; spImgStore = ctx.spImgStore;
-    wireSpeciesPicker = ctx.wireSpeciesPicker;
+    wireSpeciesPicker = ctx.wireSpeciesPicker; predictWeek = ctx.predictWeek; predictAllWeeks = ctx.predictAllWeeks;   // the model at the open point: Here, Score, the compare card's Season (missing since the split, v2230 — every call threw into a silent catch)
     getCurrentSpView = ctx.getCurrentSpView; getLabelsByKey = ctx.getLabelsByKey; getSpgHoldAt = ctx.getSpgHoldAt; getScriptBase = ctx.getScriptBase;
     CMP_FOCAL_COL = cssVar("--brand", "#3f6f3a"); CMP_PARTNER_COL = cssVar("--warn", "#c7791c");
   }
