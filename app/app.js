@@ -1716,12 +1716,12 @@
     r.innerHTML = '<input type="checkbox" class="cm-track"' + (trackRecordOn() ? " checked" : "") + "> " + escapeHtml(t("cross.track"));
     el.appendChild(r);
     r.querySelector("input").addEventListener("change", function () { setTrackRecord(!!this.checked); });
-    function btn(key, fn) { var b = document.createElement("button"); b.type = "button"; b.className = "detrow-menu-item"; b.textContent = t(key); b.addEventListener("click", function () { closeAnchoredMenu(); fn(); }); el.appendChild(b); }
+    function btn(key, fn, cls) { var b = document.createElement("button"); b.type = "button"; b.className = "detrow-menu-item" + (cls ? " " + cls : ""); b.textContent = t(key); b.addEventListener("click", function () { closeAnchoredMenu(); fn(); }); el.appendChild(b); }
     btn("cross.centre", function () {
       if (crossState !== 1) setCrosshairState(1);
       else if (posFollowFree) setFollowFree(false);
       else if (posMarker && map) map.panTo(posMarker.getLatLng(), { animate: true });
-    });
+    }, "drm-green");
     if (crossState === 1) btn("cross.stop", function () { setCrosshairState(0); });
     var br = a.getBoundingClientRect();
     positionAnchoredMenu(el, br.left - 220, br.top - 150);   // up and to the LEFT of the corner button
