@@ -21,14 +21,15 @@
  *
  * Bump VERSION to invalidate all caches on the next deploy.
  */
-var VERSION = "v2264";
+var VERSION = "v2265";
 // The changelog shown under the lit "Reload to update" button in Settings.
 // THIS RELEASE ONLY — replace it wholesale on every version bump, never append.
 // A returning user wants to know what the update they are about to install changes,
 // not a scroll of things they already have; the feature history lives in Settings →
 // What's new, and the full record in CHANGES.md.
 var NOTES = [
-  "\u2022 Confusion species: the Here and Score columns are back (the probability at the open point), and the compare card shows its Season chart again."
+  "\u2022 Hold (or right-click) the locate crosshair: a My position menu \u2014 Track: draw my path, Centre the map on my position, Stop following.",
+  "\u2022 An old track still stored is offered for saving or discarding before a new one starts."
 ].join("\n");
 // RC channel isolation: an RC deployment (SW served from a "…-rc/" path) shares the
 // browser ORIGIN with production, so its caches must be namespaced — and its activate

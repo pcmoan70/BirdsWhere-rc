@@ -1641,7 +1641,7 @@
   // when it is good enough (≤ 50 m accuracy) and ≥ 5 m from the last one; the track so far is saved
   // as it grows (a reload mid-walk does not lose it) and continues on the next tracking.
   var TRACK_MIN_M = 5, TRACK_MAX_ACC = 50;
-  var trackPts = null, trackLine = null, trackSavedN = 0;
+  var trackPts = null, trackLine = null, trackSavedN = 0, trackAsking = false;   // trackAsking: the save/discard question is up — no fixes join the old track meanwhile
   function trackRecordOn() { return window.GeoState.get("trackRecord", false) === true; }
   function trackLoad() { if (!trackPts) { trackPts = (window.GeoState.get("trackInProgress", []) || []).filter(function (q) { return q && isFinite(q[0]) && isFinite(q[1]); }); trackSavedN = trackPts.length; } return trackPts; }
   function trackStore(force) { if (trackPts && (force || trackPts.length - trackSavedN >= 5)) { window.GeoState.save({ trackInProgress: trackPts }); trackSavedN = trackPts.length; } }
@@ -1653,7 +1653,7 @@
   }
   function clearTrackLine() { if (trackLine && map) { try { map.removeLayer(trackLine); } catch (e) {} } trackLine = null; }
   function recordTrackFix(e) {
-    if (!trackRecordOn() || !e || !e.latlng) return;
+    if (!trackRecordOn() || trackAsking || !e || !e.latlng) return;
     if (e.accuracy != null && e.accuracy > TRACK_MAX_ACC) return;
     var pts = trackLoad(), q = [Math.round(e.latlng.lat * 1e6) / 1e6, Math.round(e.latlng.lng * 1e6) / 1e6, Date.now()];
     var last = pts[pts.length - 1];
@@ -1662,15 +1662,18 @@
   }
   function trackKm(pts) { var d = 0; for (var i = 1; i < pts.length; i++) d += haversineKm(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1]); return d; }
   function endTrack() {
+    if (trackAsking) return Promise.resolve();   // the question is already up
     var pts = trackLoad();
     clearTrackLine();
-    if (pts.length < 2) { trackPts = []; window.GeoState.save({ trackInProgress: [] }); trackSavedN = 0; return; }
+    if (pts.length < 2) { trackPts = []; window.GeoState.save({ trackInProgress: [] }); trackSavedN = 0; return Promise.resolve(); }
     trackStore(true);
     var km = trackKm(pts), d0 = new Date(pts[0][2] || Date.now());
     var pad = function (n) { return (n < 10 ? "0" : "") + n; };
     var def = t("track.defaultName", { date: d0.getFullYear() + "-" + pad(d0.getMonth() + 1) + "-" + pad(d0.getDate()) + " " + pad(d0.getHours()) + ":" + pad(d0.getMinutes()) });
-    uiDialog({ message: t("track.savePrompt", { km: km.toFixed(2), n: pts.length }), input: true, value: def, okLabel: t("track.save"), cancelLabel: t("track.discard"), xLater: true })
+    trackAsking = true;
+    return uiDialog({ message: t("track.savePrompt", { km: km.toFixed(2), n: pts.length }), input: true, value: def, okLabel: t("track.save"), cancelLabel: t("track.discard"), xLater: true })
       .then(function (name) {
+        trackAsking = false;
         if (name === undefined) { trackPts = null; setStatus(t("track.kept")); return; }     // × → decide later: stays, continues on the next tracking
         if (name === null || !String(name).trim()) { trackPts = []; trackSavedN = 0; window.GeoState.save({ trackInProgress: [] }); setStatus(t("track.discarded")); return; }
         name = String(name).trim();
@@ -1701,8 +1704,35 @@
     if (posFollowFree) setStatus(t("ctrl.followFree"));
     else { if (posMarker && map) map.panTo(posMarker.getLatLng(), { animate: true }); setStatus(t("ctrl.followOn")); }
   }
+  // Hold / right-click on the crosshair: a popup (owner, 2026-11-22: "allowing user to toggle on tracking (show a
+  // line of path), and button for starting centering of the screen at gps location. when there is an old path
+  // tracked user should be asked to save or discard existing track").
+  function oldTrack() { return trackLoad().length >= 2; }
   function crossHold() {
-    setCrosshairState(crossState === 1 ? 0 : 1);   // toggle automatic updating (continuous GPS)
+    var a = crossBtn(); if (!a) return;
+    var el = openAnchoredMenu("cross-menu detrow-menu");
+    var h = document.createElement("div"); h.className = "detrow-menu-hdr"; h.textContent = t("cross.title"); el.appendChild(h);
+    var r = document.createElement("label"); r.className = "det-obs-row";
+    r.innerHTML = '<input type="checkbox" class="cm-track"' + (trackRecordOn() ? " checked" : "") + "> " + escapeHtml(t("cross.track"));
+    el.appendChild(r);
+    r.querySelector("input").addEventListener("change", function () { setTrackRecord(!!this.checked); });
+    function btn(key, fn) { var b = document.createElement("button"); b.type = "button"; b.className = "detrow-menu-item"; b.textContent = t(key); b.addEventListener("click", function () { closeAnchoredMenu(); fn(); }); el.appendChild(b); }
+    btn("cross.centre", function () {
+      if (crossState !== 1) setCrosshairState(1);
+      else if (posFollowFree) setFollowFree(false);
+      else if (posMarker && map) map.panTo(posMarker.getLatLng(), { animate: true });
+    });
+    if (crossState === 1) btn("cross.stop", function () { setCrosshairState(0); });
+    var br = a.getBoundingClientRect();
+    positionAnchoredMenu(el, br.left - 220, br.top - 150);   // up and to the LEFT of the corner button
+  }
+  // Track on/off (the popup and Settings share it). Turning it on with an old path still stored asks first:
+  // save it (as a list) or discard it; × keeps it, and the new fixes continue it.
+  function setTrackRecord(on) {
+    window.GeoState.save({ trackRecord: on });
+    var cb = document.getElementById("track-record-toggle"); if (cb) cb.checked = on;
+    if (!on) { clearTrackLine(); return; }
+    (oldTrack() ? endTrack() : Promise.resolve()).then(function () { if (posWatching && trackRecordOn()) drawTrackLine(); });
   }
   // While GPS-follow pans the map on every fix, the map is never "still" for the legend's
   // 2-s idle redraw, so its counts stayed grey and old. Owner (2026-11-01): "When gps tracking
@@ -1724,7 +1754,7 @@
   function startFollow() {
     posWatching = true; posCentered = false; posFollowFree = false;
     followLegendTimer = setInterval(followLegendTick, FOLLOW_LEGEND_MS);
-    if (trackRecordOn() && trackLoad().length) drawTrackLine();   // a track left from before continues
+    if (trackRecordOn() && oldTrack()) endTrack().then(function () { if (posWatching && trackRecordOn()) drawTrackLine(); });   // a track left from before: save or discard it (× = it continues)
     map.locate({ watch: true, enableHighAccuracy: true, maximumAge: 3000, timeout: 20000 });
   }
   function stopReticle() {
@@ -20025,7 +20055,7 @@
     var trackCb = document.getElementById("track-record-toggle");
     if (trackCb) {
       trackCb.checked = trackRecordOn();
-      trackCb.addEventListener("change", function () { window.GeoState.save({ trackRecord: !!this.checked }); if (!this.checked) clearTrackLine(); });
+      trackCb.addEventListener("change", function () { setTrackRecord(!!this.checked); });
     }
     var shareTinyCb = document.getElementById("share-tiny-toggle");
     if (shareTinyCb) {

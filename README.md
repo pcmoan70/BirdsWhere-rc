@@ -157,7 +157,7 @@ holding a button:
 |---|---|
 | the **Maps & overlays…** row in the bird button's quick panel (or tap the button at the top of that popup) | hide/show all ticked overlays in one go (the row and the bird button turn orange while they're suspended) |
 | the **🔍** search button | the **stored locations** popup |
-| the **locate crosshair** | continuous **GPS-follow** (hold again = red read cursor) |
+| the **locate crosshair** | the **My position** popup: *Track: draw my path* (on/off), *Centre the map on my position* (starts GPS-follow), *Stop following* while it runs |
 | the **Settings ⚙** gear | the full **Settings** panel (a *tap* gives the quick panel instead) |
 | the **⤓ offline-maps** button | the offline-areas manager |
 | the **Points** button | the point-lists admin |
@@ -1327,13 +1327,13 @@ an **eBird Record Format CSV** ready for [ebird.org/import](https://ebird.org/im
 
 - **Locate me** (crosshair, top-left): **tap** = locate once (blinks blue while finding you,
   then the map jumps to your position and opens the **map-point popup** there for a quick fetch —
-  even when a saved point or plotted dot sits at that spot); **hold** (or right-click) = continuous **GPS-follow /
-  tracking** — the button **pulses blue**, the blue cross at your position **blinks once a second**, and the map re-centres (keeping your zoom) as you move,
-  live-updating distance sorts (**drag the map** while it follows you and it stops centring — **trace mode**, the button goes steady blue, your position and track keep moving while the map stays where you put it; **tap** the crosshair to centre again, v2258); the legend re-renders **once a minute** for the observations in view (the usual "2 s after the map stands still" rule is off while the map follows you, v2240); hold again for the **red read cursor** (a fixed centre cursor: pan
-  a plotted dot, map point or eBird hotspot under it to open it); a tap while centred turns it off.
+  even when a saved point or plotted dot sits at that spot); **hold** (or right-click) = the **My position** popup (v2265): a
+  **Track: draw my path** tick (the same switch as the Settings one below), **Centre the map on my position**
+  (starts continuous **GPS-follow / tracking**, or centres again in trace mode) and, while it runs, **Stop following**. In GPS-follow the button **pulses blue**, the blue cross at your position **blinks once a second**, and the map re-centres (keeping your zoom) as you move,
+  live-updating distance sorts (**drag the map** while it follows you and it stops centring — **trace mode**, the button goes steady blue, your position and track keep moving while the map stays where you put it; **tap** the crosshair to centre again, v2258); the legend re-renders **once a minute** for the observations in view (the usual "2 s after the map stands still" rule is off while the map follows you, v2240); a tap while centred turns it off.
 - **GPS track** — Settings → Lists & sharing → **Record a track while GPS tracking**: while GPS-follow is
   on, your route is drawn on the map (a fix counts when it is within 50 m accuracy and 5 m from the
-  last). The track so far survives a reload and continues on the next tracking. When tracking stops a
+  last). The track so far survives a reload; the switch is also the **Track: draw my path** tick in the crosshair's hold popup. When following starts (or the track is switched on) with an old track still stored, the save / discard dialog below comes first — the × keeps it and the new route continues it (v2265). When tracking stops a
   dialog offers **Save track** (named "Track <date time>" by default) or **Discard**; the × keeps it for
   later. A saved track is a point list holding the line plus its start and end points; lists can hold
   lines (KML `LineString`) the way they hold areas — imported, drawn, exported and synced with the list.
