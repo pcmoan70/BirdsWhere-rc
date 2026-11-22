@@ -109,6 +109,7 @@ window.AppSyncData = (function () {
     var state = {};
     try { state = JSON.parse(localStorage.getItem(window.GeoState.storageKey) || "{}"); } catch (e) {}
     delete state.offlineAreas;   // the downloaded map areas are THIS device's: never in a payload (owner, 2026-11-01)
+    delete state.tileGaps;       // nor the spots where this device's map tiles failed to load
     // Belt-and-braces: take the plotted detections straight from memory too, so a
     // large on-screen set still syncs even if the localStorage write above was
     // rejected (e.g. quota) and the round-tripped copy is stale/missing.
@@ -557,6 +558,7 @@ window.AppSyncData = (function () {
     // replace this one's (its areas would vanish from Settings while their tiles stayed
     // on the disk); the owner wants areas deleted by hand only (2026-11-01).
     if (local.offlineAreas != null) newState.offlineAreas = local.offlineAreas; else delete newState.offlineAreas;
+    if (local.tileGaps != null) newState.tileGaps = local.tileGaps; else delete newState.tileGaps;
     // Rarity alerts: merged FIELD-WISE, never as one blob. The preferences — the email
     // address, the interval, the threshold, which sources, the sound — travel like any
     // other setting, while the bookkeeping stays this device's own: copying a seen-set

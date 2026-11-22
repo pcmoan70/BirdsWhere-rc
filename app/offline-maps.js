@@ -226,7 +226,7 @@ window.AppOffline = (function () {
     var bounds = L.latLngBounds([[bb[1], bb[0]], [bb[3], bb[2]]]);
     var layers = [offlineLayerFor(area.basemap, area.labels)];
     if (area.labels && area.labels !== "off" && labelsSupported(area.basemap)) layers.push(rasterLabelsLayer(area.basemap));
-    var urls = buildOfflineUrls(bounds, area.zStart || 0, area.zMax || area.zStart || 0, layers);
+    var urls = area.boxes ? buildBoxUrls(area.boxes, layers) : buildOfflineUrls(bounds, area.zStart || 0, area.zMax || area.zStart || 0, layers);
     function aborted() { return !!(isAborted && isAborted()); }
     return caches.open("pinned-" + area.id).then(function (cache) {
       return new Promise(function (resolve) {
@@ -435,10 +435,11 @@ window.AppOffline = (function () {
     getOfflineAreas().forEach(function (a, i) {
       if (!a.bbox) return;
       var col = offlineColor(i);
-      var rect = L.rectangle([[a.bbox[1], a.bbox[0]], [a.bbox[3], a.bbox[2]]], offlineEditing
-        ? { className: "offline-frame", color: col, weight: 2.5, opacity: 0.95, fillColor: col, fillOpacity: 0.1, interactive: false }
-        : { className: "offline-frame", color: col, weight: 1, opacity: 0.2, dashArray: "3 6", fill: false, interactive: false });
-      rect.addTo(offlineFramesLayer);
+      areaBoxes(a).forEach(function (b) {   // a poor-coverage area is several small boxes
+        L.rectangle([[b[1], b[0]], [b[3], b[2]]], offlineEditing
+          ? { className: "offline-frame", color: col, weight: 2.5, opacity: 0.95, fillColor: col, fillOpacity: 0.1, interactive: false }
+          : { className: "offline-frame", color: col, weight: 1, opacity: 0.2, dashArray: "3 6", fill: false, interactive: false }).addTo(offlineFramesLayer);
+      });
       if (offlineEditing) {
         var del = L.marker([a.bbox[3], a.bbox[2]], {   // NE corner (N lat, E lon)
           icon: L.divIcon({ className: "offline-x", html: X_MARK_SVG, iconSize: [22, 22], iconAnchor: [11, 11] }),
@@ -463,9 +464,11 @@ window.AppOffline = (function () {
     var c = getMap().getCenter();
     return getOfflineAreas().filter(function (a) {
       return a.bbox && (basemap == null || (a.basemap || "light") === basemap) &&
-        c.lng >= a.bbox[0] && c.lng <= a.bbox[2] && c.lat >= a.bbox[1] && c.lat <= a.bbox[3];
+        areaBoxes(a).some(function (b) { return c.lng >= b[0] && c.lng <= b[2] && c.lat >= b[1] && c.lat <= b[3]; });
     });
   }
+  // An area's boxes [w, s, e, n, zMax]: its bbox, or the cells of a poor-coverage download.
+  function areaBoxes(a) { return a.boxes || [a.bbox.concat([a.zMax])]; }
   // When offline inside a downloaded area, cap the basemap's native zoom to the
   // deepest cached level so Leaflet upscales those tiles (smooth/pixelated zoom)
   // instead of requesting missing deep tiles and leaving broken holes. Restored
@@ -537,6 +540,91 @@ window.AppOffline = (function () {
     });
   }
 
+  // ---- Poor-coverage spots ---------------------------------------------------
+  // Owner (2026-11-22): log where map tiles failed to load and, later on a working
+  // connection, offer to download those spots — coverage there is bad, so they are
+  // better cached. A failed base tile is logged as a cell — its ancestor tile at
+  // z ≤ 13 and at most 4 levels up, so one cell costs a few hundred tiles — with the
+  // deepest zoom that failed there. GeoState "tileGaps" (this device's own, never
+  // synced): { "cz/x/y": [zoom, time] }.
+  var GAP_CELL_Z = 13, GAP_DEPTH = 4, GAP_MAX = 300, GAP_CALM_MS = 10000;
+  var lastTileErr = 0, gapTimer = null, gapAskedN = 0;
+  function getGaps() { return window.GeoState.get("tileGaps", {}) || {}; }
+  function noteTileGap(c) {
+    lastTileErr = Date.now();
+    if (!c || !(c.z >= 0)) return;
+    var z = Math.round(c.z), cz = Math.max(Math.min(z, GAP_CELL_Z), z - GAP_DEPTH), k = Math.pow(2, z - cz);
+    var key = cz + "/" + Math.floor(c.x / k) + "/" + Math.floor(c.y / k), g = getGaps();
+    if (g[key] && g[key][0] >= z) return;   // known: no write
+    g[key] = [z, Date.now()];
+    var keys = Object.keys(g);
+    if (keys.length > GAP_MAX) keys.sort(function (a, b) { return g[a][1] - g[b][1]; }).slice(0, keys.length - GAP_MAX).forEach(function (o) { delete g[o]; });
+    window.GeoState.save({ tileGaps: g });
+  }
+  function gapBox(key, z) {
+    var p = key.split("/"), n = Math.pow(2, +p[0]), x = +p[1], y = +p[2];
+    function lat(t) { return Math.atan(Math.sinh(Math.PI * (1 - 2 * t / n))) * 180 / Math.PI; }
+    return [x / n * 360 - 180, lat(y + 1), (x + 1) / n * 360 - 180, lat(y), z];
+  }
+  // The logged cells not already inside a downloaded area of this basemap (deep enough),
+  // each as a box down to its failed zoom (capped at the basemap's native max).
+  function pendingGaps() {
+    var g = getGaps(), bm = getRenderedBasemap(), have = getOfflineAreas().filter(function (a) { return a.bbox && (a.basemap || "light") === bm; });
+    var cap = Math.min((getBaseLayer() && getBaseLayer()._origMaxNative) || MAX_ZOOM, Math.round(getMap().getMaxZoom()));
+    return Object.keys(g).map(function (key) { return { key: key, box: gapBox(key, Math.min(g[key][0], cap)) }; }).filter(function (o) {
+      var b = o.box, lng = (b[0] + b[2]) / 2, la = (b[1] + b[3]) / 2;
+      return !have.some(function (a) { return areaBoxes(a).some(function (h) { return h[4] >= b[4] && lng >= h[0] && lng <= h[2] && la >= h[1] && la <= h[3]; }); });
+    });
+  }
+  function buildBoxUrls(boxes, layers) {
+    var seen = {}, out = [];
+    boxes.forEach(function (b) {
+      buildOfflineUrls(L.latLngBounds([[b[1], b[0]], [b[3], b[2]]]), b[4], b[4], layers).forEach(function (u) { if (!seen[u]) { seen[u] = 1; out.push(u); } });
+    });
+    return out;
+  }
+  // Called at start, on "online" and when tiles load again after failing: once the
+  // tiles have loaded for GAP_CALM_MS without an error, ask (again only when new spots
+  // were logged since). Later / × = ask next time; Forget clears the log.
+  function offerGaps() {
+    clearTimeout(gapTimer);
+    gapTimer = setTimeout(function () {
+      if (navigator.onLine === false || offlineTilesFailing || !getMap() || !window.caches) return;
+      if (Date.now() - lastTileErr < GAP_CALM_MS || document.querySelector(".ui-modal-overlay")) { offerGaps(); return; }
+      var gaps = pendingGaps(); if (!gaps.length || gaps.length <= gapAskedN) return;
+      gapAskedN = gaps.length;
+      var mb = buildBoxUrls(gaps.map(function (o) { return o.box; }), offlineLayers()).length * OFFLINE_TILE_BYTES / 1048576;
+      var m = createModal({ backdropClose: false }), box = m.box, close = m.close;
+      box.innerHTML = '<div class="ui-modal-msg">' + escapeHtml(t("offline.gapAsk", { n: gaps.length, mb: mb.toFixed(mb < 10 ? 1 : 0) })) + "</div>" +
+        '<div class="ui-modal-btns"><button type="button" class="btn btn-light" id="gap-forget">' + escapeHtml(t("offline.gapForget")) + "</button>" +
+        '<button type="button" class="btn btn-light" id="gap-later">' + escapeHtml(t("offline.gapLater")) + "</button>" +
+        '<button type="button" class="btn" id="gap-go">' + escapeHtml(t("offline.download")) + "</button></div>";
+      box.querySelector("#gap-later").addEventListener("click", close);
+      box.querySelector("#gap-forget").addEventListener("click", function () { close(); window.GeoState.save({ tileGaps: {} }); gapAskedN = 0; });
+      box.querySelector("#gap-go").addEventListener("click", function () { close(); downloadGaps(gaps); });
+    }, GAP_CALM_MS);
+  }
+  // One offline area holding every cell (listed, framed, refilled and deleted like any other).
+  function downloadGaps(gaps) {
+    ensurePersistentStorage();
+    var boxes = gaps.map(function (o) { return o.box; });
+    var bb = boxes.reduce(function (u, b) { return [Math.min(u[0], b[0]), Math.min(u[1], b[1]), Math.max(u[2], b[2]), Math.max(u[3], b[3])]; }, [180, 90, -180, -90]);
+    var a = { id: "area-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name: t("offline.gapName") + " " + new Date().toLocaleDateString(),
+              basemap: getRenderedBasemap(), labels: labelsMode(), bbox: bb, boxes: boxes,
+              zStart: Math.min.apply(null, boxes.map(function (b) { return b[4]; })), zMax: Math.max.apply(null, boxes.map(function (b) { return b[4]; })),
+              tiles: 0, bytes: 0, createdAt: Date.now() };
+    saveOfflineAreas(getOfflineAreas().concat([a]));
+    refillOfflineArea(a, function (d, total) { setStatus(t("offline.downloading", { done: d.toLocaleString(), total: total.toLocaleString() })); }, function () { return false; })
+      .then(function (ok) {
+        if (ok > 0) {
+          var g = getGaps(); gaps.forEach(function (o) { delete g[o.key]; }); window.GeoState.save({ tileGaps: g });
+          gapAskedN = 0; setStatus(t("offline.saved", { name: a.name }));
+        } else { deleteOfflineArea(a.id); setStatus(t("offline.failed", { name: a.name })); }
+        renderOfflineAreas(); renderOfflineFrames();
+      });
+  }
+  window.addEventListener("online", function () { offerGaps(); });
+
   return {
     init: init,
     openOfflineManager: openOfflineManager,
@@ -556,5 +644,7 @@ window.AppOffline = (function () {
     tilesFailing: function () { return offlineTilesFailing; },
     redrawTiles: redrawTiles,   // rounding-safe re-request (layer.redraw() leaves a fractional tile zoom under zoomSnap 0)
     setTilesFailing: function (v) { offlineTilesFailing = v; },
+    noteTileGap: noteTileGap,   // a base tile failed (Leaflet's tileerror coords)
+    offerGaps: offerGaps,       // tiles load again / app start: offer the logged poor-coverage spots
   };
 })();

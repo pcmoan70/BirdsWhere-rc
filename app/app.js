@@ -6602,6 +6602,7 @@
     try { await loadPersistedSightings(); } catch (e) {}   // so a reopen reuses the last downloads instead of refetching
     ensurePersistentStorage();   // keep offline-map tiles + saved data from being evicted
     setTimeout(maybeAskRedownloadOffline, 3000);   // offer to re-fetch any browser-evicted offline areas
+    window.AppOffline.offerGaps();   // and the logged poor-coverage spots, once the tiles load
 
 
 
@@ -8167,8 +8168,8 @@
     // Tile fetches failing (even when navigator reports "online" — captive portal /
     // dead connection) → treat like offline so the zoom cap upscales cached tiles
     // instead of leaving blank deep tiles; a successful load clears the flag.
-    baseLayer.on("tileerror", function () { window.AppOffline.setTilesFailing(true); scheduleOfflineCheck(); noteTileError(); });
-    baseLayer.on("tileload", function () { if (window.AppOffline.tilesFailing()) { window.AppOffline.setTilesFailing(false); refreshOfflineZoomCap(); } });
+    baseLayer.on("tileerror", function (e) { window.AppOffline.setTilesFailing(true); window.AppOffline.noteTileGap(e && e.coords); scheduleOfflineCheck(); noteTileError(); });
+    baseLayer.on("tileload", function () { if (window.AppOffline.tilesFailing()) { window.AppOffline.setTilesFailing(false); refreshOfflineZoomCap(); window.AppOffline.offerGaps(); } });
     baseLayer.addTo(map);
     baseLayer.bringToBack();
     refreshOfflineZoomCap();   // if offline inside a shallow download, upscale instead of fetching missing tiles

@@ -1386,6 +1386,15 @@ so the area still draws when you zoom out, and it is stored against the basemap 
 key-less Voyager/MapTiler choice draws Streets). Offline the map keeps working for every basemap the
 app can draw.
 
+**Poor-coverage spots** (v2267) — wherever map tiles fail to load (no signal, a dead connection),
+the spot is noted on this device: the failed tile's cell (a z13 tile, or 4 levels above a deeper
+failure) with the deepest zoom that failed there, at most 300 cells, never synced. Once the map has
+loaded for 10 s without an error on a working connection (at start, on reconnect, or when tiles come
+back), the app asks once: **⬇ Download** saves every noted spot not already in a downloaded area as one
+offline area named *Poor coverage* + the date — its cells show as small frames and it is listed,
+re-downloaded and deleted like any other area; **Later** (or ×) asks again next session or when new
+spots are noted; **Forget them** clears the notes.
+
 **Google Drive sync** — an optional **manual, one-shot** sync: tapping *Synchronize* opens a small
 dialog to pick **which categories** travel (Settings · Point lists · Trips · Checklists · Fetched
 points) and **one direction** (two-way merge — the default — upload-only, or download-only), then

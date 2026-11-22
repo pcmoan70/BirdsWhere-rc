@@ -3,6 +3,7 @@
 // Loaded before app.js; exposed on window.AppStaticData.
 window.AppStaticData = window.AppStaticData || {};
 window.AppStaticData.WHATS_NEW = [
+    { v: "v2267", date: "2026-11-22", text: "Poor coverage, cached for next time. Where map tiles fail to load, the app notes the spot; once the map loads again on a working connection it offers to download those spots as one offline area (Later asks again next time, Forget them clears the notes)." },
     { v: "v2265", date: "2026-11-22", text: "Hold (or right-click) the locate crosshair for a My position menu: switch on Track to draw your path, Centre the map on my position to start following, Stop following to end it. An old track still stored is offered for saving or discarding before a new one starts." },
     { v: "v2263", date: "2026-11-15", text: "Adding an observation to a list opens its values first, prefilled: change the name, count, date, observer, locality, note or tags before you save it." },
     { v: "v2262", date: "2026-11-15", text: "Adding an observation to a list is immediate, also with big lists ticked on the map. The list page has a \u2713 update button next to the funnel, P and sort (v2261), and every fetched point now gets its square with its red \u00d7 (v2260)." },
